@@ -1,0 +1,380 @@
+<?php
+/**
+ * Search Header Template
+ *
+ * This template is loaded after the theme header to provide search functionality.
+ * It will be displayed on all pages to provide consistent search access.
+ *
+ * @link        https://searchcraft.io
+ * @since       1.0.0
+ *
+ * @package    Searchcraft
+ * @subpackage Searchcraft/public/templates
+ */
+
+// Prevent direct access.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+$is_configured                        = class_exists( 'Searchcraft_Config' ) && Searchcraft_Config::is_configured();
+$input_horizontal_padding             = get_option( 'searchcraft_input_padding', '50' );
+$input_vertical_padding               = get_option( 'searchcraft_input_vertical_padding', '0' );
+$searchcraft_brand_color              = get_option( 'searchcraft_brand_color', '#000000' );
+$searchcraft_cortex_url               = Searchcraft_Config::get( 'cortex_url', '' );
+$searchcraft_summary_background_color = get_option( 'searchcraft_summary_background_color', '#e0dcdc' );
+$searchcraft_summary_border_color     = get_option( 'searchcraft_summary_border_color', '#E0E0E0' );
+$searchcraft_enable_ai_summary        = get_option( 'searchcraft_enable_ai_summary', false );
+$searchcraft_ai_summary_banner        = get_option( 'searchcraft_ai_summary_banner', get_bloginfo( 'name' ) );
+$searchcraft_input_border_radius      = get_option( 'searchcraft_input_border_radius', '' );
+$search_experience                    = get_option( 'searchcraft_search_experience', 'full' );
+$search_placeholder                   = get_option( 'searchcraft_search_placeholder', 'Search...' );
+$searchcraft_include_filter_panel     = get_option( 'searchcraft_include_filter_panel', false );
+
+// NOTE: The styles in this file need to stay here and not move into searchcraft-sdk.css.
+?>
+
+<style>
+:root {
+	--sc-color-brand: <?php echo esc_attr( $searchcraft_brand_color ); ?>;
+	--sc-input-form-border-radius: <?php echo esc_attr( $searchcraft_input_border_radius ); ?>px;
+}
+.searchcraft-input-form-input {
+	border-radius: var(--sc-input-form-border-radius) !important;
+	padding: 12px 44px !important;
+}
+.searchcraft-header-container {
+	width: 100%;
+}
+.searchcraft-input-container {
+	padding-bottom: 20px;
+}
+
+.searchcraft-popover-trigger {
+	max-width: 1200px;
+	margin: 0 auto;
+	padding: 0 20px;
+	text-align: right;
+}
+
+.searchcraft-full-search-experience {
+	max-width: 1200px;
+	margin: 0 auto;
+	padding: <?php echo esc_attr( $input_vertical_padding ); ?>px <?php echo esc_attr( $input_horizontal_padding ); ?>px;
+}
+.searchcraft-toggle-button-label {
+	font-weight: bold;
+}
+
+/* Filter panel positioning */
+.searchcraft-main-content {
+	display: flex;
+	gap: 20px;
+	align-items: flex-start;
+}
+
+#searchcraft-filter-panel-container {
+	flex: 0 0 250px;
+	margin-top: 16px;
+	order: 1;
+	padding-top: 20px;
+}
+
+.searchcraft-results-content {
+	flex: 1;
+	order: 2;
+}
+.searchcraft-result-primary-category {
+	color: <?php echo esc_attr( $searchcraft_brand_color ); ?>;
+	text-transform: uppercase;
+	font-size: 0.75rem;
+	letter-spacing: 0.05rem;
+}
+.searchcraft-result-item {
+	margin-bottom: 16px;
+}
+/* Mobile styles */
+@media (max-width: 768px) {
+	.searchcraft-main-content {
+		flex-direction: column;
+	}
+
+	#searchcraft-filter-panel-container {
+		flex: none;
+		width: 100%;
+		order: 1; /* Above summary on mobile */
+	}
+
+	.searchcraft-results-content {
+		order: 2; /* Below filter panel on mobile */
+	}
+}
+
+
+/* Not configured state */
+.searchcraft-not-configured-search {
+	max-width: 1200px;
+	margin: 0 auto;
+	padding: 0 20px;
+	text-align: center;
+}
+
+@media (max-width: 768px) {
+	.searchcraft-header-container {
+		padding: 15px 0;
+	}
+
+	.searchcraft-full-search-experience,
+	.searchcraft-popover-trigger,
+	.searchcraft-not-configured-search {
+		padding: 0 15px;
+	}
+
+	.searchcraft-popover-trigger {
+		text-align: center;
+	}
+}
+.searchcraft-summary-container {
+	background-color: <?php echo esc_attr( $searchcraft_summary_background_color ); ?>;
+	border: 1px solid <?php echo esc_attr( $searchcraft_summary_border_color ); ?>;
+	border-radius: 12px;
+	margin-bottom: 20px;
+	padding: 40px;
+	display: none; /* Hide by default to prevent flash */
+}
+
+.summary-header-container {
+	display: flex;
+	flex-direction: row;
+	gap: 8px;
+	margin-bottom: 16px;
+}
+
+.summary-footer-container {
+	display: flex;
+	flex-direction: row;
+	gap: 4px;
+	margin-top: 16px;
+	align-items: baseline;
+}
+
+.searchcraft-pagination-container {
+	display: flex;
+	text-align: center;
+	padding-top: 20px;
+	flex-direction: column;
+	gap: 1rem;
+	justify-content: center;
+	align-items: center;
+	margin-top: 1.5rem;
+	margin-bottom: 2.25rem;
+}
+
+.summary-box-header {
+	color: <?php echo esc_attr( $searchcraft_brand_color ); ?>;
+	font-size: 18px;
+	line-height: 20px;
+}
+
+.summary-box-footer {
+	font-size: 12px;
+	line-height: 14px;
+	margin: 0;
+}
+
+.searchcraft-powered-by {
+	margin-left: auto;
+}
+
+.searchcraft-logo-image {
+	text-decoration: none !important;
+	vertical-align: middle;
+}
+
+.searchcraft-results-info-container {
+	margin-top: 16px;
+	align-items: baseline;
+	display: none;
+	flex-direction: row;
+	gap: 4px;
+	padding-bottom: 10px;
+	padding-top: 20px;
+}
+
+.searchcraft-results-container {
+	border-top: 1px solid #e9ecef;
+	padding-top: 20px;
+	margin-bottom: 20px;
+	min-height: 200px;
+}
+
+@media (min-width: 1024px) {
+	.searchcraft-pagination-container {
+		flex-direction: row;
+		justify-content: space-between;
+	}
+}
+
+searchcraft-summary-box {
+	background-color: <?php echo esc_attr( $searchcraft_summary_background_color ); ?>;
+	border-radius: 12px;
+}
+searchcraft-summary-box, .searchcraft-summary-box {
+	background-color: <?php echo esc_attr( $searchcraft_summary_background_color ); ?>;
+}
+.searchcraft-summary-box-content {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+
+	& * {
+		margin: 0 !important;
+		padding: 0 !important;
+	}
+
+	& h1, h2, h3, h4, h5 {
+		font-weight: bold;
+	}
+
+	& a {
+		color: <?php echo esc_attr( $searchcraft_brand_color ); ?>;
+	}
+}
+.searchcraft-filter-panel-header {
+	display: none;
+	border-bottom: 1px solid #e9ecef;
+	font-size: 1rem;
+	font-weight: 700;
+	margin-bottom: 10px;
+	padding-bottom: 10px;
+}
+.searchcraft-toggle-button-label, .searchcraft-filter-panel-label {
+	font-size: 1rem;
+}
+.searchcraft-toggle-button {
+	border-bottom: 1px solid #e9ecef;
+	margin-bottom: 10px;
+	padding-bottom: 10px;
+}
+/* Hide results container when it contains empty state */
+.searchcraft-full-search-experience:has(.searchcraft-input-form-input:placeholder-shown) .searchcraft-results-container,
+.searchcraft-full-search-experience:has(.searchcraft-input-form-input:placeholder-shown) .searchcraft-pagination-container {
+	display: none;
+}
+
+/* Show summary containers only when there are search results */
+.searchcraft-full-search-experience:has(.searchcraft-input-form-input:not(:placeholder-shown)) .searchcraft-summary-container,
+.searchcraft-full-search-experience:has(.searchcraft-input-form-input:not(:placeholder-shown)) .searchcraft-filter-panel-header {
+	display: block;
+}
+
+.searchcraft-full-search-experience:has(.searchcraft-input-form-input:not(:placeholder-shown)) .summary-header-container,
+.searchcraft-full-search-experience:has(.searchcraft-input-form-input:not(:placeholder-shown)) .searchcraft-results-info-container,
+.searchcraft-full-search-experience:has(.searchcraft-input-form-input:not(:placeholder-shown)) .summary-footer-container {
+	display: flex;
+}
+
+/* Hide summary containers when search results are empty */
+.searchcraft-full-search-experience:has(.searchcraft-input-form-input:placeholder-shown) .summary-header-container,
+.searchcraft-full-search-experience:has(.searchcraft-input-form-input:placeholder-shown) .summary-footer-container {
+	display: none;
+}
+
+/* Hide filter panel when input is empty */
+.searchcraft-full-search-experience:has(.searchcraft-input-form-input:placeholder-shown) #searchcraft-filter-panel-container,
+.searchcraft-full-search-experience:has(searchcraft-input-form input:placeholder-shown) #searchcraft-filter-panel-container {
+	display: none;
+}
+
+/* Hide summary containers when input is empty */
+.searchcraft-full-search-experience:has(.searchcraft-input-form-input:placeholder-shown) .searchcraft-summary-container,
+.searchcraft-full-search-experience:has(searchcraft-input-form input:placeholder-shown) .searchcraft-summary-container {
+	display: none;
+}
+
+/* Custom CSS from plugin configuration */
+<?php
+$custom_css = get_option( 'searchcraft_custom_css', '' );
+if ( ! empty( $custom_css ) ) {
+	echo esc_html( wp_strip_all_tags( $custom_css ) );
+}
+?>
+</style>
+<div class="searchcraft-header-container">
+	<?php if ( $is_configured ) : ?>
+		<?php if ( 'popover' === $search_experience ) : ?>
+			<div class="searchcraft-popover-trigger">
+				<searchcraft-popover-form></searchcraft-popover-form>
+			</div>
+		<?php else : ?>
+			<div class="searchcraft-full-search-experience">
+				<div class="searchcraft-input-container">
+					<searchcraft-input-form placeholder-value="<?php echo esc_attr( $search_placeholder ); ?>"></searchcraft-input-form>
+				</div>
+				<div class="searchcraft-main-content">
+					<?php if ( $searchcraft_include_filter_panel ) : ?>
+					<div id="searchcraft-filter-panel-container">
+						<h3 class="searchcraft-filter-panel-header">Filters</h3>
+						<searchcraft-filter-panel />
+					</div>
+					<?php endif; ?>
+					<div class="searchcraft-results-content">
+							<?php if ( $searchcraft_enable_ai_summary && ! empty( $searchcraft_cortex_url ) ) : ?>
+							<div class="searchcraft-summary-container">
+								<div class="summary-header-container">
+									<svg xmlns="http://www.w3.org/2000/svg" width="24" height="20" viewBox="0 0 24 20" fill="none">
+										<g clip-path="url(#clip0_8035_1350)">
+											<path d="M0.351402 6.5718L2.92835 5.70241C4.23505 5.2599 5.26323 4.23433 5.70313 2.92763L6.57253 0.350679C6.73131 -0.117857 7.39246 -0.117857 7.55125 0.350679L8.42064 2.92763C8.86315 4.23433 9.88872 5.2625 11.1954 5.70241L13.7724 6.5718C14.2409 6.73058 14.2409 7.39174 13.7724 7.55052L11.1954 8.41992C9.88872 8.86242 8.86054 9.888 8.42064 11.1947L7.55125 13.7716C7.39246 14.2402 6.73131 14.2402 6.57253 13.7716L5.70313 11.1947C5.26062 9.888 4.23505 8.85982 2.92835 8.41992L0.351402 7.55052C-0.117134 7.39174 -0.117134 6.73058 0.351402 6.5718Z" fill="<?php echo esc_attr( $searchcraft_brand_color ); ?>"/>
+											<path d="M19.3201 15.3605C19.2004 15.7119 18.7058 15.7119 18.5861 15.3605L17.9874 13.5878C17.7792 12.9735 17.2976 12.4894 16.6807 12.2811L14.9081 11.6825C14.5567 11.5627 14.5567 11.0682 14.9081 10.9484L16.6807 10.3497C17.295 10.1415 17.7792 9.65994 17.9874 9.04304L18.5861 7.27041C18.7058 6.91901 19.2004 6.91901 19.3201 7.27041L19.9188 9.04304C20.1271 9.65734 20.6086 10.1415 21.2255 10.3497L22.9981 10.9484C23.3495 11.0682 23.3495 11.5627 22.9981 11.6825L21.2255 12.2811C20.6112 12.4894 20.1271 12.9709 19.9188 13.5878L19.3201 15.3605Z" fill="<?php echo esc_attr( $searchcraft_brand_color ); ?>"/>
+											<path d="M15.1173 17.4322L13.8184 17.8721C13.5113 17.9762 13.2692 18.2183 13.1651 18.5254L12.7252 19.8243C12.6471 20.0586 12.3139 20.0586 12.2358 19.8243L11.7959 18.5254C11.6918 18.2183 11.4497 17.9762 11.1426 17.8721L9.84367 17.4322C9.6094 17.3541 9.6094 17.0209 9.84367 16.9428L11.1426 16.5029C11.4497 16.3988 11.6918 16.1567 11.7959 15.8495L12.2358 14.5507C12.3139 14.3164 12.6471 14.3164 12.7252 14.5507L13.1651 15.8495C13.2692 16.1567 13.5113 16.3988 13.8184 16.5029L15.1173 16.9428C15.3516 17.0209 15.3516 17.3541 15.1173 17.4322Z" fill="<?php echo esc_attr( $searchcraft_brand_color ); ?>"/>
+										</g>
+										<defs>
+											<clipPath id="clip0_8035_1350">
+												<rect width="23.2635" height="20" fill="white" transform="matrix(1 0 0 -1 0 20)"/>
+											</clipPath>
+										</defs>
+									</svg>
+									<p class="summary-box-header">
+									<?php
+										// NOTE: This content is expected to contain HTML.
+										// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+										echo $searchcraft_ai_summary_banner;
+									?>
+									</p>
+								</div>
+								<searchcraft-summary-box></searchcraft-summary-box>
+								<div class="summary-footer-container">
+									<img src="<?php echo esc_url( plugin_dir_url( dirname( __DIR__ ) ) . 'public/assets/icon-info.svg' ); ?>" alt="Summary" width="12" height="12" />
+									<p class="summary-box-footer">Summaries are experimental. May be inaccurate.</p>
+									<div class="searchcraft-powered-by"><a class="searchcraft-footer-link" href="https://searchcraft.io/" target="_blank" rel="noreferrer"><svg class="searchcraft-logo-image" width="169" height="16" viewBox="0 0 169 16" fill="none" xmlns="http://www.w3.org/2000/svg"><title>Powered by Searchcraft</title><path d="M5.07288 0.608C7.60088 0.608 8.84888 2.064 8.84888 4.112C8.84888 6.16 7.60088 7.616 5.07288 7.616H1.68088V12H0.336875V0.608H5.07288ZM5.07288 6.4C6.67288 6.4 7.45688 5.552 7.45688 4.112C7.45688 2.672 6.67288 1.824 5.07288 1.824H1.68088V6.4H5.07288ZM13.31 12.192C10.99 12.192 9.31 10.512 9.31 7.872C9.31 5.232 10.99 3.552 13.31 3.552C15.63 3.552 17.31 5.232 17.31 7.872C17.31 10.512 15.63 12.192 13.31 12.192ZM13.31 11.04C14.91 11.04 15.966 9.872 15.966 7.872C15.966 5.872 14.91 4.704 13.31 4.704C11.71 4.704 10.654 5.872 10.654 7.872C10.654 9.872 11.71 11.04 13.31 11.04ZM28.3826 3.744H29.7586L27.0066 12H25.6626L24.4466 8.176C24.1586 7.264 23.8706 6.304 23.6146 5.376C23.3426 6.304 23.0546 7.264 22.7666 8.176L21.5666 12H20.2226L17.4706 3.744H18.8466L20.0146 7.472C20.3346 8.48 20.6226 9.472 20.9106 10.48C21.1826 9.472 21.4706 8.48 21.7906 7.472L22.9426 3.744H24.2866L25.4386 7.472C25.7426 8.464 26.0466 9.456 26.3346 10.448C26.6066 9.456 26.9106 8.464 27.2146 7.472L28.3826 3.744ZM37.5194 7.872V8.32H31.2474C31.3754 10.176 32.3514 11.024 33.7914 11.024C34.9594 11.024 35.6954 10.416 35.9834 9.488H37.3114C36.9114 11.04 35.7274 12.192 33.7594 12.192C31.5034 12.192 29.9194 10.544 29.9194 7.872C29.9194 5.28 31.4394 3.552 33.7274 3.552C36.1914 3.552 37.5194 5.504 37.5194 7.872ZM33.7274 4.72C32.4314 4.72 31.4874 5.536 31.2794 7.168H36.1434C36.0154 5.808 35.1994 4.72 33.7274 4.72ZM42.9101 3.616C43.0381 3.616 43.1661 3.616 43.3421 3.632V4.864H43.0221C41.3741 4.864 40.3181 5.696 40.3181 7.296V12H39.0381V3.744H40.2541V5.2C40.7181 4.336 41.5661 3.616 42.9101 3.616ZM51.2538 7.872V8.32H44.9818C45.1098 10.176 46.0858 11.024 47.5258 11.024C48.6938 11.024 49.4298 10.416 49.7178 9.488H51.0458C50.6458 11.04 49.4618 12.192 47.4938 12.192C45.2378 12.192 43.6538 10.544 43.6538 7.872C43.6538 5.28 45.1738 3.552 47.4618 3.552C49.9258 3.552 51.2538 5.504 51.2538 7.872ZM47.4618 4.72C46.1658 4.72 45.2218 5.536 45.0138 7.168H49.8778C49.7498 5.808 48.9338 4.72 47.4618 4.72ZM58.9805 0.608H60.2605V12H59.0445V10.72C58.4205 11.664 57.4445 12.192 56.2125 12.192C53.8925 12.192 52.3725 10.512 52.3725 7.872C52.3725 5.232 53.8925 3.552 56.2125 3.552C57.4125 3.552 58.3565 4.048 58.9805 4.928V0.608ZM56.3725 11.04C57.9725 11.04 59.0285 9.872 59.0285 7.872C59.0285 5.872 57.9725 4.704 56.3725 4.704C54.7725 4.704 53.7165 5.936 53.7165 7.936C53.7165 9.936 54.7725 11.04 56.3725 11.04ZM69.2736 3.552C71.5936 3.552 73.1136 5.232 73.1136 7.872C73.1136 10.512 71.5936 12.192 69.2736 12.192C68.0416 12.192 67.0656 11.664 66.4416 10.72V12H65.2256V0.608H66.5056V4.928C67.1296 4.048 68.0736 3.552 69.2736 3.552ZM69.1136 11.04C70.7136 11.04 71.7696 9.808 71.7696 7.808C71.7696 5.808 70.7136 4.704 69.1136 4.704C67.5136 4.704 66.4576 5.872 66.4576 7.872C66.4576 9.872 67.5136 11.04 69.1136 11.04ZM79.3795 3.744H80.7715L77.2835 13.296C76.7555 14.752 75.9075 15.184 74.5955 15.184C74.3395 15.184 74.0995 15.168 73.8275 15.136V14.064H74.5795C75.3955 14.064 75.8275 13.696 76.0835 13.04C76.1795 12.8 76.2755 12.528 76.3715 12.272L73.2675 3.744H74.6755L75.8435 7.184C76.2595 8.384 76.6435 9.568 77.0275 10.752C77.3955 9.568 77.7955 8.368 78.2115 7.168L79.3795 3.744ZM89.1546 12.256C86.1146 12.256 84.2906 10.864 84.2746 8.24H86.4026C86.4346 10.032 87.6346 10.512 89.2186 10.512C90.7066 10.512 91.5226 9.936 91.5226 8.864C91.5226 7.968 90.9306 7.568 89.1866 7.216L88.2266 7.024C86.0186 6.608 84.5626 5.632 84.5626 3.568C84.5626 1.68 86.0506 0.351999 88.7866 0.351999C91.9866 0.351999 93.3466 1.856 93.4266 4H91.3306C91.2506 2.784 90.6266 2.096 88.8186 2.096C87.4426 2.096 86.7706 2.64 86.7706 3.504C86.7706 4.416 87.2986 4.832 88.9946 5.184L89.9866 5.376C92.6746 5.904 93.7626 6.944 93.7626 8.752C93.7626 11.008 92.0026 12.256 89.1546 12.256ZM102.952 8.016V8.496H96.7758C96.9198 9.968 97.7518 10.624 98.9198 10.624C99.8798 10.624 100.504 10.176 100.808 9.44H102.744C102.328 11.12 100.888 12.192 98.9038 12.192C96.4718 12.192 94.7918 10.512 94.7918 7.872C94.7918 5.28 96.4238 3.552 98.8718 3.552C101.4 3.552 102.952 5.392 102.952 8.016ZM98.8558 5.12C97.7838 5.12 96.9838 5.728 96.7918 7.088H100.936C100.776 5.92 100.056 5.12 98.8558 5.12ZM111.599 12H109.583C109.455 11.776 109.391 11.392 109.359 10.992C108.815 11.76 107.919 12.192 106.703 12.192C104.943 12.192 103.727 11.312 103.727 9.712C103.727 8.336 104.559 7.36 106.895 7.136L108.143 7.024C108.911 6.928 109.311 6.688 109.311 6.08C109.311 5.44 108.975 5.056 107.807 5.056C106.655 5.056 106.175 5.36 106.095 6.368H104.111C104.223 4.624 105.247 3.552 107.823 3.552C110.287 3.552 111.263 4.544 111.263 6.032V10.432C111.263 11.024 111.375 11.68 111.599 12ZM107.183 10.752C108.255 10.752 109.311 10.176 109.311 8.736V7.984C109.103 8.176 108.799 8.272 108.367 8.32L107.279 8.448C106.159 8.576 105.791 8.976 105.791 9.632C105.791 10.32 106.255 10.752 107.183 10.752ZM117.216 3.616C117.392 3.616 117.536 3.616 117.712 3.648V5.504H117.2C115.712 5.504 114.816 6.24 114.816 7.808V12H112.8V3.744H114.752V5.216C115.152 4.288 115.936 3.616 117.216 3.616ZM122.137 12.192C119.689 12.192 118.057 10.512 118.057 7.872C118.057 5.232 119.673 3.552 122.137 3.552C124.297 3.552 125.737 4.784 125.977 6.72H123.961C123.769 5.696 123.033 5.232 122.137 5.232C120.937 5.232 120.121 6.064 120.121 7.872C120.121 9.68 120.969 10.512 122.137 10.512C123.049 10.512 123.833 10.016 123.993 8.928H126.009C125.785 10.944 124.249 12.192 122.137 12.192ZM131.641 3.552C133.369 3.552 134.537 4.56 134.537 6.528V12H132.521V6.864C132.521 5.808 131.993 5.296 130.969 5.296C130.089 5.296 129.129 5.904 129.129 7.376V12H127.113V0.608H129.129V4.848C129.673 4.096 130.521 3.552 131.641 3.552ZM139.887 12.192C137.439 12.192 135.807 10.512 135.807 7.872C135.807 5.232 137.423 3.552 139.887 3.552C142.047 3.552 143.487 4.784 143.727 6.72H141.711C141.519 5.696 140.783 5.232 139.887 5.232C138.687 5.232 137.871 6.064 137.871 7.872C137.871 9.68 138.719 10.512 139.887 10.512C140.799 10.512 141.583 10.016 141.743 8.928H143.759C143.535 10.944 141.999 12.192 139.887 12.192ZM149.279 3.616C149.455 3.616 149.599 3.616 149.775 3.648V5.504H149.263C147.775 5.504 146.879 6.24 146.879 7.808V12H144.863V3.744H146.815V5.216C147.215 4.288 147.999 3.616 149.279 3.616ZM157.803 12H155.787C155.659 11.776 155.595 11.392 155.563 10.992C155.019 11.76 154.123 12.192 152.907 12.192C151.147 12.192 149.931 11.312 149.931 9.712C149.931 8.336 150.763 7.36 153.099 7.136L154.347 7.024C155.115 6.928 155.515 6.688 155.515 6.08C155.515 5.44 155.179 5.056 154.011 5.056C152.859 5.056 152.379 5.36 152.299 6.368H150.315C150.427 4.624 151.451 3.552 154.027 3.552C156.491 3.552 157.467 4.544 157.467 6.032V10.432C157.467 11.024 157.579 11.68 157.803 12ZM153.387 10.752C154.459 10.752 155.515 10.176 155.515 8.736V7.984C155.307 8.176 155.003 8.272 154.571 8.32L153.483 8.448C152.363 8.576 151.995 8.976 151.995 9.632C151.995 10.32 152.459 10.752 153.387 10.752ZM162.466 2.16C161.746 2.16 161.426 2.512 161.426 3.152V3.744H163.122V5.28H161.426V12H159.426V5.28H158.146V3.744H159.426V3.12C159.426 1.664 160.146 0.559999 162.13 0.559999C162.45 0.559999 162.882 0.575999 163.17 0.608V2.16H162.466ZM168.636 5.28H167.004V9.744C167.004 10.288 167.276 10.464 167.948 10.464H168.636V12C168.268 12.032 167.9 12.064 167.58 12.064C165.836 12.064 165.004 11.472 165.004 9.952V5.28H163.724V3.744H165.004V1.344H167.004V3.744H168.636V5.28Z" fill="currentColor"></path></svg></a></div>
+								</div>
+						</div>
+						<?php endif; ?>
+						<div class="searchcraft-results-info-container">
+							<searchcraft-results-info></searchcraft-results-info>
+							<?php if ( ! $searchcraft_enable_ai_summary ) : ?>
+							<div class="searchcraft-powered-by"><a class="searchcraft-footer-link" href="https://searchcraft.io/" target="_blank" rel="noreferrer"><svg class="searchcraft-logo-image" width="169" height="16" viewBox="0 0 169 16" fill="none" xmlns="http://www.w3.org/2000/svg"><title>Powered by Searchcraft</title><path d="M5.07288 0.608C7.60088 0.608 8.84888 2.064 8.84888 4.112C8.84888 6.16 7.60088 7.616 5.07288 7.616H1.68088V12H0.336875V0.608H5.07288ZM5.07288 6.4C6.67288 6.4 7.45688 5.552 7.45688 4.112C7.45688 2.672 6.67288 1.824 5.07288 1.824H1.68088V6.4H5.07288ZM13.31 12.192C10.99 12.192 9.31 10.512 9.31 7.872C9.31 5.232 10.99 3.552 13.31 3.552C15.63 3.552 17.31 5.232 17.31 7.872C17.31 10.512 15.63 12.192 13.31 12.192ZM13.31 11.04C14.91 11.04 15.966 9.872 15.966 7.872C15.966 5.872 14.91 4.704 13.31 4.704C11.71 4.704 10.654 5.872 10.654 7.872C10.654 9.872 11.71 11.04 13.31 11.04ZM28.3826 3.744H29.7586L27.0066 12H25.6626L24.4466 8.176C24.1586 7.264 23.8706 6.304 23.6146 5.376C23.3426 6.304 23.0546 7.264 22.7666 8.176L21.5666 12H20.2226L17.4706 3.744H18.8466L20.0146 7.472C20.3346 8.48 20.6226 9.472 20.9106 10.48C21.1826 9.472 21.4706 8.48 21.7906 7.472L22.9426 3.744H24.2866L25.4386 7.472C25.7426 8.464 26.0466 9.456 26.3346 10.448C26.6066 9.456 26.9106 8.464 27.2146 7.472L28.3826 3.744ZM37.5194 7.872V8.32H31.2474C31.3754 10.176 32.3514 11.024 33.7914 11.024C34.9594 11.024 35.6954 10.416 35.9834 9.488H37.3114C36.9114 11.04 35.7274 12.192 33.7594 12.192C31.5034 12.192 29.9194 10.544 29.9194 7.872C29.9194 5.28 31.4394 3.552 33.7274 3.552C36.1914 3.552 37.5194 5.504 37.5194 7.872ZM33.7274 4.72C32.4314 4.72 31.4874 5.536 31.2794 7.168H36.1434C36.0154 5.808 35.1994 4.72 33.7274 4.72ZM42.9101 3.616C43.0381 3.616 43.1661 3.616 43.3421 3.632V4.864H43.0221C41.3741 4.864 40.3181 5.696 40.3181 7.296V12H39.0381V3.744H40.2541V5.2C40.7181 4.336 41.5661 3.616 42.9101 3.616ZM51.2538 7.872V8.32H44.9818C45.1098 10.176 46.0858 11.024 47.5258 11.024C48.6938 11.024 49.4298 10.416 49.7178 9.488H51.0458C50.6458 11.04 49.4618 12.192 47.4938 12.192C45.2378 12.192 43.6538 10.544 43.6538 7.872C43.6538 5.28 45.1738 3.552 47.4618 3.552C49.9258 3.552 51.2538 5.504 51.2538 7.872ZM47.4618 4.72C46.1658 4.72 45.2218 5.536 45.0138 7.168H49.8778C49.7498 5.808 48.9338 4.72 47.4618 4.72ZM58.9805 0.608H60.2605V12H59.0445V10.72C58.4205 11.664 57.4445 12.192 56.2125 12.192C53.8925 12.192 52.3725 10.512 52.3725 7.872C52.3725 5.232 53.8925 3.552 56.2125 3.552C57.4125 3.552 58.3565 4.048 58.9805 4.928V0.608ZM56.3725 11.04C57.9725 11.04 59.0285 9.872 59.0285 7.872C59.0285 5.872 57.9725 4.704 56.3725 4.704C54.7725 4.704 53.7165 5.936 53.7165 7.936C53.7165 9.936 54.7725 11.04 56.3725 11.04ZM69.2736 3.552C71.5936 3.552 73.1136 5.232 73.1136 7.872C73.1136 10.512 71.5936 12.192 69.2736 12.192C68.0416 12.192 67.0656 11.664 66.4416 10.72V12H65.2256V0.608H66.5056V4.928C67.1296 4.048 68.0736 3.552 69.2736 3.552ZM69.1136 11.04C70.7136 11.04 71.7696 9.808 71.7696 7.808C71.7696 5.808 70.7136 4.704 69.1136 4.704C67.5136 4.704 66.4576 5.872 66.4576 7.872C66.4576 9.872 67.5136 11.04 69.1136 11.04ZM79.3795 3.744H80.7715L77.2835 13.296C76.7555 14.752 75.9075 15.184 74.5955 15.184C74.3395 15.184 74.0995 15.168 73.8275 15.136V14.064H74.5795C75.3955 14.064 75.8275 13.696 76.0835 13.04C76.1795 12.8 76.2755 12.528 76.3715 12.272L73.2675 3.744H74.6755L75.8435 7.184C76.2595 8.384 76.6435 9.568 77.0275 10.752C77.3955 9.568 77.7955 8.368 78.2115 7.168L79.3795 3.744ZM89.1546 12.256C86.1146 12.256 84.2906 10.864 84.2746 8.24H86.4026C86.4346 10.032 87.6346 10.512 89.2186 10.512C90.7066 10.512 91.5226 9.936 91.5226 8.864C91.5226 7.968 90.9306 7.568 89.1866 7.216L88.2266 7.024C86.0186 6.608 84.5626 5.632 84.5626 3.568C84.5626 1.68 86.0506 0.351999 88.7866 0.351999C91.9866 0.351999 93.3466 1.856 93.4266 4H91.3306C91.2506 2.784 90.6266 2.096 88.8186 2.096C87.4426 2.096 86.7706 2.64 86.7706 3.504C86.7706 4.416 87.2986 4.832 88.9946 5.184L89.9866 5.376C92.6746 5.904 93.7626 6.944 93.7626 8.752C93.7626 11.008 92.0026 12.256 89.1546 12.256ZM102.952 8.016V8.496H96.7758C96.9198 9.968 97.7518 10.624 98.9198 10.624C99.8798 10.624 100.504 10.176 100.808 9.44H102.744C102.328 11.12 100.888 12.192 98.9038 12.192C96.4718 12.192 94.7918 10.512 94.7918 7.872C94.7918 5.28 96.4238 3.552 98.8718 3.552C101.4 3.552 102.952 5.392 102.952 8.016ZM98.8558 5.12C97.7838 5.12 96.9838 5.728 96.7918 7.088H100.936C100.776 5.92 100.056 5.12 98.8558 5.12ZM111.599 12H109.583C109.455 11.776 109.391 11.392 109.359 10.992C108.815 11.76 107.919 12.192 106.703 12.192C104.943 12.192 103.727 11.312 103.727 9.712C103.727 8.336 104.559 7.36 106.895 7.136L108.143 7.024C108.911 6.928 109.311 6.688 109.311 6.08C109.311 5.44 108.975 5.056 107.807 5.056C106.655 5.056 106.175 5.36 106.095 6.368H104.111C104.223 4.624 105.247 3.552 107.823 3.552C110.287 3.552 111.263 4.544 111.263 6.032V10.432C111.263 11.024 111.375 11.68 111.599 12ZM107.183 10.752C108.255 10.752 109.311 10.176 109.311 8.736V7.984C109.103 8.176 108.799 8.272 108.367 8.32L107.279 8.448C106.159 8.576 105.791 8.976 105.791 9.632C105.791 10.32 106.255 10.752 107.183 10.752ZM117.216 3.616C117.392 3.616 117.536 3.616 117.712 3.648V5.504H117.2C115.712 5.504 114.816 6.24 114.816 7.808V12H112.8V3.744H114.752V5.216C115.152 4.288 115.936 3.616 117.216 3.616ZM122.137 12.192C119.689 12.192 118.057 10.512 118.057 7.872C118.057 5.232 119.673 3.552 122.137 3.552C124.297 3.552 125.737 4.784 125.977 6.72H123.961C123.769 5.696 123.033 5.232 122.137 5.232C120.937 5.232 120.121 6.064 120.121 7.872C120.121 9.68 120.969 10.512 122.137 10.512C123.049 10.512 123.833 10.016 123.993 8.928H126.009C125.785 10.944 124.249 12.192 122.137 12.192ZM131.641 3.552C133.369 3.552 134.537 4.56 134.537 6.528V12H132.521V6.864C132.521 5.808 131.993 5.296 130.969 5.296C130.089 5.296 129.129 5.904 129.129 7.376V12H127.113V0.608H129.129V4.848C129.673 4.096 130.521 3.552 131.641 3.552ZM139.887 12.192C137.439 12.192 135.807 10.512 135.807 7.872C135.807 5.232 137.423 3.552 139.887 3.552C142.047 3.552 143.487 4.784 143.727 6.72H141.711C141.519 5.696 140.783 5.232 139.887 5.232C138.687 5.232 137.871 6.064 137.871 7.872C137.871 9.68 138.719 10.512 139.887 10.512C140.799 10.512 141.583 10.016 141.743 8.928H143.759C143.535 10.944 141.999 12.192 139.887 12.192ZM149.279 3.616C149.455 3.616 149.599 3.616 149.775 3.648V5.504H149.263C147.775 5.504 146.879 6.24 146.879 7.808V12H144.863V3.744H146.815V5.216C147.215 4.288 147.999 3.616 149.279 3.616ZM157.803 12H155.787C155.659 11.776 155.595 11.392 155.563 10.992C155.019 11.76 154.123 12.192 152.907 12.192C151.147 12.192 149.931 11.312 149.931 9.712C149.931 8.336 150.763 7.36 153.099 7.136L154.347 7.024C155.115 6.928 155.515 6.688 155.515 6.08C155.515 5.44 155.179 5.056 154.011 5.056C152.859 5.056 152.379 5.36 152.299 6.368H150.315C150.427 4.624 151.451 3.552 154.027 3.552C156.491 3.552 157.467 4.544 157.467 6.032V10.432C157.467 11.024 157.579 11.68 157.803 12ZM153.387 10.752C154.459 10.752 155.515 10.176 155.515 8.736V7.984C155.307 8.176 155.003 8.272 154.571 8.32L153.483 8.448C152.363 8.576 151.995 8.976 151.995 9.632C151.995 10.32 152.459 10.752 153.387 10.752ZM162.466 2.16C161.746 2.16 161.426 2.512 161.426 3.152V3.744H163.122V5.28H161.426V12H159.426V5.28H158.146V3.744H159.426V3.12C159.426 1.664 160.146 0.559999 162.13 0.559999C162.45 0.559999 162.882 0.575999 163.17 0.608V2.16H162.466ZM168.636 5.28H167.004V9.744C167.004 10.288 167.276 10.464 167.948 10.464H168.636V12C168.268 12.032 167.9 12.064 167.58 12.064C165.836 12.064 165.004 11.472 165.004 9.952V5.28H163.724V3.744H165.004V1.344H167.004V3.744H168.636V5.28Z" fill="currentColor"></path></svg></a></div>
+							<?php endif; ?>
+						</div>
+						<div class="searchcraft-results-container">
+							<searchcraft-search-results></searchcraft-search-results>
+						</div>
+						<div class="searchcraft-pagination-container">
+							<searchcraft-pagination></searchcraft-pagination>
+							<searchcraft-search-results-per-page></searchcraft-search-results-per-page>
+						</div>
+					</div>
+				</div>
+			</div>
+		<?php endif; ?>
+	<?php else : ?>
+		<!-- When not configured, show a simple search input -->
+		<div class="searchcraft-not-configured-search">
+			<searchcraft-input-form placeholder-value="<?php echo esc_attr( $search_placeholder ); ?>"></searchcraft-input-form>
+			<p style="margin: 5px 0 0 0; font-size: 12px; color: #666;">
+				<a href="<?php echo esc_url( admin_url( 'admin.php?page=searchcraft' ) ); ?>">Configure Searchcraft</a> for enhanced search features
+			</p>
+		</div>
+	<?php endif; ?>
+</div>
+

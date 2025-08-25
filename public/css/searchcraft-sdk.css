@@ -1,0 +1,299 @@
+/**
+ * Searchcraft SDK Integration Styles
+ *
+ * Custom styles for Searchcraft JavaScript SDK components
+ * to ensure proper integration with WordPress themes.
+ *
+ * @since 1.0.0
+ */
+
+/* ==========================================================================
+   Searchcraft Component Base Styles
+   ========================================================================== */
+
+/* Ensure all Searchcraft components are properly displayed */
+searchcraft-popover-form,
+searchcraft-input-form,
+searchcraft-search-results,
+searchcraft-pagination,
+searchcraft-theme {
+    display: block;
+    opacity: 1;
+    visibility: visible;
+}
+
+/* ==========================================================================
+   Popover Form Styles
+   ========================================================================== */
+
+searchcraft-popover-form {
+    width: 100%;
+    max-width: 100%;
+}
+
+/* Header integration */
+.site-header searchcraft-popover-form,
+.header searchcraft-popover-form,
+nav searchcraft-popover-form {
+    max-width: 300px;
+    margin-left: auto;
+}
+
+/* Sidebar integration */
+.sidebar searchcraft-popover-form,
+.widget-area searchcraft-popover-form {
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+/* Footer integration */
+.site-footer searchcraft-popover-form,
+.footer searchcraft-popover-form {
+    max-width: 300px;
+}
+
+/* ==========================================================================
+   Search Page Styles
+   ========================================================================== */
+
+
+.searchcraft-search-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.searchcraft-search-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Input form on search page */
+.searchcraft-search-page searchcraft-input-form {
+    margin-bottom: 30px;
+}
+
+/* Search results container */
+.searchcraft-search-page searchcraft-search-results {
+    min-height: 300px;
+    flex: 1;
+}
+
+/* Pagination */
+.searchcraft-search-page searchcraft-pagination {
+    margin-top: 30px;
+    text-align: center;
+}
+
+/* ==========================================================================
+   Search Result Template Styles
+   ========================================================================== */
+
+/* Search result item container */
+.searchcraft-result-item {
+    display: flex;
+    gap: 1rem;
+    width: 100%;
+    text-decoration: none;
+    color: inherit;
+}
+
+.searchcraft-result-item:hover {
+    text-decoration: none;
+}
+
+/* Image container */
+.searchcraft-result-image {
+    aspect-ratio: 4/3;
+    background-color: rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    border-radius: 8px;
+    flex-shrink: 0;
+    max-width: 20%;
+    width: 20%;
+}
+
+.searchcraft-result-image img {
+    height: 100%;
+    object-fit: cover;
+    width: 100%;
+}
+
+/* Content container */
+.searchcraft-result-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    flex-grow: 1;
+}
+
+.searchcraft-result-title {
+    font-weight: bold;
+    line-height: 1.2;
+    margin: 0;
+    font-size: 1.125rem;
+}
+
+.searchcraft-result-excerpt {
+    margin: 0;
+    color: #666;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.searchcraft-result-meta {
+    margin: 0;
+    color: #999;
+    font-size: 0.875rem;
+    font-style: italic;
+}
+
+/* ==========================================================================
+   Theme Integration Styles
+   ========================================================================== */
+
+/* Ensure Searchcraft components inherit theme styles */
+searchcraft-popover-form,
+searchcraft-input-form,
+searchcraft-search-results {
+    color: inherit;
+    font-family: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+    line-height: inherit;
+    letter-spacing: inherit;
+    text-transform: inherit;
+}
+
+/* Force inheritance for input elements within components */
+searchcraft-popover-form input,
+searchcraft-input-form input,
+searchcraft-search-results input {
+    color: inherit;
+    font-family: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+    line-height: inherit;
+    letter-spacing: inherit;
+    text-transform: inherit;
+}
+
+/* Force inheritance for all text elements */
+searchcraft-popover-form *,
+searchcraft-input-form *,
+searchcraft-search-results * {
+    font-family: inherit;
+    color: inherit;
+}
+searchcraft-popover-form {
+    z-index: 100;
+}
+.searchcraft-popover-form-inline-wrapper {
+    z-index: 100;
+}
+
+
+/* ==========================================================================
+   Responsive Design
+   ========================================================================== */
+
+@media (max-width: 768px) {
+    .searchcraft-search-page {
+        padding: 15px;
+    }
+
+    .searchcraft-search-container {
+        gap: 15px;
+    }
+
+    /* Mobile header adjustments */
+    .site-header searchcraft-popover-form,
+    .header searchcraft-popover-form,
+    nav searchcraft-popover-form {
+        max-width: 250px;
+    }
+}
+
+@media (max-width: 480px) {
+    .searchcraft-search-page {
+        padding: 10px;
+    }
+
+    /* Full width on mobile */
+    .site-header searchcraft-popover-form,
+    .header searchcraft-popover-form,
+    nav searchcraft-popover-form {
+        max-width: 100%;
+    }
+}
+
+
+/* ==========================================================================
+   WordPress Theme Compatibility
+   ========================================================================== */
+
+/* Twenty Twenty-Five theme compatibility */
+.wp-block-group searchcraft-popover-form {
+    margin: 0;
+}
+
+/* Twenty Twenty-Four theme compatibility */
+.wp-block-search searchcraft-popover-form {
+    width: 100%;
+}
+
+/* Classic themes compatibility */
+.search-form searchcraft-popover-form,
+.searchform searchcraft-popover-form {
+    width: 100%;
+}
+
+/* Widget compatibility */
+.widget_search searchcraft-popover-form {
+    width: 100%;
+}
+
+/* ==========================================================================
+   Accessibility Improvements
+   ========================================================================== */
+
+/* Ensure focus states are visible */
+searchcraft-popover-form:focus-within,
+searchcraft-input-form:focus-within {
+    outline: 2px solid #0073aa;
+    outline-offset: 2px;
+}
+
+/* Screen reader support */
+.searchcraft-sr-only {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+}
+
+/* ==========================================================================
+   Print Styles
+   ========================================================================== */
+
+@media print {
+    searchcraft-popover-form,
+    searchcraft-input-form,
+    searchcraft-pagination {
+        display: none !important;
+    }
+
+    searchcraft-search-results {
+        box-shadow: none !important;
+        border: none !important;
+    }
+}
