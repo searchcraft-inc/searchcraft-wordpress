@@ -56,7 +56,7 @@ Contact the Searchcraft team on our [Discord server](https://discord.gg/y3zUHkBk
 
 = Where can I find the Searchcraft plugin documentation? =
 
-Documentation for the Searchcraft plugincan be found on our [developer documentation](https://docs.searchcraft.io/).
+Documentation for the Searchcraft plugin can be found on our [developer documentation](https://docs.searchcraft.io/).
 
 = I would like to report a bug or request a feature =
 
