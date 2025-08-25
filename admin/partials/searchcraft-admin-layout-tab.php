@@ -353,6 +353,20 @@ if ( $is_configured ) {
 									</td>
 								</tr>
 								<tr>
+									<th scope="row">
+										<label for="searchcraft_results_container_id">Results Container Element ID</label>
+									</th>
+									<td>
+										<?php
+										$results_container_id = get_option( 'searchcraft_results_container_id', '' );
+										?>
+										<input type="text" name="searchcraft_results_container_id" id="searchcraft_results_container_id" value="<?php echo esc_attr( $results_container_id ); ?>" class="regular-text" placeholder="my-results-container" />
+										<p class="description">
+											If specified, the search results will load as the first element inside of the element that matches this ID. Leave empty to use the default behavior.
+										</p>
+									</td>
+								</tr>
+								<tr>
 									<td>
 										<div class="searchcraft-overview-index-management-buttons">
 											<?php submit_button( 'Save Advanced Settings', 'primary', 'searchcraft_save_advanced_config', false ); ?>

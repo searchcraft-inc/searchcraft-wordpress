@@ -103,17 +103,25 @@ class Searchcraft_Public {
 	 * @since 1.0.0
 	 */
 	public function inject_search_header_script() {
-		// Get the search header template content.
-		$template_path = plugin_dir_path( __FILE__ ) . 'templates/search-header.php';
+		$header_template_path = plugin_dir_path( __FILE__ ) . 'templates/search-header.php';
+		$results_template_path = plugin_dir_path( __FILE__ ) . 'templates/search-results.php';
 
-		if ( file_exists( $template_path ) ) {
-			// Capture the template output.
+		if ( file_exists( $header_template_path ) && file_exists( $results_template_path ) ) {
 			ob_start();
-			include $template_path;
-			$template_content = ob_get_clean();
+			include $header_template_path;
+			$header_template_content = ob_get_clean();
+
+			ob_start();
+			include $results_template_path;
+			$results_template_content = ob_get_clean();
 
 			// Escape the content for JavaScript.
-			$escaped_content = wp_json_encode( $template_content );
+			$escaped_header_content  = wp_json_encode( $header_template_content );
+			$escaped_results_content = wp_json_encode( $results_template_content );
+
+			// Get the results container ID option.
+			$results_container_id = get_option( 'searchcraft_results_container_id', '' );
+			$escaped_container_id = wp_json_encode( $results_container_id );
 
 			// Output JavaScript to inject the template after the first header.
 			echo '<script type="text/javascript">
@@ -122,7 +130,7 @@ class Searchcraft_Public {
 					const searchHeaderDiv = document.createElement("div");
 			';
 			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Content is properly escaped via wp_json_encode() above
-			echo 'searchHeaderDiv.innerHTML = ' . $escaped_content . ';
+			echo 'searchHeaderDiv.innerHTML = ' . $escaped_header_content . ';
 					if (firstHeader) {
 						// Insert after the header element.
 						if (firstHeader.nextSibling) {
@@ -133,6 +141,25 @@ class Searchcraft_Public {
 					} else {
 						// Fallback: if no header found, append to body.
 						document.body.insertBefore(searchHeaderDiv, document.body.firstChild);
+					}
+				';
+
+			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Content is properly escaped via wp_json_encode() above
+			echo 'const resultsContainerId = ' . $escaped_container_id . ';';
+			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Content is properly escaped via wp_json_encode() above
+			echo 'const resultsContent = ' . $escaped_results_content . ';
+					const searchInputContainer = document.querySelector(".searchcraft-input-container");
+					if (resultsContainerId) {
+						const customContainer = document.getElementById(resultsContainerId);
+						if (customContainer) {
+						  console.log("found it");
+							customContainer.insertAdjacentHTML("afterbegin", resultsContent);
+						} else {
+							console.log("did not find it");
+							searchInputContainer.insertAdjacentHTML("afterend", resultsContent);
+						}
+					} else {
+						searchInputContainer.insertAdjacentHTML("afterend", resultsContent);
 					}
 				});
 			</script>';

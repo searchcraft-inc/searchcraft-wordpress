@@ -904,6 +904,15 @@ class Searchcraft_Admin {
 			$updated_settings['result_template'] = true;
 		}
 
+		// Handle results container ID setting.
+		if ( isset( $request['searchcraft_results_container_id'] ) ) {
+			$results_container_id = sanitize_text_field( wp_unslash( $request['searchcraft_results_container_id'] ) );
+
+			$results_container_id = preg_replace( '/[^a-zA-Z0-9_-]/', '', $results_container_id );
+			update_option( 'searchcraft_results_container_id', $results_container_id );
+			$updated_settings['results_container_id'] = true;
+		}
+
 		// Display success message.
 		add_action(
 			'admin_notices',
@@ -916,6 +925,10 @@ class Searchcraft_Admin {
 
 				if ( isset( $updated_settings['result_template'] ) ) {
 					$messages[] = 'Result template callback function updated';
+				}
+
+				if ( isset( $updated_settings['results_container_id'] ) ) {
+					$messages[] = 'Results container element ID updated';
 				}
 
 				if ( ! empty( $messages ) ) {
