@@ -256,6 +256,9 @@ searchcraft-summary-box, .searchcraft-summary-box {
 	margin-bottom: 10px;
 	padding-bottom: 10px;
 }
+.searchcraft-pagination-item {
+	color: #000000;
+}
 /* Hide results container when it contains empty state */
 .searchcraft-full-search-experience:has(.searchcraft-input-form-input:placeholder-shown) .searchcraft-results-container,
 .searchcraft-full-search-experience:has(.searchcraft-input-form-input:placeholder-shown) .searchcraft-pagination-container {
