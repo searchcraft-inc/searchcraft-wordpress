@@ -11,7 +11,7 @@ License URI:  LICENSE.txt
 Bring fast, relevant search to your WordPress site.
 
 == Description ==
-Searchcraft brings fast, relevant search to your WordPress site. You can choose between a near-instant keyword search or a AI post summaries experience that is powered by your own WordPress content.
+Searchcraft brings fast, relevant search to your WordPress site. You can choose between a near-instant keyword search or utilize AI to generate post summaries that are powered by your own WordPress content.
 
 == Features ==
 
@@ -27,10 +27,11 @@ Searchcraft brings fast, relevant search to your WordPress site. You can choose 
 
 == Installation ==
 
-1. Create an account on [Searchcraft Cloud](https://vektron.searchcraft.io/) via the Vektron dashboard and create a new application and index selecting the "WordPress" template.
-2. Activate the plugin in WordPress.
-3. In the Searchcraft settings page and fill in the cluster url, API keys and index name. These may be found on the Vektron code snippets screen.
-4. That's it! Searchcraft will automatically prepare your post content for search.
+1. Create an account on [Searchcraft Cloud](https://vektron.searchcraft.io/) via the Vektron dashboard.
+2. Within Vektron, follow onboarding steps to create a new application and index, selecting the "Wordpress" template on index creation. Copy the provided endpoint url, index name, ingest key and read key values.
+3. Activate the plugin in WordPress.
+4. Within Wordpress navigate to the Searchcraft settings page and fill in the cluster url, API keys and index name.
+5. That's it! Searchcraft will automatically prepare your post content for search.
 
 == Frequently Asked Questions ==
 
@@ -60,6 +61,6 @@ Documentation for the Searchcraft plugin can be found on our [developer document
 
 = I would like to report a bug or request a feature =
 
-If you would like to report an issue or suggest a enhancement you may contact the team on our [issues GitHub repository](https://github.com/searchcraft-inc/searchcraft-issues). We do not provide support on the WordPress.org forums.
+If you would like to report an issue or suggest an enhancement you may contact the team on our [issues GitHub repository](https://github.com/searchcraft-inc/searchcraft-issues). We do not provide support on the WordPress.org forums.
 
 Searchcraft Cloud customers may also reach out via our Discord server for assistance or to request a custom feature.
