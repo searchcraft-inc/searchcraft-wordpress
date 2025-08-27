@@ -61,10 +61,10 @@ if ( $is_configured ) {
 									value="reindex_all_documents"
 								/>
 								<div class="searchcraft-button-with-spinner">
-									<?php submit_button( 'Re-Index All Documents', 'primary', 'searchcraft_reindex_all_documents', false, array( 'id' => 'searchcraft-reindex-button' ) ); ?>
+									<?php submit_button( 'Manually Re-Sync All Documents', 'primary', 'searchcraft_reindex_all_documents', false, array( 'id' => 'searchcraft-reindex-button' ) ); ?>
 									<span class="searchcraft-spinner" id="searchcraft-reindex-spinner" style="display: none;">
 										<span class="spinner is-active"></span>
-										<span class="searchcraft-spinner-text">Re-indexing documents...</span>
+										<span class="searchcraft-spinner-text">Syncing documents...</span>
 									</span>
 								</div>
 							</form>
