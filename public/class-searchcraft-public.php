@@ -107,6 +107,7 @@ class Searchcraft_Public {
 		$results_template_path = plugin_dir_path( __FILE__ ) . 'templates/search-results.php';
 
 		if ( file_exists( $header_template_path ) && file_exists( $results_template_path ) ) {
+			$search_experience = get_option( 'searchcraft_search_experience', 'full' );
 			ob_start();
 			include $header_template_path;
 			$header_template_content = ob_get_clean();
@@ -122,47 +123,93 @@ class Searchcraft_Public {
 			// Get the results container ID option.
 			$results_container_id = get_option( 'searchcraft_results_container_id', '' );
 			$escaped_container_id = wp_json_encode( $results_container_id );
+			// Popover options.
+			$popover_container_id         = get_option( 'searchcraft_popover_container_id', '' );
+			$escaped_popover_container_id = wp_json_encode( $popover_container_id );
+			$popover_insert_behavior      = get_option( 'searchcraft_popover_element_behavior', 'replace' );
 
-			// Output JavaScript to inject the template after the first header.
-			echo '<script type="text/javascript">
-				document.addEventListener("DOMContentLoaded", function() {
-					const firstHeader = document.querySelector("header") || document.querySelector(`[id="header"]`);
-					const searchHeaderDiv = document.createElement("div");
-			';
-			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Content is properly escaped via wp_json_encode() above
-			echo 'searchHeaderDiv.innerHTML = ' . $escaped_header_content . ';
-					if (firstHeader) {
-						// Insert after the header element.
-						if (firstHeader.nextSibling) {
-							firstHeader.parentNode.insertBefore(searchHeaderDiv, firstHeader.nextSibling);
-						} else {
-							firstHeader.parentNode.appendChild(searchHeaderDiv);
-						}
-					} else {
-						// Fallback: if no header found, append to body.
-						document.body.insertBefore(searchHeaderDiv, document.body.firstChild);
-					}
+			if ( 'full' === $search_experience || ( 'popover' === $search_experience && empty( $popover_container_id ) ) ) {
+				// Output JavaScript to inject the template after the first header.
+				echo '<script type="text/javascript">
+					document.addEventListener("DOMContentLoaded", function() {
+						const firstHeader = document.querySelector("header") || document.querySelector(`[id="header"]`);
+						const searchHeaderDiv = document.createElement("div");
 				';
-
-			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Content is properly escaped via wp_json_encode() above
-			echo 'const resultsContainerId = ' . $escaped_container_id . ';';
-			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Content is properly escaped via wp_json_encode() above
-			echo 'const resultsContent = ' . $escaped_results_content . ';
-					const searchInputContainer = document.querySelector(".searchcraft-input-container");
-					if (resultsContainerId) {
-						const customContainer = document.getElementById(resultsContainerId);
-						if (customContainer) {
-						  console.log("found it");
-							customContainer.insertAdjacentHTML("afterbegin", resultsContent);
+				// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Content is properly escaped via wp_json_encode() above
+				echo 'searchHeaderDiv.innerHTML = ' . $escaped_header_content . ';
+						if (firstHeader) {
+							// Insert after the header element.
+							if (firstHeader.nextSibling) {
+								firstHeader.parentNode.insertBefore(searchHeaderDiv, firstHeader.nextSibling);
+							} else {
+								firstHeader.parentNode.appendChild(searchHeaderDiv);
+							}
 						} else {
-							console.log("did not find it");
-							searchInputContainer.insertAdjacentHTML("afterend", resultsContent);
+							// Fallback: if no header found, append to body.
+							document.body.insertBefore(searchHeaderDiv, document.body.firstChild);
 						}
-					} else {
-						searchInputContainer.insertAdjacentHTML("afterend", resultsContent);
-					}
-				});
-			</script>';
+					});
+					</script>';
+				if ( 'full' === $search_experience ) {
+					echo '<script type="text/javascript">
+								document.addEventListener("DOMContentLoaded", function() {
+					';
+					// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Content is properly escaped via wp_json_encode() above
+					echo 'const resultsContainerId = ' . $escaped_container_id . ';';
+					// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Content is properly escaped via wp_json_encode() above
+					echo 'const resultsContent = ' . $escaped_results_content . ';
+							const searchInputContainer = document.querySelector(".searchcraft-input-container");
+							if (resultsContainerId) {
+								const customContainer = document.getElementById(resultsContainerId);
+								if (customContainer) {
+									customContainer.insertAdjacentHTML("afterbegin", resultsContent);
+								} else {
+									searchInputContainer.insertAdjacentHTML("afterend", resultsContent);
+								}
+							} else {
+								searchInputContainer.insertAdjacentHTML("afterend", resultsContent);
+							}
+						});
+					</script>';
+				}
+			} else {
+				// Popover injection. "Default behavior" is handled already above, this logic is for if the WP user choose a place for the popover to appear.
+				echo '<script type="text/javascript">
+							document.addEventListener("DOMContentLoaded", function() {
+				';
+				// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Content is properly escaped via wp_json_encode() above
+				echo 'const popoverContainerId = ' . $escaped_popover_container_id . ';
+				';
+				// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Content is pre-selected, no user input
+				echo 'const popoverInsertBehavior = "' . $popover_insert_behavior . '";
+				';
+				// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Content is properly escaped via wp_json_encode() above
+				echo 'const popoverContent = ' . $escaped_header_content . ';
+						const searchInputContainer = document.querySelector(".searchcraft-input-container");
+						if (popoverContainerId) {
+							const customPopoverContainerById = document.getElementById(popoverContainerId);
+							//const customPopoverContainerByClass = document.querySelector(`[class="${popoverContainerId}"]`);
+							const customPopoverContainerByClass = document.querySelector(`[class="${popoverContainerId}"]`);
+							let targetElement = null;
+							if (customPopoverContainerById) {
+								targetElement = customPopoverContainerById;
+							}
+							if (!customPopoverContainerById && customPopoverContainerByClass) {
+								targetElement = customPopoverContainerByClass;
+							}
+							if (targetElement) {
+								if ("replace" === popoverInsertBehavior) {
+									targetElement.innerHTML = popoverContent;
+								} else {
+									targetElement.insertAdjacentHTML("afterbegin", popoverContent);
+								}
+							} else {
+								console.log("Searchcraft: unable to find popover container element.");
+							}
+						}
+					});
+				</script>';
+			}
 		}
 	}
 

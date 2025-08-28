@@ -687,6 +687,22 @@ class Searchcraft_Admin {
 			}
 		}
 
+		// Handle input width.
+		if ( isset( $request['searchcraft_input_width'] ) ) {
+			$input_width = intval( $request['searchcraft_input_width'] );
+
+			// Validate range (1-100%).
+			if ( $input_width < 1 ) {
+				$input_width = 1;
+			} elseif ( $input_width > 100 ) {
+				$input_width = 100;
+			}
+
+			// Save the setting.
+			update_option( 'searchcraft_input_width', $input_width );
+			$updated_settings['input_width'] = $input_width;
+		}
+
 		// Show success message.
 		add_action(
 			'admin_notices',
@@ -716,6 +732,10 @@ class Searchcraft_Admin {
 
 				if ( isset( $updated_settings['border_radius'] ) ) {
 					$messages[] = 'Input border radius: ' . esc_html( $updated_settings['border_radius'] );
+				}
+
+				if ( isset( $updated_settings['input_width'] ) ) {
+					$messages[] = 'Input width: ' . esc_html( $updated_settings['input_width'] ) . '%';
 				}
 
 				if ( ! empty( $messages ) ) {
@@ -913,6 +933,29 @@ class Searchcraft_Admin {
 			$updated_settings['results_container_id'] = true;
 		}
 
+		// Handle popover container ID setting.
+		if ( isset( $request['searchcraft_popover_container_id'] ) ) {
+			$popover_container_id = sanitize_text_field( wp_unslash( $request['searchcraft_popover_container_id'] ) );
+
+			$popover_container_id = preg_replace( '/[^a-zA-Z0-9_-]/', '', $popover_container_id );
+			update_option( 'searchcraft_popover_container_id', $popover_container_id );
+			$updated_settings['popover_container_id'] = true;
+		}
+
+		// Handle popover element behavior setting.
+		if ( isset( $request['searchcraft_popover_element_behavior'] ) ) {
+			$popover_element_behavior = sanitize_text_field( wp_unslash( $request['searchcraft_popover_element_behavior'] ) );
+
+			// Validate the behavior value.
+			$valid_behaviors = array( 'replace', 'insert' );
+			if ( ! in_array( $popover_element_behavior, $valid_behaviors, true ) ) {
+				$popover_element_behavior = 'replace';
+			}
+
+			update_option( 'searchcraft_popover_element_behavior', $popover_element_behavior );
+			$updated_settings['popover_element_behavior'] = true;
+		}
+
 		// Display success message.
 		add_action(
 			'admin_notices',
@@ -929,6 +972,10 @@ class Searchcraft_Admin {
 
 				if ( isset( $updated_settings['results_container_id'] ) ) {
 					$messages[] = 'Results container element ID updated';
+				}
+
+				if ( isset( $updated_settings['popover_container_id'] ) ) {
+					$messages[] = 'Popover container element ID updated';
 				}
 
 				if ( ! empty( $messages ) ) {

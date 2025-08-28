@@ -27,29 +27,36 @@ require_once 'common-template-values.php';
 	--sc-color-brand: <?php echo esc_attr( $searchcraft_brand_color ); ?>;
 	--sc-input-form-border-radius: <?php echo esc_attr( $searchcraft_input_border_radius ); ?>px;
 }
+
 .searchcraft-input-form-input {
-	border-radius: var(--sc-input-form-border-radius) !important;
 	padding: 12px 44px !important;
 }
+
+.searchcraft-full-search-experience .searchcraft-input-form-input {
+	border-radius: var(--sc-input-form-border-radius) !important;
+}
+
 .searchcraft-header-container {
 	width: 100%;
 }
+
 .searchcraft-input-container {
 	padding-bottom: 20px;
 }
 
-.searchcraft-popover-trigger {
-	max-width: 1200px;
+.searchcraft-popover-container {
+	max-width: var(--wp--style--global--wide-size, 1200px);
+	min-width: 260px;
 	margin: 0 auto;
-	padding: 0 20px;
-	text-align: right;
+	width: <?php echo esc_attr( $searchcraft_input_width ); ?>%;
 }
 
 .searchcraft-full-search-experience {
-	max-width: 1200px;
+	max-width: var(--wp--style--global--wide-size, 1200px);
 	margin: 0 auto;
 	padding: <?php echo esc_attr( $input_vertical_padding ); ?>px <?php echo esc_attr( $input_horizontal_padding ); ?>px;
 }
+
 .searchcraft-toggle-button-label {
 	font-weight: bold;
 }
@@ -81,47 +88,15 @@ require_once 'common-template-values.php';
 .searchcraft-result-item {
 	margin-bottom: 16px;
 }
-/* Mobile styles */
-@media (max-width: 768px) {
-	.searchcraft-main-content {
-		flex-direction: column;
-	}
-
-	#searchcraft-filter-panel-container {
-		flex: none;
-		width: 100%;
-		order: 1; /* Above summary on mobile */
-	}
-
-	.searchcraft-results-content {
-		order: 2; /* Below filter panel on mobile */
-	}
-}
-
 
 /* Not configured state */
 .searchcraft-not-configured-search {
-	max-width: 1200px;
+	max-width: var(--wp--style--global--wide-size, 1200px);
 	margin: 0 auto;
 	padding: 0 20px;
 	text-align: center;
 }
 
-@media (max-width: 768px) {
-	.searchcraft-header-container {
-		padding: 15px 0;
-	}
-
-	.searchcraft-full-search-experience,
-	.searchcraft-popover-trigger,
-	.searchcraft-not-configured-search {
-		padding: 0 15px;
-	}
-
-	.searchcraft-popover-trigger {
-		text-align: center;
-	}
-}
 .searchcraft-summary-container {
 	background-color: <?php echo esc_attr( $searchcraft_summary_background_color ); ?>;
 	border: 1px solid <?php echo esc_attr( $searchcraft_summary_border_color ); ?>;
@@ -187,6 +162,39 @@ require_once 'common-template-values.php';
 	gap: 4px;
 	padding-bottom: 10px;
 	padding-top: 20px;
+}
+
+/* Mobile styles */
+@media (max-width: 768px) {
+	.searchcraft-main-content {
+		flex-direction: column;
+	}
+
+	#searchcraft-filter-panel-container {
+		flex: none;
+		width: 100%;
+		order: 1; /* Above summary on mobile */
+	}
+
+	.searchcraft-results-content {
+		order: 2; /* Below filter panel on mobile */
+	}
+	body:has(#wpadminbar) .searchcraft-popover-form-modal {
+		margin-top: 44px;
+	}
+	.searchcraft-header-container {
+		padding: 15px 0;
+	}
+
+	.searchcraft-full-search-experience,
+	.searchcraft-popover-container,
+	.searchcraft-not-configured-search {
+		padding: 0 15px;
+	}
+
+	.searchcraft-popover-container {
+		/*text-align: center;*/
+	}
 }
 
 @media (min-width: 1024px) {
@@ -292,8 +300,9 @@ if ( ! empty( $custom_css ) ) {
 <div class="searchcraft-header-container">
 	<?php if ( $is_configured ) : ?>
 		<?php if ( 'popover' === $search_experience ) : ?>
-			<div class="searchcraft-popover-trigger">
-				<searchcraft-popover-form></searchcraft-popover-form>
+			<div class="searchcraft-popover-container">
+				<searchcraft-popover-button type="skeuomorphic"></searchcraft-popover-button>
+				<searchcraft-popover-form type="modal" placeholder-value="<?php echo esc_attr( $search_placeholder ); ?>"></searchcraft-popover-form>
 			</div>
 		<?php else : ?>
 			<div class="searchcraft-full-search-experience">

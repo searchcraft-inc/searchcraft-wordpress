@@ -29,3 +29,4 @@ $searchcraft_input_border_radius      = get_option( 'searchcraft_input_border_ra
 $search_experience                    = get_option( 'searchcraft_search_experience', 'full' );
 $search_placeholder                   = get_option( 'searchcraft_search_placeholder', 'Search...' );
 $searchcraft_include_filter_panel     = get_option( 'searchcraft_include_filter_panel', false );
+$searchcraft_input_width              = get_option( 'searchcraft_input_width', '100' );

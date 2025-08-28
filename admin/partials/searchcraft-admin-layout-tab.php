@@ -70,7 +70,7 @@ if ( $is_configured ) {
 								</p>
 							</td>
 						</tr>
-						<tr>
+						<tr class="searchcraft-full-only">
 							<th scope="row">
 								<label for="searchcraft_search_placeholder">Search Placeholder Text</label>
 							</th>
@@ -84,7 +84,7 @@ if ( $is_configured ) {
 								</p>
 							</td>
 						</tr>
-						<tr>
+						<tr class="searchcraft-full-only">
 							<th scope="row">
 								<label for="searchcraft_input_padding">Input Component Horizontal Padding</label>
 							</th>
@@ -99,7 +99,7 @@ if ( $is_configured ) {
 								</p>
 							</td>
 						</tr>
-						<tr>
+						<tr class="searchcraft-full-only">
 							<th scope="row">
 								<label for="searchcraft_input_vertical_padding">Input Component Vertical Padding</label>
 							</th>
@@ -114,7 +114,7 @@ if ( $is_configured ) {
 								</p>
 							</td>
 						</tr>
-						<tr>
+						<tr class="searchcraft-full-only">
 							<th scope="row">
 								<label for="searchcraft_input_border_radius">Input Border Radius</label>
 							</th>
@@ -126,6 +126,21 @@ if ( $is_configured ) {
 								<span>px</span>
 								<p class="description">
 									The border radius for the search input field (0-1000px). Leave empty for default styling.
+								</p>
+							</td>
+						</tr>
+						<tr class="searchcraft-popover-only">
+							<th scope="row">
+								<label for="searchcraft_input_width">Input Width</label>
+							</th>
+							<td>
+								<?php
+								$input_width = get_option( 'searchcraft_input_width', '100' );
+								?>
+								<input type="number" name="searchcraft_input_width" id="searchcraft_input_width" value="<?php echo esc_attr( $input_width ); ?>" class="small-text" min="1" max="100" />
+								<span>%</span>
+								<p class="description">
+									The width of the search input field as a percentage (1-100%).
 								</p>
 							</td>
 						</tr>
@@ -352,7 +367,45 @@ if ( $is_configured ) {
 										</p>
 									</td>
 								</tr>
-								<tr>
+								<tr class="searchcraft-popover-only">
+									<th scope="row">
+										<label for="searchcraft_popover_container_id">Popover Container Element ID</label>
+									</th>
+									<td>
+										<?php
+										$popover_container_id = get_option( 'searchcraft_popover_container_id', '' );
+										?>
+										<input type="text" name="searchcraft_popover_container_id" id="searchcraft_popover_container_id" value="<?php echo esc_attr( $popover_container_id ); ?>" class="regular-text" />
+										<p class="description">
+											The identifier of the HTML element where popover trigger should reside. Can either be an <a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/id" target="_blank">ID</a> or a <a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/classList" target="_blank">class</a>. If a class is used, the first element with this class will be used. Leave empty to use the default behavior.
+										</p>
+									</td>
+								</tr>
+								<tr class="searchcraft-popover-only">
+									<th scope="row">
+										<label for="searchcraft_popover_element_behavior">Popover Element Behavior</label>
+									</th>
+									<td>
+										<?php
+										$popover_element_behavior = get_option( 'searchcraft_popover_element_behavior', 'replace' );
+										?>
+										<fieldset>
+											<label>
+												<input type="radio" name="searchcraft_popover_element_behavior" value="replace" <?php checked( $popover_element_behavior, 'replace' ); ?> />
+												Replace
+											</label>
+											<br>
+											<label>
+												<input type="radio" name="searchcraft_popover_element_behavior" value="insert" <?php checked( $popover_element_behavior, 'insert' ); ?> />
+												Insert
+											</label>
+										</fieldset>
+										<p class="description">
+											When a custom element ID is chosen, choose whether to replace the contents of this element or insert next to other elements in this container.
+										</p>
+									</td>
+								</tr>
+								<tr class="searchcraft-full-only">
 									<th scope="row">
 										<label for="searchcraft_results_container_id">Results Container Element ID</label>
 									</th>
@@ -362,7 +415,7 @@ if ( $is_configured ) {
 										?>
 										<input type="text" name="searchcraft_results_container_id" id="searchcraft_results_container_id" value="<?php echo esc_attr( $results_container_id ); ?>" class="regular-text" placeholder="my-results-container" />
 										<p class="description">
-											If specified, the search results will load as the first element inside of the element that matches this ID. Leave empty to use the default behavior.
+											If specified, the search results will load as the first element inside of the HTML element that matches this <a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/id" target="_blank">ID</a>. Leave empty to use the default behavior.
 										</p>
 									</td>
 								</tr>
@@ -381,4 +434,59 @@ if ( $is_configured ) {
 		</div>
 	<?php endif; ?>
 </div>
+
+<style>
+.searchcraft-full-only,
+.searchcraft-popover-only {
+	transition: opacity 0.3s ease;
+}
+
+.searchcraft-full-only.hidden,
+.searchcraft-popover-only.hidden {
+	display: none;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+	const fullRadio = document.querySelector('input[name="searchcraft_search_experience"][value="full"]');
+	const popoverRadio = document.querySelector('input[name="searchcraft_search_experience"][value="popover"]');
+	const fullOnlyRows = document.querySelectorAll('.searchcraft-full-only');
+	const popoverOnlyRows = document.querySelectorAll('.searchcraft-popover-only');
+
+	function toggleFormFields() {
+		const isFullSelected = fullRadio && fullRadio.checked;
+
+		// Show/hide full experience fields
+		fullOnlyRows.forEach(function(row) {
+			if (isFullSelected) {
+				row.classList.remove('hidden');
+			} else {
+				row.classList.add('hidden');
+			}
+		});
+
+		// Show/hide popover fields
+		popoverOnlyRows.forEach(function(row) {
+			if (!isFullSelected) {
+				row.classList.remove('hidden');
+			} else {
+				row.classList.add('hidden');
+			}
+		});
+	}
+
+	// Initial state
+	toggleFormFields();
+
+	// Add event listeners
+	if (fullRadio) {
+		fullRadio.addEventListener('change', toggleFormFields);
+	}
+	if (popoverRadio) {
+		popoverRadio.addEventListener('change', toggleFormFields);
+	}
+});
+</script>
+
 <?php
