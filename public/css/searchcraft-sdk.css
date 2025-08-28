@@ -22,6 +22,11 @@ searchcraft-theme {
     visibility: visible;
 }
 
+searchcraft-popover-form,
+searchcraft-input-form {
+    outline: none !important;
+}
+
 /* ==========================================================================
    Popover Form Styles
    ========================================================================== */
