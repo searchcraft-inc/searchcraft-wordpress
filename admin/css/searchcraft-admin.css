@@ -1,0 +1,1003 @@
+/**
+ * All of the CSS for your admin-specific functionality should be
+ * included in this file.
+ */
+
+/* ======== General ======== */
+:root {
+	/**
+	 * Admin colors taken from here:
+	 * https://wp.me/p2AvED-mKm
+	 *
+	 * '--scwp' prefix to avoid collision with SDK
+	 */
+	--scwp-black: #000;
+	--scwp-white: #fff;
+
+	/* Gray */
+	--scwp-gray-0: #f6f7f7;
+	--scwp-gray-2: #f0f0f1;
+	--scwp-gray-5: #dcdcde;
+	--scwp-gray-10: #c3c4c7;
+	--scwp-gray-20: #a7aaad;
+	--scwp-gray-30: #8c8f94;
+	--scwp-gray-40: #787c82;
+	--scwp-gray-50: #646970;
+	--scwp-gray-60: #50575e;
+	--scwp-gray-70: #3c434a;
+	--scwp-gray-80: #2c3338;
+	--scwp-gray-90: #1d2327;
+	--scwp-gray-100: #101517;
+
+	/* Blue */
+	--scwp-blue-0: #f0f6fc;
+	--scwp-blue-5: #c5d9ed;
+	--scwp-blue-10: #9ec2e6;
+	--scwp-blue-20: #72aee6;
+	--scwp-blue-30: #4f94d4;
+	--scwp-blue-40: #3582c4;
+	--scwp-blue-50: #2271b1;
+	--scwp-blue-60: #135e96;
+	--scwp-blue-70: #0a4b78;
+	--scwp-blue-80: #043959;
+	--scwp-blue-90: #01263a;
+	--scwp-blue-100: #00131c;
+
+	/* Red */
+	--scwp-red-0: #fcf0f1;
+	--scwp-red-5: #facfd2;
+	--scwp-red-10: #ffabaf;
+	--scwp-red-20: #ff8085;
+	--scwp-red-30: #f86368;
+	--scwp-red-40: #e65054;
+	--scwp-red-50: #d63638;
+	--scwp-red-60: #b32d2e;
+	--scwp-red-70: #8a2424;
+	--scwp-red-80: #691c1c;
+	--scwp-red-90: #451313;
+	--scwp-red-100: #240a0a;
+
+	/* Yellow */
+	--scwp-yellow-0: #fcf9e8;
+	--scwp-yellow-5: #f5e6ab;
+	--scwp-yellow-10: #f2d675;
+	--scwp-yellow-20: #f0c33c;
+	--scwp-yellow-30: #dba617;
+	--scwp-yellow-40: #bd8600;
+	--scwp-yellow-50: #996800;
+	--scwp-yellow-60: #755100;
+	--scwp-yellow-70: #614200;
+	--scwp-yellow-80: #4a3200;
+	--scwp-yellow-90: #362400;
+	--scwp-yellow-100: #211600;
+
+	/* Green */
+	--scwp-green-0: #edfaef;
+	--scwp-green-5: #b8e6bf;
+	--scwp-green-10: #68de7c;
+	--scwp-green-20: #1ed14b;
+	--scwp-green-30: #00ba37;
+	--scwp-green-40: #00a32a;
+	--scwp-green-50: #008a20;
+	--scwp-green-60: #007017;
+	--scwp-green-70: #005c12;
+	--scwp-green-80: #00450c;
+	--scwp-green-90: #003008;
+	--scwp-green-100: #001c05;
+
+	/* Border radius */
+	--scwp-rounded-sm: 4px;
+	--scwp-rounded-md: 6px;
+	--scwp-rounded-lg: 8px;
+}
+
+/* Section heading */
+
+.searchcraft-section-heading {
+	margin: 1rem 0 0;
+}
+
+/* Submit button */
+.searchcraft .submit {
+	padding: 0;
+	margin: 0;
+}
+
+.searchcraft-form > .submit {
+	margin-top: 1rem;
+}
+
+/* Label */
+.searchcraft-label {
+	font-weight: 700;
+}
+
+.searchcraft-sidebar-label {
+	font-size: 0.6875rem;
+	font-weight: 500;
+	text-transform: uppercase;
+}
+
+.searchcraft-caption,
+.form-table td p.searchcraft-caption {
+	color: var(--scwp-gray-30);
+	font-size: 0.8125rem;
+	margin: -0.25rem 0 0.25rem;
+}
+
+/* Text input */
+.searchcraft-input {
+	width: 100%;
+}
+
+.searchcraft-input,
+input[type="text"].searchcraft-text-input,
+input[type="email"].searchcraft-email-input,
+input[type="number"].searchcraft-number-input,
+input[type="checkbox"].searchcraft-checkbox-input,
+.searchcraft-textarea,
+select.searchcraft-select {
+	border-color: var(--scwp-gray-10);
+	border-radius: var(--scwp-rounded-md);
+}
+
+.searchcraft-input:focus,
+input[type="text"].searchcraft-text-input:focus,
+input[type="checkbox"].searchcraft-checkbox-input:focus,
+.searchcraft-textarea:focus,
+select.searchcraft-select:focus {
+	box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+	border-color: var(--scwp-blue-50);
+}
+
+.searchcraft-text-input-wrapper,
+.searchcraft-email-input-wrapper,
+.searchcraft-select-wrapper {
+	display: flex;
+	flex-direction: column;
+	gap: 0.25rem;
+}
+
+/* Password input */
+.searchcraft-password-input-wrapper {
+	display: flex;
+	gap: 0.5rem;
+	position: relative;
+}
+
+.searchcraft-password-input-wrapper button.searchcraft-button,
+.searchcraft-password-input-wrapper button.searchcraft-button:active,
+.searchcraft-password-input-wrapper button.searchcraft-button:focus,
+.searchcraft-password-input-wrapper button.button.searchcraft-button:hover {
+	background: none;
+	border: none;
+	box-shadow: none;
+	outline: none;
+}
+
+.searchcraft-password-input-wrapper button.searchcraft-button {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	position: absolute;
+	right: 0;
+	top: 50%;
+	transform: translateY(-50%);
+}
+
+/* Checkbox input */
+.searchcraft-checkbox-input-wrapper {
+	align-items: center;
+	display: flex;
+	gap: 1rem;
+	width: 100%;
+}
+
+input[type="checkbox"].searchcraft-checkbox-input {
+	border-radius: var(--scwp-rounded-sm);
+	margin: 0;
+}
+
+.searchcraft-checkbox-input:checked::before {
+	margin-left: -0.275rem;
+}
+
+.searchcraft-indeterminate-checkbox-input:indeterminate::before {
+	content: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2020%2020%22%3E%3Cpath%20d%3D%22M3%2C8.5h14v3H3v-3Z%22%20fill%3D%22%233582c4%22%2F%3E%3C%2Fsvg%3E");
+	height: 1.3125rem;
+	margin-top: -0.1875rem;
+	width: 1.3125rem;
+}
+
+/* Switch input */
+.searchcraft-switch-input-wrapper {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+}
+
+.searchcraft-switch-input {
+	display: none !important;
+}
+
+.searchcraft-switch-input + div {
+	background: var(--scwp-gray-5);
+	border: none;
+	border-radius: 9999px;
+	cursor: pointer;
+	height: 1.5rem;
+	position: relative;
+	width: 2.625rem;
+}
+
+.searchcraft-switch-input:checked + div,
+.searchcraft-switch-input:indeterminate + div {
+	background: var(--scwp-blue-40);
+}
+
+.searchcraft-switch-input:checked + div:hover,
+.searchcraft-switch-input:indeterminate + div:hover {
+	background: var(--scwp-blue-50);
+}
+
+.searchcraft-switch-input + div:hover {
+	background: var(--scwp-gray-10);
+}
+
+.searchcraft-switch-input + div::before {
+	background: var(--scwp-white);
+	border-radius: 9999px;
+	bottom: 2px;
+	content: "";
+	left: 2px;
+	position: absolute;
+	width: 1.25rem;
+	top: 2px;
+}
+
+.searchcraft-switch-input:checked + div::before {
+	left: auto;
+	right: 2px;
+}
+
+.searchcraft-switch-input:indeterminate + div::before {
+	left: 50%;
+	right: auto;
+	transform: translateX(-50%);
+}
+
+/* Range slider */
+.searchcraft-range-slider-input-wrapper {
+	align-items: center;
+	display: flex;
+	gap: 0.5rem;
+}
+
+.searchcraft-range-slider-input-wrapper .searchcraft-number-input {
+	max-width: 5rem;
+}
+
+input[type="range"].searchcraft-range-slider-input {
+	-webkit-appearance: none;
+	appearance: none;
+	background: transparent;
+	cursor: pointer;
+	width: 100%;
+}
+
+input[type="range"].searchcraft-range-slider-input:focus {
+	outline: none;
+}
+
+/* Chrome, Safari, Opera and Edge Chromium styles */
+input[type="range"]::-webkit-slider-runnable-track {
+	background: var(--scwp-gray-5);
+	border-radius: 9999px;
+	height: 3.5px;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+	-webkit-appearance: none; /* Override default look */
+	appearance: none;
+	margin-top: -4.5px; /* Centers thumb on the track */
+	background: var(--scwp-blue-40);
+	border-radius: 9999px;
+	height: 0.75rem;
+	width: 0.75rem;
+}
+
+input[type="range"]:focus::-webkit-slider-thumb {
+	box-shadow: 0 0 0 2px var(--scwp-blue-20);
+}
+
+/* Firefox styles */
+input[type="range"]::-moz-range-track {
+	background: var(--scwp-gray-10);
+	border-radius: 9999px;
+	height: 3.5px;
+}
+
+input[type="range"]::-moz-range-thumb {
+	background: var(--scwp-blue-40);
+	border: none; /* Removes extra border that FF applies */
+	border-radius: 9999px;
+	height: 0.75rem;
+	width: 0.75rem;
+}
+
+input[type="range"]:focus::-moz-range-thumb {
+	box-shadow: 0 0 0 2px var(--scwp-blue-20);
+}
+
+/* Select */
+select.searchcraft-select {
+	max-width: none;
+}
+
+/* Textarea */
+.searchcraft-textarea-wrapper {
+	position: relative;
+}
+
+.searchcraft-textarea-wrapper button {
+	position: absolute;
+	right: 0.5rem;
+	top: 0.5rem;
+}
+
+.searchcraft-textarea {
+	min-height: 5rem;
+	width: 100%;
+}
+
+/* Table */
+th,
+.form-table th,
+td,
+.form-table td {
+	padding: 1rem;
+}
+
+thead,
+.form-table thead {
+	border-bottom: 1px solid var(--scwp-gray-10);
+}
+
+.searchcraft form + form .form-table {
+	margin: 0;
+}
+
+/* Tooltip */
+.searchcraft-tooltip {
+	background: var(--scwp-gray-100);
+	border-radius: var(--scwp-rounded-sm);
+	bottom: 100%;
+	color: var(--scwp-white);
+	display: none;
+	left: 50%;
+	margin-bottom: 0.625rem;
+	padding: 0.125rem 0.5rem;
+	position: absolute;
+	transform: translateX(-50%);
+	white-space: nowrap;
+	z-index: 1000;
+}
+
+.searchcraft-tooltip::before {
+	border-left: 5px solid transparent;
+	border-right: 5px solid transparent;
+	border-top: 5px solid var(--scwp-gray-100);
+	content: "";
+	height: 0;
+	left: 50%;
+	position: absolute;
+	top: 100%;
+	transform: translateX(-50%);
+	width: 0;
+}
+
+*:has(> .searchcraft-tooltip) {
+	position: relative;
+}
+
+/* Top bar */
+.searchcraft-top-bar {
+	background: var(--scwp-gray-100);
+	padding: 0.75rem 1.25rem;
+	margin-bottom: 1rem;
+	margin-left: -1.25rem;
+}
+
+.searchcraft-top-bar h1 {
+	align-items: center;
+	color: var(--scwp-white);
+	display: flex;
+	gap: 0.5rem;
+	margin: 0;
+}
+
+.searchcraft-top-bar h1::before {
+	content: url("data:image/svg+xml;utf8,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22UTF-8%22%3F%3E%0A%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2020%2020%22%20fill%3D%22none%22%3E%0A%20%20%3Cpath%20d%3D%22M15.42%2C4.71c2.95%2C2.95%2C2.95%2C7.73%2C0%2C10.68-2.34%2C2.34-5.83%2C2.83-8.64%2C1.44l5.02-5.02c.48-.48.72-1.12.72-1.74s-.24-1.26-.72-1.74c-.96-.96-2.52-.96-3.48%2C0l-5.02%2C5.02c-1.39-2.81-.9-6.3%2C1.44-8.64%2C2.95-2.95%2C7.73-2.95%2C10.68%2C0Z%22%20fill%3D%22white%22%2F%3E%0A%20%20%3Cpath%20d%3D%22M4.74%2C15.39c.61.61%2C1.29%2C1.1%2C2.04%2C1.44l-2.11%2C2.11c-.96.96-2.52.96-3.48%2C0-.48-.48-.72-1.12-.72-1.74s.24-1.26.72-1.74l2.11-2.11c.35.74.83%2C1.43%2C1.44%2C2.04Z%22%20fill%3D%22white%22%2F%3E%0A%3C%2Fsvg%3E");
+	display: block;
+	height: 2.5rem;
+	width: 2.5rem;
+}
+
+/* ======== Index ======== */
+.searchcraft-schema-list {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+	margin: 1rem 0 0;
+	width: 100%;
+}
+
+.searchcraft-schema-list-item {
+	align-items: center;
+	background: var(--scwp-white);
+	border: 1px solid var(--scwp-gray-10);
+	box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: space-between;
+	margin: 0;
+}
+
+.searchcraft-schema-list-item > .searchcraft-checkbox-input-wrapper {
+	align-items: center;
+	flex-direction: row;
+	justify-content: space-between;
+	padding: 1rem;
+	width: 100%;
+}
+
+.searchcraft-schema-table {
+	border-top: 1px solid var(--scwp-gray-10);
+	width: 100%;
+}
+
+.searchcraft-schema-table td {
+	width: 15%;
+}
+
+.searchcraft-schema-table td:last-child {
+	width: 100%;
+}
+
+.searchcraft-schema-table .searchcraft-label {
+	font-weight: 400;
+}
+
+/* ======== Facets ======== */
+.searchcraft-facets-table {
+	background: var(--scwp-white);
+	border: 1px solid var(--scwp-gray-10);
+	box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+	margin-top: 1rem;
+	width: 100%;
+}
+
+.searchcraft-facets-table td {
+	width: 15%;
+}
+
+.searchcraft-facets-table td:last-child {
+	width: 100%;
+}
+
+.searchcraft-facets-table .searchcraft-checkbox-input-wrapper {
+	justify-content: space-between;
+}
+
+.searchcraft-facets-table .searchcraft-label {
+	font-weight: 400;
+	flex-grow: 1;
+}
+
+.searchcraft-facets-table td p.searchcraft-caption {
+	margin: 0;
+}
+
+/* ======== Synonyms ======== */
+.searchcraft-synonyms {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+}
+
+.searchcraft-synonyms-form,
+.searchcraft-synonyms-table {
+	background: var(--scwp-white);
+	border: 1px solid var(--scwp-gray-10);
+	box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+}
+
+.searchcraft-synonyms-form {
+	display: flex;
+	flex-direction: column;
+	padding: 1rem;
+}
+
+.searchcraft-synonyms-table {
+	background: var(--scwp-white);
+	border: 1px solid var(--scwp-gray-10);
+	box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+	width: 100%;
+}
+
+.searchcraft-synonyms-table thead {
+	font-weight: 700;
+}
+
+.searchcraft-synonyms-table,
+.searchcraft-synonyms-table th,
+.searchcraft-synonyms-table td {
+	border-bottom: 1px solid var(--scwp-gray-10);
+	border-collapse: collapse;
+}
+
+.searchcraft-synonyms-table th,
+.searchcraft-synonyms-table td {
+	text-align: left;
+	width: 15%;
+}
+
+table.searchcraft-synonyms-table th:first-child,
+table.searchcraft-synonyms-table td:first-child {
+	width: 3rem;
+}
+
+table.searchcraft-synonyms-table th:nth-child(3),
+table.searchcraft-synonyms-table td:nth-child(3) {
+	width: 100%;
+}
+
+.searchcraft-synonyms-form {
+	display: flex;
+	gap: 0.5rem;
+}
+
+.searchcraft-synonyms-buttons {
+	display: flex;
+	justify-content: flex-end;
+	gap: 0.5rem;
+	margin-top: 1rem;
+}
+
+.searchcraft-synonyms-buttons .submit {
+	margin: 0;
+}
+
+.searchcraft-synonyms-buttons .searchcraft-button {
+	display: none;
+}
+
+.searchcraft-synonyms:has(input[type="checkbox"]:checked)
+	.searchcraft-synonyms-buttons
+	.searchcraft-button {
+	display: inline-block;
+}
+
+/* ======== Stopwords ======== */
+.searchcraft-stopwords .searchcraft-form {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+	margin-top: 1rem;
+}
+
+.searchcraft-stopwords-list,
+.form-table .searchcraft-stopwords-list-wrapper p {
+	margin: 0;
+}
+
+.searchcraft-stopwords-input-wrapper,
+.searchcraft-stopwords-list-wrapper {
+	background: var(--scwp-white);
+	border: 1px solid var(--scwp-gray-10);
+	box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+}
+
+.searchcraft-stopwords-list-wrapper {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+	padding: 1rem 0;
+
+	@media only screen and (min-width: 961px) {
+		flex-direction: row;
+		gap: 0;
+	}
+}
+
+.searchcraft-stopwords-list-wrapper > div {
+	padding: 0 1rem;
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+
+	@media only screen and (min-width: 961px) {
+		width: 50%;
+	}
+}
+
+.searchcraft-stopwords-list-wrapper > div:first-child {
+	@media only screen and (min-width: 961px) {
+		border-right: 1px solid var(--scwp-gray-10);
+	}
+}
+
+.searchcraft-stopwords-list {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.25rem;
+}
+
+.searchcraft-stopwords-list-item {
+	margin: 0;
+}
+
+.searchcraft-stopwords-input-wrapper {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+	padding: 1rem;
+}
+
+.searchcraft-stopword,
+.searchcraft-stopword.button {
+	align-items: center;
+	display: inline-flex;
+	gap: 0.5rem;
+	line-height: 1;
+	padding: 0.25rem 0.5rem;
+}
+
+.searchcraft-stopword span:last-of-type {
+	background: none;
+	border: none;
+	height: 0.625rem;
+	margin-top: 0.125rem;
+	padding: 0;
+	position: relative;
+	width: 0.625rem;
+}
+
+.searchcraft-stopword span:last-of-type::before,
+.searchcraft-stopword span:last-of-type::after {
+	background: currentColor;
+	content: "";
+	height: 1.5px;
+	left: 0;
+	position: absolute;
+	top: 50%;
+	transform: translateY(-50%) rotate(-45deg);
+	width: 100%;
+}
+
+.searchcraft-stopword span:last-of-type::after {
+	transform: translateY(-50%) rotate(45deg);
+}
+
+.searchcraft-stopwords-buttons {
+	display: flex;
+	justify-content: flex-end;
+	gap: 0.5rem;
+}
+
+.searchcraft-stopwords-buttons .submit {
+	margin: 0;
+}
+
+/* ======== Access keys ======== */
+.searchcraft-access-keys {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+}
+
+.searchcraft-access-keys-list {
+	background: var(--scwp-white);
+	border: 1px solid var(--scwp-gray-10);
+	box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+	margin: 0;
+	padding: 1rem;
+}
+
+.searchcraft-access-keys-input-wrapper {
+	display: grid;
+	grid-template-columns: 1fr auto;
+	grid-template-rows: auto auto;
+	gap: 0.5rem;
+}
+
+.searchcraft-access-keys-input-wrapper .searchcraft-label {
+	grid-column: span 3;
+}
+
+.searchcraft-access-keys-buttons {
+	display: flex;
+	justify-content: flex-end;
+	gap: 0.5rem;
+}
+
+/* ======== Overview ======== */
+.searchcraft-overview, .searchcraft-layout {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+}
+
+.searchcraft-overview .submit {
+	margin: 0;
+	text-align: right;
+}
+
+.searchcraft-overview-getting-started,
+.searchcraft-overview-index-management,
+.searchcraft-overview-organization-details,
+.searchcraft-overview-search-experience-config,
+.searchcraft-overview-search-results-config,
+.searchcraft-overview-plan-details {
+	background: var(--scwp-white);
+	border: 1px solid var(--scwp-gray-10);
+	box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+}
+
+.searchcraft-overview .searchcraft-overview-index-management > h2,
+.searchcraft-overview .searchcraft-overview-organization-details > p,
+.searchcraft-overview .searchcraft-overview-plan-details > p {
+	border-bottom: 1px solid var(--scwp-gray-10);
+	font-weight: 700;
+	margin: 0;
+	padding: 1rem;
+}
+.searchcraft-index-stats, .searchcraft-overview-search-results-config .results-description {
+	padding-left: 1rem;
+}
+.searchcraft-overview .searchcraft-overview-index-management > p {
+	padding: 1rem;
+}
+
+.searchcraft-overview-table,
+.searchcraft-overview-table td:first-child {
+	width: 100%;
+}
+
+.searchcraft-overview-index-management-buttons {
+	display: flex;
+	gap: 0.5rem;
+}
+
+.searchcraft-overview-getting-started {
+	padding: 1rem;
+}
+
+.searchcraft-overview-getting-started > p {
+	font-weight: 700;
+}
+
+/* There are some very specific WordPress overrides below */
+
+/* ======== Settings page layout ========  */
+.searchcraft *,
+.searchcraft *::before,
+.searchcraft *::after {
+	box-sizing: border-box;
+}
+
+.searchcraft > .wrap {
+	margin-top: 0;
+}
+
+/* ======== Custom meta boxes ========  */
+.edit-post-meta-boxes-area
+	#poststuff
+	#searchcraft_exclude_from_index
+	.postbox-header {
+	border: none;
+	padding: 1rem 3rem 1rem 1rem;
+	position: relative;
+}
+
+.edit-post-meta-boxes-area
+	#poststuff
+	#searchcraft_exclude_from_index
+	.postbox-header:hover {
+	color: var(--scwp-blue-40);
+}
+
+.edit-post-meta-boxes-area
+	#poststuff
+	#searchcraft_exclude_from_index
+	.postbox-header:active {
+	color: var(--neutralText);
+}
+
+.edit-post-meta-boxes-area
+	#poststuff
+	#searchcraft_exclude_from_index
+	.handle-order-higher,
+.edit-post-meta-boxes-area
+	#poststuff
+	#searchcraft_exclude_from_index
+	.handle-order-lower {
+	display: none !important;
+}
+
+.edit-post-meta-boxes-area
+	#poststuff
+	#searchcraft_exclude_from_index
+	.handlediv {
+	align-items: center;
+	border-radius: 0;
+	display: flex;
+	height: auto;
+	inset: 0;
+	justify-content: flex-end;
+	position: absolute;
+	padding-right: 0.9375rem;
+	width: auto;
+}
+
+.edit-post-meta-boxes-area
+	#poststuff
+	#searchcraft_exclude_from_index
+	.handlediv:focus {
+	box-shadow: inset 0 0 0 1.5px var(--scwp-blue-50);
+}
+
+.edit-post-meta-boxes-area
+	#poststuff
+	#searchcraft_exclude_from_index
+	.handle-actions {
+	inset: 0;
+	position: absolute;
+}
+
+.edit-post-meta-boxes-area
+	#poststuff
+	#searchcraft_exclude_from_index
+	.toggle-indicator::before {
+	content: url("data:image/svg+xml;utf8,%3Csvg%20viewBox%3D%220%200%2024%2024%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20class%3D%22components-panel__arrow%22%20aria-hidden%3D%22true%22%20focusable%3D%22false%22%3E%3Cpath%20d%3D%22M17.5%2011.6L12%2016l-5.5-4.4.9-1.2L12%2014l4.5-3.6%201%201.2z%22%3E%3C%2Fpath%3E%3C%2Fsvg%3E");
+	height: 1.5rem;
+	width: 1.5rem;
+}
+
+.edit-post-meta-boxes-area #poststuff #searchcraft_exclude_from_index h2.hndle {
+	font-size: 0.8125rem;
+	font-weight: 500;
+	padding: 0;
+}
+
+.edit-post-meta-boxes-area #poststuff #searchcraft_exclude_from_index .inside {
+	margin-top: 0.25rem;
+	padding-left: 1rem;
+	padding-right: 1rem;
+}
+
+/* ======== Spinner Styles ======== */
+.searchcraft-button-with-spinner {
+	display: inline-block;
+	position: relative;
+}
+
+.searchcraft-spinner {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	color: var(--scwp-gray-50);
+	font-size: 14px;
+}
+
+.searchcraft-spinner .spinner {
+	float: none;
+	margin: 0;
+	width: 20px;
+	height: 20px;
+}
+
+.searchcraft-spinner-text {
+	font-weight: 500;
+}
+
+/* ======== Accordion Styles ======== */
+.searchcraft-advanced-accordion {
+	background: var(--scwp-white);
+	border: 1px solid var(--scwp-gray-10);
+	box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+	border-radius: var(--scwp-rounded-md);
+}
+
+.searchcraft-accordion-item {
+	border: none;
+	margin: 0;
+}
+
+.searchcraft-accordion-header {
+	background: var(--scwp-gray-0);
+	border: none;
+	border-bottom: 1px solid var(--scwp-gray-10);
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 1rem;
+	font-weight: 600;
+	font-size: 14px;
+	color: var(--scwp-gray-70);
+	transition: background-color 0.2s ease;
+	list-style: none;
+}
+
+.searchcraft-accordion-header:hover {
+	background: var(--scwp-gray-2);
+}
+
+.searchcraft-accordion-header::-webkit-details-marker {
+	display: none;
+}
+
+.searchcraft-accordion-icon {
+	transition: transform 0.2s ease;
+	font-size: 12px;
+	color: var(--scwp-gray-50);
+}
+
+.searchcraft-accordion-item[open] .searchcraft-accordion-icon {
+	transform: rotate(180deg);
+}
+
+.searchcraft-accordion-content {
+	padding: 0;
+}
+
+.searchcraft-accordion-content .form-table {
+	margin: 0;
+}
+
+/* ======== Code Editor Styles ======== */
+.searchcraft-css-editor,
+.searchcraft-template-editor {
+	font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
+	font-size: 13px;
+	line-height: 1.5;
+	background: var(--scwp-gray-0);
+	border: 1px solid var(--scwp-gray-10);
+	border-radius: var(--scwp-rounded-md);
+	padding: 12px;
+	resize: vertical;
+	tab-size: 2;
+	white-space: pre;
+	overflow-wrap: normal;
+	overflow-x: auto;
+}
+
+.searchcraft-css-editor:focus,
+.searchcraft-template-editor:focus {
+	border-color: var(--scwp-blue-50);
+	box-shadow: 0 0 0 1px var(--scwp-blue-50);
+	outline: none;
+}
+
+/* Basic syntax highlighting for CSS */
+.searchcraft-css-editor {
+	color: var(--scwp-gray-80);
+}
+
+/* JavaScript template editor styling */
+.searchcraft-template-editor {
+	color: var(--scwp-gray-80);
+	background: #f8f9fa;
+}
+
+/* Placeholder styling */
+.searchcraft-css-editor::placeholder,
+.searchcraft-template-editor::placeholder {
+	color: var(--scwp-gray-30);
+	font-style: italic;
+	line-height: 1.4;
+}

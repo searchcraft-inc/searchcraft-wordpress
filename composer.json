@@ -1,0 +1,28 @@
+{
+	"name": "searchcraft/wordpress",
+	"authors": [
+		{
+			"name": "Searchcraft",
+			"email": "support@searchcraft.io"
+		}
+	],
+	"require": {
+		"cjstroud/classnames-php": "^1.0",
+		"searchcraft/searchcraft-php": "^0.7.5",
+		"guzzlehttp/guzzle": "^7.9",
+		"http-interop/http-factory-guzzle": "^1.0"
+	},
+	"config": {
+		"allow-plugins": {
+			"dealerdirect/phpcodesniffer-composer-installer": true,
+			"php-http/discovery": true
+		}
+	},
+	"require-dev": {
+		"wp-coding-standards/wpcs": "^3.0"
+	},
+	"scripts": {
+		"update-plugin-header": "php scripts/class-update-plugin-header.php",
+		"post-update-cmd": "php scripts/class-update-plugin-header.php"
+	}
+}
