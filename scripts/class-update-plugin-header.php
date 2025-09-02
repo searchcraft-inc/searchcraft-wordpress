@@ -122,10 +122,10 @@ class PluginHeaderUpdater {
 	private function set_defaults() {
 		$defaults = array(
 			'plugin_name' => 'Searchcraft',
-			'plugin_uri'  => 'https://searchcraft.io',
-			'description' => 'Bring fast, relevant search to your WordPress site.',
+			'plugin_uri'  => 'https://github.com/searchcraft-inc/searchcraft-wordpress',
+			'description' => 'Bring fast, relevant search to your site. Searchcraft replaces the default search with a customizable, tunable, highly relevant search experience.',
 			'version'     => '1.0.0',
-			'author'      => 'Searchcraft',
+			'author'      => 'Searchcraft, Inc.',
 			'author_uri'  => 'https://searchcraft.io/',
 			'license'     => 'Apache 2.0',
 			'license_uri' => 'http://www.apache.org/licenses/LICENSE-2.0.txt',
