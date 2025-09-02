@@ -76,7 +76,6 @@ class Searchcraft {
 		$this->plugin_name = 'searchcraft';
 
 		$this->load_dependencies();
-		$this->set_locale();
 		$this->define_admin_hooks();
 		$this->define_public_hooks();
 	}
@@ -87,7 +86,6 @@ class Searchcraft {
 	 * Include the following files that make up the plugin:
 	 *
 	 * - Searchcraft_Loader. Orchestrates the hooks of the plugin.
-	 * - Searchcraft_I18n. Defines internationalization functionality.
 	 * - Searchcraft_Admin. Defines all hooks for the admin area.
 	 * - Searchcraft_Public. Defines all hooks for the public side of the site.
 	 *
@@ -114,12 +112,6 @@ class Searchcraft {
 		require_once plugin_dir_path( __DIR__ ) . 'helpers/class-searchcraft-helper-functions.php';
 
 		/**
-		 * The class responsible for defining internationalization functionality
-		 * of the plugin.
-		 */
-		require_once plugin_dir_path( __DIR__ ) . 'includes/class-searchcraft-i18n.php';
-
-		/**
 		 * The class responsible for defining all actions that occur in the admin area.
 		 */
 		require_once plugin_dir_path( __DIR__ ) . 'admin/class-searchcraft-admin.php';
@@ -131,24 +123,11 @@ class Searchcraft {
 		require_once plugin_dir_path( __DIR__ ) . 'public/class-searchcraft-public.php';
 
 		/**
-		 * The class responsible for SearchCraft JavaScript SDK integration.
+		 * The class responsible for Searchcraft JavaScript SDK integration.
 		 */
 		require_once plugin_dir_path( __DIR__ ) . 'includes/class-searchcraft-sdk-integration.php';
 
 		$this->loader = new Searchcraft_Loader();
-	}
-
-	/**
-	 * Define the locale for this plugin for internationalization.
-	 *
-	 * Uses the Searchcraft_I18n class in order to set the domain and to register the hook
-	 * with WordPress.
-	 *
-	 * @since 1.0.0
-	 */
-	private function set_locale() {
-		$plugin_i18n = new Searchcraft_I18n();
-		$this->loader->add_action( 'plugins_loaded', $plugin_i18n, 'load_plugin_textdomain' );
 	}
 
 	/**

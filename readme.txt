@@ -1,17 +1,17 @@
 === Searchcraft ===
 Donate link: https://searchcraft.io/
 Contributors: searchcraft
-Tags:         searchcraft, search, relevance, search engine, search replacement, fuzzy, better search, product search, site search, custom search, improved search, instant search, relevant search, fast search
+Tags:         search engine, search replacement, fuzzy, better search, site search, custom search, improved search, instant search, relevant search, fast search, searchcraft, search, relevance
 Requires at least: 5.0
 Tested up to: 6.8
 Stable tag:   1.0.0
 License:      Apache 2.0
 License URI:  LICENSE.txt
 
-Bring fast, relevant search to your WordPress site.
+Bring fast, relevant search to your site.
 
 == Description ==
-Searchcraft brings fast, relevant search to your WordPress site. You can choose between a near-instant keyword search or utilize AI to generate post summaries that are powered by your own WordPress content.
+Searchcraft brings fast, relevant search to your site. You can choose between a near-instant keyword search or utilize AI to generate post summaries that are powered by your own content.
 
 == Features ==
 

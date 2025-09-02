@@ -263,7 +263,7 @@ class PluginHeaderUpdater {
 }
 
 // Run the updater if this script is called directly.
-if ( basename( __FILE__ ) === basename( wp_unslash( $_SERVER['SCRIPT_NAME'] ?? '' ) ) ) {
+if ( basename( __FILE__ ) === basename( sanitize_text_field( wp_unslash( $_SERVER['SCRIPT_NAME'] ?? '' ) ) ) ) {
 	$updater = new PluginHeaderUpdater();
 	$updater->run();
 }

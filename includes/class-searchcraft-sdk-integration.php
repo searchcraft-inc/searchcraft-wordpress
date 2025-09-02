@@ -112,7 +112,7 @@ class Searchcraft_SDK_Integration {
 		$errors = array();
 
 		if ( ! Searchcraft_Config::is_configured() ) {
-			$errors[] = __( 'SearchCraft is not configured. Please configure your API keys and settings.', 'searchcraft' );
+			$errors[] = __( 'Searchcraft is not configured. Please configure your API keys and settings.', 'searchcraft' );
 			return $errors;
 		}
 
@@ -209,7 +209,7 @@ class Searchcraft_SDK_Integration {
 	}
 
 	/**
-	 * Get the SearchCraft SDK URL from jsDelivr.
+	 * Get the Searchcraft SDK URL from jsDelivr.
 	 *
 	 * @since 1.0.0
 	 * @return string The SDK URL.
@@ -379,7 +379,7 @@ class Searchcraft_SDK_Integration {
 	}
 
 	/**
-	 * Initialize SearchCraft SDK integration hooks.
+	 * Initialize Searchcraft SDK integration hooks.
 	 *
 	 * @since 1.0.0
 	 */
