@@ -1,6 +1,6 @@
 === Searchcraft ===
 Donate link: https://searchcraft.io/
-Contributors: Searchcraft, Inc.
+Contributors: searchcraft
 Tags:         searchcraft, search, relevance, search engine, search replacement, fuzzy, better search, product search, site search, custom search, improved search, instant search, relevant search, fast search
 Requires at least: 5.0
 Tested up to: 6.8
