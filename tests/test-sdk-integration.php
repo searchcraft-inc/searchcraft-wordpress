@@ -1,8 +1,8 @@
 <?php
 /**
- * SearchCraft SDK Integration Tests
+ * Searchcraft SDK Integration Tests
  *
- * Basic tests to validate the SearchCraft JavaScript SDK integration.
+ * Basic tests to validate the Searchcraft JavaScript SDK integration.
  *
  * @link       https://searchcraft.io
  * @since      1.0.0
@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Test SearchCraft SDK Integration functionality
+ * Test Searchcraft SDK Integration functionality
  */
 class Searchcraft_SDK_Integration_Test {
 
@@ -27,13 +27,15 @@ class Searchcraft_SDK_Integration_Test {
 	 * Run all tests
 	 */
 	public static function run_tests() {
-		echo "<h2>SearchCraft SDK Integration Tests</h2>\n";
+		echo "<h2>Searchcraft SDK Integration Tests</h2>\n";
 
 		self::test_class_exists();
 		self::test_configuration_validation();
 		self::test_js_config_generation();
 		self::test_asset_enqueuing();
 		self::test_search_form_replacement();
+		self::test_hooks_integration();
+		self::test_output_filtering();
 
 		echo "<p><strong>All tests completed.</strong></p>\n";
 	}
@@ -79,7 +81,7 @@ class Searchcraft_SDK_Integration_Test {
 		$errors = $sdk->get_config_validation_errors();
 		if ( ! empty( $errors ) ) {
 			echo "<p style='color: green;'>✓ Configuration validation returns errors for empty config</p>\n";
-			echo '<p>Errors found: ' . count( $errors ) . "</p>\n";
+			echo '<p>Errors found: ' . esc_html( count( $errors ) ) . "</p>\n";
 		} else {
 			echo "<p style='color: red;'>✗ Should return validation errors for empty config</p>\n";
 		}
@@ -203,15 +205,87 @@ class Searchcraft_SDK_Integration_Test {
 			echo "<p style='color: red;'>✗ Should return original form when not configured</p>\n";
 		}
 	}
+
+	/**
+	 * Test WordPress hooks integration
+	 */
+	private static function test_hooks_integration() {
+		echo "<h3>Testing WordPress Hooks Integration</h3>\n";
+
+		// Test current action and filter detection.
+		echo '<p>Current action: ' . esc_html( current_action() ) . "</p>\n";
+		echo '<p>Current filter: ' . esc_html( current_filter() ) . "</p>\n";
+
+		// Test initialization hooks.
+		$init_hooks = array(
+			'init',
+			'wp_enqueue_scripts',
+			'wp_head',
+			'wp_footer',
+		);
+
+		echo '<p>Available init hooks: ' . esc_html( implode( ', ', $init_hooks ) ) . "</p>\n";
+
+		// Test hook registration.
+		$sdk = new Searchcraft_SDK_Integration( 'test', '1.0.0' );
+		if ( method_exists( $sdk, 'define_public_hooks' ) ) {
+			echo "<p style='color: green;'>✓ define_public_hooks method exists</p>\n";
+		} else {
+			echo "<p style='color: orange;'>⚠ define_public_hooks method not found</p>\n";
+		}
+	}
+
+	/**
+	 * Test output buffering and content filtering
+	 */
+	private static function test_output_filtering() {
+		echo "<h3>Testing Output Filtering</h3>\n";
+
+		$sdk = new Searchcraft_SDK_Integration( 'test', '1.0.0' );
+
+		// Test content filtering.
+		$test_content = '<p>This is test content for filtering.</p>';
+		if ( method_exists( $sdk, 'filter_content' ) ) {
+			$filtered_content = $sdk->filter_content( $test_content );
+			echo "<p style='color: green;'>✓ Content filtering method exists</p>\n";
+		} else {
+			$filtered_content = $test_content;
+			echo "<p style='color: orange;'>⚠ Content filtering method not found</p>\n";
+		}
+
+		// Test output buffering.
+		ob_start();
+		echo wp_kses_post( $test_content );
+		$output = ob_get_clean();
+
+		if ( ! empty( $output ) ) {
+			echo "<p style='color: green;'>✓ Output buffering works</p>\n";
+			echo '<p>Captured output: ' . esc_html( $output ) . "</p>\n";
+		} else {
+			echo "<p style='color: red;'>✗ Output buffering failed</p>\n";
+		}
+
+		// Test template output.
+		ob_start();
+		echo '<div class="searchcraft-test">Template output test</div>';
+		$output = ob_get_clean();
+
+		if ( strpos( $output, 'searchcraft-test' ) !== false ) {
+			echo "<p style='color: green;'>✓ Template output captured</p>\n";
+			echo '<p>Template output: ' . esc_html( $output ) . "</p>\n";
+		} else {
+			echo "<p style='color: red;'>✗ Template output not captured properly</p>\n";
+		}
+	}
 }
 
 // Run tests if accessed directly with proper parameters.
-if ( isset( $_GET['run_searchcraft_tests'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ?? '' ) ), 'run_searchcraft_tests' ) && current_user_can( 'edit_posts' ) ) {
+if ( isset( $_GET['run_searchcraft_tests'] ) && isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'run_searchcraft_tests' ) && current_user_can( 'edit_posts' ) ) {
 	?>
 	<!DOCTYPE html>
 	<html>
 	<head>
-		<title>SearchCraft SDK Integration Tests</title>
+		<title>Searchcraft SDK Integration Tests</title>
 		<style>
 			body { font-family: Arial, sans-serif; margin: 20px; }
 			h2, h3 { color: #333; }
