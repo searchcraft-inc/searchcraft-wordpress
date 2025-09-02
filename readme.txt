@@ -1,29 +1,31 @@
 === Searchcraft ===
 Donate link: https://searchcraft.io/
 Contributors: searchcraft
-Tags:         search engine, search replacement, fuzzy, better search, site search, custom search, improved search, instant search, relevant search, fast search, searchcraft, search, relevance
+Tags:         search, fuzzy search, better search, instant search, search replacement
 Requires at least: 5.0
 Tested up to: 6.8
 Stable tag:   1.0.0
 License:      Apache 2.0
 License URI:  LICENSE.txt
 
-Bring fast, relevant search to your site.
+Bring fast, relevant search to your site. Searchcraft replaces the default search with a customizable, tunable, highly relevant search experience.
+
 
 == Description ==
-Searchcraft brings fast, relevant search to your site. You can choose between a near-instant keyword search or utilize AI to generate post summaries that are powered by your own content.
+Searchcraft brings fast, relevant search to your site. You can choose between a near-instant keyword search or utilize AI to generate post summaries that are powered by your own content. Searchcraft doesn't add any bloat to your database, it's index data is stored remotely and is designed to be a drop-in replacement for the default search.
 
 == Features ==
 
-* Fast, relevant search that can scale to hundreds of millions of posts
-* Drop-in replacement for default search
-* Instant results
-* Multiple layout options including pop-over and faceted search
-* Customizable search fields and weighting
-* Synonyms (configured via Searchcraft Cloud)
-* Stopwords (configured via Searchcraft Cloud)
-* Search analytics (via Searchcraft Cloud)
-* Works with Searchcraft Cloud or self-hosted Searchcraft Core
+* Fast, relevant search that can scale to hundreds of millions of posts.
+* Drop-in replacement for default search.
+* Instant results.
+* Choose which content is searchable and which to exclude. Supports both posts and pages.
+* Multiple layout options including pop-over and faceted search.
+* Customizable search fields and weighting.
+* Synonyms (configured via Searchcraft Cloud).
+* Stopwords (configured via Searchcraft Cloud).
+* Search analytics (via Searchcraft Cloud).
+* Works with Searchcraft Cloud or self-hosted Searchcraft Core.
 
 == Installation ==
 
