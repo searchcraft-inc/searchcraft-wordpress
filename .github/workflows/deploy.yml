@@ -1,0 +1,61 @@
+name: Deploy to WordPress.org
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout GitHub repo
+        uses: actions/checkout@v4
+
+      - name: Setup SVN
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y subversion rsync
+
+      - name: Export GitHub code to a clean folder
+        run: |
+          rm -rf /tmp/wordpress-svn
+          mkdir -p /tmp/wordpress-svn
+          svn checkout https://plugins.svn.wordpress.org/searchcraft/ /tmp/wordpress-svn
+          rsync -av --delete --exclude='.git' --exclude='.github' ./ /tmp/wordpress-svn/trunk/
+
+      - name: Get plugin version
+        id: get_version
+        run: |
+          VERSION=$(grep -i "Version:" your-plugin.php | head -n1 | awk '{print $2}')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Check Stable tag matches version
+        run: |
+          STABLE=$(grep -i "Stable tag:" readme.txt | awk '{print $3}')
+          VERSION=${{ steps.get_version.outputs.version }}
+          if [ "$STABLE" != "$VERSION" ]; then
+            echo "Error: Stable tag ($STABLE) does not match plugin version ($VERSION)"
+            exit 1
+          fi
+
+      - name: Commit to WordPress.org SVN
+        run: |
+          cd /tmp/wordpress-svn
+          svn add --force trunk/* --auto-props --parents --depth infinity
+          svn status | grep '^!' | sed 's/^! *//' | xargs -r svn delete
+          svn commit -m "Deploy version ${{ steps.get_version.outputs.version }}" \
+            --username ${{ secrets.SVN_USERNAME }} \
+            --password ${{ secrets.SVN_PASSWORD }} \
+            --non-interactive --no-auth-cache
+
+      - name: Tag version in WordPress.org SVN
+        run: |
+          cd /tmp/wordpress-svn
+          VERSION=${{ steps.get_version.outputs.version }}
+          svn copy trunk tags/$VERSION
+          svn commit -m "Tagging version $VERSION" \
+            --username ${{ secrets.SVN_USERNAME }} \
+            --password ${{ secrets.SVN_PASSWORD }} \
+            --non-interactive --no-auth-cache
