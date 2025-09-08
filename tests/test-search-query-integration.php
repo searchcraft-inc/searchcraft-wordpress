@@ -41,9 +41,9 @@ if ( isset( $_GET['s'] ) ) { // phpcs:ignore WordPress.Security.NonceVerificatio
 	$wp_query->set( 's', sanitize_text_field( wp_unslash( $_GET['s'] ) ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 }
 
-// Load the Searchcraft SDK Integration class.
+// Load the Searchcraft classes.
 require_once 'wp-content/plugins/searchcraft/includes/class-searchcraft-config.php';
-require_once 'wp-content/plugins/searchcraft/includes/class-searchcraft-sdk-integration.php';
+require_once 'wp-content/plugins/searchcraft/public/class-searchcraft-public.php';
 
 ?>
 <!DOCTYPE html>
@@ -304,9 +304,9 @@ require_once 'wp-content/plugins/searchcraft/includes/class-searchcraft-sdk-inte
     <div class="test-section">
         <h2>JavaScript Configuration</h2>
         <?php
-        if ( class_exists( 'Searchcraft_SDK_Integration' ) ) {
-            $sdk       = new Searchcraft_SDK_Integration( 'test', '1.0.0' );
-            $js_config = $sdk->get_js_config();
+        if ( class_exists( 'Searchcraft_Public' ) ) {
+            $public    = new Searchcraft_Public( 'test', '1.0.0' );
+            $js_config = $public->get_js_config();
 
             if ( ! empty( $js_config ) ) {
                 echo "<p class='success'>✓ JavaScript configuration generated successfully</p>";
@@ -333,7 +333,7 @@ require_once 'wp-content/plugins/searchcraft/includes/class-searchcraft-sdk-inte
         <h2>How It Works</h2>
         <p>This integration allows the Searchcraft JavaScript SDK to access the current WordPress search query through the configuration object. Here's how:</p>
         <ol>
-            <li><strong>PHP Side:</strong> The <code>get_js_config()</code> method in <code>Searchcraft_SDK_Integration</code> now calls <code>get_search_query(false)</code> to get the current search term.</li>
+            <li><strong>PHP Side:</strong> The <code>get_js_config()</code> method in <code>Searchcraft_Public</code> now calls <code>get_search_query(false)</code> to get the current search term.</li>
             <li><strong>JavaScript Side:</strong> The search query is passed to the Searchcraft SDK configuration object as <code>config.searchQuery</code>.</li>
             <li><strong>Usage:</strong> The Searchcraft SDK can now use this initial search query for initialization, pre-filling search forms, or other search-related functionality.</li>
         </ol>
