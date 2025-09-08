@@ -2,7 +2,7 @@
 Donate link: https://searchcraft.io/
 Contributors: searchcraft
 Tags:         search, fuzzy search, better search, instant search, search replacement
-Requires at least: 5.0
+Requires at least: 5.3
 Tested up to: 6.8
 Stable tag:   1.0.0
 License:      Apache 2.0
