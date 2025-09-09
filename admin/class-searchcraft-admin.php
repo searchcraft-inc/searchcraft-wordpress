@@ -396,7 +396,10 @@ class Searchcraft_Admin {
 			// Route the action to the appropriate handler method.
 			switch ( $action ) {
 				case 'config':
-					$this->searchcraft_on_config_request( $_POST );
+					$config_data = isset( $_POST['searchcraft_config'] ) && is_array( $_POST['searchcraft_config'] ) ? $_POST['searchcraft_config'] : array(); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+					$reset_flag  = isset( $_POST['searchcraft_reset_config'] );
+					$save_flag   = isset( $_POST['searchcraft_save_config'] );
+					$this->searchcraft_on_config_request( $config_data, $reset_flag, $save_flag );
 					break;
 				case 'reindex_all_documents':
 					$this->searchcraft_on_reindex_all_documents_request();
@@ -405,13 +408,13 @@ class Searchcraft_Admin {
 					$this->searchcraft_on_delete_all_documents_request();
 					break;
 				case 'search_experience_config':
-					$this->searchcraft_on_search_experience_config_request( $_POST );
+					$this->searchcraft_on_search_experience_config_request( $_POST ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 					break;
 				case 'search_results_config':
-					$this->searchcraft_on_search_results_config_request( $_POST );
+					$this->searchcraft_on_search_results_config_request( $_POST ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 					break;
 				case 'advanced_config':
-					$this->searchcraft_on_advanced_config_request( $_POST );
+					$this->searchcraft_on_advanced_config_request( $_POST ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 					break;
 
 				// case 'schema':
@@ -457,11 +460,13 @@ class Searchcraft_Admin {
 	 * Handles the configuration update request.
 	 *
 	 * @since 1.0.0
-	 * @param array $post_data The POST data containing configuration values.
+	 * @param array $config_data The configuration data array.
+	 * @param bool  $reset_flag  Whether to reset the configuration.
+	 * @param bool  $save_flag   Whether to save the configuration.
 	 */
-	private function searchcraft_on_config_request( $post_data ) {
+	private function searchcraft_on_config_request( $config_data, $reset_flag, $save_flag ) {
 		// Handle reset request.
-		if ( isset( $post_data['searchcraft_reset_config'] ) ) {
+		if ( $reset_flag ) {
 			Searchcraft_Config::reset();
 			add_action(
 				'admin_notices',
@@ -473,10 +478,7 @@ class Searchcraft_Admin {
 		}
 
 		// Handle save request.
-		if ( isset( $post_data['searchcraft_save_config'] ) && isset( $post_data['searchcraft_config'] ) ) {
-			// Sanitize the nested config array first.
-			$config_data = is_array( $post_data['searchcraft_config'] ) ? $post_data['searchcraft_config'] : array();
-
+		if ( $save_flag && ! empty( $config_data ) ) {
 			// Sanitize the input data with proper validation.
 			$sanitized_config = array(
 				'endpoint_url' => isset( $config_data['endpoint_url'] ) ? esc_url_raw( wp_unslash( $config_data['endpoint_url'] ) ) : '',
