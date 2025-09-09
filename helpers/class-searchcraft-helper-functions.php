@@ -208,7 +208,15 @@ class Searchcraft_Helper_Functions {
 			return array();
 		}
 
-		// Prepare placeholders for the post IDs in SQL query.
+		// Sanitize post IDs to ensure they are integers.
+		$post_ids = array_map( 'absint', $post_ids );
+		$post_ids = array_filter( $post_ids ); // Remove any zero values.
+
+		if ( empty( $post_ids ) ) {
+			return array();
+		}
+
+		// Create placeholders for the IN clause.
 		$placeholders = implode( ', ', array_fill( 0, count( $post_ids ), '%d' ) );
 
 		/**
@@ -219,18 +227,18 @@ class Searchcraft_Helper_Functions {
 		 * - Not start with an underscore
 		 * - Have non-null, non-empty meta values
 		 */
-		$sql          = "
+		$sql = "
             SELECT DISTINCT meta_key FROM $wpdb->postmeta
             WHERE post_id IN ($placeholders)
                 AND meta_key NOT LIKE '\\_%'
                 AND meta_value IS NOT NULL
                 AND meta_value != ''
         ";
-		$prepared_sql = call_user_func_array(
-			array( $wpdb, 'prepare' ),
-			array_merge( array( $sql ), $post_ids )
-		);
-        // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+
+		// Use wpdb->prepare with the spread operator for safer parameter binding.
+		$prepared_sql = $wpdb->prepare( $sql, ...$post_ids ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared
 		$meta_keys = $wpdb->get_col( $prepared_sql );
 
 		$meta_keys_with_sample_values = array();
@@ -238,21 +246,24 @@ class Searchcraft_Helper_Functions {
 		// For each meta_key, fetch a sample value to detect its type.
 		// The meta value must not be NULL or an empty string.
 		foreach ( $meta_keys as $meta_key ) {
+			$sql_sample = "
+                SELECT meta_value
+                FROM $wpdb->postmeta
+                WHERE meta_key = %s
+                    AND post_id IN ($placeholders)
+                    AND meta_value IS NOT NULL
+                    AND meta_value != ''
+                LIMIT 1
+            ";
+
+			// Prepare parameters: meta_key first, then all post_ids.
+			$prepare_params = array_merge( array( $meta_key ), $post_ids );
+
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 			$sample_value = $wpdb->get_var(
-				$wpdb->prepare(
-					"
-                        SELECT meta_value
-                        FROM $wpdb->postmeta
-                        WHERE meta_key = %s
-                            AND post_id IN ($placeholders)
-                            AND meta_value IS NOT NULL
-                            AND meta_value != ''
-                        LIMIT 1
-                    ",
-					...array_merge( array( $meta_key ), $post_ids )
-				)
+				$wpdb->prepare( $sql_sample, ...$prepare_params ) // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 			);
+
 			// Store the meta key and its sample value.
 			$meta_keys_with_sample_values[ $meta_key ] = array(
 				'sample' => $sample_value,

@@ -46,18 +46,25 @@ class Searchcraft_SDK_Integration_Test {
 	private static function test_class_exists() {
 		echo "<h3>Testing Class Existence</h3>\n";
 
-		if ( class_exists( 'Searchcraft_SDK_Integration' ) ) {
-			echo "<p style='color: green;'>✓ Searchcraft_SDK_Integration class exists</p>\n";
+		if ( class_exists( 'Searchcraft_Public' ) ) {
+			echo "<p style='color: green;'>✓ Searchcraft_Public class exists</p>\n";
 		} else {
-			echo "<p style='color: red;'>✗ Searchcraft_SDK_Integration class not found</p>\n";
+			echo "<p style='color: red;'>✗ Searchcraft_Public class not found</p>\n";
 			return;
 		}
 
-		$sdk = new Searchcraft_SDK_Integration( 'test', '1.0.0' );
-		if ( is_object( $sdk ) ) {
-			echo "<p style='color: green;'>✓ SDK integration instance created successfully</p>\n";
+		$public = new Searchcraft_Public( 'test', '1.0.0' );
+		if ( is_object( $public ) ) {
+			echo "<p style='color: green;'>✓ Public class instance created successfully</p>\n";
+
+			// Check if SDK integration methods exist.
+			if ( method_exists( $public, 'is_sdk_ready' ) ) {
+				echo "<p style='color: green;'>✓ SDK integration methods available</p>\n";
+			} else {
+				echo "<p style='color: red;'>✗ SDK integration methods missing</p>\n";
+			}
 		} else {
-			echo "<p style='color: red;'>✗ Failed to create SDK integration instance</p>\n";
+			echo "<p style='color: red;'>✗ Failed to create Public class instance</p>\n";
 		}
 	}
 
@@ -67,10 +74,10 @@ class Searchcraft_SDK_Integration_Test {
 	private static function test_configuration_validation() {
 		echo "<h3>Testing Configuration Validation</h3>\n";
 
-		$sdk = new Searchcraft_SDK_Integration( 'test', '1.0.0' );
+		$public = new Searchcraft_Public( 'test', '1.0.0' );
 
 		// Test with empty configuration.
-		$is_ready = $sdk->is_sdk_ready();
+		$is_ready = $public->is_sdk_ready();
 		if ( ! $is_ready ) {
 			echo "<p style='color: green;'>✓ Correctly identifies empty configuration as not ready</p>\n";
 		} else {
@@ -78,7 +85,7 @@ class Searchcraft_SDK_Integration_Test {
 		}
 
 		// Test validation errors.
-		$errors = $sdk->get_config_validation_errors();
+		$errors = $public->get_config_validation_errors();
 		if ( ! empty( $errors ) ) {
 			echo "<p style='color: green;'>✓ Configuration validation returns errors for empty config</p>\n";
 			echo '<p>Errors found: ' . esc_html( count( $errors ) ) . "</p>\n";
@@ -93,10 +100,10 @@ class Searchcraft_SDK_Integration_Test {
 	private static function test_js_config_generation() {
 		echo "<h3>Testing JavaScript Configuration Generation</h3>\n";
 
-		$sdk = new Searchcraft_SDK_Integration( 'test', '1.0.0' );
+		$public = new Searchcraft_Public( 'test', '1.0.0' );
 
 		// Test with empty configuration.
-		$js_config = $sdk->get_js_config();
+		$js_config = $public->get_js_config();
 		if ( empty( $js_config ) ) {
 			echo "<p style='color: green;'>✓ Returns empty config when not ready</p>\n";
 		} else {
@@ -106,14 +113,14 @@ class Searchcraft_SDK_Integration_Test {
 		// Test with mock configuration.
 		if ( method_exists( 'Searchcraft_Config', 'set_multiple' ) ) {
 			$test_config = array(
-				'endpoint_url' => 'https://api.searchcraft.io',
+				'endpoint_url' => 'http://localhost:8000',
 				'index_id'     => 'test_index',
 				'read_key'     => 'test_read_key_1234567890',
 			);
 
 			Searchcraft_Config::set_multiple( $test_config );
 
-			$js_config = $sdk->get_js_config();
+			$js_config = $public->get_js_config();
 			if ( ! empty( $js_config ) && isset( $js_config['endpointURL'] ) ) {
 				echo "<p style='color: green;'>✓ Generates JavaScript config with valid data</p>\n";
 				echo '<p>Config keys: ' . esc_html( implode( ', ', array_keys( $js_config ) ) ) . "</p>\n";

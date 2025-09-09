@@ -55,7 +55,7 @@ class PluginHeaderUpdater {
 	 */
 	public function parse_readme() {
 		if ( ! file_exists( $this->readme_path ) ) {
-			throw new Exception( 'readme.txt file not found at: ' . esc_html( $this->readme_path ) );
+			throw new Exception( 'readme.txt file not found at: ' . htmlspecialchars( $this->readme_path, ENT_QUOTES, 'UTF-8' ) );
 		}
 
 		$content = file_get_contents( $this->readme_path );
@@ -75,12 +75,6 @@ class PluginHeaderUpdater {
 				$value = trim( $matches[2] );
 
 				switch ( $key ) {
-					case 'donate link':
-						$this->readme_data['plugin_uri'] = $value;
-						break;
-					case 'contributors':
-						$this->readme_data['author'] = $value;
-						break;
 					case 'stable tag':
 						$this->readme_data['version'] = $value;
 						break;
@@ -128,7 +122,7 @@ class PluginHeaderUpdater {
 			'author'      => 'Searchcraft, Inc.',
 			'author_uri'  => 'https://searchcraft.io/',
 			'license'     => 'Apache 2.0',
-			'license_uri' => 'http://www.apache.org/licenses/LICENSE-2.0.txt',
+			'license_uri' => 'LICENSE.txt',
 			'text_domain' => 'searchcraft',
 			'domain_path' => '/languages',
 		);
@@ -141,7 +135,7 @@ class PluginHeaderUpdater {
 
 		// Keep the original license from readme.txt.
 		// Only set default license URI if none is provided.
-		if ( empty( $this->readme_data['license_uri'] ) || 'LICENSE.txt' === $this->readme_data['license_uri'] ) {
+		if ( empty( $this->readme_data['license_uri'] ) ) {
 			// Set appropriate license URI based on the license type.
 			if ( 'Apache 2.0' === $this->readme_data['license'] ) {
 				$this->readme_data['license_uri'] = 'http://www.apache.org/licenses/LICENSE-2.0.txt';
@@ -167,7 +161,7 @@ class PluginHeaderUpdater {
 	 */
 	public function update_plugin_header() {
 		if ( ! file_exists( $this->plugin_path ) ) {
-			throw new Exception( 'Plugin file not found at: ' . esc_html( $this->plugin_path ) );
+			throw new Exception( 'Plugin file not found at: ' . htmlspecialchars( $this->plugin_path, ENT_QUOTES, 'UTF-8' ) );
 		}
 
 		$content          = file_get_contents( $this->plugin_path );
@@ -253,17 +247,18 @@ class PluginHeaderUpdater {
 			echo 'Plugin header updated successfully!' . "\n";
 			echo 'Updated with:' . "\n";
 			foreach ( $this->readme_data as $key => $value ) {
-				echo '  ' . esc_html( $key ) . ': ' . esc_html( $value ) . "\n";
+				echo '  ' . htmlspecialchars( $key, ENT_QUOTES, 'UTF-8' ) . ': ' . htmlspecialchars( $value, ENT_QUOTES, 'UTF-8' ) . "\n";
 			}
 		} catch ( Exception $e ) {
-			echo 'Error: ' . esc_html( $e->getMessage() ) . "\n";
+			echo 'Error: ' . htmlspecialchars( $e->getMessage(), ENT_QUOTES, 'UTF-8' ) . "\n";
 			exit( 1 );
 		}
 	}
 }
 
 // Run the updater if this script is called directly.
-if ( basename( __FILE__ ) === basename( sanitize_text_field( wp_unslash( $_SERVER['SCRIPT_NAME'] ?? '' ) ) ) ) {
+$script_name = $_SERVER['SCRIPT_NAME'] ?? '';
+if ( basename( __FILE__ ) === basename( $script_name ) ) {
 	$updater = new PluginHeaderUpdater();
 	$updater->run();
 }

@@ -88,7 +88,7 @@ class Searchcraft_Config {
 
 			// If no salts are available, use a basic fallback.
 			if ( empty( $salt ) ) {
-				$salt = 'searchcraft_fallback_salt_' . ( defined( 'ABSPATH' ) ? ABSPATH : __DIR__ );
+				$salt = 'searchcraft_fallback_salt';
 			}
 		} else {
 			$salt = wp_salt( 'auth' ) . wp_salt( 'secure_auth' );

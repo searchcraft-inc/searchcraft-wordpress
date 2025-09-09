@@ -1,0 +1,52 @@
+import { defineCustomElement as define_searchcraft_ad } from './searchcraft-ad.js';
+import { defineCustomElement as define_searchcraft_button } from './searchcraft-button.js';
+import { defineCustomElement as define_searchcraft_error_message } from './searchcraft-error-message.js';
+import { defineCustomElement as define_searchcraft_facet_list } from './searchcraft-facet-list.js';
+import { defineCustomElement as define_searchcraft_filter_panel } from './searchcraft-filter-panel.js';
+import { defineCustomElement as define_searchcraft_input_form } from './searchcraft-input-form.js';
+import { defineCustomElement as define_searchcraft_input_label } from './searchcraft-input-label.js';
+import { defineCustomElement as define_searchcraft_loading } from './searchcraft-loading.js';
+import { defineCustomElement as define_searchcraft_pagination } from './searchcraft-pagination.js';
+import { defineCustomElement as define_searchcraft_popover_button } from './searchcraft-popover-button.js';
+import { defineCustomElement as define_searchcraft_popover_footer } from './searchcraft-popover-footer.js';
+import { defineCustomElement as define_searchcraft_popover_form } from './searchcraft-popover-form.js';
+import { defineCustomElement as define_searchcraft_popover_list_item } from './searchcraft-popover-list-item.js';
+import { defineCustomElement as define_searchcraft_popover_list_view } from './searchcraft-popover-list-view.js';
+import { defineCustomElement as define_searchcraft_results_info } from './searchcraft-results-info.js';
+import { defineCustomElement as define_searchcraft_search_result } from './searchcraft-search-result.js';
+import { defineCustomElement as define_searchcraft_search_results_per_page } from './searchcraft-search-results-per-page.js';
+import { defineCustomElement as define_searchcraft_search_results } from './searchcraft-search-results.js';
+import { defineCustomElement as define_searchcraft_select } from './searchcraft-select.js';
+import { defineCustomElement as define_searchcraft_slider } from './searchcraft-slider.js';
+import { defineCustomElement as define_searchcraft_summary_box } from './searchcraft-summary-box.js';
+import { defineCustomElement as define_searchcraft_theme } from './searchcraft-theme.js';
+import { defineCustomElement as define_searchcraft_toggle_button } from './searchcraft-toggle-button.js';
+
+export const defineCustomElements = () => {
+  define_searchcraft_ad();
+  define_searchcraft_button();
+  define_searchcraft_error_message();
+  define_searchcraft_facet_list();
+  define_searchcraft_filter_panel();
+  define_searchcraft_input_form();
+  define_searchcraft_input_label();
+  define_searchcraft_loading();
+  define_searchcraft_pagination();
+  define_searchcraft_popover_button();
+  define_searchcraft_popover_footer();
+  define_searchcraft_popover_form();
+  define_searchcraft_popover_list_item();
+  define_searchcraft_popover_list_view();
+  define_searchcraft_results_info();
+  define_searchcraft_search_result();
+  define_searchcraft_search_results_per_page();
+  define_searchcraft_search_results();
+  define_searchcraft_select();
+  define_searchcraft_slider();
+  define_searchcraft_summary_box();
+  define_searchcraft_theme();
+  define_searchcraft_toggle_button();
+};
+
+// Register the function with globalThis so that core can call it
+globalThis.__scDefineCustomElements__ = defineCustomElements;

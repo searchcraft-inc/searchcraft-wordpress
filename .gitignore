@@ -2,3 +2,9 @@
 .idea
 **/.DS_Store
 **/node_modules
+local_publish_prep.sh
+vendor/bin
+vendor/wp-coding-standards/
+vendor/dealerdirect/
+vendor/squizlabs/
+vendor/phpcsstandards/

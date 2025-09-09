@@ -20,8 +20,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * The public-facing functionality of the plugin
  *
- * Defines the plugin name, version, and two examples hooks for how to
- * enqueue the public-facing stylesheet and JavaScript.
+ * Handles all frontend functionality including SDK integration,
+ * template injection, search form replacement, and search template overrides.
  *
  * @since      1.0.0
  * @package    Searchcraft
@@ -48,15 +48,6 @@ class Searchcraft_Public {
 	private $version;
 
 	/**
-	 * The SDK integration instance.
-	 *
-	 * @since    1.0.0
-	 * @access   private
-	 * @var      Searchcraft_SDK_Integration    $sdk_integration    The SDK integration instance.
-	 */
-	private $sdk_integration;
-
-	/**
 	 * Initialize the class and set its properties.
 	 *
 	 * @since    1.0.0
@@ -64,156 +55,325 @@ class Searchcraft_Public {
 	 * @param      string $version    The version of this plugin.
 	 */
 	public function __construct( $plugin_name, $version ) {
-
 		$this->plugin_name = $plugin_name;
 		$this->version     = $version;
 
-		// Initialize SDK integration.
-		$this->sdk_integration = new Searchcraft_SDK_Integration( $plugin_name, $version );
-		$this->sdk_integration->init_hooks();
+		// Initialize all hooks.
+		$this->init_hooks();
+	}
 
-		// Load search header template after the first header element.
-		add_action( 'wp_footer', array( $this, 'inject_search_header_script' ), 1 );
+	/**
+	 * Initialize all WordPress hooks for frontend functionality.
+	 *
+	 * @since 1.0.0
+	 */
+	private function init_hooks() {
+		// Only initialize frontend features if SDK is ready.
+		if ( ! $this->is_sdk_ready() ) {
+			return;
+		}
+
+		// Enqueue SDK assets with higher priority to load after theme assets.
+		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_sdk_assets' ), 20 );
+
+		// Enqueue search header injection script.
+		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_sdk_settings' ), 25 );
+
+		// Replace search forms.
+		add_filter( 'get_search_form', array( $this, 'replace_search_form' ) );
 
 		// Intercept search results page and load blank template.
 		add_filter( 'template_include', array( $this, 'override_search_template' ) );
 	}
 
 	/**
-	 * Register the stylesheets for the public-facing side of the site.
+	 * Check if Searchcraft is properly configured for SDK integration.
 	 *
-	 * @since    1.0.0
+	 * @since 1.0.0
+	 * @return bool True if configured, false otherwise.
 	 */
-	public function enqueue_styles() {
-		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/searchcraft-public.css', array(), $this->version, 'all' );
+	public function is_sdk_ready() {
+		// First check if the basic configuration is available.
+		if ( ! Searchcraft_Config::is_configured() ) {
+			return false;
+		}
+
+		$config = Searchcraft_Config::get_all();
+
+		// Validate all required fields are present and not empty.
+		$required_fields = array( 'endpoint_url', 'index_id', 'read_key' );
+
+		foreach ( $required_fields as $field ) {
+			if ( empty( $config[ $field ] ) ) {
+				return false;
+			}
+		}
+
+		// Validate endpoint URL format.
+		if ( ! filter_var( $config['endpoint_url'], FILTER_VALIDATE_URL ) ) {
+			return false;
+		}
+
+		// Validate read key format (should be a non-empty string).
+		if ( ! is_string( $config['read_key'] ) || strlen( $config['read_key'] ) < 10 ) {
+			return false;
+		}
+
+		// Validate index ID format (should be a non-empty string).
+		if ( ! is_string( $config['index_id'] ) || strlen( $config['index_id'] ) < 1 ) {
+			return false;
+		}
+
+		return true;
 	}
 
 	/**
-	 * Register the JavaScript for the public-facing side of the site.
+	 * Get configuration validation errors.
 	 *
-	 * @since    1.0.0
+	 * @since 1.0.0
+	 * @return array Array of validation error messages.
 	 */
-	public function enqueue_scripts() {
-		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/searchcraft-public.js', array( 'jquery' ), $this->version, false );
+	public function get_config_validation_errors() {
+		$errors = array();
+
+		if ( ! Searchcraft_Config::is_configured() ) {
+			$errors[] = __( 'Searchcraft is not configured. Please configure your API keys and settings.', 'searchcraft' );
+			return $errors;
+		}
+
+		$config = Searchcraft_Config::get_all();
+
+		// Check endpoint URL.
+		if ( empty( $config['endpoint_url'] ) ) {
+			$errors[] = __( 'Endpoint URL is required for SDK integration.', 'searchcraft' );
+		} elseif ( ! filter_var( $config['endpoint_url'], FILTER_VALIDATE_URL ) ) {
+			$errors[] = __( 'Endpoint URL must be a valid URL.', 'searchcraft' );
+		}
+
+		// Check read key.
+		if ( empty( $config['read_key'] ) ) {
+			$errors[] = __( 'Read key is required for SDK integration.', 'searchcraft' );
+		} elseif ( strlen( $config['read_key'] ) < 10 ) {
+			$errors[] = __( 'Read key appears to be invalid (too short).', 'searchcraft' );
+		}
+
+		// Check index ID.
+		if ( empty( $config['index_id'] ) ) {
+			$errors[] = __( 'Index ID is required for SDK integration.', 'searchcraft' );
+		}
+
+		return $errors;
 	}
 
 	/**
-	 * Inject JavaScript to position search header after first header element.
+	 * Enqueue search scripts and localize data.
 	 *
 	 * @since 1.0.0
 	 */
-	public function inject_search_header_script() {
-		$header_template_path = plugin_dir_path( __FILE__ ) . 'templates/search-header.php';
-		$results_template_path = plugin_dir_path( __FILE__ ) . 'templates/search-results.php';
+	public function enqueue_sdk_settings() {
+		// Enqueue the search settings script.
+		wp_enqueue_script(
+			'searchcraft-sdk-settings',
+			plugin_dir_url( __FILE__ ) . 'js/searchcraft-sdk-settings.js',
+			array(),
+			$this->version,
+			true
+		);
 
-		if ( file_exists( $header_template_path ) && file_exists( $results_template_path ) ) {
-			$search_experience = get_option( 'searchcraft_search_experience', 'full' );
-			ob_start();
-			include $header_template_path;
-			$header_template_content = ob_get_clean();
-
-			ob_start();
-			include $results_template_path;
-			$results_template_content = ob_get_clean();
-
-			// Escape the content for JavaScript.
-			$escaped_header_content  = wp_json_encode( $header_template_content );
-			$escaped_results_content = wp_json_encode( $results_template_content );
-
-			// Get the results container ID option.
-			$results_container_id = get_option( 'searchcraft_results_container_id', '' );
-			$escaped_container_id = wp_json_encode( $results_container_id );
-			// Popover options.
-			$popover_container_id         = get_option( 'searchcraft_popover_container_id', '' );
-			$escaped_popover_container_id = wp_json_encode( $popover_container_id );
-			$popover_insert_behavior      = get_option( 'searchcraft_popover_element_behavior', 'replace' );
-
-			if ( 'full' === $search_experience || ( 'popover' === $search_experience && empty( $popover_container_id ) ) ) {
-				// Output JavaScript to inject the template after the first header.
-				echo '<script type="text/javascript">
-					document.addEventListener("DOMContentLoaded", function() {
-						const firstHeader = document.querySelector("header") || document.querySelector(`[id="header"]`);
-						const searchHeaderDiv = document.createElement("div");
-				';
-				// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Content is properly escaped via wp_json_encode() above
-				echo 'searchHeaderDiv.innerHTML = ' . $escaped_header_content . ';
-						if (firstHeader) {
-							// Insert after the header element.
-							if (firstHeader.nextSibling) {
-								firstHeader.parentNode.insertBefore(searchHeaderDiv, firstHeader.nextSibling);
-							} else {
-								firstHeader.parentNode.appendChild(searchHeaderDiv);
-							}
-						} else {
-							// Fallback: if no header found, append to body.
-							document.body.insertBefore(searchHeaderDiv, document.body.firstChild);
-						}
-					});
-					</script>';
-				if ( 'full' === $search_experience ) {
-					echo '<script type="text/javascript">
-								document.addEventListener("DOMContentLoaded", function() {
-					';
-					// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Content is properly escaped via wp_json_encode() above
-					echo 'const resultsContainerId = ' . $escaped_container_id . ';';
-					// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Content is properly escaped via wp_json_encode() above
-					echo 'const resultsContent = ' . $escaped_results_content . ';
-							const searchInputContainer = document.querySelector(".searchcraft-input-container");
-							if (resultsContainerId) {
-								const customContainer = document.getElementById(resultsContainerId);
-								if (customContainer) {
-									customContainer.insertAdjacentHTML("afterbegin", resultsContent);
-								} else {
-									searchInputContainer.insertAdjacentHTML("afterend", resultsContent);
-								}
-							} else {
-								searchInputContainer.insertAdjacentHTML("afterend", resultsContent);
-							}
-						});
-					</script>';
-				}
-			} else {
-				// Popover injection. "Default behavior" is handled already above, this logic is for if the WP user choose a place for the popover to appear.
-				echo '<script type="text/javascript">
-							document.addEventListener("DOMContentLoaded", function() {
-				';
-				// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Content is properly escaped via wp_json_encode() above
-				echo 'const popoverContainerId = ' . $escaped_popover_container_id . ';
-				';
-				// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Content is pre-selected, no user input
-				echo 'const popoverInsertBehavior = "' . $popover_insert_behavior . '";
-				';
-				// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Content is properly escaped via wp_json_encode() above
-				echo 'const popoverContent = ' . $escaped_header_content . ';
-						const searchInputContainer = document.querySelector(".searchcraft-input-container");
-						if (popoverContainerId) {
-							const customPopoverContainerById = document.getElementById(popoverContainerId);
-							//const customPopoverContainerByClass = document.querySelector(`[class="${popoverContainerId}"]`);
-							const customPopoverContainerByClass = document.querySelector(`[class="${popoverContainerId}"]`);
-							let targetElement = null;
-							if (customPopoverContainerById) {
-								targetElement = customPopoverContainerById;
-							}
-							if (!customPopoverContainerById && customPopoverContainerByClass) {
-								targetElement = customPopoverContainerByClass;
-							}
-							if (targetElement) {
-								if ("replace" === popoverInsertBehavior) {
-									targetElement.innerHTML = popoverContent;
-								} else {
-									targetElement.insertAdjacentHTML("afterbegin", popoverContent);
-								}
-							} else {
-								console.log("Searchcraft: unable to find popover container element.");
-							}
-						}
-					});
-				</script>';
-			}
+		// Prepare and localize script data.
+		$script_data = $this->prepare_script_data();
+		if ( $script_data ) {
+			wp_localize_script( 'searchcraft-sdk-settings', 'searchcraftSettings', $script_data );
 		}
 	}
 
+	/**
+	 * Get the Searchcraft configuration for JavaScript.
+	 *
+	 * @since 1.0.0
+	 * @return array Configuration array for the JavaScript SDK.
+	 */
+	public function get_js_config() {
+		if ( ! $this->is_sdk_ready() ) {
+			return array();
+		}
 
+		$config = Searchcraft_Config::get_all();
+
+		$js_config = array(
+			'indexName'   => $config['index_id'],
+			'readKey'     => $config['read_key'],
+			'endpointURL' => $config['endpoint_url'],
+		);
+
+		// Include search query if available.
+		$search_query = get_search_query( false ); // Get unescaped query.
+		if ( ! empty( $search_query ) ) {
+			$js_config['searchQuery'] = $search_query;
+		}
+
+		// Include results per page setting.
+		$results_per_page            = get_option( 'searchcraft_results_per_page', 10 );
+		$js_config['resultsPerPage'] = intval( $results_per_page );
+
+		// Include custom result template callback function.
+		$result_template = get_option( 'searchcraft_result_template', '' );
+		if ( ! empty( $result_template ) ) {
+			$js_config['resultTemplateCallback'] = $result_template;
+		}
+
+		// Include AI summary settings.
+		$enable_ai_summary            = get_option( 'searchcraft_enable_ai_summary', false );
+		$js_config['enableAiSummary'] = (bool) $enable_ai_summary;
+
+		// Include cortex URL if AI summary is enabled and cortex URL is configured.
+		if ( $enable_ai_summary && ! empty( $config['cortex_url'] ) ) {
+			$js_config['cortexURL'] = $config['cortex_url'];
+		}
+
+		// Include image alignment setting.
+		$image_alignment             = get_option( 'searchcraft_image_alignment', 'left' );
+		$js_config['imageAlignment'] = $image_alignment;
+
+		// Include brand color setting.
+		$brand_color             = get_option( 'searchcraft_brand_color', '#000000' );
+		$js_config['brandColor'] = $brand_color;
+
+		// Include summary background color setting.
+		$summary_background_color            = get_option( 'searchcraft_summary_background_color', '#F5F5F5' );
+		$js_config['summaryBackgroundColor'] = $summary_background_color;
+
+		// Include filter panel setting.
+		$include_filter_panel            = get_option( 'searchcraft_include_filter_panel', false );
+		$js_config['includeFilterPanel'] = (bool) $include_filter_panel;
+
+		// Include oldest post year.
+		$admin_instance              = new Searchcraft_Admin( 'searchcraft', SEARCHCRAFT_VERSION );
+		$oldest_post_year            = $admin_instance->get_oldest_post_year();
+		$js_config['oldestPostYear'] = $oldest_post_year;
+
+		return $js_config;
+	}
+
+	/**
+	 * Prepare script data for JavaScript.
+	 *
+	 * @since 1.0.0
+	 * @return array|false Script data array or false if templates not found.
+	 */
+	private function prepare_script_data() {
+		$header_template_path  = plugin_dir_path( __FILE__ ) . 'templates/search-header.php';
+		$results_template_path = plugin_dir_path( __FILE__ ) . 'templates/search-results.php';
+
+		if ( ! file_exists( $header_template_path ) || ! file_exists( $results_template_path ) ) {
+			return false;
+		}
+
+		// Get search experience setting.
+		$search_experience = get_option( 'searchcraft_search_experience', 'full' );
+
+		// Capture header template content.
+		ob_start();
+		include $header_template_path;
+		$header_template_content = ob_get_clean();
+
+		// Capture results template content.
+		ob_start();
+		include $results_template_path;
+		$results_template_content = ob_get_clean();
+
+		// Get configuration options.
+		$results_container_id    = get_option( 'searchcraft_results_container_id', '' );
+		$popover_container_id    = get_option( 'searchcraft_popover_container_id', '' );
+		$popover_insert_behavior = get_option( 'searchcraft_popover_element_behavior', 'replace' );
+
+		// Return all data in a single namespaced object.
+		return array(
+			'searchExperience'      => $search_experience,
+			'headerContent'         => $header_template_content,
+			'resultsContent'        => $results_template_content,
+			'resultsContainerId'    => $results_container_id,
+			'popoverContainerId'    => $popover_container_id,
+			'popoverInsertBehavior' => $popover_insert_behavior,
+		);
+	}
+
+	/**
+	 * Enqueue Searchcraft SDK assets.
+	 *
+	 * @since 1.0.0
+	 */
+	public function enqueue_sdk_assets() {
+		if ( ! $this->is_sdk_ready() ) {
+			return;
+		}
+
+		// Get common theme script dependencies.
+		$script_deps = array();
+		if ( wp_script_is( 'theme-script', 'registered' ) ) {
+			$script_deps[] = 'theme-script';
+		}
+		if ( wp_script_is( get_template() . '-script', 'registered' ) ) {
+			$script_deps[] = get_template() . '-script';
+		}
+		if ( wp_script_is( get_template() . '-theme', 'registered' ) ) {
+			$script_deps[] = get_template() . '-theme';
+		}
+
+		wp_enqueue_script(
+			$this->plugin_name . '-sdk-components',
+			plugin_dir_url( __FILE__ ) . 'sdk_0.11.1/components/index.js',
+			$script_deps,
+			$this->version,
+			true
+		);
+
+		add_filter( 'script_loader_tag', array( $this, 'add_module_type_to_script' ), 10, 3 );
+		$sdk_script_deps = array_merge( $script_deps, array( $this->plugin_name . '-sdk-components' ) );
+		wp_enqueue_script(
+			$this->plugin_name . '-sdk-integration',
+			plugin_dir_url( __FILE__ ) . 'js/searchcraft-sdk-integration.js',
+			$sdk_script_deps,
+			$this->version,
+			true
+		);
+
+		$js_data = $this->get_js_config();
+
+		wp_localize_script(
+			$this->plugin_name . '-sdk-integration',
+			'searchcraft_config',
+			$js_data
+		);
+
+		// Get common theme style dependencies.
+		$style_deps = array();
+		if ( wp_style_is( 'theme-style', 'registered' ) ) {
+			$style_deps[] = 'theme-style';
+		}
+		if ( wp_style_is( get_template() . '-style', 'registered' ) ) {
+			$style_deps[] = get_template() . '-style';
+		}
+		if ( wp_style_is( get_stylesheet(), 'registered' ) ) {
+			$style_deps[] = get_stylesheet();
+		}
+
+		// Add CSS for Searchcraft components.
+		wp_enqueue_style(
+			$this->plugin_name . '-sdk-hologram-styles',
+			plugin_dir_url( __FILE__ ) . 'sdk_0.11.1/themes/hologram.css',
+			$style_deps,
+			$this->version,
+			'all'
+		);
+		wp_enqueue_style(
+			$this->plugin_name . '-sdk-styles',
+			plugin_dir_url( __FILE__ ) . 'css/searchcraft-sdk.css',
+			$style_deps,
+			$this->version,
+			'all'
+		);
+	}
 
 	/**
 	 * Override search template to load blank page when Searchcraft is active.
@@ -230,5 +390,83 @@ class Searchcraft_Public {
 		}
 
 		return $template;
+	}
+
+	/**
+	 * Replace WordPress search forms with Searchcraft popover forms.
+	 *
+	 * @since 1.0.0
+	 * @param string $form The search form HTML.
+	 * @return string Modified search form HTML.
+	 */
+	public function replace_search_form( $form ) {
+		if ( ! $this->is_sdk_ready() ) {
+			return $form;
+		}
+
+		// Get the search form location setting.
+		$search_form_location = get_option( 'searchcraft_search_form_location', 'header' );
+
+		// Determine the context based on current location.
+		$context = $this->get_search_form_context();
+
+		// Only replace forms in the configured location.
+		if ( $search_form_location !== $context && 'all' !== $search_form_location ) {
+			return $form;
+		}
+
+		// Return empty form to replace with Searchcraft components.
+		$searchcraft_form = '';
+		return $searchcraft_form;
+	}
+
+	/**
+	 * Determine the context of the current search form.
+	 *
+	 * @since 1.0.0
+	 * @return string The context (header, sidebar, footer, or unknown).
+	 */
+	private function get_search_form_context() {
+		// This is a simplified context detection.
+		// In a real implementation, you might need more sophisticated detection.
+
+		// Check if we're in admin bar.
+		if ( is_admin_bar_showing() ) {
+			return 'header';
+		}
+
+		// Check current action/filter context.
+		$current_filter = current_filter();
+
+		// Common header contexts.
+		if ( in_array( $current_filter, array( 'wp_nav_menu_items', 'wp_nav_menu' ), true ) ) {
+			return 'header';
+		}
+
+		// Check for sidebar context.
+		if ( is_active_sidebar( 'sidebar-1' ) || is_active_sidebar( 'primary' ) ) {
+			return 'sidebar';
+		}
+
+		// Default to header for now.
+		return 'header';
+	}
+
+	/**
+	 * Add type="module" attribute to SearchCraft SDK integration script.
+	 *
+	 * @since 1.0.0
+	 * @param string $tag    The script tag.
+	 * @param string $handle The script handle.
+	 * @param string $src    The script source URL.
+	 * @return string Modified script tag.
+	 */
+	public function add_module_type_to_script( $tag, $handle, $src ) {
+		if ( $handle === $this->plugin_name . '-sdk-components' || $handle === $this->plugin_name . '-sdk-integration' ) {
+			$tag = str_replace( '<script ', '<script type="module" ', $tag );
+		}
+
+		unset( $src );
+		return $tag;
 	}
 }
