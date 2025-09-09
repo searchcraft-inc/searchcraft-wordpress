@@ -66,3 +66,10 @@ Documentation for the Searchcraft plugin can be found on our [developer document
 If you would like to report an issue or suggest an enhancement you may contact the team on our [issues GitHub repository](https://github.com/searchcraft-inc/searchcraft-issues). We do not provide support on the WordPress.org forums.
 
 Searchcraft Cloud customers may also reach out via our Discord server for assistance or to request a custom feature.
+
+== Changelog ==
+* 1.0.0 - Initial release. Uses Searchcraft JavaScript SDK v0.11.1 and Searchcraft PHP Client v0.7.5
+
+== External services ==
+
+This plugin connects to an API either hosted by Searchcraft, Inc. or self-hosted by the user. Post and Page content is sent to the API for indexing on an opt-in basis. No user data or site content is shared with any third parties.
