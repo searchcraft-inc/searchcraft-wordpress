@@ -113,7 +113,7 @@ class Searchcraft_SDK_Integration_Test {
 		// Test with mock configuration.
 		if ( method_exists( 'Searchcraft_Config', 'set_multiple' ) ) {
 			$test_config = array(
-				'endpoint_url' => 'https://api.searchcraft.io',
+				'endpoint_url' => 'http://localhost:8000',
 				'index_id'     => 'test_index',
 				'read_key'     => 'test_read_key_1234567890',
 			);

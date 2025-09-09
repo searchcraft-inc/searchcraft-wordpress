@@ -474,15 +474,16 @@ class Searchcraft_Admin {
 
 		// Handle save request.
 		if ( isset( $post_data['searchcraft_save_config'] ) && isset( $post_data['searchcraft_config'] ) ) {
-			$config_data = $post_data['searchcraft_config'];
+			// Sanitize the nested config array first.
+			$config_data = is_array( $post_data['searchcraft_config'] ) ? $post_data['searchcraft_config'] : array();
 
-			// Sanitize the input data.
+			// Sanitize the input data with proper validation.
 			$sanitized_config = array(
-				'endpoint_url' => esc_url_raw( $config_data['endpoint_url'] ),
-				'index_id'     => sanitize_text_field( $config_data['index_id'] ),
-				'read_key'     => sanitize_text_field( $config_data['read_key'] ),
-				'ingest_key'   => sanitize_text_field( $config_data['ingest_key'] ),
-				'cortex_url'   => ! empty( $config_data['cortex_url'] ) ? esc_url_raw( $config_data['cortex_url'] ) : '',
+				'endpoint_url' => isset( $config_data['endpoint_url'] ) ? esc_url_raw( wp_unslash( $config_data['endpoint_url'] ) ) : '',
+				'index_id'     => isset( $config_data['index_id'] ) ? sanitize_text_field( wp_unslash( $config_data['index_id'] ) ) : '',
+				'read_key'     => isset( $config_data['read_key'] ) ? sanitize_text_field( wp_unslash( $config_data['read_key'] ) ) : '',
+				'ingest_key'   => isset( $config_data['ingest_key'] ) ? sanitize_text_field( wp_unslash( $config_data['ingest_key'] ) ) : '',
+				'cortex_url'   => isset( $config_data['cortex_url'] ) && ! empty( $config_data['cortex_url'] ) ? esc_url_raw( wp_unslash( $config_data['cortex_url'] ) ) : '',
 			);
 
 			// Validate the configuration.
@@ -595,6 +596,11 @@ class Searchcraft_Admin {
 	 * @param array $request The $_POST request from the form submission.
 	 */
 	private function searchcraft_on_search_experience_config_request( $request ) {
+		// Ensure request is an array.
+		if ( ! is_array( $request ) ) {
+			return;
+		}
+
 		$updated_settings = array();
 
 		// Handle search experience type.
@@ -626,9 +632,21 @@ class Searchcraft_Admin {
 			$updated_settings['placeholder'] = $placeholder;
 		}
 
+		// Handle popover container ID.
+		if ( isset( $request['searchcraft_popover_container_id'] ) ) {
+			$container_id = sanitize_text_field( wp_unslash( $request['searchcraft_popover_container_id'] ) );
+
+			// Remove any invalid characters for HTML IDs.
+			$container_id = preg_replace( '/[^a-zA-Z0-9_-]/', '', $container_id );
+
+			// Save the setting.
+			update_option( 'searchcraft_popover_container_id', $container_id );
+			$updated_settings['popover_container_id'] = $container_id;
+		}
+
 		// Handle input component horizontal padding.
 		if ( isset( $request['searchcraft_input_padding'] ) ) {
-			$padding = intval( $request['searchcraft_input_padding'] );
+			$padding = absint( wp_unslash( $request['searchcraft_input_padding'] ) );
 
 			// Validate range (0-200px).
 			if ( $padding < 0 ) {
@@ -649,7 +667,7 @@ class Searchcraft_Admin {
 
 		// Handle input component vertical padding.
 		if ( isset( $request['searchcraft_input_vertical_padding'] ) ) {
-			$vertical_padding = intval( $request['searchcraft_input_vertical_padding'] );
+			$vertical_padding = absint( wp_unslash( $request['searchcraft_input_vertical_padding'] ) );
 
 			// Validate range (0-100px).
 			if ( $vertical_padding < 0 ) {
@@ -667,14 +685,14 @@ class Searchcraft_Admin {
 
 		// Handle input border radius.
 		if ( isset( $request['searchcraft_input_border_radius'] ) ) {
-			$border_radius = $request['searchcraft_input_border_radius'];
+			$border_radius = sanitize_text_field( wp_unslash( $request['searchcraft_input_border_radius'] ) );
 
 			// Allow empty value (no default).
 			if ( '' === $border_radius ) {
 				update_option( 'searchcraft_input_border_radius', '' );
 				$updated_settings['border_radius'] = 'default';
 			} else {
-				$border_radius = intval( $border_radius );
+				$border_radius = absint( $border_radius );
 
 				if ( $border_radius < 0 ) {
 					$border_radius = 0;
@@ -689,7 +707,7 @@ class Searchcraft_Admin {
 
 		// Handle input width.
 		if ( isset( $request['searchcraft_input_width'] ) ) {
-			$input_width = intval( $request['searchcraft_input_width'] );
+			$input_width = absint( wp_unslash( $request['searchcraft_input_width'] ) );
 
 			// Validate range (1-100%).
 			if ( $input_width < 1 ) {
@@ -756,6 +774,11 @@ class Searchcraft_Admin {
 	 * @param array $request The $_POST request from the form submission.
 	 */
 	private function searchcraft_on_search_results_config_request( $request ) {
+		// Ensure request is an array.
+		if ( ! is_array( $request ) ) {
+			return;
+		}
+
 		$updated_settings = array();
 
 		// Handle AI summary setting.
@@ -777,7 +800,7 @@ class Searchcraft_Admin {
 
 		// Handle results per page setting.
 		if ( isset( $request['searchcraft_results_per_page'] ) ) {
-			$results_per_page = intval( $request['searchcraft_results_per_page'] );
+			$results_per_page = absint( wp_unslash( $request['searchcraft_results_per_page'] ) );
 
 			// Validate the results per page value (between 1 and 100).
 			if ( $results_per_page < 1 ) {
@@ -900,25 +923,34 @@ class Searchcraft_Admin {
 	 * @param array $request The $_POST request from the form submission.
 	 */
 	private function searchcraft_on_advanced_config_request( $request ) {
+		// Ensure request is an array.
+		if ( ! is_array( $request ) ) {
+			return;
+		}
+
 		$updated_settings = array();
 
 		// Handle custom CSS setting.
 		if ( isset( $request['searchcraft_custom_css'] ) ) {
-			$custom_css = wp_strip_all_tags( wp_unslash( $request['searchcraft_custom_css'] ) );
-			// Basic CSS sanitization - allow CSS properties and values.
+			// Sanitize CSS - strip tags but preserve CSS syntax.
+			$custom_css = sanitize_textarea_field( wp_unslash( $request['searchcraft_custom_css'] ) );
+			// Additional CSS-specific sanitization to remove potential XSS.
+			$custom_css = preg_replace( '/javascript\s*:/i', '', $custom_css );
+			$custom_css = preg_replace( '/expression\s*\(/i', '', $custom_css );
+			$custom_css = preg_replace( '/@import/i', '', $custom_css );
 			update_option( 'searchcraft_custom_css', $custom_css );
 			$updated_settings['custom_css'] = true;
 		}
 
 		// Handle result template callback function setting.
 		if ( isset( $request['searchcraft_result_template'] ) ) {
-			$result_template = wp_unslash( $request['searchcraft_result_template'] );
-			// Sanitization for JavaScript callback - remove dangerous script tags but preserve HTML in template literals.
+			$result_template = sanitize_textarea_field( wp_unslash( $request['searchcraft_result_template'] ) );
+			// Additional sanitization for JavaScript callback - remove dangerous patterns.
 			$result_template = preg_replace( '/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/mi', '', $result_template );
 			// Remove potential XSS vectors while preserving template literal HTML.
 			$result_template = preg_replace( '/javascript\s*:/i', '', $result_template );
 			$result_template = preg_replace( '/on\w+\s*=/i', '', $result_template );
-			// Trim whitespace but don't strip HTML tags needed for template literals.
+			$result_template = preg_replace( '/eval\s*\(/i', '', $result_template );
 			$result_template = trim( $result_template );
 			update_option( 'searchcraft_result_template', $result_template );
 			$updated_settings['result_template'] = true;
@@ -927,7 +959,7 @@ class Searchcraft_Admin {
 		// Handle results container ID setting.
 		if ( isset( $request['searchcraft_results_container_id'] ) ) {
 			$results_container_id = sanitize_text_field( wp_unslash( $request['searchcraft_results_container_id'] ) );
-
+			// Remove any invalid characters for HTML IDs.
 			$results_container_id = preg_replace( '/[^a-zA-Z0-9_-]/', '', $results_container_id );
 			update_option( 'searchcraft_results_container_id', $results_container_id );
 			$updated_settings['results_container_id'] = true;
