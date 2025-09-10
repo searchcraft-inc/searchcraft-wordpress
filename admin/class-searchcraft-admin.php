@@ -95,7 +95,7 @@ class Searchcraft_Admin {
 	}
 
 	/**
-	 * Get the year of the oldest post and store as transient.
+	 * Get the year of the oldest post and store as transient. This is used for date filters.
 	 *
 	 * @since    1.0.0
 	 * @return   int    The year of the oldest post
@@ -107,14 +107,23 @@ class Searchcraft_Admin {
 		if ( false === $oldest_year ) {
 			global $wpdb;
 
-			// Query to get the oldest post date.
-			$oldest_post = $wpdb->get_var(
-				"SELECT post_date FROM {$wpdb->posts}
-				 WHERE post_status = 'publish'
-				 AND post_type = 'post'
-				 ORDER BY post_date ASC
-				 LIMIT 1"
-			);
+			// Check object cache first.
+			$cache_key   = 'searchcraft_oldest_post_date';
+			$oldest_post = wp_cache_get( $cache_key );
+
+			if ( false === $oldest_post ) {
+				// Query to get the oldest post date.
+				$oldest_post = $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+					"SELECT post_date FROM {$wpdb->posts}
+					 WHERE post_status = 'publish'
+					 AND post_type = 'post'
+					 ORDER BY post_date ASC
+					 LIMIT 1"
+				);
+
+				// Cache the database result for 1 hour.
+				wp_cache_set( $cache_key, $oldest_post, '', HOUR_IN_SECONDS );
+			}
 
 			if ( $oldest_post ) {
 				$oldest_year = (int) gmdate( 'Y', strtotime( $oldest_post ) );
@@ -396,7 +405,7 @@ class Searchcraft_Admin {
 			// Route the action to the appropriate handler method.
 			switch ( $action ) {
 				case 'config':
-					$config_data = isset( $_POST['searchcraft_config'] ) && is_array( $_POST['searchcraft_config'] ) ? $_POST['searchcraft_config'] : array(); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+					$config_data = isset( $_POST['searchcraft_config'] ) && is_array( $_POST['searchcraft_config'] ) ? $_POST['searchcraft_config'] : array(); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized,WordPress.Security.ValidatedSanitizedInput.MissingUnslash
 					$reset_flag  = isset( $_POST['searchcraft_reset_config'] );
 					$save_flag   = isset( $_POST['searchcraft_save_config'] );
 					$this->searchcraft_on_config_request( $config_data, $reset_flag, $save_flag );
