@@ -23,7 +23,15 @@ jobs:
           rm -rf /tmp/wordpress-svn
           mkdir -p /tmp/wordpress-svn
           svn checkout https://plugins.svn.wordpress.org/searchcraft/ /tmp/wordpress-svn
-          rsync -av --delete --exclude='.git' --exclude='.github' ./ /tmp/wordpress-svn/trunk/
+          rsync -av --delete \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='vendor/bin' \
+            --exclude='tests' \
+            --exclude='scripts' \
+            --exclude='.gitignore' \
+            --exclude='.vscode' \
+            ./ /tmp/wordpress-svn/trunk/
 
       - name: Get plugin version
         id: get_version
