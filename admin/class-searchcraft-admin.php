@@ -95,7 +95,7 @@ class Searchcraft_Admin {
 	}
 
 	/**
-	 * Get the year of the oldest post and store as transient.
+	 * Get the year of the oldest post and store as transient. This is used for date filters.
 	 *
 	 * @since    1.0.0
 	 * @return   int    The year of the oldest post
@@ -107,14 +107,23 @@ class Searchcraft_Admin {
 		if ( false === $oldest_year ) {
 			global $wpdb;
 
-			// Query to get the oldest post date.
-			$oldest_post = $wpdb->get_var(
-				"SELECT post_date FROM {$wpdb->posts}
-				 WHERE post_status = 'publish'
-				 AND post_type = 'post'
-				 ORDER BY post_date ASC
-				 LIMIT 1"
-			);
+			// Check object cache first.
+			$cache_key   = 'searchcraft_oldest_post_date';
+			$oldest_post = wp_cache_get( $cache_key );
+
+			if ( false === $oldest_post ) {
+				// Query to get the oldest post date.
+				$oldest_post = $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+					"SELECT post_date FROM {$wpdb->posts}
+					 WHERE post_status = 'publish'
+					 AND post_type = 'post'
+					 ORDER BY post_date ASC
+					 LIMIT 1"
+				);
+
+				// Cache the database result for 1 hour.
+				wp_cache_set( $cache_key, $oldest_post, '', HOUR_IN_SECONDS );
+			}
 
 			if ( $oldest_post ) {
 				$oldest_year = (int) gmdate( 'Y', strtotime( $oldest_post ) );
@@ -145,7 +154,7 @@ class Searchcraft_Admin {
 	 * @since 1.0.0
 	 */
 	public function enqueue_styles() {
-		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/searchcraft-admin.css', array(), $this->plugin_version, 'all' );
+		wp_enqueue_style( $this->plugin_name . '-admin-styles', plugin_dir_url( __FILE__ ) . 'css/searchcraft-admin.css', array(), $this->plugin_version, 'all' );
 	}
 
 	/**
@@ -154,7 +163,7 @@ class Searchcraft_Admin {
 	 * @since 1.0.0
 	 */
 	public function enqueue_scripts() {
-		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/searchcraft-admin.js', array( 'jquery' ), $this->plugin_version, false );
+		wp_enqueue_script( $this->plugin_name . '-admin-js', plugin_dir_url( __FILE__ ) . 'js/searchcraft-admin.js', array(), $this->plugin_version, false );
 	}
 
 	/**
@@ -396,7 +405,7 @@ class Searchcraft_Admin {
 			// Route the action to the appropriate handler method.
 			switch ( $action ) {
 				case 'config':
-					$config_data = isset( $_POST['searchcraft_config'] ) && is_array( $_POST['searchcraft_config'] ) ? $_POST['searchcraft_config'] : array(); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+					$config_data = isset( $_POST['searchcraft_config'] ) && is_array( $_POST['searchcraft_config'] ) ? $_POST['searchcraft_config'] : array(); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized,WordPress.Security.ValidatedSanitizedInput.MissingUnslash
 					$reset_flag  = isset( $_POST['searchcraft_reset_config'] );
 					$save_flag   = isset( $_POST['searchcraft_save_config'] );
 					$this->searchcraft_on_config_request( $config_data, $reset_flag, $save_flag );
@@ -496,6 +505,10 @@ class Searchcraft_Admin {
 				$success = Searchcraft_Config::set_multiple( $sanitized_config );
 
 				if ( $success ) {
+					// Clear cached data since configuration has changed.
+					delete_transient( 'searchcraft_index_stats' );
+					delete_transient( 'searchcraft_index' );
+
 					add_action(
 						'admin_notices',
 						function () {
@@ -1172,11 +1185,18 @@ class Searchcraft_Admin {
 			}
 		}
 
+		// Get the current index ID from configuration instead of using the constant
+		// which may be outdated if configuration was just saved.
+		$index_id = Searchcraft_Config::get_index_id();
+		if ( empty( $index_id ) ) {
+			return null;
+		}
+
 		// Attempt to fetch the index from the client.
 		try {
 			$response = $this->searchcraft_get_ingest_client()
 				->index()
-				->getIndex( SEARCHCRAFT_INDEX_ID );
+				->getIndex( $index_id );
 			$index    = $response['data'];
 		} catch ( \Exception $e ) {
 			try {
@@ -1184,7 +1204,7 @@ class Searchcraft_Admin {
 				$this->searchcraft_create_index();
 				$response = $this->searchcraft_get_ingest_client()
 					->index()
-					->getIndex( SEARCHCRAFT_INDEX_ID );
+					->getIndex( $index_id );
 				$index    = $response['data'];
 			} catch ( \Exception $e ) {
 				Searchcraft_Helper_Functions::searchcraft_error_log( $e );
@@ -1216,9 +1236,17 @@ class Searchcraft_Admin {
 			return null;
 		}
 
+		// Get the current index ID from configuration instead of using the constant
+		// which may be outdated if configuration was just saved.
+		$index_id = Searchcraft_Config::get_index_id();
+		if ( empty( $index_id ) ) {
+			Searchcraft_Helper_Functions::searchcraft_error_log( 'Searchcraft: Index ID is not configured.' );
+			return null;
+		}
+
 		try {
 			// Fetch index statistics from the client.
-			$response = $ingest_client->index()->getIndexStats( SEARCHCRAFT_INDEX_ID );
+			$response = $ingest_client->index()->getIndexStats( $index_id );
 			$stats    = $response['data'] ?? $response;
 
 			// Cache the stats for 5 minutes.

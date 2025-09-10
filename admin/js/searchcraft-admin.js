@@ -8,6 +8,9 @@
 document.addEventListener('DOMContentLoaded', function() {
 	// Initialize color pickers
 	initColorPickers();
+
+	// Initialize password toggle functionality
+	initPasswordToggle();
 });
 
 /**
@@ -40,6 +43,37 @@ function initColorPickers() {
 					hexInput.name = colorPicker.id;
 				});
 			}
+		}
+	});
+}
+
+/**
+ * Initialize password toggle functionality
+ */
+function initPasswordToggle() {
+	const toggleElements = document.querySelectorAll('[data-toggle-password-visibility]');
+
+	toggleElements.forEach(function(element) {
+		const input = element.querySelector('input:not([type="hidden"])');
+		const button = element.querySelector('button');
+
+		if (input && button) {
+			button.addEventListener('click', function() {
+				const isVisible = input.type !== 'password';
+
+				// Toggle aria-label
+				button.setAttribute('aria-label', isVisible ? 'Show' : 'Hide');
+
+				// Toggle icon class on first child
+				const icon = button.firstElementChild;
+				if (icon) {
+					icon.classList.toggle('dashicons-visibility');
+					icon.classList.toggle('dashicons-hidden');
+				}
+
+				// Toggle input type
+				input.type = isVisible ? 'password' : 'text';
+			});
 		}
 	});
 }

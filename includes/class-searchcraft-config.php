@@ -257,6 +257,9 @@ class Searchcraft_Config {
 	 * @return bool True on success, false on failure.
 	 */
 	public static function reset() {
+		// Clear cached data since configuration has been reset.
+		delete_transient( 'searchcraft_index_stats' );
+		delete_transient( 'searchcraft_index' );
 		return update_option( self::OPTION_NAME, self::$defaults );
 	}
 
