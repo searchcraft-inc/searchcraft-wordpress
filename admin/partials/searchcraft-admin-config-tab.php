@@ -80,7 +80,7 @@ $has_read_key   = ! empty( Searchcraft_Config::get_read_key() );
 							name="searchcraft_config[index_id]"
 							value="<?php echo esc_attr( $config['index_id'] ); ?>"
 							class="regular-text"
-							pattern="[a-zA-Z0-9_-]+"
+							pattern="[^ ]+"
 							required
 						/>
 						<p class="description">
@@ -95,6 +95,7 @@ $has_read_key   = ! empty( Searchcraft_Config::get_read_key() );
 					<td>
 						<div class="searchcraft-password-input-wrapper" data-toggle-password-visibility>
 							<input
+								autocomplete="off"
 								type="password"
 								id="searchcraft_ingest_key"
 								name="searchcraft_config[ingest_key]"
@@ -117,6 +118,7 @@ $has_read_key   = ! empty( Searchcraft_Config::get_read_key() );
 					<td>
 						<div class="searchcraft-password-input-wrapper" data-toggle-password-visibility>
 							<input
+								autocomplete="off"
 								type="password"
 								id="searchcraft_read_key"
 								name="searchcraft_config[read_key]"
