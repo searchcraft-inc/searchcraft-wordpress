@@ -10,7 +10,10 @@
 	 * @package    Searchcraft
 	 * @subpackage Searchcraft/admin/partials
 	 */
-
+	// Prevent direct access.
+	if ( ! defined( 'ABSPATH' ) ) {
+		exit;
+	}
 	$post_meta  = get_post_meta( $post->ID, '_searchcraft_exclude_from_index', true );
 	$is_checked = isset( $post_meta ) && '1' === $post_meta ? 'checked' : '';
 	wp_nonce_field( 'searchcraft_custom_meta_boxes', 'searchcraft_exclude_from_searchcraft_nonce' );

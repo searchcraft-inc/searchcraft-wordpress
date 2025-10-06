@@ -10,7 +10,10 @@
  * @package    Searchcraft
  * @subpackage Searchcraft/admin/partials
  */
-
+// Prevent direct access.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 $is_configured = Searchcraft_Config::is_configured();
 $allowed_tabs  = array( 'overview', 'config', 'layout' );
 $requested_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['tab'] ) ) : 'overview'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
