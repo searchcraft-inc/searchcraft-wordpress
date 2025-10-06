@@ -5,13 +5,6 @@
  * @since 1.0.0
  */
 
-document.addEventListener('DOMContentLoaded', function() {
-	// Initialize color pickers
-	initColorPickers();
-
-	// Initialize password toggle functionality
-	initPasswordToggle();
-});
 
 /**
  * Initialize color picker functionality
@@ -77,3 +70,51 @@ function initPasswordToggle() {
 		}
 	});
 }
+// Layout tab form toggling
+function toggleFormFields() {
+	const isFullSelected = fullRadio && fullRadio.checked;
+
+	// Show/hide full experience fields
+	fullOnlyRows.forEach(function(row) {
+		if (isFullSelected) {
+			row.classList.remove('hidden');
+		} else {
+			row.classList.add('hidden');
+		}
+	});
+
+	// Show/hide popover fields
+	popoverOnlyRows.forEach(function(row) {
+		if (!isFullSelected) {
+			row.classList.remove('hidden');
+		} else {
+			row.classList.add('hidden');
+		}
+	});
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+	// Initialize color pickers
+	initColorPickers();
+
+	// Initialize password toggle functionality
+	initPasswordToggle();
+
+	// layout tab functionality
+	if (document.querySelector('.searchcraft-layout')) {
+		const fullRadio = document.querySelector('input[name="searchcraft_search_experience"][value="full"]');
+		const popoverRadio = document.querySelector('input[name="searchcraft_search_experience"][value="popover"]');
+		const fullOnlyRows = document.querySelectorAll('.searchcraft-full-only');
+		const popoverOnlyRows = document.querySelectorAll('.searchcraft-popover-only');
+		// Initial state
+		toggleFormFields();
+
+		// Add event listeners
+		if (fullRadio) {
+			fullRadio.addEventListener('change', toggleFormFields);
+		}
+		if (popoverRadio) {
+			popoverRadio.addEventListener('change', toggleFormFields);
+		}
+	}
+});
