@@ -55,6 +55,7 @@ if [ -d "$TARGET_DIR/vendor/php-stubs" ]; then
     rm -rf "$TARGET_DIR/vendor/php-stubs"
 fi
 rm -rf "$TARGET_DIR/local_publish_prep.sh"
+rm -rf "$TARGET_DIR/.github"
 rm -rf "$TARGET_DIR/.gitignore"
 rm -rf "$TARGET_DIR/.vscode"
 rm -rf "$TARGET_DIR/intelephense.json"
