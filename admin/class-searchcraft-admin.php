@@ -305,37 +305,6 @@ class Searchcraft_Admin {
 	}
 
 	/**
-	 * TODO this needs to be re-worked. It is unlikely that the WP plugin will have access to an admin key.
-	 * Get the initialized admin Searchcraft client instance.
-	 *
-	 * Note: This method now uses the ingest key for admin operations when available.
-	 * For initial bootstrap, it falls back to an admin key if configured.
-	 *
-	 * @since 1.0.0
-	 * @return object|null The initialized client instance.
-	 */
-	public function searchcraft_get_admin_client() {
-		// First, try to use the ingest key for admin operations.
-		$ingest_key = Searchcraft_Config::get_ingest_key();
-
-		if ( ! empty( $ingest_key ) ) {
-			return $this->searchcraft_create_client( $ingest_key, 'ingest' );
-		}
-
-		// If no ingest key is available, check for a bootstrap admin key.
-		$admin_key = defined( 'SEARCHCRAFT_ADMIN_KEY' ) ? SEARCHCRAFT_ADMIN_KEY : getenv( 'SEARCHCRAFT_ADMIN_KEY' );
-
-		if ( ! empty( $admin_key ) ) {
-			// Use admin key for bootstrap operations.
-			return $this->searchcraft_create_client( $admin_key, 'admin' );
-		}
-
-		// If neither key is available, log an error.
-		Searchcraft_Helper_Functions::searchcraft_error_log( 'Searchcraft: No ingest key or admin key available for admin operations. Please configure SEARCHCRAFT_ADMIN_KEY for initial setup.' );
-		return null;
-	}
-
-	/**
 	 * Get the initialized read Searchcraft client instance.
 	 *
 	 * @since 1.0.0
@@ -774,8 +743,12 @@ class Searchcraft_Admin {
 				if ( ! empty( $messages ) ) {
 					echo '<div class="notice notice-success is-dismissible">';
 					echo '<p><strong>Success:</strong> Search experience settings updated.</p>';
-					// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-					echo '<ul><li>' . implode( '</li><li>', $messages ) . '</li></ul>';
+					echo '<ul>';
+					foreach ( $messages as $message ) {
+						// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- $message is already escaped when added to array
+						echo '<li>' . $message . '</li>';
+					}
+					echo '</ul>';
 					echo '</div>';
 				}
 			}
@@ -923,8 +896,12 @@ class Searchcraft_Admin {
 				if ( ! empty( $messages ) ) {
 					echo '<div class="notice notice-success is-dismissible">';
 					echo '<p><strong>Success:</strong> Search results settings updated.</p>';
-					// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-					echo '<ul><li>' . implode( '</li><li>', $messages ) . '</li></ul>';
+					echo '<ul>';
+					foreach ( $messages as $message ) {
+						// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- $message is already escaped when added to array
+						echo '<li>' . $message . '</li>';
+					}
+					echo '</ul>';
 					echo '</div>';
 				}
 			}
@@ -1028,8 +1005,12 @@ class Searchcraft_Admin {
 				if ( ! empty( $messages ) ) {
 					echo '<div class="notice notice-success is-dismissible">';
 					echo '<p><strong>Success:</strong> Advanced settings updated.</p>';
-					// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-					echo '<ul><li>' . implode( '</li><li>', $messages ) . '</li></ul>';
+					echo '<ul>';
+					foreach ( $messages as $message ) {
+						// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- $message is already escaped when added to array
+						echo '<li>' . $message . '</li>';
+					}
+					echo '</ul>';
 					echo '</div>';
 				}
 			}
@@ -1073,148 +1054,6 @@ class Searchcraft_Admin {
 		}
 
 		return false;
-	}
-
-
-
-	/**
-	 * Processes the schema request and updates the index.
-	 *
-	 * Filters and normalizes submitted field definitions, rebuilds the index schema,
-	 * and updates it via the client.
-	 *
-	 * @since 1.0.0
-	 * @param object $request The $_POST request from the form submission.
-	 */
-	private function searchcraft_on_schema_request( $request ) {
-		$new_index = $request;
-
-		// Filter out fields that are not marked as 'indexed'.
-		$new_index['fields'] = array_filter(
-			$new_index['fields'],
-			function ( $field ) {
-				return (bool) $field['indexed'];
-			}
-		);
-
-		// Normalize each indexed field with proper type and default options.
-		foreach ( $new_index['fields'] as $field_key => &$field ) {
-			$sample_value = isset( $field['sample'] ) ? $field['sample'] : '';
-			// Handle special case where 'multi-text' serves as a placeholder for non-hierarchical taxonomies.
-			if ( isset( $field['type'] ) && 'multi-text' === $field['type'] ) {
-				$field_type = 'text';
-			} else {
-				// Use explicit type or infer from sample value.
-				$field_type = isset( $field['type'] ) ? $field['type'] : Searchcraft_Helper_Functions::searchcraft_detect_field_type( $sample_value );
-			}
-
-			// Retrieve default field config based on type.
-			$field         = Searchcraft_Helper_Functions::searchcraft_get_default_field_options( isset( $field['type'] ) ? $field['type'] : $field_type );
-			$field['type'] = $field_type;
-		}
-		unset( $field ); // Unset reference to avoid accidental use.
-
-		// Create a list of search fields, excluding fields of type 'facet.
-		$new_search_fields = array_filter(
-			$new_index['fields'],
-			function ( $field ) {
-				return ! isset( $field['type'] ) || 'facet' !== $field['type'];
-			},
-		);
-
-		// Load the existing index schema.
-		$current_index = $this->searchcraft_get_index();
-
-		// If index is not available, we can't proceed with schema update.
-		if ( ! $current_index || ! is_array( $current_index ) ) {
-			Searchcraft_Helper_Functions::searchcraft_error_log( 'Searchcraft: Cannot update schema - index configuration is not available.' );
-			return;
-		}
-
-		$index = $current_index;
-
-		// Keep only the weight multipliers that correspond to fields in $new_search_fields.
-		$index['weight_multipliers'] = array_intersect_key( $new_index['weight_multipliers'], $new_search_fields );
-		// Ensure all weight multiplier values are floats.
-		$index['weight_multipliers'] = array_map( 'floatval', $index['weight_multipliers'] );
-
-		// Update $index['fields'] in the index with the new schema.
-		$index['fields'] = $new_index['fields'];
-
-		// Preserve required system fields from old schema.
-		$index['fields']['id']        = $current_index['fields']['id'];
-		$index['fields']['post_type'] = $current_index['fields']['post_type'];
-
-		// Set $index['search_fields'] to the list of searchable (non-facet) field keys.
-		$index['search_fields'] = array_keys( $new_search_fields );
-
-		try {
-			$this->searchcraft_get_ingest_client()
-				->index()
-				->updateIndex( SEARCHCRAFT_INDEX_ID, $index );
-		} catch ( \Exception $e ) {
-			Searchcraft_Helper_Functions::searchcraft_error_log( $e );
-		} finally {
-			// Invalidate the cached index so it's re-fetched next time.
-			delete_transient( 'searchcraft_index' );
-		}
-	}
-
-	/**
-	 * Retrieves the current index definition from cache or the client.
-	 *
-	 * Attempts to use a transient cache first.
-	 * If the cache is empty or expired, it fetches the index from the client.
-	 * If the index does not exist, it creates one and attempts to retrieve it again.
-	 *
-	 * Caches the result for 10 minutes.
-	 *
-	 * @since 1.0.0
-	 */
-	public function searchcraft_get_index() {
-		// Try to fetch the index from the transient cache.
-		$index = get_transient( 'searchcraft_index' );
-
-		if ( $index ) {
-			if ( ! is_array( $index ) ) {
-				// If the cached data is not an array, reset the transient.
-				delete_transient( 'searchcraft_index' );
-				$index = null; // Re-fetch index from the client.
-			} else {
-				return $index;
-			}
-		}
-
-		// Get the current index ID from configuration instead of using the constant
-		// which may be outdated if configuration was just saved.
-		$index_id = Searchcraft_Config::get_index_id();
-		if ( empty( $index_id ) ) {
-			return null;
-		}
-
-		// Attempt to fetch the index from the client.
-		try {
-			$response = $this->searchcraft_get_ingest_client()
-				->index()
-				->getIndex( $index_id );
-			$index    = $response['data'];
-		} catch ( \Exception $e ) {
-			try {
-				// If fetching fails, attempt to create the index, then fetch it again.
-				$this->searchcraft_create_index();
-				$response = $this->searchcraft_get_ingest_client()
-					->index()
-					->getIndex( $index_id );
-				$index    = $response['data'];
-			} catch ( \Exception $e ) {
-				Searchcraft_Helper_Functions::searchcraft_error_log( $e );
-			}
-		}
-
-		// Cache the retrieved or created index for 10 minutes.
-		set_transient( 'searchcraft_index', $index, MINUTE_IN_SECONDS * 10 );
-
-		return $index;
 	}
 
 	/**
@@ -1296,64 +1135,6 @@ class Searchcraft_Admin {
 			'read'   => ! empty( $stored_read_key ) ? $stored_read_key : null,
 			'ingest' => ! empty( $stored_ingest_key ) ? $stored_ingest_key : null,
 		);
-
-		// If we already have both keys, return them.
-		if ( ! empty( $stored_read_key ) && ! empty( $stored_ingest_key ) ) {
-			return $keys;
-		}
-
-		// Fetch all application keys from the client.
-		// Use admin client to avoid circular dependency with ingest client.
-		// Successfully returns an empty array if none are present.
-		$admin_client = $this->searchcraft_get_admin_client();
-		if ( ! $admin_client ) {
-			// If no admin client is available, we can't fetch keys.
-			Searchcraft_Helper_Functions::searchcraft_error_log( 'Searchcraft: No admin client available to fetch keys. Please configure SEARCHCRAFT_ADMIN_KEY for initial setup.' );
-			return $keys; // Return whatever keys we have stored.
-		}
-		$response = $admin_client->authentication()->getApplicationKeys( 1 );
-
-		// If keys are returned, loop through and extract the ones for our index.
-		if ( ! empty( $response['data'] ) ) {
-			foreach ( $response['data'] as $key ) {
-				// Skip keys that are not associated with our index.
-				if ( ! in_array( SEARCHCRAFT_INDEX_ID, $key['allowed_indexes'], true ) ) {
-					continue;
-				}
-
-				// Permission level 1 = read key.
-				if ( 1 === $key['permissions'] && null === $keys['read'] ) {
-					$keys['read'] = $key['token'];
-				}
-
-				// Permission level 15 = ingest key.
-				if ( 15 === $key['permissions'] && null === $keys['ingest'] ) {
-					$keys['ingest'] = $key['token'];
-				}
-
-				// Exit early if both keys are found.
-				if ( isset( $keys['read'] ) && isset( $keys['ingest'] ) ) {
-					break;
-				}
-			}
-		} else {
-			// If no keys were returned, attempt to create them.
-			try {
-				$keys = $this->searchcraft_create_keys();
-			} catch ( \Exception $e ) {
-				Searchcraft_Helper_Functions::searchcraft_error_log( $e );
-			}
-		}
-
-		// Save the keys in configuration if both were successfully found or created.
-		if ( isset( $keys['read'] ) && isset( $keys['ingest'] ) ) {
-			Searchcraft_Config::set_read_key( $keys['read'] );
-			Searchcraft_Config::set_ingest_key( $keys['ingest'] );
-
-			// Also save as class properties for backward compatibility.
-			$this->searchcraft_read_key   = $keys['read'];
-			$this->searchcraft_ingest_key = $keys['ingest'];
-		}
 
 		return $keys;
 	}
