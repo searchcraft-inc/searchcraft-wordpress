@@ -100,112 +100,9 @@ class AdClient {
     async onAdContainerViewed(_data) { }
 }
 
-class AdMarketplaceClient extends AdClient {
-    /**
-     * Gets ads from the adMarketplace API based on the search term.
-     */
-    async getAds(_properties) {
-        const admConfig = this.config.admAdConfig;
-        if (!admConfig?.sub) {
-            console.error('No admSub specified in config.');
-            return [];
-        }
-        const paramString = new URLSearchParams({
-            partner: 'demofeed',
-            sub1: admConfig.sub,
-            qt: _properties.searchTerm,
-            v: '2.0',
-            rfr: 'searchcraft.io',
-            'results-ta': `${admConfig.textAdQuantity || 0}`,
-            'results-pa': `${admConfig.productAdQuantity || 0}`,
-        }).toString();
-        const path = `https://demofeed.is.ampfeed.com/is?${paramString}`;
-        const response = await fetch(path, { method: 'GET' });
-        const admResponse = (await response.json());
-        const productAds = admResponse.product_ads.map((ad) => ({
-            id: nanoid(),
-            adSource: 'adMarketplace',
-            admAdType: 'adm-product-ad',
-            admAd: ad,
-        }));
-        const textAds = admResponse.text_ads.map((ad) => ({
-            id: nanoid(),
-            adSource: 'adMarketplace',
-            admAdType: 'adm-text-ad',
-            admAd: ad,
-        }));
-        const allAds = productAds.concat(textAds);
-        return allAds;
-    }
-    async onAdContainerViewed(data) {
-        // Calls fetch on the impression url, to record an impression for adMarketplace
-        const item = data.adClientResponseItem;
-        if (item.admAd?.impression_url) {
-            fetch(item.admAd.impression_url);
-        }
-    }
-}
-
 class CustomAdClient extends AdClient {
     async getAds(_properties) {
         return [];
-    }
-}
-
-const AD_CALL_AFTER_FETCH_DELAY = 1000;
-class NativoClient extends AdClient {
-    adCallTimeout;
-    constructor(config) {
-        super(config);
-        this.addScriptTagToDocument();
-    }
-    async onQuerySubmitted(_properties) {
-        this.addScriptTagToDocument();
-    }
-    async onQueryFetched(_properties, response) {
-        if ((response.data.hits?.length || 0) === 0) {
-            this.removeScriptTagFromDocument();
-            return;
-        }
-        this.performAdCall(AD_CALL_AFTER_FETCH_DELAY);
-    }
-    async onInputCleared() {
-        this.removeScriptTagFromDocument();
-    }
-    performAdCall(delay) {
-        if (this.adCallTimeout) {
-            clearTimeout(this.adCallTimeout);
-        }
-        this.adCallTimeout = setTimeout(() => {
-            this.addScriptTagToDocument();
-            try {
-                // @ts-ignore
-                PostRelease?.Start({ ptd: [this.config.nativoPlacementId] });
-            }
-            catch (error) {
-                console.error(error);
-            }
-            // console.log('Performing ad call');
-        }, delay);
-    }
-    async getAds(_properties) {
-        return [];
-    }
-    addScriptTagToDocument() {
-        if (!document.head.querySelector('#nativo-tag')) {
-            const scriptTag = document.createElement('script');
-            scriptTag.type = 'text/javascript';
-            scriptTag.src = 'https://s.ntv.io/serve/load.js';
-            scriptTag.id = 'nativo-tag';
-            scriptTag.setAttribute('data-ntv-set-no-auto-start', 'true');
-            document.head.appendChild(scriptTag);
-        }
-    }
-    removeScriptTagFromDocument() {
-        const scriptTag = document.head.querySelector('#nativo-tag');
-        if (scriptTag) {
-            document.head.removeChild(scriptTag);
-        }
     }
 }
 
@@ -1526,12 +1423,6 @@ class SearchcraftCore {
         if (config.customAdConfig) {
             this.adClient = new CustomAdClient(config);
         }
-        else if (config.nativoConfig) {
-            this.adClient = new NativoClient(config);
-        }
-        else if (config.admAdConfig) {
-            this.adClient = new AdMarketplaceClient(config);
-        }
         this.emitEvent('initialized', {
             name: 'initialized',
         });
@@ -1676,74 +1567,6 @@ class SearchcraftCore {
 
 const name = "@searchcraft/javascript-sdk";
 const version = "0.11.1";
-const description = "Searchcraft Javascript SDK";
-const author = "Searchcraft Inc.";
-const license = "Apache-2.0";
-const module = "dist/components/index.js";
-const types = "dist/components/index.d.ts";
-const exports = {
-	".": {
-		"import": "./dist/components/index.js",
-		types: "./dist/components/index.d.ts"
-	},
-	"./dist/components/*": {
-		"import": "./dist/components/*",
-		types: "./dist/components/*"
-	},
-	"./hydrate": {
-		require: "./dist/hydrate/index.js",
-		"import": "./dist/hydrate/index.mjs",
-		types: "./dist/hydrate/index.d.ts"
-	},
-	"./themes/*.css": "./dist/themes/*.css"
-};
-const repository = {
-	type: "git",
-	url: "https://bitbucket.org/madebychalk/searchcraft-javascript-sdks/"
-};
-const files = [
-	"dist/"
-];
-const scripts = {
-	build: "stencil build",
-	docs: "typedoc --options typedoc.json",
-	dev: "stencil build --dev --watch",
-	test: "stencil test --spec --e2e",
-	"test.watch": "stencil test --spec --e2e --watchAll",
-	generate: "stencil generate"
-};
-const dependencies = {
-	classnames: "^2.3.2",
-	dompurify: "^3.2.4",
-	marked: "^15.0.12",
-	nanoid: "^5.0.9"
-};
-const devDependencies = {
-	"@stencil/core": "^4.7.0",
-	"@stencil/react-output-target": "^0.8.2",
-	"@stencil/sass": "^3.0.12",
-	"@stencil/vue-output-target": "^0.9.2",
-	"@thumbmarkjs/thumbmarkjs": "^0.16.1",
-	"@types/node": "^16.18.11",
-	nanoid: "^5.0.9",
-	zustand: "^5.0.1"
-};
-const packageJson = {
-	name: name,
-	"private": false,
-	version: version,
-	description: description,
-	author: author,
-	license: license,
-	module: module,
-	types: types,
-	exports: exports,
-	repository: repository,
-	files: files,
-	scripts: scripts,
-	dependencies: dependencies,
-	devDependencies: devDependencies
-};
 
 /**
  * @fileoverview entry point for your component library
@@ -1760,8 +1583,8 @@ const packageJson = {
 class Searchcraft extends SearchcraftCore {
     constructor(config, searchcraftId = undefined) {
         super(config, {
-            sdkName: packageJson.name,
-            sdkVersion: packageJson.version,
+            sdkName: name,
+            sdkVersion: version,
         }, searchcraftId);
     }
 }
