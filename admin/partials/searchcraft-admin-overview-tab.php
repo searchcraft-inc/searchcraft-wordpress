@@ -9,6 +9,10 @@
  * @subpackage Searchcraft/admin/partials
  */
 
+// Prevent direct access.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 $is_configured = Searchcraft_Config::is_configured();
 
 // Get index statistics if configured.

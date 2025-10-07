@@ -160,48 +160,4 @@ $has_read_key   = ! empty( Searchcraft_Config::get_read_key() );
 	</form>
 	</div>
 </div>
-
-<style>
-.searchcraft-config-section {
-	max-width: 800px;
-}
-
-.searchcraft-password-input-wrapper {
-	display: flex;
-	align-items: center;
-	gap: 5px;
-}
-
-.searchcraft-password-input {
-	flex: 1;
-}
-
-.searchcraft-config-actions {
-	margin-top: 20px;
-	display: flex;
-	gap: 10px;
-	align-items: center;
-}
-
-.searchcraft-config-info {
-	margin-top: 30px;
-	padding: 20px;
-	background: #f9f9f9;
-	border: 1px solid #ddd;
-	border-radius: 4px;
-}
-
-.searchcraft-config-info code {
-	background: #fff;
-	padding: 10px;
-	display: block;
-	margin: 10px 0;
-	border: 1px solid #ddd;
-	border-radius: 3px;
-}
-
-.notice.inline {
-	margin: 10px 0;
-	padding: 10px;
-}
-</style>
+<?php

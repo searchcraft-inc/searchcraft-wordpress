@@ -3,7 +3,7 @@
         'name' => 'searchcraft/wordpress',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => '50c9f7821178668d7cd672a6a227f750a2d3f207',
+        'reference' => '66afe43fa5e70c30808df7834ff972ea792b0227',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -84,6 +84,15 @@
             'install_path' => __DIR__ . '/../php-http/discovery',
             'aliases' => array(),
             'dev_requirement' => false,
+        ),
+        'php-stubs/wordpress-stubs' => array(
+            'pretty_version' => 'v6.8.2',
+            'version' => '6.8.2.0',
+            'reference' => '9c8e22e437463197c1ec0d5eaa9ddd4a0eb6d7f8',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../php-stubs/wordpress-stubs',
+            'aliases' => array(),
+            'dev_requirement' => true,
         ),
         'phpcsstandards/phpcsextra' => array(
             'pretty_version' => '1.4.1',
@@ -173,7 +182,7 @@
         'searchcraft/wordpress' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => '50c9f7821178668d7cd672a6a227f750a2d3f207',
+            'reference' => '66afe43fa5e70c30808df7834ff972ea792b0227',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
