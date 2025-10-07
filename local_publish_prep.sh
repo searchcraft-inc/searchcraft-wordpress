@@ -49,12 +49,28 @@ if [ -d "$TARGET_DIR/assets" ]; then
     rm -rf "$TARGET_DIR/assets/icon"*
     rm -rf "$TARGET_DIR/assets/banner"*
 fi
-# Remove vendor/bin directory if it exists
+if [ -d "$TARGET_DIR/vendor/dealerdirect" ]; then
+    echo "Removing php stubs directory..."
+    rm -rf "$TARGET_DIR/vendor/dealerdirect"
+fi
+if [ -d "$TARGET_DIR/vendor/phpcsstandards" ]; then
+    echo "Removing php stubs directory..."
+    rm -rf "$TARGET_DIR/vendor/phpcsstandards"
+fi
 if [ -d "$TARGET_DIR/vendor/php-stubs" ]; then
     echo "Removing php stubs directory..."
     rm -rf "$TARGET_DIR/vendor/php-stubs"
 fi
+if [ -d "$TARGET_DIR/vendor/squizlabs" ]; then
+    echo "Removing php stubs directory..."
+    rm -rf "$TARGET_DIR/vendor/squizlabs"
+fi
+if [ -d "$TARGET_DIR/vendor/wp-coding-standards" ]; then
+    echo "Removing php stubs directory..."
+    rm -rf "$TARGET_DIR/vendor/wp-coding-standards"
+fi
 rm -rf "$TARGET_DIR/local_publish_prep.sh"
+rm -rf "$TARGET_DIR/.github"
 rm -rf "$TARGET_DIR/.gitignore"
 rm -rf "$TARGET_DIR/.vscode"
 rm -rf "$TARGET_DIR/intelephense.json"
