@@ -394,40 +394,6 @@ class Searchcraft_Admin {
 				case 'advanced_config':
 					$this->searchcraft_on_advanced_config_request( $_POST ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 					break;
-
-				// case 'schema':
-				// if ( isset( $_POST['searchcraft_schema'] ) ) {.
-				// 		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-				// $schema_data = $this->sanitize_array_recursive( wp_unslash( $_POST['searchcraft_schema'] ) );
-				// $this->searchcraft_on_schema_request( $schema_data );
-				// }
-				// break;
-				// case 'keys':
-				// $this->searchcraft_on_keys_request();
-				// break;
-				// case 'synonyms':
-				// if ( isset( $_POST['searchcraft_synonyms'] ) ) {
-				// 		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-				// $synonyms_data = $this->sanitize_array_recursive( wp_unslash( $_POST['searchcraft_synonyms'] ) );
-				// $this->searchcraft_on_synonyms_request( $synonyms_data );
-				// }
-				// break;
-				// case 'delete_synonyms':
-				// 	// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-				// $synonyms_data = isset( $_POST['searchcraft_synonyms'] ) ? $this->sanitize_array_recursive( wp_unslash( $_POST['searchcraft_synonyms'] ) ) : array();
-				// $this->searchcraft_on_delete_synonyms_request( $synonyms_data );
-				// break;
-				// case 'stopwords':
-				// if ( isset( $_POST['searchcraft_stopwords'] ) ) {
-				// 		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-				// $stopwords_data = $this->sanitize_array_recursive( wp_unslash( $_POST['searchcraft_stopwords'] ) );
-				// $this->searchcraft_on_stopwords_request( $stopwords_data );
-				// }
-				// break;
-				// case 'restore_default_stopwords':
-				// $this->searchcraft_on_restore_default_stopwords_request();
-				// break;
-
 				default:
 					break;
 			}
@@ -500,7 +466,7 @@ class Searchcraft_Admin {
 						echo '<div class="notice notice-error is-dismissible">';
 						echo '<p><strong>Configuration errors:</strong></p><ul>';
 						foreach ( $errors as $field => $error ) {
-							echo '<li>' . esc_html( ucfirst( str_replace( '_', ' ', $field ) ) . ': ' . $error ) . '</li>';
+							echo '<li>' . esc_html( ucfirst( str_replace( '_', ' ', $field ) . ': ' . $error ) ) . '</li>';
 						}
 						echo '</ul></div>';
 					}
@@ -717,27 +683,27 @@ class Searchcraft_Admin {
 						'popover' => 'Popover',
 					);
 					$label             = $experience_labels[ $updated_settings['experience'] ] ?? $updated_settings['experience'];
-					$messages[]        = 'Search experience: ' . esc_html( $label );
+					$messages[]        = 'Search experience: ' . $label;
 				}
 
 				if ( isset( $updated_settings['placeholder'] ) ) {
-					$messages[] = 'Search placeholder: ' . esc_html( $updated_settings['placeholder'] );
+					$messages[] = 'Search placeholder: ' . $updated_settings['placeholder'];
 				}
 
 				if ( isset( $updated_settings['padding'] ) ) {
-					$messages[] = 'Input component horizontal padding: ' . esc_html( $updated_settings['padding'] ) . 'px';
+					$messages[] = 'Input component horizontal padding: ' . $updated_settings['padding'] . 'px';
 				}
 
 				if ( isset( $updated_settings['vertical_padding'] ) ) {
-					$messages[] = 'Input component vertical padding: ' . esc_html( $updated_settings['vertical_padding'] ) . 'px';
+					$messages[] = 'Input component vertical padding: ' . $updated_settings['vertical_padding'] . 'px';
 				}
 
 				if ( isset( $updated_settings['border_radius'] ) ) {
-					$messages[] = 'Input border radius: ' . esc_html( $updated_settings['border_radius'] );
+					$messages[] = 'Input border radius: ' . $updated_settings['border_radius'];
 				}
 
 				if ( isset( $updated_settings['input_width'] ) ) {
-					$messages[] = 'Input width: ' . esc_html( $updated_settings['input_width'] ) . '%';
+					$messages[] = 'Input width: ' . $updated_settings['input_width'] . '%';
 				}
 
 				if ( ! empty( $messages ) ) {
@@ -745,8 +711,7 @@ class Searchcraft_Admin {
 					echo '<p><strong>Success:</strong> Search experience settings updated.</p>';
 					echo '<ul>';
 					foreach ( $messages as $message ) {
-						// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- $message is already escaped when added to array
-						echo '<li>' . $message . '</li>';
+						echo '<li>' . esc_html( $message ) . '</li>';
 					}
 					echo '</ul>';
 					echo '</div>';
@@ -898,8 +863,7 @@ class Searchcraft_Admin {
 					echo '<p><strong>Success:</strong> Search results settings updated.</p>';
 					echo '<ul>';
 					foreach ( $messages as $message ) {
-						// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- $message is already escaped when added to array
-						echo '<li>' . $message . '</li>';
+						echo '<li>' . esc_html( $message ) . '</li>';
 					}
 					echo '</ul>';
 					echo '</div>';
@@ -1007,8 +971,7 @@ class Searchcraft_Admin {
 					echo '<p><strong>Success:</strong> Advanced settings updated.</p>';
 					echo '<ul>';
 					foreach ( $messages as $message ) {
-						// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- $message is already escaped when added to array
-						echo '<li>' . $message . '</li>';
+						echo '<li>' . esc_html( $message ) .'</li>';
 					}
 					echo '</ul>';
 					echo '</div>';
