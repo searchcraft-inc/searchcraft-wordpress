@@ -8,6 +8,7 @@
  * @package    Searchcraft
  * @subpackage Searchcraft/admin/partials
  */
+
 // Prevent direct access.
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
