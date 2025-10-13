@@ -1,0 +1,10 @@
+{
+  "stubs": [
+    "wordpress"
+  ],
+  "environment": {
+    "includePaths": [
+      "vendor/php-stubs/wordpress-stubs"
+    ]
+  }
+}
