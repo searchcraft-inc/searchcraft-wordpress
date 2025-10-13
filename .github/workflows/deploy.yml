@@ -2,8 +2,19 @@ name: Deploy to WordPress.org
 
 on:
   push:
-    branches:
-      - main
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Run in dry-run mode (no actual deployment)'
+        required: false
+        type: boolean
+        default: false
+
+concurrency:
+  group: wordpress-deploy
+  cancel-in-progress: false
 
 jobs:
   deploy:
@@ -27,17 +38,25 @@ jobs:
             --exclude='.git' \
             --exclude='.github' \
             --exclude='vendor/bin' \
+            --exclude='vendor/dealerdirect' \
+            --exclude='vendor/phpcsstandards' \
+            --exclude='vendor/php-stubs' \
+            --exclude='vendor/squizlabs' \
+            --exclude='vendor/wp-coding-standards' \
             --exclude='tests' \
             --exclude='scripts' \
             --exclude='.gitignore' \
             --exclude='.vscode' \
+            --exclude='intelephense.json' \
+            --exclude='local_publish_prep.sh' \
             ./ /tmp/wordpress-svn/trunk/
 
       - name: Get plugin version
         id: get_version
         run: |
-          VERSION=$(grep -i "Version:" your-plugin.php | head -n1 | awk '{print $2}')
+          VERSION=$(grep -i "Version:" searchcraft.php | head -n1 | awk '{print $2}')
           echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Detected plugin version: $VERSION"
 
       - name: Check Stable tag matches version
         run: |
@@ -47,23 +66,72 @@ jobs:
             echo "Error: Stable tag ($STABLE) does not match plugin version ($VERSION)"
             exit 1
           fi
+          echo "✓ Stable tag matches plugin version: $VERSION"
+
+      - name: Check if version already exists in SVN
+        run: |
+          cd /tmp/wordpress-svn
+          VERSION=${{ steps.get_version.outputs.version }}
+          if svn list tags | grep -q "^$VERSION/$"; then
+            echo "Error: Version $VERSION already exists in WordPress.org SVN"
+            echo "Please increment the version number before deploying"
+            exit 1
+          fi
+          echo "✓ Version $VERSION is new and ready to deploy"
 
       - name: Commit to WordPress.org SVN
+        if: ${{ !inputs.dry_run }}
+        env:
+          SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
+          SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
         run: |
           cd /tmp/wordpress-svn
           svn add --force trunk/* --auto-props --parents --depth infinity
           svn status | grep '^!' | sed 's/^! *//' | xargs -r svn delete
           svn commit -m "Deploy version ${{ steps.get_version.outputs.version }}" \
-            --username ${{ secrets.SVN_USERNAME }} \
-            --password ${{ secrets.SVN_PASSWORD }} \
+            --username "$SVN_USERNAME" \
+            --password "$SVN_PASSWORD" \
             --non-interactive --no-auth-cache
 
       - name: Tag version in WordPress.org SVN
+        if: ${{ !inputs.dry_run }}
+        env:
+          SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
+          SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
         run: |
           cd /tmp/wordpress-svn
           VERSION=${{ steps.get_version.outputs.version }}
           svn copy trunk tags/$VERSION
           svn commit -m "Tagging version $VERSION" \
-            --username ${{ secrets.SVN_USERNAME }} \
-            --password ${{ secrets.SVN_PASSWORD }} \
+            --username "$SVN_USERNAME" \
+            --password "$SVN_PASSWORD" \
             --non-interactive --no-auth-cache
+
+      - name: Dry run summary
+        if: ${{ inputs.dry_run }}
+        run: |
+          echo "🔍 DRY RUN MODE - No changes were committed to WordPress.org SVN"
+          echo "Version ${{ steps.get_version.outputs.version }} would have been deployed"
+          echo "Review the changes in /tmp/wordpress-svn/trunk/ if needed"
+
+      - name: Send Discord notification on success
+        if: ${{ success() && !inputs.dry_run }}
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        run: |
+          if [ -n "$DISCORD_WEBHOOK" ]; then
+            curl -H "Content-Type: application/json" \
+              -d "{\"content\": \"✅ **Searchcraft v${{ steps.get_version.outputs.version }}** successfully deployed to WordPress.org\", \"embeds\": [{\"title\": \"Deployment Success\", \"color\": 3066993, \"fields\": [{\"name\": \"Version\", \"value\": \"${{ steps.get_version.outputs.version }}\", \"inline\": true}, {\"name\": \"Repository\", \"value\": \"${{ github.repository }}\", \"inline\": true}]}]}" \
+              "$DISCORD_WEBHOOK"
+          fi
+
+      - name: Send Discord notification on failure
+        if: ${{ failure() && !inputs.dry_run }}
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        run: |
+          if [ -n "$DISCORD_WEBHOOK" ]; then
+            curl -H "Content-Type: application/json" \
+              -d "{\"content\": \"❌ **Searchcraft deployment failed**\", \"embeds\": [{\"title\": \"Deployment Failed\", \"color\": 15158332, \"fields\": [{\"name\": \"Version\", \"value\": \"${{ steps.get_version.outputs.version }}\", \"inline\": true}, {\"name\": \"Repository\", \"value\": \"${{ github.repository }}\", \"inline\": true}, {\"name\": \"Workflow\", \"value\": \"${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\", \"inline\": false}]}]}" \
+              "$DISCORD_WEBHOOK"
+          fi
