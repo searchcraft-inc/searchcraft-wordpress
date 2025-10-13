@@ -54,13 +54,13 @@ jobs:
       - name: Get plugin version
         id: get_version
         run: |
-          VERSION=$(grep -i "Version:" searchcraft.php | head -n1 | awk '{print $2}')
+          VERSION=$(grep -i "Version:" searchcraft.php | head -n1 | awk -F: '{print $2}' | tr -d ' ')
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Detected plugin version: $VERSION"
 
       - name: Check Stable tag matches version
         run: |
-          STABLE=$(grep -i "Stable tag:" readme.txt | awk '{print $3}')
+          STABLE=$(grep -i "Stable tag:" readme.txt | awk -F: '{print $2}' | tr -d ' ')
           VERSION=${{ steps.get_version.outputs.version }}
           if [ "$STABLE" != "$VERSION" ]; then
             echo "Error: Stable tag ($STABLE) does not match plugin version ($VERSION)"
@@ -72,7 +72,8 @@ jobs:
         run: |
           cd /tmp/wordpress-svn
           VERSION=${{ steps.get_version.outputs.version }}
-          if svn list tags | grep -q "^$VERSION/$"; then
+          # Check if tags directory exists and if version exists
+          if svn list tags 2>/dev/null | grep -q "^$VERSION/$"; then
             echo "Error: Version $VERSION already exists in WordPress.org SVN"
             echo "Please increment the version number before deploying"
             exit 1
