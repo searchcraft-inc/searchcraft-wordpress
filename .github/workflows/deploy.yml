@@ -34,6 +34,8 @@ jobs:
           rm -rf /tmp/wordpress-svn
           mkdir -p /tmp/wordpress-svn
           svn checkout https://plugins.svn.wordpress.org/searchcraft/ /tmp/wordpress-svn
+
+          # Sync plugin code to trunk (excluding assets and dev files)
           rsync -av --delete \
             --exclude='.git' \
             --exclude='.github' \
@@ -49,7 +51,15 @@ jobs:
             --exclude='.vscode' \
             --exclude='intelephense.json' \
             --exclude='local_publish_prep.sh' \
+            --exclude='assets' \
             ./ /tmp/wordpress-svn/trunk/
+
+          # Sync assets to top-level assets directory (separate from trunk)
+          if [ -d "assets" ]; then
+            rsync -av --delete \
+              assets/ /tmp/wordpress-svn/assets/
+            echo "✓ Assets synced to SVN assets directory"
+          fi
 
       - name: Get plugin version
         id: get_version
@@ -87,8 +97,22 @@ jobs:
           SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
         run: |
           cd /tmp/wordpress-svn
+
+          # Add trunk files
           svn add --force trunk/* --auto-props --parents --depth infinity
+
+          # Add assets files (if directory exists)
+          if [ -d "assets" ]; then
+            svn add --force assets/* --auto-props --parents --depth infinity
+            # Set proper mime types for images
+            svn propset svn:mime-type image/png assets/*.png 2>/dev/null || true
+            svn propset svn:mime-type image/jpeg assets/*.jpg 2>/dev/null || true
+            svn propset svn:mime-type image/gif assets/*.gif 2>/dev/null || true
+          fi
+
+          # Remove deleted files
           svn status | grep '^!' | sed 's/^! *//' | xargs -r svn delete
+
           svn commit -m "Deploy version ${{ steps.get_version.outputs.version }}" \
             --username "$SVN_USERNAME" \
             --password "$SVN_PASSWORD" \
