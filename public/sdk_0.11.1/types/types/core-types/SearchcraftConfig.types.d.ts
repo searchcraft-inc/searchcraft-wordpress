@@ -13,8 +13,16 @@ export interface SearchcraftConfig {
     endpointURL: string;
     /**
      * Name of the Searchcraft search index to search for results within. If you are using Searchcraft Cloud, this value can be found within the Vektron dashboard in the Code Snippets section when configuring a search index.
+     *
+     * Note: Either `indexName` or `federationName` must be provided, but not both.
      */
-    indexName: string;
+    indexName?: string;
+    /**
+     * Name of the Searchcraft federation to search across multiple indices. Federation search allows you to search across all indices defined in a federation with a single query.
+     *
+     * Note: Either `indexName` or `federationName` must be provided, but not both.
+     */
+    federationName?: string;
     /**
      * The initial search query to call when Searchcraft is first initialized in your front-end application. This parameter can be used when you want to populate a page with an initial set of search results based on a query.
      *

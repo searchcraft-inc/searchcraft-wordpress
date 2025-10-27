@@ -319,6 +319,14 @@ export namespace Components {
          */
         "hotkeyModifier"?: 'ctrl' | 'meta' | 'alt' | 'option';
         /**
+          * The placeholder's render behavior. 'hide-on-focus' - Hide the placeholder text immediately when the input form gains focus. 'hide-on-text-entered' - Only hide the placeholder when the input form has text entered into it.
+         */
+        "placeholderBehavior"?: 'hide-on-focus' | 'hide-on-text-entered';
+        /**
+          * The input element's placeholder value.
+         */
+        "placeholderValue"?: string;
+        /**
           * Formats the content rendered for each result.
          */
         "popoverResultMappings"?: PopoverResultMappings;
@@ -1569,6 +1577,14 @@ declare namespace LocalJSX {
           * The hotkey modifier that activates the popover. Used together with the `hotkey` prop.
          */
         "hotkeyModifier"?: 'ctrl' | 'meta' | 'alt' | 'option';
+        /**
+          * The placeholder's render behavior. 'hide-on-focus' - Hide the placeholder text immediately when the input form gains focus. 'hide-on-text-entered' - Only hide the placeholder when the input form has text entered into it.
+         */
+        "placeholderBehavior"?: 'hide-on-focus' | 'hide-on-text-entered';
+        /**
+          * The input element's placeholder value.
+         */
+        "placeholderValue"?: string;
         /**
           * Formats the content rendered for each result.
          */

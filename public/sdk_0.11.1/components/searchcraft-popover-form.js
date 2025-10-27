@@ -38,6 +38,16 @@ const SearchcraftPopoverForm$1 = /*@__PURE__*/ proxyCustomElement(class Searchcr
      * The id of the Searchcraft instance that this component should use.
      */
     searchcraftId;
+    /**
+     * The input element's placeholder value.
+     */
+    placeholderValue = 'Enter Search';
+    /**
+     * The placeholder's render behavior.
+     * 'hide-on-focus' - Hide the placeholder text immediately when the input form gains focus.
+     * 'hide-on-text-entered' - Only hide the placeholder when the input form has text entered into it.
+     */
+    placeholderBehavior;
     isPopoverVisibleInState = false;
     searchClientResponseItems = [];
     adClientResponseItems = [];
@@ -148,6 +158,12 @@ const SearchcraftPopoverForm$1 = /*@__PURE__*/ proxyCustomElement(class Searchcr
                 this.modalElement.popoverResultMappings = this.popoverResultMappings;
                 this.modalElement.setAttribute('type', 'fullscreen');
                 this.modalElement.setAttribute('searchcraft-id', this.searchcraftId);
+                if (this.placeholderValue) {
+                    this.modalElement.setAttribute('placeholder-value', this.placeholderValue);
+                }
+                if (this.placeholderBehavior) {
+                    this.modalElement.setAttribute('placeholder-behavior', this.placeholderBehavior);
+                }
                 document.body.appendChild(this.modalElement);
             }
         }
@@ -215,20 +231,20 @@ const SearchcraftPopoverForm$1 = /*@__PURE__*/ proxyCustomElement(class Searchcr
         const isListViewVisible = this.hasResultsToShow && this.isFocused;
         return (h("div", { class: classNames('searchcraft-popover-form searchcraft-popover-form-inline', {
                 'searchcraft-popover-form-active': isListViewVisible,
-            }) }, h("div", { class: 'searchcraft-popover-form-input searchcraft-popover-form-inline-input' }, h("searchcraft-input-form", { onInputFocus: this.handleInputFocus.bind(this), searchcraftId: this.searchcraftId })), isListViewVisible && (h("div", { class: 'searchcraft-popover-form-inline-wrapper' }, h("searchcraft-popover-list-view", { popoverResultMappings: this.popoverResultMappings, searchClientResponseItems: this.searchClientResponseItems, adClientResponseItems: this.adClientResponseItems, searchResultsPage: this.searchResultsPage, searchResultsPerPage: this.searchResultsPerPage, searchcraftId: this.searchcraftId }), h("searchcraft-popover-footer", { searchcraftId: this.searchcraftId })))));
+            }) }, h("div", { class: 'searchcraft-popover-form-input searchcraft-popover-form-inline-input' }, h("searchcraft-input-form", { onInputFocus: this.handleInputFocus.bind(this), searchcraftId: this.searchcraftId, placeholderValue: this.placeholderValue, placeholderBehavior: this.placeholderBehavior })), isListViewVisible && (h("div", { class: 'searchcraft-popover-form-inline-wrapper' }, h("searchcraft-popover-list-view", { popoverResultMappings: this.popoverResultMappings, searchClientResponseItems: this.searchClientResponseItems, adClientResponseItems: this.adClientResponseItems, searchResultsPage: this.searchResultsPage, searchResultsPerPage: this.searchResultsPerPage, searchcraftId: this.searchcraftId }), h("searchcraft-popover-footer", { searchcraftId: this.searchcraftId })))));
     }
     renderModalPopover() {
         if (this.isPopoverVisibleInState) {
             return (h("div", { class: classNames('searchcraft-popover-form searchcraft-popover-form-modal', {
                     'searchcraft-popover-form-active': this.hasResultsToShow,
-                }) }, h("div", { class: 'searchcraft-popover-form-modal-backdrop', onClick: this.handleModalBackdropClick }), h("div", { class: 'searchcraft-popover-form-modal-wrapper' }, h("div", { class: 'searchcraft-popover-form-input searchcraft-popover-form-modal-input' }, h("searchcraft-input-form", { onInputFocus: this.handleInputFocus.bind(this), onInputInit: this.handleInputInit.bind(this), searchcraftId: this.searchcraftId }), h("button", { type: 'button', class: 'searchcraft-popover-form-cancel-button searchcraft-popover-form-modal-cancel-button', onClick: this.handleCancelButtonClick.bind(this) }, "Cancel")), h("div", { class: 'searchcraft-popover-form-modal-popover-list-view' }, this.hasResultsToShow && (h("searchcraft-popover-list-view", { popoverResultMappings: this.popoverResultMappings, searchClientResponseItems: this.searchClientResponseItems, adClientResponseItems: this.adClientResponseItems, searchResultsPage: this.searchResultsPage, searchResultsPerPage: this.searchResultsPerPage, searchcraftId: this.searchcraftId }))), h("searchcraft-popover-footer", { searchcraftId: this.searchcraftId }))));
+                }) }, h("div", { class: 'searchcraft-popover-form-modal-backdrop', onClick: this.handleModalBackdropClick }), h("div", { class: 'searchcraft-popover-form-modal-wrapper' }, h("div", { class: 'searchcraft-popover-form-input searchcraft-popover-form-modal-input' }, h("searchcraft-input-form", { onInputFocus: this.handleInputFocus.bind(this), onInputInit: this.handleInputInit.bind(this), searchcraftId: this.searchcraftId, placeholderValue: this.placeholderValue, placeholderBehavior: this.placeholderBehavior }), h("button", { type: 'button', class: 'searchcraft-popover-form-cancel-button searchcraft-popover-form-modal-cancel-button', onClick: this.handleCancelButtonClick.bind(this) }, "Cancel")), h("div", { class: 'searchcraft-popover-form-modal-popover-list-view' }, this.hasResultsToShow && (h("searchcraft-popover-list-view", { popoverResultMappings: this.popoverResultMappings, searchClientResponseItems: this.searchClientResponseItems, adClientResponseItems: this.adClientResponseItems, searchResultsPage: this.searchResultsPage, searchResultsPerPage: this.searchResultsPerPage, searchcraftId: this.searchcraftId }))), h("searchcraft-popover-footer", { searchcraftId: this.searchcraftId }))));
         }
     }
     renderFullscreenPopover() {
         if (this.isPopoverVisibleInState) {
             return (h("div", { class: classNames('searchcraft-popover-form searchcraft-popover-form-fullscreen', {
                     'searchcraft-popover-form-active': this.hasResultsToShow,
-                }) }, h("div", { class: 'searchcraft-popover-form-input searchcraft-popover-form-fullscreen-input' }, h("searchcraft-input-form", { onInputFocus: this.handleInputFocus.bind(this), onInputInit: this.handleInputInit.bind(this), searchcraftId: this.searchcraftId }), h("button", { type: 'button', class: 'searchcraft-popover-form-cancel-button searchcraft-popover-form-fullscreen-cancel-button', onClick: this.handleCancelButtonClick.bind(this) }, "Cancel")), h("div", { class: 'searchcraft-popover-form-fullscreen-popover-list-view' }, this.hasResultsToShow && (h("searchcraft-popover-list-view", { popoverResultMappings: this.popoverResultMappings, searchClientResponseItems: this.searchClientResponseItems, adClientResponseItems: this.adClientResponseItems, searchResultsPage: this.searchResultsPage, searchResultsPerPage: this.searchResultsPerPage, searchcraftId: this.searchcraftId }))), h("searchcraft-popover-footer", { searchcraftId: this.searchcraftId })));
+                }) }, h("div", { class: 'searchcraft-popover-form-input searchcraft-popover-form-fullscreen-input' }, h("searchcraft-input-form", { onInputFocus: this.handleInputFocus.bind(this), onInputInit: this.handleInputInit.bind(this), searchcraftId: this.searchcraftId, placeholderValue: this.placeholderValue, placeholderBehavior: this.placeholderBehavior }), h("button", { type: 'button', class: 'searchcraft-popover-form-cancel-button searchcraft-popover-form-fullscreen-cancel-button', onClick: this.handleCancelButtonClick.bind(this) }, "Cancel")), h("div", { class: 'searchcraft-popover-form-fullscreen-popover-list-view' }, this.hasResultsToShow && (h("searchcraft-popover-list-view", { popoverResultMappings: this.popoverResultMappings, searchClientResponseItems: this.searchClientResponseItems, adClientResponseItems: this.adClientResponseItems, searchResultsPage: this.searchResultsPage, searchResultsPerPage: this.searchResultsPerPage, searchcraftId: this.searchcraftId }))), h("searchcraft-popover-footer", { searchcraftId: this.searchcraftId })));
         }
     }
     render() {
@@ -247,6 +263,8 @@ const SearchcraftPopoverForm$1 = /*@__PURE__*/ proxyCustomElement(class Searchcr
         "hotkey": [1],
         "hotkeyModifier": [1, "hotkey-modifier"],
         "searchcraftId": [1, "searchcraft-id"],
+        "placeholderValue": [1, "placeholder-value"],
+        "placeholderBehavior": [1, "placeholder-behavior"],
         "isPopoverVisibleInState": [32],
         "searchClientResponseItems": [32],
         "adClientResponseItems": [32],

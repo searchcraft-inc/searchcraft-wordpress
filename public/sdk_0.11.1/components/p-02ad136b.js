@@ -50,9 +50,9 @@ const SearchcraftToggleButton = /*@__PURE__*/ proxyCustomElement(class Searchcra
         this.cleanupCore?.();
     }
     render() {
-        return (h("div", { key: '22a346c471a467b0b38b4cfde59ea70e0941cc93', class: classNames('searchcraft-toggle-button', {
+        return (h("div", { key: 'ab1d5ee21c7aaa28af1c405edc986556858366e8', class: classNames('searchcraft-toggle-button', {
                 'searchcraft-toggle-button-active': this.isActive,
-            }) }, h("div", { key: '99a2ad545500218f85006a9a0f8bbf18b8f42ed7' }, h("p", { key: '5e4a9e3f27af75d0d480dc6b3668963bfcb0d1a2', class: 'searchcraft-toggle-button-label' }, this.label), this.subLabel && (h("p", { key: 'c9df9f08270b58a167831d59ae3f9178eb3f6175', class: 'searchcraft-toggle-button-sub-label' }, this.subLabel))), h("button", { key: '6eebeb90660122d2c12ec91091ed5987478bbec4', class: 'searchcraft-toggle-button-background', onClick: this.handleToggle, type: 'button' }, h("div", { key: '62f9b1397354322986a24e8fe9e8cee62bc96600', class: 'searchcraft-toggle-button-handle' }))));
+            }) }, h("div", { key: '44f86a16d796d448bdb2fb3af72d4d8e1484364b' }, h("p", { key: '9fedb38795d6379cae56dc005ab8e4a944b4261b', class: 'searchcraft-toggle-button-label' }, this.label), this.subLabel && (h("p", { key: '44f3d17175184032275fec89a4cfe7f8266b7014', class: 'searchcraft-toggle-button-sub-label' }, this.subLabel))), h("button", { key: '15fc18906ff2fb21fe646a4e3a8a2ace4a37cae2', class: 'searchcraft-toggle-button-background', onClick: this.handleToggle, type: 'button' }, h("div", { key: '716d29c65a199f63f5fd294dc3e3ad2ea4d53aa3', class: 'searchcraft-toggle-button-handle' }))));
     }
 }, [0, "searchcraft-toggle-button", {
         "label": [1],
@@ -77,4 +77,4 @@ function defineCustomElement() {
 
 export { SearchcraftToggleButton as S, defineCustomElement as d };
 
-//# sourceMappingURL=p-3e41546c.js.map
+//# sourceMappingURL=p-02ad136b.js.map

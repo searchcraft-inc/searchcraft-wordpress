@@ -10,6 +10,7 @@ export declare class SearchClient {
     constructor(parent: SearchcraftCore, config: SearchcraftConfig, userId: string);
     /**
      * Getter for the base url used by the /search endpoint.
+     * Supports both index and federation search endpoints.
      */
     private get baseSearchUrl();
     /**

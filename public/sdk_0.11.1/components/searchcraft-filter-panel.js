@@ -2,7 +2,7 @@ import { p as proxyCustomElement, H, h } from './p-5365011f.js';
 import { r as registry } from './p-e30203b1.js';
 import { d as defineCustomElement$4 } from './p-0c495408.js';
 import { d as defineCustomElement$3 } from './p-c9b65e8f.js';
-import { d as defineCustomElement$2 } from './p-3e41546c.js';
+import { d as defineCustomElement$2 } from './p-02ad136b.js';
 
 const SearchcraftFilterPanel$1 = /*@__PURE__*/ proxyCustomElement(class SearchcraftFilterPanel extends H {
     constructor() {

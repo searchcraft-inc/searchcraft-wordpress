@@ -2231,19 +2231,13 @@ const SearchcraftSummaryBox$1 = /*@__PURE__*/ proxyCustomElement(class Searchcra
     searchcraftId;
     summary = '';
     isLoading = false;
+    isSummaryNotEnabled = false;
     get hostElement() { return this; }
     unsubscribe;
     cleanupCore;
     onCoreAvailable(core) {
         core.store.setState({ hasSummaryBox: true });
-        this.unsubscribe = core.store.subscribe((state) => {
-            this.summary = DOMPurify.sanitize(marked_umd.exports.marked.parse(state.summary));
-            this.isLoading = state.isSummaryLoading;
-            const div = this.hostElement?.querySelector('.searchcraft-summary-box-content');
-            if (div) {
-                div.innerHTML = DOMPurify.sanitize(marked_umd.exports.marked.parse(state.summary));
-            }
-        });
+        this.unsubscribe = core.store.subscribe(this.handleStateChange.bind(this));
     }
     connectedCallback() {
         this.cleanupCore = registry.useCoreInstance(this.searchcraftId, this.onCoreAvailable.bind(this));
@@ -2252,13 +2246,51 @@ const SearchcraftSummaryBox$1 = /*@__PURE__*/ proxyCustomElement(class Searchcra
         this.unsubscribe?.();
         this.cleanupCore?.();
     }
+    /**
+     * Handles state changes from the store and updates component state.
+     */
+    handleStateChange(state) {
+        this.isLoading = state.isSummaryLoading;
+        this.isSummaryNotEnabled = state.isSummaryNotEnabled;
+        this.summary = this.sanitizeMarkdown(state.summary);
+        // Update DOM directly for performance (avoids re-render)
+        this.updateContentElement(state.summary);
+    }
+    /**
+     * Sanitizes and converts markdown to HTML.
+     */
+    sanitizeMarkdown(markdown) {
+        return DOMPurify.sanitize(marked_umd.exports.marked.parse(markdown));
+    }
+    /**
+     * Updates the content element directly without triggering a re-render.
+     */
+    updateContentElement(markdown) {
+        const contentElement = this.hostElement?.querySelector('.searchcraft-summary-box-content');
+        if (contentElement) {
+            contentElement.innerHTML = this.sanitizeMarkdown(markdown);
+        }
+    }
+    /**
+     * Renders the appropriate content based on current state.
+     */
+    renderContent() {
+        if (this.isLoading) {
+            return h("searchcraft-loading", { label: 'LOADING' });
+        }
+        if (this.isSummaryNotEnabled) {
+            return (h("div", { class: 'searchcraft-summary-box-content' }, "AI summaries are not enabled"));
+        }
+        return h("div", { class: 'searchcraft-summary-box-content' }, this.summary);
+    }
     render() {
-        return (h("div", { key: '71173c93d5230610c52dfda79e23ae116e55331b', class: 'searchcraft-summary-box' }, this.isLoading && h("searchcraft-loading", { key: 'a9a51922a4bedc975d3a76008fad5c014e8810ad', label: 'LOADING' }), !this.isLoading && (h("div", { key: 'bb2440d7e36972c85b1887a609fd19c463f44bc9', class: 'searchcraft-summary-box-content' }, this.summary))));
+        return h("div", { key: 'c88d0bf7e12ad0fa0c019d207854a6e92babc683', class: 'searchcraft-summary-box' }, this.renderContent());
     }
 }, [0, "searchcraft-summary-box", {
         "searchcraftId": [1, "searchcraft-id"],
         "summary": [32],
-        "isLoading": [32]
+        "isLoading": [32],
+        "isSummaryNotEnabled": [32]
     }]);
 function defineCustomElement$1() {
     if (typeof customElements === "undefined") {

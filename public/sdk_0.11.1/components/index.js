@@ -161,7 +161,8 @@ class MeasureClient {
         const request = {
             event_name: eventName,
             properties: {
-                searchcraft_index_names: [this.config.indexName],
+                searchcraft_index_names: this.config.indexName ? [this.config.indexName] : [],
+                searchcraft_federation_name: this.config.federationName,
                 session_id: this.sessionId,
                 ...properties,
             },
@@ -269,9 +270,12 @@ class SearchClient {
     }
     /**
      * Getter for the base url used by the /search endpoint.
+     * Supports both index and federation search endpoints.
      */
     get baseSearchUrl() {
-        return `${this.config.endpointURL}/index/${this.config.indexName}/search`;
+        return this.config.federationName
+            ? `${this.config.endpointURL}/federation/${this.config.federationName}/search`
+            : `${this.config.endpointURL}/index/${this.config.indexName}/search`;
     }
     /**
      * Immediately cancels all pending search requests.
@@ -1142,6 +1146,14 @@ class SummaryClient {
                     throw new Error('Invalid fetch response');
                 }
                 if (!fetchResponse.ok) {
+                    if (fetchResponse.status === 403) {
+                        console.warn('Please contact Searchcraft to enable AI summaries with your account');
+                        this.set({
+                            isSummaryLoading: false,
+                            isSummaryNotEnabled: true,
+                        });
+                        return;
+                    }
                     throw new Error(`HTTP ${fetchResponse.status}`);
                 }
                 const reader = fetchResponse.body.getReader();
@@ -1200,6 +1212,7 @@ const initialSearchcraftStateValues = {
     hasSummaryBox: false,
     summaryClient: undefined,
     isSummaryLoading: false,
+    isSummaryNotEnabled: false,
 };
 // const logger = new Logger({ logLevel: LogLevel.NONE });
 const existingStores = {};
@@ -1259,12 +1272,12 @@ const createSearchcraftStore = (searchcraftId, initialState = {}) => {
                     adClientResponseItems: [...state.cachedAdClientResponseItems],
                 });
             },
-            search: async () => {
+            search: async (options) => {
                 const state = get();
                 if (!state.core) {
                     throw new Error('Searchcraft instance is not initialized.');
                 }
-                if (state.core.config.cortexURL) {
+                if (state.core.config.cortexURL && !options?.skipSummary) {
                     state.summaryClient?.streamSummaryData();
                 }
                 if (!state.searchTerm.trim()) {
@@ -1328,11 +1341,11 @@ const createSearchcraftStore = (searchcraftId, initialState = {}) => {
             setSearchResultsCount: (count) => set({ searchResultsCount: count }),
             setSearchResultsPage: async (page) => {
                 set({ searchResultsPage: page });
-                await functions.search();
+                await functions.search({ skipSummary: true });
             },
             setSearchResultsPerPage: async (perPage) => {
                 set({ searchResultsPerPage: perPage });
-                await functions.search();
+                await functions.search({ skipSummary: true });
             },
             setHotKeyAndHotKeyModifier: (hotkey, hotkeyModifier) => {
                 const { hotkey: initialHotkey, hotkeyModifier: initialHotkeyModifier } = initialSearchcraftStateValues;
@@ -1380,8 +1393,11 @@ class SearchcraftCore {
         if (!config.readKey) {
             throw new Error('SDK Configuration Error: readKey not specified.');
         }
-        if (!config.indexName) {
-            throw new Error('SDK Configuration Error: indexName not specified.');
+        if (!config.indexName && !config.federationName) {
+            throw new Error('SDK Configuration Error: Either indexName or federationName must be specified.');
+        }
+        if (config.indexName && config.federationName) {
+            throw new Error('SDK Configuration Error: Cannot specify both indexName and federationName. Please specify only one.');
         }
         this.config = {
             ...config,
@@ -1566,7 +1582,7 @@ class SearchcraftCore {
 }
 
 const name = "@searchcraft/javascript-sdk";
-const version = "0.11.1";
+const version = "0.12.0";
 
 /**
  * @fileoverview entry point for your component library

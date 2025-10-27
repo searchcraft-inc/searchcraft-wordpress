@@ -38,12 +38,29 @@ export declare class SearchcraftSummaryBox {
     searchcraftId?: string;
     summary: string;
     isLoading: boolean;
+    isSummaryNotEnabled: boolean;
     hostElement?: HTMLElement;
     private unsubscribe?;
     private cleanupCore?;
     onCoreAvailable(core: SearchcraftCore): void;
     connectedCallback(): void;
     disconnectedCallback(): void;
+    /**
+     * Handles state changes from the store and updates component state.
+     */
+    private handleStateChange;
+    /**
+     * Sanitizes and converts markdown to HTML.
+     */
+    private sanitizeMarkdown;
+    /**
+     * Updates the content element directly without triggering a re-render.
+     */
+    private updateContentElement;
+    /**
+     * Renders the appropriate content based on current state.
+     */
+    private renderContent;
     render(): any;
 }
 //# sourceMappingURL=searchcraft-summary-box.d.ts.map

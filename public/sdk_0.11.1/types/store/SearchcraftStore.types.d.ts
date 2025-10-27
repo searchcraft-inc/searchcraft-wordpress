@@ -11,7 +11,9 @@ export interface SearchcraftStateFunctions {
     removeFacetPathsForIndexField: (fieldName: string) => void;
     removeRangeValueForIndexField: (fieldName: string) => void;
     resetSearchValues: () => void;
-    search: () => Promise<void>;
+    search: (options?: {
+        skipSummary?: boolean;
+    }) => Promise<void>;
     setPopoverVisibility: (isVisible: boolean) => void;
     setSearchResultsCount: (count: number) => void;
     setSearchResultsPage: (page: number) => void;
@@ -55,6 +57,7 @@ export interface SearchcraftStateValues {
     hasSummaryBox: boolean;
     isSummaryLoading: boolean;
     summaryClient?: SummaryClient;
+    isSummaryNotEnabled: boolean;
 }
 export interface SearchcraftState extends SearchcraftStateFunctions, SearchcraftStateValues {
 }

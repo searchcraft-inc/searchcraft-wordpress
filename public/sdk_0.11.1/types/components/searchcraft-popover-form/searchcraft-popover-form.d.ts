@@ -61,6 +61,16 @@ export declare class SearchcraftPopoverForm {
      * The id of the Searchcraft instance that this component should use.
      */
     searchcraftId?: string;
+    /**
+     * The input element's placeholder value.
+     */
+    placeholderValue?: string;
+    /**
+     * The placeholder's render behavior.
+     * 'hide-on-focus' - Hide the placeholder text immediately when the input form gains focus.
+     * 'hide-on-text-entered' - Only hide the placeholder when the input form has text entered into it.
+     */
+    placeholderBehavior?: 'hide-on-focus' | 'hide-on-text-entered';
     isPopoverVisibleInState: boolean;
     searchClientResponseItems: SearchClientResponseItem[];
     adClientResponseItems: AdClientResponseItem[];

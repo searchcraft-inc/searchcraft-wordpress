@@ -90,6 +90,7 @@ export interface MeasureRequestProperties {
 	searchcraft_organization_id?: string;
 	searchcraft_application_id?: string;
 	searchcraft_index_names: string[];
+	searchcraft_federation_name?: string;
 	search_term?: string;
 	number_of_documents?: number;
 	external_document_id?: string;
@@ -333,8 +334,16 @@ export interface SearchcraftConfig {
 	endpointURL: string;
 	/**
 	 * Name of the Searchcraft search index to search for results within. If you are using Searchcraft Cloud, this value can be found within the Vektron dashboard in the Code Snippets section when configuring a search index.
+	 *
+	 * Note: Either `indexName` or `federationName` must be provided, but not both.
 	 */
-	indexName: string;
+	indexName?: string;
+	/**
+	 * Name of the Searchcraft federation to search across multiple indices. Federation search allows you to search across all indices defined in a federation with a single query.
+	 *
+	 * Note: Either `indexName` or `federationName` must be provided, but not both.
+	 */
+	federationName?: string;
 	/**
 	 * The initial search query to call when Searchcraft is first initialized in your front-end application. This parameter can be used when you want to populate a page with an initial set of search results based on a query.
 	 *
@@ -601,6 +610,7 @@ declare class SearchClient {
 	constructor(parent: SearchcraftCore, config: SearchcraftConfig, userId: string);
 	/**
 	 * Getter for the base url used by the /search endpoint.
+	 * Supports both index and federation search endpoints.
 	 */
 	private get baseSearchUrl();
 	/**
@@ -640,7 +650,9 @@ export interface SearchcraftStateFunctions {
 	removeFacetPathsForIndexField: (fieldName: string) => void;
 	removeRangeValueForIndexField: (fieldName: string) => void;
 	resetSearchValues: () => void;
-	search: () => Promise<void>;
+	search: (options?: {
+		skipSummary?: boolean;
+	}) => Promise<void>;
 	setPopoverVisibility: (isVisible: boolean) => void;
 	setSearchResultsCount: (count: number) => void;
 	setSearchResultsPage: (page: number) => void;
@@ -684,6 +696,7 @@ export interface SearchcraftStateValues {
 	hasSummaryBox: boolean;
 	isSummaryLoading: boolean;
 	summaryClient?: SummaryClient;
+	isSummaryNotEnabled: boolean;
 }
 export interface SearchcraftState extends SearchcraftStateFunctions, SearchcraftStateValues {
 }
@@ -1048,6 +1061,14 @@ export namespace Components {
 		  * The hotkey modifier that activates the popover. Used together with the `hotkey` prop.
 		 */
 		"hotkeyModifier"?: "ctrl" | "meta" | "alt" | "option";
+		/**
+		  * The placeholder's render behavior. 'hide-on-focus' - Hide the placeholder text immediately when the input form gains focus. 'hide-on-text-entered' - Only hide the placeholder when the input form has text entered into it.
+		 */
+		"placeholderBehavior"?: "hide-on-focus" | "hide-on-text-entered";
+		/**
+		  * The input element's placeholder value.
+		 */
+		"placeholderValue"?: string;
 		/**
 		  * Formats the content rendered for each result.
 		 */
@@ -2303,6 +2324,14 @@ declare namespace LocalJSX {
 		  * The hotkey modifier that activates the popover. Used together with the `hotkey` prop.
 		 */
 		"hotkeyModifier"?: "ctrl" | "meta" | "alt" | "option";
+		/**
+		  * The placeholder's render behavior. 'hide-on-focus' - Hide the placeholder text immediately when the input form gains focus. 'hide-on-text-entered' - Only hide the placeholder when the input form has text entered into it.
+		 */
+		"placeholderBehavior"?: "hide-on-focus" | "hide-on-text-entered";
+		/**
+		  * The input element's placeholder value.
+		 */
+		"placeholderValue"?: string;
 		/**
 		  * Formats the content rendered for each result.
 		 */

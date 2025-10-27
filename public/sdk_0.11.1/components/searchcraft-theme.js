@@ -9,7 +9,7 @@ const SearchcraftTheme$1 = /*@__PURE__*/ proxyCustomElement(class SearchcraftThe
         this.__registerHost();
     }
     render() {
-        return h("style", { key: '7380c677cd9edda898cdfccf8cdb3d60e8602f14' }, styles);
+        return h("style", { key: 'ef26626cdfa4fa98d516802d71443c49a9c6ecf9' }, styles);
     }
 }, [0, "searchcraft-theme"]);
 function defineCustomElement$1() {

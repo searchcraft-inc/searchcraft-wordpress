@@ -24,6 +24,7 @@ export interface MeasureRequestProperties {
     searchcraft_organization_id?: string;
     searchcraft_application_id?: string;
     searchcraft_index_names: string[];
+    searchcraft_federation_name?: string;
     search_term?: string;
     number_of_documents?: number;
     external_document_id?: string;
