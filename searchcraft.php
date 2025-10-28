@@ -117,8 +117,33 @@ function activate_searchcraft() {
 	if ( false === get_option( 'searchcraft_include_filter_panel' ) ) {
 		update_option( 'searchcraft_include_filter_panel', false );
 	}
+
+	// Set a transient to show the activation notice.
+	set_transient( 'searchcraft_activation_notice', true, 60 );
 }
 register_activation_hook( __FILE__, 'activate_searchcraft' );
+
+/**
+ * Display admin notice after plugin activation.
+ *
+ * @since 1.0.0
+ */
+function searchcraft_activation_notice() {
+	// Check if the activation notice transient exists.
+	if ( get_transient( 'searchcraft_activation_notice' ) ) {
+		?>
+		<div class="notice notice-success is-dismissible">
+			<p>
+				<strong>Searchcraft activated!</strong>
+				Please <a href="<?php echo esc_url( admin_url( 'admin.php?page=searchcraft' ) ); ?>">configure the plugin</a> to get started.
+			</p>
+		</div>
+		<?php
+		// Delete the transient so the notice only shows once.
+		delete_transient( 'searchcraft_activation_notice' );
+	}
+}
+add_action( 'admin_notices', 'searchcraft_activation_notice' );
 
 /**
  * Initialize and run the Searchcraft plugin.
