@@ -70,6 +70,37 @@ function initPasswordToggle() {
 		}
 	});
 }
+
+/**
+ * Initialize button with spinner functionality
+ * Handles all forms that contain .searchcraft-button-with-spinner elements
+ */
+function initButtonWithSpinner() {
+	const buttonContainers = document.querySelectorAll('.searchcraft-button-with-spinner');
+
+	buttonContainers.forEach(function(container) {
+		// Find the form that contains this button container
+		const form = container.closest('form');
+
+		if (!form) {
+			return;
+		}
+
+		// Find the button and spinner within this container
+		const button = container.querySelector('input[type="submit"], button[type="submit"]');
+		const spinner = container.querySelector('.searchcraft-spinner');
+
+		if (button && spinner) {
+			// Add submit event listener to the form
+			form.addEventListener('submit', function() {
+				// Disable the button and show spinner
+				button.disabled = true;
+				button.style.display = 'none';
+				spinner.style.display = 'inline-block';
+			});
+		}
+	});
+}
 // Layout tab form toggling
 function toggleFormFields() {
 	const isFullSelected = fullRadio && fullRadio.checked;
@@ -99,6 +130,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
 	// Initialize password toggle functionality
 	initPasswordToggle();
+
+	// Initialize button with spinner functionality
+	initButtonWithSpinner();
 
 	// layout tab functionality
 	if (document.querySelector('.searchcraft-layout')) {
