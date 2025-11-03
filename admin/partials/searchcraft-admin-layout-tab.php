@@ -70,7 +70,7 @@ if ( $is_configured ) {
 								</p>
 							</td>
 						</tr>
-						<tr class="searchcraft-full-only">
+						<tr>
 							<th scope="row">
 								<label for="searchcraft_search_placeholder">Search Placeholder Text</label>
 							</th>

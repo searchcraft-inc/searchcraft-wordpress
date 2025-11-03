@@ -103,6 +103,10 @@ function initButtonWithSpinner() {
 }
 // Layout tab form toggling
 function toggleFormFields() {
+	const fullRadio = document.querySelector('input[name="searchcraft_search_experience"][value="full"]');
+	const fullOnlyRows = document.querySelectorAll('.searchcraft-full-only');
+	const popoverOnlyRows = document.querySelectorAll('.searchcraft-popover-only');
+
 	const isFullSelected = fullRadio && fullRadio.checked;
 
 	// Show/hide full experience fields
@@ -138,8 +142,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	if (document.querySelector('.searchcraft-layout')) {
 		const fullRadio = document.querySelector('input[name="searchcraft_search_experience"][value="full"]');
 		const popoverRadio = document.querySelector('input[name="searchcraft_search_experience"][value="popover"]');
-		const fullOnlyRows = document.querySelectorAll('.searchcraft-full-only');
-		const popoverOnlyRows = document.querySelectorAll('.searchcraft-popover-only');
+
 		// Initial state
 		toggleFormFields();
 
