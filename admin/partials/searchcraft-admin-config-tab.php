@@ -154,8 +154,83 @@ $has_read_key   = ! empty( Searchcraft_Config::get_read_key() );
 			</tbody>
 		</table>
 
-		<div class="searchcraft-config-actions">
+		<?php
+		// Get all public taxonomies.
+		$taxonomies = get_taxonomies(
+			array(
+				'public' => true,
+			),
+			'objects'
+		);
+
+		// Filter out post_tag and post_format.
+		$excluded_taxonomies = array( 'post_tag', 'post_format' );
+		$taxonomies = array_filter(
+			$taxonomies,
+			function( $taxonomy_obj ) use ( $excluded_taxonomies ) {
+				return ! in_array( $taxonomy_obj->name, $excluded_taxonomies, true );
+			}
+		);
+
+		// Get currently selected taxonomies for filters.
+		$selected_taxonomies = get_option( 'searchcraft_filter_taxonomies', array() );
+		if ( ! is_array( $selected_taxonomies ) ) {
+			$selected_taxonomies = array();
+		}
+
+		// Ensure category is always in the selected list by default.
+		if ( empty( $selected_taxonomies ) ) {
+			$selected_taxonomies = array( 'category' );
+		}
+		?>
+
+		<?php if ( ! empty( $taxonomies ) ) : ?>
+			<h3>Filter Options</h3>
+			<table class="form-table">
+				<tbody>
+					<tr>
+						<th scope="row">
+							<label>Add these taxonomies as filter options</label>
+						</th>
+						<td>
+							<fieldset>
+								<legend class="screen-reader-text"><span>Select taxonomies to use as filters</span></legend>
+								<?php foreach ( $taxonomies as $taxonomy_obj ) : ?>
+									<?php
+									$is_category = ( 'category' === $taxonomy_obj->name );
+									$is_checked  = in_array( $taxonomy_obj->name, $selected_taxonomies, true ) || $is_category;
+									?>
+									<label style="display: block; margin-bottom: 8px;">
+										<input
+											type="checkbox"
+											name="searchcraft_filter_taxonomies[]"
+											value="<?php echo esc_attr( $taxonomy_obj->name ); ?>"
+											<?php checked( $is_checked ); ?>
+											<?php disabled( $is_category ); ?>
+										/>
+										<strong><?php echo esc_html( $taxonomy_obj->label ); ?></strong>
+										<?php if ( ! empty( $taxonomy_obj->description ) ) : ?>
+											- <?php echo esc_html( $taxonomy_obj->description ); ?>
+										<?php else : ?>
+											(<?php echo esc_html( $taxonomy_obj->name ); ?>)
+										<?php endif; ?>
+									</label>
+								<?php endforeach; ?>
+							</fieldset>
+							<p class="description">
+								Select which taxonomies should be available as filter options in the search interface.
+							</p>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		<?php endif; ?>
+		<div class="searchcraft-button-with-spinner searchcraft-config-actions">
 			<?php submit_button( 'Save Configuration', 'primary', 'searchcraft_save_config' ); ?>
+			<span class="searchcraft-spinner" style="display: none;">
+				<span class="spinner is-active"></span>
+				<span class="searchcraft-spinner-text">Saving...</span>
+			</span>
 		</div>
 	</form>
 	</div>

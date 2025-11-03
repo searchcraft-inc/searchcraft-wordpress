@@ -376,7 +376,9 @@ class Searchcraft_Admin {
 				case 'config':
 					$config_data = isset( $_POST['searchcraft_config'] ) && is_array( $_POST['searchcraft_config'] ) ? $_POST['searchcraft_config'] : array(); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized,WordPress.Security.ValidatedSanitizedInput.MissingUnslash
 					$reset_flag  = isset( $_POST['searchcraft_reset_config'] );
-					$save_flag   = isset( $_POST['searchcraft_save_config'] );
+					// Note: We can't rely on the submit button name being in POST because JavaScript hides it before submission.
+					// Instead, treat it as a save if we have config data and we're not resetting.
+					$save_flag   = ! $reset_flag && ! empty( $config_data );
 					$this->searchcraft_on_config_request( $config_data, $reset_flag, $save_flag );
 					break;
 				case 'reindex_all_documents':
@@ -423,12 +425,15 @@ class Searchcraft_Admin {
 
 		// Handle save request.
 		if ( $save_flag && ! empty( $config_data ) ) {
+			// Get existing config to preserve values that aren't being changed.
+			$existing_config = Searchcraft_Config::get_all();
+
 			// Sanitize the input data with proper validation.
 			$sanitized_config = array(
 				'endpoint_url' => isset( $config_data['endpoint_url'] ) ? esc_url_raw( wp_unslash( $config_data['endpoint_url'] ) ) : '',
 				'index_id'     => isset( $config_data['index_id'] ) ? sanitize_text_field( wp_unslash( $config_data['index_id'] ) ) : '',
-				'read_key'     => isset( $config_data['read_key'] ) ? sanitize_text_field( wp_unslash( $config_data['read_key'] ) ) : '',
-				'ingest_key'   => isset( $config_data['ingest_key'] ) ? sanitize_text_field( wp_unslash( $config_data['ingest_key'] ) ) : '',
+				'read_key'     => isset( $config_data['read_key'] ) && ! empty( $config_data['read_key'] ) ? sanitize_text_field( wp_unslash( $config_data['read_key'] ) ) : $existing_config['read_key'],
+				'ingest_key'   => isset( $config_data['ingest_key'] ) && ! empty( $config_data['ingest_key'] ) ? sanitize_text_field( wp_unslash( $config_data['ingest_key'] ) ) : $existing_config['ingest_key'],
 				'cortex_url'   => isset( $config_data['cortex_url'] ) && ! empty( $config_data['cortex_url'] ) ? esc_url_raw( wp_unslash( $config_data['cortex_url'] ) ) : '',
 			);
 
@@ -439,17 +444,69 @@ class Searchcraft_Admin {
 				// Save the configuration.
 				$success = Searchcraft_Config::set_multiple( $sanitized_config );
 
+				// Get previous taxonomy selections.
+				$previous_taxonomies = get_option( 'searchcraft_filter_taxonomies', array() );
+
+				// Save taxonomy filter selections.
+				$filter_taxonomies = isset( $_POST['searchcraft_filter_taxonomies'] ) && is_array( $_POST['searchcraft_filter_taxonomies'] ) // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in searchcraft_request_handler().
+					? array_map( 'sanitize_text_field', wp_unslash( $_POST['searchcraft_filter_taxonomies'] ) ) // phpcs:ignore WordPress.Security.NonceVerification.Missing
+					: array();
+
+				// Always include category in the filter taxonomies.
+				if ( ! in_array( 'category', $filter_taxonomies, true ) ) {
+					$filter_taxonomies[] = 'category';
+				}
+
+				update_option( 'searchcraft_filter_taxonomies', $filter_taxonomies );
+
+				// Check if taxonomies have changed and need index update.
+				// We need to update if taxonomies changed, regardless of whether we're adding or removing them.
+				$taxonomies_changed = ( serialize( $previous_taxonomies ) !== serialize( $filter_taxonomies ) ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.serialize_serialize
+				$needs_index_update = $taxonomies_changed;
+
 				if ( $success ) {
 					// Clear cached data since configuration has changed.
 					delete_transient( 'searchcraft_index_stats' );
 					delete_transient( 'searchcraft_index' );
+					// Update index schema if taxonomies changed.
+					if ( $needs_index_update ) {
+						$index_update_result = $this->searchcraft_update_index_schema( $filter_taxonomies );
 
-					add_action(
-						'admin_notices',
-						function () {
-							echo '<div class="notice notice-success is-dismissible"><p>Configuration saved successfully.</p></div>';
+						if ( $index_update_result['success'] ) {
+							$message = 'Configuration saved successfully.';
+							if ( $index_update_result['reindexed'] ) {
+								$message .= ' Index schema updated and documents re-indexed.';
+							} else {
+								$message .= ' Index schema updated.';
+							}
+
+							add_action(
+								'admin_notices',
+								function () use ( $message ) {
+									echo '<div class="notice notice-success is-dismissible"><p>' . esc_html( $message ) . '</p></div>';
+								}
+							);
+						} else {
+							$error_message = $index_update_result['error'];
+							add_action(
+								'admin_notices',
+								function () use ( $error_message ) {
+									echo '<div class="notice notice-error is-dismissible">';
+									echo '<p><strong>Configuration saved, but there was an issue:</strong></p>';
+									echo '<p>' . esc_html( $error_message ) . '</p>';
+									echo '<p>Please check the error logs for more details or contact support.</p>';
+									echo '</div>';
+								}
+							);
 						}
-					);
+					} else {
+						add_action(
+							'admin_notices',
+							function () {
+								echo '<div class="notice notice-success is-dismissible"><p>Configuration saved successfully.</p></div>';
+							}
+						);
+					}
 				} else {
 					add_action(
 						'admin_notices',
@@ -520,7 +577,7 @@ class Searchcraft_Admin {
 				'admin_notices',
 				function () {
 					echo '<div class="notice notice-success is-dismissible">';
-					echo '<p><strong>Success:</strong> All documents have been re-indexed in Searchcraft.</p>';
+					echo '<p><strong>Success:</strong> All documents have been added to the Searchcraft index.</p>';
 					echo '</div>';
 				}
 			);
@@ -530,7 +587,7 @@ class Searchcraft_Admin {
 				'admin_notices',
 				function () use ( $e ) {
 					echo '<div class="notice notice-error is-dismissible">';
-					echo '<p><strong>Error:</strong> Failed to re-index documents. ' . esc_html( $e->getMessage() ) . '</p>';
+					echo '<p><strong>Error:</strong> Failed to index documents. ' . esc_html( $e->getMessage() ) . '</p>';
 					echo '</div>';
 				}
 			);
@@ -1085,6 +1142,129 @@ class Searchcraft_Admin {
 	}
 
 	/**
+	 * Update the index schema to include taxonomy fields.
+	 *
+	 * @since 1.0.0
+	 * @param array $taxonomies Array of taxonomy names to add as facet fields.
+	 * @return array Result array with 'success', 'error', and 'reindexed' keys.
+	 */
+	private function searchcraft_update_index_schema( $taxonomies ) {
+		$result = array(
+			'success'   => false,
+			'error'     => '',
+			'reindexed' => false,
+		);
+
+		// Get the ingest client.
+		$ingest_client = $this->searchcraft_get_ingest_client();
+		if ( ! $ingest_client ) {
+			$result['error'] = 'Unable to get ingest client.';
+			return $result;
+		}
+
+		// Get the index ID.
+		$index_id = Searchcraft_Config::get_index_id();
+		if ( empty( $index_id ) ) {
+			$result['error'] = 'Index ID is not configured.';
+			return $result;
+		}
+
+		try {
+			// Get the current index configuration.
+			$response       = $ingest_client->index()->getIndex( $index_id );
+			$current_index  = $response['data'] ?? $response;
+			$current_fields = $current_index['fields'] ?? array();
+
+			// Check if documents exist in the index.
+			$stats          = $this->searchcraft_get_index_stats();
+			$document_count = isset( $stats['document_count'] ) ? (int) $stats['document_count'] : 0;
+
+			// Get all public taxonomies to identify which fields are taxonomy fields.
+			$all_taxonomies = get_taxonomies( array( 'public' => true ), 'names' );
+
+			// Build the desired taxonomy fields based on selected taxonomies.
+			$desired_taxonomy_fields = array();
+			foreach ( $taxonomies as $taxonomy_name ) {
+				// Skip category as it should already be in the base schema.
+				if ( 'category' === $taxonomy_name ) {
+					continue;
+				}
+
+				$desired_taxonomy_fields[ $taxonomy_name ] = array(
+					'indexed'  => true,
+					'multi'    => true,
+					'required' => false,
+					'stored'   => true,
+					'type'     => 'facet',
+				);
+			}
+
+			// Start with current fields and update taxonomy fields.
+			$updated_fields = $current_fields;
+
+			// Remove taxonomy fields that are no longer selected.
+			foreach ( $current_fields as $field_name => $field_config ) {
+				// Check if this is a taxonomy field that's no longer selected.
+				if ( isset( $all_taxonomies[ $field_name ] ) &&
+					'category' !== $field_name &&
+					! isset( $desired_taxonomy_fields[ $field_name ] ) ) {
+					unset( $updated_fields[ $field_name ] );
+				}
+			}
+
+			// Add or update selected taxonomy fields.
+			foreach ( $desired_taxonomy_fields as $taxonomy_name => $field_config ) {
+				$updated_fields[ $taxonomy_name ] = $field_config;
+			}
+
+			// Check if fields actually changed.
+			if ( serialize( $current_fields ) === serialize( $updated_fields ) ) { // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.serialize_serialize
+				$result['success'] = true;
+				return $result;
+			}
+
+			// Update the index with new fields.
+			$update_payload = array(
+				'fields' => $updated_fields,
+			);
+
+			// Preserve other important index settings.
+			if ( isset( $current_index['language'] ) ) {
+				$update_payload['language'] = $current_index['language'];
+			}
+			if ( isset( $current_index['search_fields'] ) ) {
+				$update_payload['search_fields'] = $current_index['search_fields'];
+			}
+			if ( isset( $current_index['weight_multipliers'] ) ) {
+				$update_payload['weight_multipliers'] = $current_index['weight_multipliers'];
+			}
+
+			$ingest_client->index()->updateIndex( $index_id, $update_payload );
+
+			// If documents exist, re-index them to include the new taxonomy data.
+			if ( $document_count > 0 ) {
+				try {
+					$this->searchcraft_add_all_documents();
+					$result['reindexed'] = true;
+				} catch ( \Exception $e ) {
+					// Index schema was updated but re-indexing failed.
+					$result['success'] = true;
+					$result['error']   = 'Index schema updated, but re-indexing failed: ' . $e->getMessage();
+					Searchcraft_Helper_Functions::searchcraft_error_log( 'Searchcraft: Re-indexing failed after schema update: ' . $e->getMessage() );
+					return $result;
+				}
+			}
+
+			$result['success'] = true;
+		} catch ( \Exception $e ) {
+			$result['error'] = $e->getMessage();
+			Searchcraft_Helper_Functions::searchcraft_error_log( 'Searchcraft: Failed to update index schema: ' . $e->getMessage() );
+		}
+
+		return $result;
+	}
+
+	/**
 	 * Retrieves the read and ingest API keys from the client.
 	 *
 	 * @since 1.0.0
@@ -1110,6 +1290,7 @@ class Searchcraft_Admin {
 	 *
 	 * @since 1.0.0
 	 * @param WP_Post|array $posts A single WP_Post object or an array of WP_Post objects.
+	 * @throws \Exception If the API request fails or document validation fails.
 	 */
 	public function searchcraft_add_documents( $posts ) {
 		// Normalize input to always be an array.
@@ -1158,7 +1339,7 @@ class Searchcraft_Admin {
 			if ( ! empty( $post_categories ) ) {
 				foreach ( $post_categories as $category ) {
 					// Build category path including parent categories.
-					$category_path = $this->searchcraft_get_category_path( $category );
+					$category_path = $this->searchcraft_get_term_path( $category, 'category' );
 					if ( ! empty( $category_path ) ) {
 						$categories[] = $category_path;
 					}
@@ -1171,6 +1352,33 @@ class Searchcraft_Admin {
 			if ( ! empty( $post_tags ) ) {
 				foreach ( $post_tags as $tag ) {
 					$tags[] = $tag->name;
+				}
+			}
+
+			// Get selected filter taxonomies.
+			$selected_taxonomies = get_option( 'searchcraft_filter_taxonomies', array( 'category' ) );
+			if ( ! is_array( $selected_taxonomies ) ) {
+				$selected_taxonomies = array( 'category' );
+			}
+
+			// Build taxonomy data for selected taxonomies as RESTful paths.
+			$taxonomy_data = array();
+			foreach ( $selected_taxonomies as $taxonomy_name ) {
+				// Skip category as it's already handled above.
+				if ( 'category' === $taxonomy_name ) {
+					continue;
+				}
+
+				$terms = get_the_terms( $post->ID, $taxonomy_name );
+				if ( ! empty( $terms ) && ! is_wp_error( $terms ) ) {
+					$taxonomy_data[ $taxonomy_name ] = array();
+					foreach ( $terms as $term ) {
+						// Build term path including parent terms.
+						$term_path = $this->searchcraft_get_term_path( $term, $taxonomy_name );
+						if ( ! empty( $term_path ) ) {
+							$taxonomy_data[ $taxonomy_name ][] = $term_path;
+						}
+					}
 				}
 			}
 
@@ -1225,6 +1433,13 @@ class Searchcraft_Admin {
 				'tags'                  => $tags,
 			);
 
+			// Add custom taxonomy data to the document.
+			if ( ! empty( $taxonomy_data ) ) {
+				foreach ( $taxonomy_data as $taxonomy_name => $terms ) {
+					$document[ $taxonomy_name ] = $terms;
+				}
+			}
+
 			$documents[] = $document;
 		}
 
@@ -1259,6 +1474,8 @@ class Searchcraft_Admin {
 				} else {
 					Searchcraft_Helper_Functions::searchcraft_error_log( "Searchcraft: Failed to add {$count} documents: " . $e->getMessage() );
 				}
+				// Re-throw the exception so it can be caught by calling code.
+				throw $e;
 			}
 		}
 	}
@@ -1570,32 +1787,33 @@ class Searchcraft_Admin {
 	}
 
 	/**
-	 * Build a RESTful category path for a given category.
+	 * Build a RESTful path for a given taxonomy term.
 	 *
-	 * Creates a path like "/category/subcategory" by traversing up the category hierarchy.
+	 * Creates a path like "/parent/child" by traversing up the term hierarchy.
 	 *
 	 * @since 1.0.0
-	 * @param WP_Term $category The category term object.
-	 * @return string The RESTful category path.
+	 * @param WP_Term $term     The taxonomy term object.
+	 * @param string  $taxonomy The taxonomy name (e.g., 'category', 'post_tag', custom taxonomies).
+	 * @return string The RESTful term path.
 	 */
-	private function searchcraft_get_category_path( $category ) {
-		$path_parts       = array();
-		$current_category = $category;
+	private function searchcraft_get_term_path( $term, $taxonomy ) {
+		$path_parts   = array();
+		$current_term = $term;
 
-		// Traverse up the category hierarchy.
-		while ( $current_category ) {
-			// Add current category slug to the beginning of the path.
-			array_unshift( $path_parts, $current_category->slug );
+		// Traverse up the term hierarchy.
+		while ( $current_term ) {
+			// Add current term slug to the beginning of the path.
+			array_unshift( $path_parts, $current_term->slug );
 
-			// Get parent category if it exists.
-			if ( $current_category->parent ) {
-				$current_category = get_term( $current_category->parent, 'category' );
+			// Get parent term if it exists.
+			if ( $current_term->parent ) {
+				$current_term = get_term( $current_term->parent, $taxonomy );
 				// Check if get_term returned an error.
-				if ( is_wp_error( $current_category ) ) {
+				if ( is_wp_error( $current_term ) ) {
 					break;
 				}
 			} else {
-				$current_category = null;
+				$current_term = null;
 			}
 		}
 
