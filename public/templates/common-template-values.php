@@ -31,3 +31,4 @@ $search_experience                     = get_option( 'searchcraft_search_experie
 $search_placeholder                    = get_option( 'searchcraft_search_placeholder', 'Search...' );
 $searchcraft_include_filter_panel      = get_option( 'searchcraft_include_filter_panel', false );
 $searchcraft_input_width               = get_option( 'searchcraft_input_width', '100' );
+$searchcraft_result_orientation        = get_option( 'searchcraft_result_orientation', 'column' );

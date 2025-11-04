@@ -31,10 +31,10 @@ if ( $is_configured ) {
 	$search_experience         = get_option( 'searchcraft_search_experience', 'full' );
 	$include_filter_panel      = get_option( 'searchcraft_include_filter_panel', false );
 	$results_per_page          = get_option( 'searchcraft_results_per_page', 10 );
-	$enable_most_recent_toggle = get_option( 'searchcraft_enable_most_recent_toggle', '1' ) === '1';
-	$enable_exact_match_toggle = get_option( 'searchcraft_enable_exact_match_toggle', '1' ) === '1';
-	$enable_date_range         = get_option( 'searchcraft_enable_date_range', '1' ) === '1';
-	$enable_facets             = get_option( 'searchcraft_enable_facets', '1' ) === '1';
+	$enable_most_recent_toggle = get_option( 'searchcraft_enable_most_recent_toggle', '1' );
+	$enable_exact_match_toggle = get_option( 'searchcraft_enable_exact_match_toggle', '1' );
+	$enable_date_range         = get_option( 'searchcraft_enable_date_range', '1' );
+	$enable_facets             = get_option( 'searchcraft_enable_facets', '1' );
 }
 ?>
 <div class="searchcraft-layout">
@@ -254,7 +254,39 @@ if ( $is_configured ) {
 								</p>
 							</td>
 						</tr>
+						<tr class="searchcraft-section-divider">
+							<td colspan="2" style="padding: 1.5rem 1rem 1rem;">
+								<div style="border-top: 2px solid var(--scwp-gray-10); padding-top: 1rem;">
+									<strong style="color: var(--scwp-gray-50); font-size: 0.9em; text-transform: uppercase; letter-spacing: 0.5px;">Result Layout Options</strong>
+								</div>
+							</td>
+						</tr>
 						<tr>
+							<th scope="row">
+								<label>Result Orientation</label>
+							</th>
+							<td>
+								<?php
+								$result_orientation = get_option( 'searchcraft_result_orientation', 'column' );
+								?>
+								<fieldset>
+									<legend class="screen-reader-text"><span>Result Orientation</span></legend>
+									<label>
+										<input type="radio" name="searchcraft_result_orientation" value="column" <?php checked( $result_orientation, 'column' ); ?> />
+										<strong>Column</strong> - Display search results in a single column layout
+									</label>
+									<br><br>
+									<label>
+										<input type="radio" name="searchcraft_result_orientation" value="grid" <?php checked( $result_orientation, 'grid' ); ?> />
+										<strong>Grid</strong> - Display search results in a multi-column grid layout
+									</label>
+								</fieldset>
+								<p class="description">
+									Choose how search results should be displayed. Column layout shows results stacked vertically, while grid layout displays results in a responsive multi-column format.
+								</p>
+							</td>
+						</tr>
+						<tr class="searchcraft-column-orientation-option">
 							<th scope="row">
 								<label>Image Alignment</label>
 							</th>
@@ -276,6 +308,46 @@ if ( $is_configured ) {
 								</fieldset>
 								<p class="description">
 									Choose whether images in search results should be aligned to the left or right of the content. Applies to the default template only, if you are using a custom template, you will need to implement this yourself.
+								</p>
+							</td>
+						</tr>
+						<tr">
+							<th scope="row">
+								<label for="searchcraft_display_post_date">Display Post Date</label>
+							</th>
+							<td>
+								<label for="searchcraft_display_post_date">
+									<input
+										type="checkbox"
+										name="searchcraft_display_post_date"
+										id="searchcraft_display_post_date"
+										value="1"
+										<?php checked( get_option( 'searchcraft_display_post_date', false ) ); ?>
+									/>
+									Show the post date in search results.
+								</label>
+								<p class="description">
+									When enabled, the publication date will be displayed for each search result. Applies to the default template only.
+								</p>
+							</td>
+						</tr>
+						<tr>
+							<th scope="row">
+								<label for="searchcraft_display_primary_category">Display Primary Category</label>
+							</th>
+							<td>
+								<label for="searchcraft_display_primary_category">
+									<input
+										type="checkbox"
+										name="searchcraft_display_primary_category"
+										id="searchcraft_display_primary_category"
+										value="1"
+										<?php checked( get_option( 'searchcraft_display_primary_category', true ) ); ?>
+									/>
+									Show the primary category in search results.
+								</label>
+								<p class="description">
+									When enabled, the primary category will be displayed for each search result. Applies to the default template only.
 								</p>
 							</td>
 						</tr>

@@ -61,6 +61,67 @@ require_once 'common-template-values.php';
 	font-weight: bold;
 }
 
+<?php if ( 'grid' === $searchcraft_result_orientation ) : ?>
+/* Grid layout for search results */
+.searchcraft-search-results {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 24px;
+	padding: 0;
+}
+
+/* Individual search result card */
+.searchcraft-result-item {
+	display: block;
+	height: 100%;
+}
+.searchcraft-result-item a {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+}
+
+/* Image container */
+.searchcraft-result-image {
+	aspect-ratio: 4/3;
+	margin-bottom: 16px;
+	overflow: hidden;
+	max-width: 100%;
+	width: 100%;
+}
+
+.searchcraft-result-image img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
+}
+.searchcraft-result-content {
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+}
+
+/* Responsive breakpoints */
+@media (max-width: 1024px) {
+	.searchcraft-search-results {
+		grid-template-columns: repeat(2, 1fr);
+		gap: 20px;
+	}
+}
+@media (max-width: 640px) {
+	.searchcraft-search-results {
+		grid-template-columns: 1fr;
+		gap: 24px;
+	}
+
+	.search-result-content-title {
+		font-size: 20px;
+	}
+}
+<?php endif // End of grid layout styles. ?>
+
+
 /* Filter panel positioning */
 .searchcraft-main-content {
 	display: flex;

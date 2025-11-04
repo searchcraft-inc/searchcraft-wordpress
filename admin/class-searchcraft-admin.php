@@ -841,6 +841,21 @@ class Searchcraft_Admin {
 			$updated_settings['results_per_page'] = $results_per_page;
 		}
 
+		// Handle result orientation setting.
+		if ( isset( $request['searchcraft_result_orientation'] ) ) {
+			$result_orientation = sanitize_text_field( wp_unslash( $request['searchcraft_result_orientation'] ) );
+
+			// Validate the orientation value.
+			$valid_orientations = array( 'column', 'grid' );
+			if ( ! in_array( $result_orientation, $valid_orientations, true ) ) {
+				$result_orientation = 'column';
+			}
+
+			// Save the setting.
+			update_option( 'searchcraft_result_orientation', $result_orientation );
+			$updated_settings['result_orientation'] = $result_orientation;
+		}
+
 		// Handle image alignment setting.
 		if ( isset( $request['searchcraft_image_alignment'] ) ) {
 			$image_alignment = sanitize_text_field( wp_unslash( $request['searchcraft_image_alignment'] ) );
@@ -855,6 +870,16 @@ class Searchcraft_Admin {
 			update_option( 'searchcraft_image_alignment', $image_alignment );
 			$updated_settings['image_alignment'] = $image_alignment;
 		}
+
+		// Handle display post date setting.
+		$display_post_date = isset( $request['searchcraft_display_post_date'] ) ? true : false;
+		update_option( 'searchcraft_display_post_date', $display_post_date );
+		$updated_settings['display_post_date'] = $display_post_date ? 'enabled' : 'disabled';
+
+		// Handle display primary category setting.
+		$display_primary_category = isset( $request['searchcraft_display_primary_category'] ) ? '1' : '0';
+		update_option( 'searchcraft_display_primary_category', $display_primary_category );
+		$updated_settings['display_primary_category'] = '1' === $display_primary_category ? 'enabled' : 'disabled';
 
 		// Handle brand color setting.
 		if ( isset( $request['searchcraft_brand_color'] ) ) {
@@ -932,8 +957,20 @@ class Searchcraft_Admin {
 					$messages[] = sprintf( 'Results per page set to %d', $updated_settings['results_per_page'] );
 				}
 
+				if ( isset( $updated_settings['result_orientation'] ) ) {
+					$messages[] = sprintf( 'Result orientation set to %s', $updated_settings['result_orientation'] );
+				}
+
 				if ( isset( $updated_settings['image_alignment'] ) ) {
 					$messages[] = sprintf( 'Image alignment set to %s', $updated_settings['image_alignment'] );
+				}
+
+				if ( isset( $updated_settings['display_post_date'] ) ) {
+					$messages[] = sprintf( 'Display post date %s', $updated_settings['display_post_date'] );
+				}
+
+				if ( isset( $updated_settings['display_primary_category'] ) ) {
+					$messages[] = sprintf( 'Display primary category %s', $updated_settings['display_primary_category'] );
 				}
 
 				if ( isset( $updated_settings['brand_color'] ) ) {

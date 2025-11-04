@@ -163,6 +163,29 @@ function toggleAiSummaryLayout() {
 	});
 }
 
+/**
+ * Toggle column orientation options visibility
+ * Hides options when grid is selected, shows them when column is selected
+ */
+function toggleResultOrientationOptions() {
+	const columnRadio = document.querySelector('input[name="searchcraft_result_orientation"][value="column"]');
+	const columnOrientationOptions = document.querySelectorAll('.searchcraft-column-orientation-option');
+
+	if (!columnRadio || !columnOrientationOptions.length) {
+		return;
+	}
+
+	const isColumnSelected = columnRadio.checked;
+
+	columnOrientationOptions.forEach(function(element) {
+		if (isColumnSelected) {
+			element.style.display = '';
+		} else {
+			element.style.display = 'none';
+		}
+	});
+}
+
 document.addEventListener('DOMContentLoaded', function() {
 	// Initialize color pickers
 	initColorPickers();
@@ -207,6 +230,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
 			// Add event listener
 			aiSummaryCheckbox.addEventListener('change', toggleAiSummaryLayout);
+		}
+
+		// Result orientation options toggle
+		const columnRadio = document.querySelector('input[name="searchcraft_result_orientation"][value="column"]');
+		const gridRadio = document.querySelector('input[name="searchcraft_result_orientation"][value="grid"]');
+		if (columnRadio && gridRadio) {
+			// Initial state
+			toggleResultOrientationOptions();
+
+			// Add event listeners
+			columnRadio.addEventListener('change', toggleResultOrientationOptions);
+			gridRadio.addEventListener('change', toggleResultOrientationOptions);
 		}
 	}
 });

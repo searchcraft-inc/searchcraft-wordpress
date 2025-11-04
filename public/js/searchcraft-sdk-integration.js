@@ -77,23 +77,24 @@
             };
             (searchcraft_config.cortexURL && searchcraft_config.enableAiSummary) && (config.cortexURL = searchcraft_config.cortexURL);
             const includeFilterPanel = searchcraft_config.includeFilterPanel || false;
+
             const defaultResultTemplate = (item, index, { html }) => {
                 const postDate = item.post_date ? new Date(item.post_date).toLocaleDateString() : '';
                 const image = item?.featured_image_url && item.featured_image_url.length > 0 ? html`
                     <div class="searchcraft-result-image">
                         <img src="${item.featured_image_url}" alt="${item.post_title}" />
                     </div>` : '';
-
+                const by = (item.post_author_name && postDate && searchcraft_config.displayPostDate) ? 'By ' : '';
                 return html`
-                <a class="searchcraft-result-item" href="${item.permalink}" target="_blank" rel="noreferrer">
+                <a class="searchcraft-result-item" href="${item.permalink}">
                     ${searchcraft_config.imageAlignment === 'left' ? image : ''}
                     <div class="searchcraft-result-content">
-                        ${item.primary_category_name ? html`<h4 class="searchcraft-result-primary-category">${item.primary_category_name}</h4>` : ''}
+                        ${(item.primary_category_name && searchcraft_config.displayPrimaryCategory) ? html`<h4 class="searchcraft-result-primary-category">${item.primary_category_name}</h4>` : ''}
                         <h3 class="searchcraft-result-title">${item.post_title}</h3>
                         <p class="searchcraft-result-excerpt">${item.post_excerpt}</p>
                         <div class="searchcraft-result-meta flex">
-                            ${postDate ? html`<time class="searchcraft-result-date">${postDate}</time>` : ''}
-                            ${item.post_author_name ? html`• <span class="searchcraft-result-author-name">By ${item.post_author_name}</span>` : ''}
+                            ${(postDate && searchcraft_config.displayPostDate) ? html`<time class="searchcraft-result-date">${postDate}</time> • ` : ''}
+                            ${item.post_author_name ? html`<span class="searchcraft-result-author-name">${by}${item.post_author_name}</span>` : ''}
                         </div>
                     </div>
                     ${searchcraft_config.imageAlignment === 'right' ? image : ''}

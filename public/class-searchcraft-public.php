@@ -212,64 +212,44 @@ class Searchcraft_Public {
 			$js_config['searchQuery'] = $search_query;
 		}
 
-		// Include results per page setting.
-		$results_per_page            = get_option( 'searchcraft_results_per_page', 10 );
-		$js_config['resultsPerPage'] = intval( $results_per_page );
-
-		// Include custom result template callback function.
-		$result_template = get_option( 'searchcraft_result_template', '' );
-		if ( ! empty( $result_template ) ) {
-			$js_config['resultTemplateCallback'] = $result_template;
-		}
-
-		// Include AI summary settings.
+		// AI summary settings.
 		$enable_ai_summary            = get_option( 'searchcraft_enable_ai_summary', false );
 		$js_config['enableAiSummary'] = (bool) $enable_ai_summary;
-
-		// Include cortex URL if AI summary is enabled and cortex URL is configured.
 		if ( $enable_ai_summary && ! empty( $config['cortex_url'] ) ) {
 			$js_config['cortexURL'] = $config['cortex_url'];
 		}
+		$js_config['summaryBackgroundColor'] = get_option( 'searchcraft_summary_background_color', '#F5F5F5' );
+		$js_config['summaryBoxBorderRadius'] = get_option( 'searchcraft_summary_box_border_radius', '' );
 
-		// Include image alignment setting.
-		$image_alignment             = get_option( 'searchcraft_image_alignment', 'left' );
-		$js_config['imageAlignment'] = $image_alignment;
+		// General result layout options.
+		$js_config['brandColor'] = get_option( 'searchcraft_brand_color', '#000000' );
+		$result_template         = get_option( 'searchcraft_result_template', '' );
+		if ( ! empty( $result_template ) ) {
+			$js_config['resultTemplateCallback'] = $result_template;
+		}
+		$js_config['orientation']            = get_option( 'searchcraft_result_orientation', 'column' );
+		$js_config['displayPostDate']        = (bool) get_option( 'searchcraft_display_post_date', true );
+		$js_config['displayPrimaryCategory'] = (bool) get_option( 'searchcraft_display_primary_category', true );
+		$js_config['imageAlignment']         = get_option( 'searchcraft_image_alignment', 'left' );
+		if ( 'grid' === $js_config['orientation'] ) {
+			$js_config['imageAlignment'] = 'left';
+		}
 
-		// Include brand color setting.
-		$brand_color             = get_option( 'searchcraft_brand_color', '#000000' );
-		$js_config['brandColor'] = $brand_color;
+		// Filter panel settings.
+		$js_config['includeFilterPanel']     = (bool) get_option( 'searchcraft_include_filter_panel', false );
+		$js_config['enableMostRecentToggle'] = (bool) get_option( 'searchcraft_enable_most_recent_toggle', '1' );
+		$js_config['enableExactMatchToggle'] = (bool) get_option( 'searchcraft_enable_exact_match_toggle', '1' );
+		$js_config['enableDateRange']        = (bool) get_option( 'searchcraft_enable_date_range', '1' );
+		$js_config['enableFacets']           = (bool) get_option( 'searchcraft_enable_facets', '1' );
 
-		// Include summary background color setting.
-		$summary_background_color            = get_option( 'searchcraft_summary_background_color', '#F5F5F5' );
-		$js_config['summaryBackgroundColor'] = $summary_background_color;
-
-		// Include summary box border radius setting.
-		$summary_box_border_radius           = get_option( 'searchcraft_summary_box_border_radius', '' );
-		$js_config['summaryBoxBorderRadius'] = $summary_box_border_radius;
-
-		// Include filter panel setting.
-		$include_filter_panel            = get_option( 'searchcraft_include_filter_panel', false );
-		$js_config['includeFilterPanel'] = (bool) $include_filter_panel;
-
-		// Include filter panel toggle settings.
-		$enable_most_recent_toggle           = get_option( 'searchcraft_enable_most_recent_toggle', '1' );
-		$js_config['enableMostRecentToggle'] = '1' === $enable_most_recent_toggle;
-
-		$enable_exact_match_toggle           = get_option( 'searchcraft_enable_exact_match_toggle', '1' );
-		$js_config['enableExactMatchToggle'] = '1' === $enable_exact_match_toggle;
-
-		$enable_date_range            = get_option( 'searchcraft_enable_date_range', '1' );
-		$js_config['enableDateRange'] = '1' === $enable_date_range;
-
-		$enable_facets             = get_option( 'searchcraft_enable_facets', '1' );
-		$js_config['enableFacets'] = '1' === $enable_facets;
-
-		// Include oldest post year.
+		// Date slider options.
 		$admin_instance              = new Searchcraft_Admin( 'searchcraft', SEARCHCRAFT_VERSION );
 		$oldest_post_year            = $admin_instance->get_oldest_post_year();
 		$js_config['oldestPostYear'] = $oldest_post_year;
 
-		// Include filter taxonomies.
+		$js_config['resultsPerPage'] = intval( get_option( 'searchcraft_results_per_page', 10 ) );
+
+		// Filter taxonomies.
 		$filter_taxonomies = get_option( 'searchcraft_filter_taxonomies', array( 'category' ) );
 		if ( ! is_array( $filter_taxonomies ) ) {
 			$filter_taxonomies = array( 'category' );
