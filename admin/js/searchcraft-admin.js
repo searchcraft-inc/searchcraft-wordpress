@@ -128,6 +128,41 @@ function toggleFormFields() {
 	});
 }
 
+/**
+ * Toggle filter panel options visibility
+ */
+function toggleFilterPanelOptions() {
+	const filterPanelCheckbox = document.getElementById('searchcraft_include_filter_panel');
+	const filterPanelOptions = document.querySelector('.searchcraft-filter-panel-options');
+
+	if (filterPanelCheckbox && filterPanelOptions) {
+		if (filterPanelCheckbox.checked) {
+			filterPanelOptions.style.display = '';
+		} else {
+			filterPanelOptions.style.display = 'none';
+		}
+	}
+}
+
+/**
+ * Toggle AI summary banner text visibility
+ */
+function toggleAiSummaryLayout() {
+	const aiSummaryCheckbox = document.getElementById('searchcraft_enable_ai_summary');
+	const aiSummarySettings = document.querySelectorAll('.searchcraft-ai-summary-row');
+
+	if (!aiSummaryCheckbox || !aiSummarySettings) {
+		return;
+	}
+	aiSummarySettings.forEach(function(element) {
+		if (aiSummaryCheckbox.checked) {
+			element.style.display = '';
+		} else {
+			element.style.display = 'none';
+		}
+	});
+}
+
 document.addEventListener('DOMContentLoaded', function() {
 	// Initialize color pickers
 	initColorPickers();
@@ -152,6 +187,26 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 		if (popoverRadio) {
 			popoverRadio.addEventListener('change', toggleFormFields);
+		}
+
+		// Filter panel options toggle
+		const filterPanelCheckbox = document.getElementById('searchcraft_include_filter_panel');
+		if (filterPanelCheckbox) {
+			// Initial state
+			toggleFilterPanelOptions();
+
+			// Add event listener
+			filterPanelCheckbox.addEventListener('change', toggleFilterPanelOptions);
+		}
+
+		// AI summary banner text toggle
+		const aiSummaryCheckbox = document.getElementById('searchcraft_enable_ai_summary');
+		if (aiSummaryCheckbox) {
+			// Initial state
+			toggleAiSummaryLayout();
+
+			// Add event listener
+			aiSummaryCheckbox.addEventListener('change', toggleAiSummaryLayout);
 		}
 	}
 });

@@ -100,7 +100,7 @@ require_once 'common-template-values.php';
 .searchcraft-summary-container {
 	background-color: <?php echo esc_attr( $searchcraft_summary_background_color ); ?>;
 	border: 1px solid <?php echo esc_attr( $searchcraft_summary_border_color ); ?>;
-	border-radius: 12px;
+	border-radius: <?php echo esc_attr( $searchcraft_summary_box_border_radius ); ?>px;
 	margin-bottom: 20px;
 	padding: 40px;
 	display: none; /* Hide by default to prevent flash */
@@ -206,7 +206,7 @@ require_once 'common-template-values.php';
 
 searchcraft-summary-box {
 	background-color: <?php echo esc_attr( $searchcraft_summary_background_color ); ?>;
-	border-radius: 12px;
+	border-radius: <?php echo esc_attr( $searchcraft_summary_box_border_radius ); ?>px;
 }
 searchcraft-summary-box, .searchcraft-summary-box {
 	background-color: <?php echo esc_attr( $searchcraft_summary_background_color ); ?>;

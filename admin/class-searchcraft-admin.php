@@ -808,6 +808,23 @@ class Searchcraft_Admin {
 		update_option( 'searchcraft_include_filter_panel', $include_filter_panel );
 		$updated_settings['filter_panel'] = $include_filter_panel ? 'enabled' : 'disabled';
 
+		// Handle filter panel toggle settings.
+		$enable_most_recent_toggle = isset( $request['searchcraft_enable_most_recent_toggle'] ) ? '1' : '0';
+		update_option( 'searchcraft_enable_most_recent_toggle', $enable_most_recent_toggle );
+		$updated_settings['enable_most_recent_toggle'] = '1' === $enable_most_recent_toggle ? 'enabled' : 'disabled';
+
+		$enable_exact_match_toggle = isset( $request['searchcraft_enable_exact_match_toggle'] ) ? '1' : '0';
+		update_option( 'searchcraft_enable_exact_match_toggle', $enable_exact_match_toggle );
+		$updated_settings['enable_exact_match_toggle'] = '1' === $enable_exact_match_toggle ? 'enabled' : 'disabled';
+
+		$enable_date_range = isset( $request['searchcraft_enable_date_range'] ) ? '1' : '0';
+		update_option( 'searchcraft_enable_date_range', $enable_date_range );
+		$updated_settings['enable_date_range'] = '1' === $enable_date_range ? 'enabled' : 'disabled';
+
+		$enable_facets = isset( $request['searchcraft_enable_facets'] ) ? '1' : '0';
+		update_option( 'searchcraft_enable_facets', $enable_facets );
+		$updated_settings['enable_facets'] = '1' === $enable_facets ? 'enabled' : 'disabled';
+
 		// Handle results per page setting.
 		if ( isset( $request['searchcraft_results_per_page'] ) ) {
 			$results_per_page = absint( wp_unslash( $request['searchcraft_results_per_page'] ) );
@@ -879,6 +896,22 @@ class Searchcraft_Admin {
 			// Save the setting.
 			update_option( 'searchcraft_summary_border_color', $summary_border_color );
 			$updated_settings['summary_border_color'] = $summary_border_color;
+		}
+
+		// Handle summary box border radius setting.
+		if ( isset( $request['searchcraft_summary_box_border_radius'] ) ) {
+			$summary_box_border_radius = absint( wp_unslash( $request['searchcraft_summary_box_border_radius'] ) );
+
+			// Validate the border radius value (between 0 and 1000).
+			if ( $summary_box_border_radius < 0 ) {
+				$summary_box_border_radius = 0;
+			} elseif ( $summary_box_border_radius > 1000 ) {
+				$summary_box_border_radius = 1000;
+			}
+
+			// Save the setting.
+			update_option( 'searchcraft_summary_box_border_radius', $summary_box_border_radius );
+			$updated_settings['summary_box_border_radius'] = $summary_box_border_radius;
 		}
 
 		// Display success message.

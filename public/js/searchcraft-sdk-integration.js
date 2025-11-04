@@ -160,18 +160,36 @@
                                 granularity: 'year',
                             },
                         },
-                        {
-                            type: 'facets',
-                            fieldName: 'categories',
-                            label: 'Filter by Category',
-                            options: {
-                                showSublevel: true,
-                            },
-                        },
                     ];
+
+                    // Add facets for each enabled taxonomy
+                    if (searchcraft_config.filterTaxonomies && Array.isArray(searchcraft_config.filterTaxonomies)) {
+                        searchcraft_config.filterTaxonomies.forEach(taxonomy => {
+                            const taxonomyName = taxonomy.name === "category" ? "categories" : taxonomy.name;
+                            filterPanelItems.push({
+                                type: 'facets',
+                                fieldName: taxonomyName,
+                                label: `${taxonomy.label}`,
+                                options: {
+                                    showSublevel: true,
+                                },
+                            });
+                        });
+                    }
                     filterPanelItems = filterPanelItems.filter(filter => {
+                        // Filter based on config settings
+                        if (filter.type === 'mostRecentToggle') {
+                            return searchcraft_config.enableMostRecentToggle == true;
+                        }
+                        if (filter.type === 'exactMatchToggle') {
+                            return searchcraft_config.enableExactMatchToggle == true;
+                        }
                         if (filter.type === 'dateRange') {
-                            return currentYear !== oldestYear;
+                            // Only show date range if enabled AND there's more than one year of data
+                            return searchcraft_config.enableDateRange == true && currentYear !== oldestYear;
+                        }
+                        if (filter.type === 'facets') {
+                            return searchcraft_config.enableFacets == true;
                         }
                         return true;
                     });

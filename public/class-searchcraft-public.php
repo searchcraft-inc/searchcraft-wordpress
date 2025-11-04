@@ -243,14 +243,56 @@ class Searchcraft_Public {
 		$summary_background_color            = get_option( 'searchcraft_summary_background_color', '#F5F5F5' );
 		$js_config['summaryBackgroundColor'] = $summary_background_color;
 
+		// Include summary box border radius setting.
+		$summary_box_border_radius           = get_option( 'searchcraft_summary_box_border_radius', '' );
+		$js_config['summaryBoxBorderRadius'] = $summary_box_border_radius;
+
 		// Include filter panel setting.
 		$include_filter_panel            = get_option( 'searchcraft_include_filter_panel', false );
 		$js_config['includeFilterPanel'] = (bool) $include_filter_panel;
+
+		// Include filter panel toggle settings.
+		$enable_most_recent_toggle           = get_option( 'searchcraft_enable_most_recent_toggle', '1' );
+		$js_config['enableMostRecentToggle'] = '1' === $enable_most_recent_toggle;
+
+		$enable_exact_match_toggle           = get_option( 'searchcraft_enable_exact_match_toggle', '1' );
+		$js_config['enableExactMatchToggle'] = '1' === $enable_exact_match_toggle;
+
+		$enable_date_range            = get_option( 'searchcraft_enable_date_range', '1' );
+		$js_config['enableDateRange'] = '1' === $enable_date_range;
+
+		$enable_facets             = get_option( 'searchcraft_enable_facets', '1' );
+		$js_config['enableFacets'] = '1' === $enable_facets;
 
 		// Include oldest post year.
 		$admin_instance              = new Searchcraft_Admin( 'searchcraft', SEARCHCRAFT_VERSION );
 		$oldest_post_year            = $admin_instance->get_oldest_post_year();
 		$js_config['oldestPostYear'] = $oldest_post_year;
+
+		// Include filter taxonomies.
+		$filter_taxonomies = get_option( 'searchcraft_filter_taxonomies', array( 'category' ) );
+		if ( ! is_array( $filter_taxonomies ) ) {
+			$filter_taxonomies = array( 'category' );
+		}
+		// Get taxonomy labels for display.
+		$taxonomy_config = array();
+		foreach ( $filter_taxonomies as $taxonomy_name ) {
+			$taxonomy_obj = get_taxonomy( $taxonomy_name );
+			if ( $taxonomy_obj ) {
+				$taxonomy_config[] = array(
+					'name'  => $taxonomy_name,
+					'label' => $taxonomy_obj->label,
+				);
+			}
+		}
+		// Sort taxonomies alphabetically by label.
+		usort(
+			$taxonomy_config,
+			function ( $a, $b ) {
+				return strcmp( $a['label'], $b['label'] );
+			}
+		);
+		$js_config['filterTaxonomies'] = $taxonomy_config;
 
 		return $js_config;
 	}

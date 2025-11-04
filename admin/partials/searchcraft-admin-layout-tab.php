@@ -19,14 +19,22 @@ if ( ! defined( 'ABSPATH' ) ) {
 $is_configured = Searchcraft_Config::is_configured();
 
 // Get layout settings if configured.
-$search_experience    = 'full';
-$include_filter_panel = false;
-$results_per_page     = 10;
+$search_experience         = 'full';
+$include_filter_panel      = false;
+$results_per_page          = 10;
+$enable_most_recent_toggle = true;
+$enable_exact_match_toggle = true;
+$enable_date_range         = true;
+$enable_facets             = true;
 
 if ( $is_configured ) {
-	$search_experience    = get_option( 'searchcraft_search_experience', 'full' );
-	$include_filter_panel = get_option( 'searchcraft_include_filter_panel', false );
-	$results_per_page     = get_option( 'searchcraft_results_per_page', 10 );
+	$search_experience         = get_option( 'searchcraft_search_experience', 'full' );
+	$include_filter_panel      = get_option( 'searchcraft_include_filter_panel', false );
+	$results_per_page          = get_option( 'searchcraft_results_per_page', 10 );
+	$enable_most_recent_toggle = get_option( 'searchcraft_enable_most_recent_toggle', '1' ) === '1';
+	$enable_exact_match_toggle = get_option( 'searchcraft_enable_exact_match_toggle', '1' ) === '1';
+	$enable_date_range         = get_option( 'searchcraft_enable_date_range', '1' ) === '1';
+	$enable_facets             = get_option( 'searchcraft_enable_facets', '1' ) === '1';
 }
 ?>
 <div class="searchcraft-layout">
@@ -187,7 +195,7 @@ if ( $is_configured ) {
 								</p>
 							</td>
 						</tr>
-						<tr>
+						<tr class="searchcraft-ai-summary-row">
 							<th scope="row">
 								<label for="searchcraft_ai_summary_banner">AI Summary Banner Text</label>
 							</th>
@@ -201,24 +209,48 @@ if ( $is_configured ) {
 								</p>
 							</td>
 						</tr>
-						<tr>
+						<tr class="searchcraft-ai-summary-row">
 							<th scope="row">
-								<label for="searchcraft_include_filter_panel">Include Filter Panel</label>
+								<label for="searchcraft_summary_box_border_radius">Summary Box Border Radius</label>
 							</th>
 							<td>
-								<label for="searchcraft_include_filter_panel">
-									<input
-										type="checkbox"
-										name="searchcraft_include_filter_panel"
-										id="searchcraft_include_filter_panel"
-										value="1"
-										<?php checked( $include_filter_panel, true ); ?>
-									/>
-									Include advanced filter panel on the search page.
-								</label>
+								<?php
+								$summary_box_border_radius = get_option( 'searchcraft_summary_box_border_radius', '' );
+								?>
+								<input type="number" name="searchcraft_summary_box_border_radius" id="searchcraft_summary_box_border_radius" value="<?php echo esc_attr( $summary_box_border_radius ); ?>" class="small-text" min="0" max="1000" />
+								<span>px</span>
 								<p class="description">
-									When enabled, the search form will include additional filtering options
-									such as category filters, date ranges, and other advanced search criteria.
+									The border radius for the AI summary box (0-1000px). Leave empty for default styling.
+								</p>
+							</td>
+						</tr>
+						<tr class="searchcraft-ai-summary-row">
+							<th scope="row">
+								<label for="searchcraft_summary_background_color">Summary Box Background</label>
+							</th>
+							<td>
+								<?php
+								$summary_background_color = get_option( 'searchcraft_summary_background_color', '#F5F5F5' );
+								?>
+								<input type="color" name="searchcraft_summary_background_color" id="searchcraft_summary_background_color" value="<?php echo esc_attr( $summary_background_color ); ?>" class="searchcraft-color-picker" />
+								<input type="text" name="searchcraft_summary_background_color_hex" id="searchcraft_summary_background_color_hex" value="<?php echo esc_attr( $summary_background_color ); ?>" class="regular-text searchcraft-hex-input" pattern="^#[0-9A-Fa-f]{6}$" placeholder="#F5F5F5" />
+								<p class="description">
+									Choose the background color for the AI summary box. You can use the color picker or enter a hex color code directly (e.g., #F5F5F5).
+								</p>
+							</td>
+						</tr>
+						<tr class="searchcraft-ai-summary-row">
+							<th scope="row">
+								<label for="searchcraft_summary_border_color">Summary Box Border</label>
+							</th>
+							<td>
+								<?php
+								$summary_border_color = get_option( 'searchcraft_summary_border_color', '#E0E0E0' );
+								?>
+								<input type="color" name="searchcraft_summary_border_color" id="searchcraft_summary_border_color" value="<?php echo esc_attr( $summary_border_color ); ?>" class="searchcraft-color-picker" />
+								<input type="text" name="searchcraft_summary_border_color_hex" id="searchcraft_summary_border_color_hex" value="<?php echo esc_attr( $summary_border_color ); ?>" class="regular-text searchcraft-hex-input" pattern="^#[0-9A-Fa-f]{6}$" placeholder="#E0E0E0" />
+								<p class="description">
+									Choose the border color for the AI summary box. You can use the color picker or enter a hex color code directly (e.g., #E0E0E0).
 								</p>
 							</td>
 						</tr>
@@ -277,34 +309,89 @@ if ( $is_configured ) {
 								</p>
 							</td>
 						</tr>
-						<tr>
+												<tr>
 							<th scope="row">
-								<label for="searchcraft_summary_background_color">Summary Box Background</label>
+								<label for="searchcraft_include_filter_panel">Include Filter Panel</label>
 							</th>
 							<td>
-								<?php
-								$summary_background_color = get_option( 'searchcraft_summary_background_color', '#F5F5F5' );
-								?>
-								<input type="color" name="searchcraft_summary_background_color" id="searchcraft_summary_background_color" value="<?php echo esc_attr( $summary_background_color ); ?>" class="searchcraft-color-picker" />
-								<input type="text" name="searchcraft_summary_background_color_hex" id="searchcraft_summary_background_color_hex" value="<?php echo esc_attr( $summary_background_color ); ?>" class="regular-text searchcraft-hex-input" pattern="^#[0-9A-Fa-f]{6}$" placeholder="#F5F5F5" />
+								<label for="searchcraft_include_filter_panel">
+									<input
+										type="checkbox"
+										name="searchcraft_include_filter_panel"
+										id="searchcraft_include_filter_panel"
+										value="1"
+										<?php checked( $include_filter_panel, true ); ?>
+									/>
+									Include advanced filter panel on the search page.
+								</label>
 								<p class="description">
-									Choose the background color for the AI summary box. You can use the color picker or enter a hex color code directly (e.g., #F5F5F5).
+									When enabled, the search form will include additional filtering options
+									such as category filters, date ranges, and other advanced search criteria.
 								</p>
 							</td>
 						</tr>
-						<tr>
-							<th scope="row">
-								<label for="searchcraft_summary_border_color">Summary Box Border</label>
-							</th>
-							<td>
-								<?php
-								$summary_border_color = get_option( 'searchcraft_summary_border_color', '#E0E0E0' );
-								?>
-								<input type="color" name="searchcraft_summary_border_color" id="searchcraft_summary_border_color" value="<?php echo esc_attr( $summary_border_color ); ?>" class="searchcraft-color-picker" />
-								<input type="text" name="searchcraft_summary_border_color_hex" id="searchcraft_summary_border_color_hex" value="<?php echo esc_attr( $summary_border_color ); ?>" class="regular-text searchcraft-hex-input" pattern="^#[0-9A-Fa-f]{6}$" placeholder="#E0E0E0" />
-								<p class="description">
-									Choose the border color for the AI summary box. You can use the color picker or enter a hex color code directly (e.g., #E0E0E0).
-								</p>
+						<tr class="searchcraft-filter-panel-options" style="<?php echo $include_filter_panel ? '' : 'display:none;'; ?>">
+							<th scope="row"></th>
+							<td style="padding-left: 2em;">
+								<fieldset style="border-left: 3px solid #ddd; padding-left: 1em; margin-left: 0;">
+									<legend style="font-weight: 600; margin-bottom: 0.5em;">Filter Panel Options</legend>
+
+									<label for="searchcraft_enable_most_recent_toggle" style="display: block; margin-bottom: 1em;">
+										<input
+											type="checkbox"
+											name="searchcraft_enable_most_recent_toggle"
+											id="searchcraft_enable_most_recent_toggle"
+											value="1"
+											<?php checked( $enable_most_recent_toggle, true ); ?>
+										/>
+										<strong>Enable Most Recent Filter</strong>
+										<p class="description" style="margin: 0.25em 0 0 1.5em;">
+											Show the "Most Recent" toggle in the filter panel.
+										</p>
+									</label>
+
+									<label for="searchcraft_enable_exact_match_toggle" style="display: block; margin-bottom: 1em;">
+										<input
+											type="checkbox"
+											name="searchcraft_enable_exact_match_toggle"
+											id="searchcraft_enable_exact_match_toggle"
+											value="1"
+											<?php checked( $enable_exact_match_toggle, true ); ?>
+										/>
+										<strong>Enable Exact Match Filter</strong>
+										<p class="description" style="margin: 0.25em 0 0 1.5em;">
+											Show the "Exact Match" toggle in the filter panel.
+										</p>
+									</label>
+
+									<label for="searchcraft_enable_date_range" style="display: block; margin-bottom: 1em;">
+										<input
+											type="checkbox"
+											name="searchcraft_enable_date_range"
+											id="searchcraft_enable_date_range"
+											value="1"
+											<?php checked( $enable_date_range, true ); ?>
+										/>
+										<strong>Enable Date Range Filter</strong>
+										<p class="description" style="margin: 0.25em 0 0 1.5em;">
+											Show the date range filter in the filter panel.
+										</p>
+									</label>
+
+									<label for="searchcraft_enable_facets" style="display: block; margin-bottom: 0;">
+										<input
+											type="checkbox"
+											name="searchcraft_enable_facets"
+											id="searchcraft_enable_facets"
+											value="1"
+											<?php checked( $enable_facets, true ); ?>
+										/>
+										<strong>Enable Facets</strong>
+										<p class="description" style="margin: 0.25em 0 0 1.5em;">
+											Show category/taxonomy facets in the filter panel.
+										</p>
+									</label>
+								</fieldset>
 							</td>
 						</tr>
 						<tr>
