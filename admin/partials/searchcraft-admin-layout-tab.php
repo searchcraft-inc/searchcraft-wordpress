@@ -342,7 +342,7 @@ if ( $is_configured ) {
 											name="searchcraft_custom_css"
 											id="searchcraft_custom_css"
 											class="large-text code searchcraft-css-editor"
-											rows="10"
+											rows="30"
 											placeholder="/* Enter your custom CSS here */&#10;.searchcraft-results {&#10;    /* Your styles */&#10;}"
 										><?php echo esc_textarea( get_option( 'searchcraft_custom_css', '' ) ); ?></textarea>
 										<p class="description">

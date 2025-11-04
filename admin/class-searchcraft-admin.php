@@ -945,8 +945,11 @@ class Searchcraft_Admin {
 
 		// Handle custom CSS setting.
 		if ( isset( $request['searchcraft_custom_css'] ) ) {
-			// Sanitize CSS - strip tags but preserve CSS syntax.
-			$custom_css = sanitize_textarea_field( wp_unslash( $request['searchcraft_custom_css'] ) );
+			// Use wp_unslash and trim without sanitize_textarea_field to preserve CSS syntax.
+			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Custom sanitization below for CSS.
+			$custom_css = trim( wp_unslash( $request['searchcraft_custom_css'] ) );
+			// Strip any HTML/script tags from CSS.
+			$custom_css = wp_strip_all_tags( $custom_css );
 			// Additional CSS-specific sanitization to remove potential XSS.
 			$custom_css = preg_replace( '/javascript\s*:/i', '', $custom_css );
 			$custom_css = preg_replace( '/expression\s*\(/i', '', $custom_css );
@@ -957,14 +960,15 @@ class Searchcraft_Admin {
 
 		// Handle result template callback function setting.
 		if ( isset( $request['searchcraft_result_template'] ) ) {
-			$result_template = sanitize_textarea_field( wp_unslash( $request['searchcraft_result_template'] ) );
+			// Use wp_unslash and trim without sanitize_textarea_field to preserve HTML/JS.
+			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Custom sanitization below for JavaScript template.
+			$result_template = trim( wp_unslash( $request['searchcraft_result_template'] ) );
 			// Additional sanitization for JavaScript callback - remove dangerous patterns.
 			$result_template = preg_replace( '/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/mi', '', $result_template );
 			// Remove potential XSS vectors while preserving template literal HTML.
 			$result_template = preg_replace( '/javascript\s*:/i', '', $result_template );
 			$result_template = preg_replace( '/on\w+\s*=/i', '', $result_template );
 			$result_template = preg_replace( '/eval\s*\(/i', '', $result_template );
-			$result_template = trim( $result_template );
 			update_option( 'searchcraft_result_template', $result_template );
 			$updated_settings['result_template'] = true;
 		}

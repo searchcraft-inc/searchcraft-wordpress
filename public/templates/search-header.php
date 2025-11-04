@@ -293,7 +293,10 @@ body:has(.searchcraft-full-search-experience searchcraft-input-form input:placeh
 <?php
 $custom_css = get_option( 'searchcraft_custom_css', '' );
 if ( ! empty( $custom_css ) ) {
-	echo esc_html( wp_strip_all_tags( $custom_css ) );
+	// CSS is already sanitized on save (tags stripped, XSS patterns removed).
+	// Output directly without additional escaping to preserve CSS syntax.
+	// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- CSS is sanitized on save.
+	echo $custom_css;
 }
 ?>
 </style>
