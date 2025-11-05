@@ -523,6 +523,8 @@ if ( $is_configured ) {
 										><?php echo esc_textarea( get_option( 'searchcraft_result_template', '' ) ); ?></textarea>
 										<p class="description">
 											Write a JavaScript callback function to customize how search results are displayed. The function receives <code>(item, index, { html })</code> parameters and should return a template literal using the <code>html</code> tagged template function. Available item properties include: <code>post_title</code>, <code>post_excerpt</code>, <code>permalink</code>, <code>post_date</code>, <code>featured_image_url</code>, etc.
+											<br/>
+											For more details on custom templates refer to <a href="https://docs.searchcraft.io/sdks/javascript/working-with-templates/" target="_blank">the documentation</a>.
 										</p>
 									</td>
 								</tr>
