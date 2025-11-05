@@ -766,11 +766,11 @@ class Searchcraft_Admin {
 				if ( ! empty( $messages ) ) {
 					echo '<div class="notice notice-success is-dismissible">';
 					echo '<p><strong>Success:</strong> Search experience settings updated.</p>';
-					echo '<ul>';
-					foreach ( $messages as $message ) {
-						echo '<li>' . esc_html( $message ) . '</li>';
-					}
-					echo '</ul>';
+					// echo '<ul>';
+					// foreach ( $messages as $message ) {
+					// 	echo '<li>' . esc_html( $message ) . '</li>';
+					// }
+					// echo '</ul>';
 					echo '</div>';
 				}
 			}
