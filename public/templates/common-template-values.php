@@ -28,6 +28,7 @@ $searchcraft_enable_ai_summary         = get_option( 'searchcraft_enable_ai_summ
 $searchcraft_ai_summary_banner         = get_option( 'searchcraft_ai_summary_banner', get_bloginfo( 'name' ) );
 $searchcraft_input_border_radius       = get_option( 'searchcraft_input_border_radius', '' );
 $search_experience                     = get_option( 'searchcraft_search_experience', 'full' );
+$search_behavior                       = get_option( 'searchcraft_search_behavior', 'on_page' );
 $search_placeholder                    = get_option( 'searchcraft_search_placeholder', 'Search...' );
 $searchcraft_include_filter_panel      = get_option( 'searchcraft_include_filter_panel', false );
 $searchcraft_input_width               = get_option( 'searchcraft_input_width', '100' );

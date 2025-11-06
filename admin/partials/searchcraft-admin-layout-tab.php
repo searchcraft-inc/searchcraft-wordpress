@@ -74,7 +74,7 @@ if ( $is_configured ) {
 									</label>
 								</fieldset>
 								<p class="description">
-									Choose how you want search to be presented to your users. The full experience provides a dedicated search page, while the popover offers a more integrated approach.
+									Choose how you want search to be presented to your users. The full experience provides deep filtering controls while the popover offers a simple, single input experience.
 								</p>
 							</td>
 						</tr>
@@ -94,11 +94,33 @@ if ( $is_configured ) {
 						</tr>
 						<tr class="searchcraft-full-only">
 							<th scope="row">
+								<label>Search Behavior</label>
+							</th>
+							<td>
+								<?php
+								$search_behavior = get_option( 'searchcraft_search_behavior', 'on_page' );
+								?>
+								<fieldset>
+									<legend class="screen-reader-text"><span>Search Behavior</span></legend>
+									<label>
+										<input type="radio" name="searchcraft_search_behavior" value="on_page" <?php checked( $search_behavior, 'on_page' ); ?> />
+										<strong>On Page</strong> - Loads results on any page with the search form. Pushes down the existing layout while displaying search results.
+									</label>
+									<br><br>
+									<label>
+										<input type="radio" name="searchcraft_search_behavior" value="stand_alone" <?php checked( $search_behavior, 'stand_alone' ); ?> />
+										<strong>Submit to Search Page</strong> - Submits the first search query to the stand-alone search page. From there you can make additional searches.
+									</label>
+								</fieldset>
+							</td>
+						</tr>
+						<tr class="searchcraft-full-only">
+							<th scope="row">
 								<label for="searchcraft_input_padding">Input Component Horizontal Padding</label>
 							</th>
 							<td>
 								<?php
-								$input_padding = get_option( 'searchcraft_input_padding', '50' );
+								$input_padding = get_option( 'searchcraft_input_padding', '0' );
 								?>
 								<input type="number" name="searchcraft_input_padding" id="searchcraft_input_padding" value="<?php echo esc_attr( $input_padding ); ?>" class="small-text" min="0" max="200" />
 								<span>px</span>
@@ -563,6 +585,20 @@ if ( $is_configured ) {
 										</fieldset>
 										<p class="description">
 											When a custom element ID is chosen, choose whether to replace the contents of this element or insert next to other elements in this container.
+										</p>
+									</td>
+								</tr>
+								<tr class="searchcraft-full-only">
+									<th scope="row">
+										<label for="searchcraft_search_input_container_id">Search Box Container Element ID</label>
+									</th>
+									<td>
+										<?php
+										$input_container_id = get_option( 'searchcraft_search_input_container_id', '' );
+										?>
+										<input type="text" name="searchcraft_search_input_container_id" id="searchcraft_search_input_container_id" value="<?php echo esc_attr( $input_container_id ); ?>" class="regular-text" placeholder="my-search-input-container" />
+										<p class="description">
+											If specified, the search box input form will load as the first element inside of the HTML element that matches this <a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/id" target="_blank">ID</a>. Note: this element must be present on every page you want the search input to appear on. Leave empty to use the default auto-detection behavior.
 										</p>
 									</td>
 								</tr>

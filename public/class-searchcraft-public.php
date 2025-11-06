@@ -291,8 +291,13 @@ class Searchcraft_Public {
 			return false;
 		}
 
-		// Get search experience setting.
-		$search_experience = get_option( 'searchcraft_search_experience', 'full' );
+		// Get saved settings.
+		$search_experience       = get_option( 'searchcraft_search_experience', 'full' );
+		$search_behavior         = get_option( 'searchcraft_search_behavior', 'on_page' );
+		$input_container_id      = get_option( 'searchcraft_search_input_container_id', '' );
+		$results_container_id    = get_option( 'searchcraft_results_container_id', '' );
+		$popover_container_id    = get_option( 'searchcraft_popover_container_id', '' );
+		$popover_insert_behavior = get_option( 'searchcraft_popover_element_behavior', 'replace' );
 
 		// Capture header template content.
 		ob_start();
@@ -304,16 +309,13 @@ class Searchcraft_Public {
 		include $results_template_path;
 		$results_template_content = ob_get_clean();
 
-		// Get configuration options.
-		$results_container_id    = get_option( 'searchcraft_results_container_id', '' );
-		$popover_container_id    = get_option( 'searchcraft_popover_container_id', '' );
-		$popover_insert_behavior = get_option( 'searchcraft_popover_element_behavior', 'replace' );
-
 		// Return all data in a single namespaced object.
 		return array(
 			'searchExperience'      => $search_experience,
+			'searchBehavior'        => $search_behavior,
 			'headerContent'         => $header_template_content,
 			'resultsContent'        => $results_template_content,
+			'inputContainerId'      => $input_container_id,
 			'resultsContainerId'    => $results_container_id,
 			'popoverContainerId'    => $popover_container_id,
 			'popoverInsertBehavior' => $popover_insert_behavior,

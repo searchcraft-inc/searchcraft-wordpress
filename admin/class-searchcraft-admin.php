@@ -620,10 +620,17 @@ class Searchcraft_Admin {
 				$experience = 'full';
 			}
 
-			// Save the setting.
 			update_option( 'searchcraft_search_experience', $experience );
 			$updated_settings['experience'] = $experience;
 		}
+
+		$behavior        = sanitize_text_field( wp_unslash( $request['searchcraft_search_behavior'] ) );
+		$valid_behaviors = array( 'on_page', 'stand_alone' );
+		if ( ! in_array( $valid_behaviors, $valid_behaviors, true ) ) {
+			$experience = 'on_page';
+		}
+		update_option( 'searchcraft_search_behavior', $behavior );
+		$updated_settings['behavior'] = $behavior;
 
 		// Handle search placeholder text.
 		if ( isset( $request['searchcraft_search_placeholder'] ) ) {
@@ -634,9 +641,18 @@ class Searchcraft_Admin {
 				$placeholder = 'Search...';
 			}
 
-			// Save the setting.
 			update_option( 'searchcraft_search_placeholder', $placeholder );
 			$updated_settings['placeholder'] = $placeholder;
+		}
+
+		if ( isset( $request['searchcraft_search_input_container_id'] ) ) {
+			$input_container_id = sanitize_text_field( wp_unslash( $request['searchcraft_search_input_container_id'] ) );
+
+			// Remove any invalid characters for HTML IDs.
+			$input_container_id = preg_replace( '/[^a-zA-Z0-9_-]/', '', $input_container_id );
+
+			update_option( 'searchcraft_search_input_container_id', $input_container_id );
+			$updated_settings['search_input_container_id'] = $input_container_id;
 		}
 
 		// Handle popover container ID.
@@ -646,7 +662,6 @@ class Searchcraft_Admin {
 			// Remove any invalid characters for HTML IDs.
 			$container_id = preg_replace( '/[^a-zA-Z0-9_-]/', '', $container_id );
 
-			// Save the setting.
 			update_option( 'searchcraft_popover_container_id', $container_id );
 			$updated_settings['popover_container_id'] = $container_id;
 		}
@@ -662,12 +677,6 @@ class Searchcraft_Admin {
 				$padding = 200;
 			}
 
-			// Use default if zero or empty.
-			if ( 0 === $padding && empty( $request['searchcraft_input_padding'] ) ) {
-				$padding = 50;
-			}
-
-			// Save the setting.
 			update_option( 'searchcraft_input_padding', $padding );
 			$updated_settings['padding'] = $padding;
 		}
@@ -685,7 +694,6 @@ class Searchcraft_Admin {
 
 			// Default is 0, so no need to override empty values.
 
-			// Save the setting.
 			update_option( 'searchcraft_input_vertical_padding', $vertical_padding );
 			$updated_settings['vertical_padding'] = $vertical_padding;
 		}

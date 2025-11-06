@@ -43,14 +43,50 @@ require_once 'common-template-values.php';
 .searchcraft-input-container {
 	padding-bottom: 20px;
 }
+.searchcraft-input-form-inline {
+	flex: 1;
+	width: 100%;
+	min-width: 0;
+}
 
+.searchcraft-input-form-inline-container {
+	align-items: center;
+	display: flex;
+	flex-direction: row;
+	gap: 8px;
+	margin-bottom: -40px;
+	width: 100%;
+}
+
+/* Make the grid container flex to align input and button horizontally */
+.searchcraft-input-form-inline .searchcraft-input-form-grid-inline {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	width: 100%;
+}
+
+/* Input wrapper takes remaining space */
+.searchcraft-input-form-inline .searchcraft-input-form-input-wrapper-inline {
+	flex: 1;
+	min-width: 0;
+}
+
+/* Button stays at its natural width */
+.searchcraft-inline-submit {
+	align-items: center;
+	display: flex;
+	flex-shrink: 0;
+	justify-content: center;
+	text-align: center;
+	min-width: 20%;
+}
 .searchcraft-popover-container {
 	max-width: var(--wp--style--global--wide-size, 1200px);
 	min-width: 260px;
 	margin: 0 auto;
 	width: <?php echo esc_attr( $searchcraft_input_width ); ?>%;
 }
-
 .searchcraft-full-search-experience {
 	max-width: var(--wp--style--global--wide-size, 1200px);
 	margin: 0 auto;
@@ -125,7 +161,7 @@ require_once 'common-template-values.php';
 /* Filter panel positioning */
 .searchcraft-main-content {
 	display: flex;
-	gap: 20px;
+	gap: 40px;
 	align-items: flex-start;
 }
 
@@ -139,6 +175,7 @@ require_once 'common-template-values.php';
 .searchcraft-results-content {
 	flex: 1;
 	order: 2;
+	padding-top: 30px;
 }
 .searchcraft-result-primary-category {
 	color: <?php echo esc_attr( $searchcraft_brand_color ); ?>;
@@ -370,9 +407,27 @@ if ( ! empty( $custom_css ) ) {
 			</div>
 		<?php else : ?>
 			<div class="searchcraft-full-search-experience">
-				<div class="searchcraft-input-container">
-					<searchcraft-input-form placeholder-value="<?php echo esc_attr( $search_placeholder ); ?>"></searchcraft-input-form>
+				<?php if ( 'stand_alone' === $search_behavior && ! is_search() ) : ?>
+					<div class="searchcraft-input-container searchcraft-input-form-inline-container">
+						<form class="searchcraft-input-form searchcraft-input-form-inline" role="search" method="get" action="<?php echo site_url(); ?>">
+							<div class="searchcraft-input-form-grid searchcraft-input-form-grid-button-none searchcraft-input-form-grid-inline" style="gap: 0px 8px;">
+								<div class="searchcraft-input-form-input-wrapper searchcraft-input-form-input-wrapper-inline">
+									<input autocomplete="off" class="searchcraft-input-form-input" placeholder="<?php echo esc_attr( $search_placeholder ); ?>" type="search" name="s">
+										<div class="searchcraft-input-form-input-icon">
+											<svg class="searchcraft-input-form-input-search-icon" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-labelledby="searchcraft-title"><title>Search icon</title><path d="M17.5 17.5L13.875 13.875M15.8333 9.16667C15.8333 12.8486 12.8486 15.8333 9.16667 15.8333C5.48477 15.8333 2.5 12.8486 2.5 9.16667C2.5 5.48477 5.48477 2.5 9.16667 2.5C12.8486 2.5 15.8333 5.48477 15.8333 9.16667Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+										</div>
+								</div>
+								<button aria-label="Search" class="searchcraft-button searchcraft-button-primary searchcraft-inline-submit" type="submit">
+									<span>Search</span>
+								</button>
+							</div>
+						</form>
 				</div>
+				<?php else : ?>
+				<div class="searchcraft-input-container">
+						<searchcraft-input-form placeholder-value="<?php echo esc_attr( $search_placeholder ); ?>"></searchcraft-input-form>
+				</div>
+				<?php endif; ?>
 			</div>
 		<?php endif; ?>
 	<?php else : ?>

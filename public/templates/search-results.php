@@ -20,6 +20,11 @@ require_once 'common-template-values.php';
 
 ?>
 <?php if ( $is_configured && 'popover' !== $search_experience ) : ?>
+	<?php
+	if ( ! is_search() && 'stand_alone' === $search_behavior ) {
+		return;
+	}
+	?>
 <div class="searchcraft-main-content">
 	<?php if ( $searchcraft_include_filter_panel ) : ?>
 	<div id="searchcraft-filter-panel-container">
