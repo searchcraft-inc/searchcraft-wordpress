@@ -73,11 +73,11 @@ class Searchcraft_Public {
 			return;
 		}
 
-		// Enqueue SDK assets with higher priority to load after theme assets.
-		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_sdk_assets' ), 20 );
+		// Enqueue SDK assets early to ensure they're available for other scripts.
+		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_sdk_assets' ), 1 );
 
-		// Enqueue search header injection script.
-		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_sdk_settings' ), 25 );
+		// Enqueue search header injection script after SDK assets.
+		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_sdk_settings' ), 2 );
 
 		// Replace search forms.
 		add_filter( 'get_search_form', array( $this, 'replace_search_form' ) );
@@ -171,11 +171,12 @@ class Searchcraft_Public {
 	 * @since 1.0.0
 	 */
 	public function enqueue_sdk_settings() {
-		// Enqueue the search settings script.
+		// Enqueue the search settings script with dependency on SDK integration.
+		// This ensures the Searchcraft instance is created before templates are injected.
 		wp_enqueue_script(
 			'searchcraft-sdk-settings',
 			plugin_dir_url( __FILE__ ) . 'js/searchcraft-sdk-settings.js',
-			array(),
+			array( $this->plugin_name . '-sdk-integration' ),
 			$this->version,
 			true
 		);
@@ -207,7 +208,7 @@ class Searchcraft_Public {
 		);
 
 		// Include search query if available.
-		$search_query = get_search_query( false ); // Get unescaped query.
+		$search_query = get_search_query( true );
 		if ( ! empty( $search_query ) ) {
 			$js_config['searchQuery'] = $search_query;
 		}
@@ -273,7 +274,7 @@ class Searchcraft_Public {
 			}
 		);
 		$js_config['filterTaxonomies'] = $taxonomy_config;
-
+		$js_config['isWPSearchPage']   = (bool) is_search();
 		return $js_config;
 	}
 
@@ -346,7 +347,7 @@ class Searchcraft_Public {
 
 		wp_enqueue_script(
 			$this->plugin_name . '-sdk-components',
-			plugin_dir_url( __FILE__ ) . 'sdk/components/index.js?v=0.12.0',
+			plugin_dir_url( __FILE__ ) . 'sdk/components/index.js?v=0.12.1',
 			$script_deps,
 			$this->version,
 			true
@@ -385,14 +386,14 @@ class Searchcraft_Public {
 		// Add CSS for Searchcraft components.
 		wp_enqueue_style(
 			$this->plugin_name . '-sdk-hologram-styles',
-			plugin_dir_url( __FILE__ ) . 'sdk/themes/hologram.css?v=0.12.0',
+			plugin_dir_url( __FILE__ ) . 'sdk/themes/hologram.css?v=0.12.1',
 			$style_deps,
 			$this->version,
 			'all'
 		);
 		wp_enqueue_style(
 			$this->plugin_name . '-sdk-styles',
-			plugin_dir_url( __FILE__ ) . 'css/searchcraft-sdk.css?v=0.12.0',
+			plugin_dir_url( __FILE__ ) . 'css/searchcraft-sdk.css?v=0.12.1',
 			$style_deps,
 			$this->version,
 			'all'

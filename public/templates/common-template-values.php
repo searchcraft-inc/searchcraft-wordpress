@@ -33,3 +33,10 @@ $search_placeholder                    = get_option( 'searchcraft_search_placeho
 $searchcraft_include_filter_panel      = get_option( 'searchcraft_include_filter_panel', false );
 $searchcraft_input_width               = get_option( 'searchcraft_input_width', '100' );
 $searchcraft_result_orientation        = get_option( 'searchcraft_result_orientation', 'column' );
+$value_attr                            = '';
+if ( is_search() ) {
+	$search_query = get_search_query( true );
+	if ( ! empty( $search_query ) ) {
+		$value_attr = ' value="' . $search_query . '"';
+	}
+}

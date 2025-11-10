@@ -347,11 +347,12 @@ searchcraft-summary-box, .searchcraft-summary-box {
 	color: #000000;
 }
 /* Hide results container when it contains empty state */
-body:has(.searchcraft-full-search-experience .searchcraft-input-form-input:placeholder-shown) .searchcraft-results-container,
+body:has(.searchcraft-full-search-experience .searchcraft-input-form-input:placeholder-shown) .searchcraft-results-container:has(.searchcraft-search-results-empty-state),
 body:has(.searchcraft-full-search-experience .searchcraft-input-form-input:placeholder-shown) .searchcraft-pagination-container {
 	display: none;
 }
-body:has(.searchcraft-full-search-experience .searchcraft-input-form-input:not(:placeholder-shown)) .searchcraft-results-container {
+body:has(.searchcraft-full-search-experience .searchcraft-input-form-input:not(:placeholder-shown)) .searchcraft-results-container,
+.searchcraft-results-container:has(searchcraft-search-results:not(:empty)) {
 	border-top: 1px solid #e9ecef;
 	padding-top: 20px;
 	margin-bottom: 20px;
@@ -370,20 +371,20 @@ body:has(.searchcraft-full-search-experience .searchcraft-input-form-input:not(:
 }
 
 /* Hide summary containers when search results are empty */
-body:has(.searchcraft-full-search-experience .searchcraft-input-form-input:placeholder-shown) .searchcraft-summary-header-container,
-body:has(.searchcraft-full-search-experience .searchcraft-input-form-input:placeholder-shown) .searchcraft-summary-footer-container {
+body:has(.searchcraft-full-search-experience .searchcraft-input-form-input:placeholder-shown):has(.searchcraft-search-results-empty-state) .searchcraft-summary-header-container,
+body:has(.searchcraft-full-search-experience .searchcraft-input-form-input:placeholder-shown):has(.searchcraft-search-results-empty-state) .searchcraft-summary-footer-container {
 	display: none;
 }
 
-/* Hide filter panel when input is empty */
-body:has(.searchcraft-full-search-experience .searchcraft-input-form-input:placeholder-shown) #searchcraft-filter-panel-container,
-body:has(.searchcraft-full-search-experience searchcraft-input-form input:placeholder-shown) #searchcraft-filter-panel-container {
+/* Hide filter panel when input is empty and no results */
+body:has(.searchcraft-full-search-experience .searchcraft-input-form-input:placeholder-shown):has(.searchcraft-search-results-empty-state) #searchcraft-filter-panel-container,
+body:has(.searchcraft-full-search-experience searchcraft-input-form input:placeholder-shown):has(.searchcraft-search-results-empty-state) #searchcraft-filter-panel-container {
 	display: none;
 }
 
-/* Hide summary containers when input is empty */
-body:has(.searchcraft-full-search-experience .searchcraft-input-form-input:placeholder-shown) .searchcraft-summary-container,
-body:has(.searchcraft-full-search-experience searchcraft-input-form input:placeholder-shown) .searchcraft-summary-container {
+/* Hide summary containers when input is empty and no results */
+body:has(.searchcraft-full-search-experience .searchcraft-input-form-input:placeholder-shown):has(.searchcraft-search-results-empty-state) .searchcraft-summary-container,
+body:has(.searchcraft-full-search-experience searchcraft-input-form input:placeholder-shown):has(.searchcraft-search-results-empty-state) .searchcraft-summary-container {
 	display: none;
 }
 
@@ -425,7 +426,7 @@ if ( ! empty( $custom_css ) ) {
 				</div>
 				<?php else : ?>
 				<div class="searchcraft-input-container">
-						<searchcraft-input-form placeholder-value="<?php echo esc_attr( $search_placeholder ); ?>"></searchcraft-input-form>
+						<searchcraft-input-form <?php echo esc_attr( $value_attr ); ?> placeholder-value="<?php echo esc_attr( $search_placeholder ); ?>" auto-search></searchcraft-input-form>
 				</div>
 				<?php endif; ?>
 			</div>
