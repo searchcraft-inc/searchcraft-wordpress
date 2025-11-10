@@ -22,6 +22,7 @@ const SearchcraftSearchResultsPerPage$1 = /*@__PURE__*/ proxyCustomElement(class
     searchResultsPerPage;
     searchResultsCount;
     searchResultsPagesCount;
+    searchClientRequestProperties;
     // local vars
     initialSearchResultsPerPage;
     // store functions
@@ -36,6 +37,7 @@ const SearchcraftSearchResultsPerPage$1 = /*@__PURE__*/ proxyCustomElement(class
             this.searchResultsPerPage = state.searchResultsPerPage;
             this.searchResultsPage = state.searchResultsPage;
             this.searchResultsCount = state.searchResultsCount;
+            this.searchClientRequestProperties = state.searchClientRequestProperties;
             // local vars
             this.searchResultsPagesCount = Math.ceil(this.searchResultsCount / this.searchResultsPerPage);
             // store functions
@@ -53,8 +55,11 @@ const SearchcraftSearchResultsPerPage$1 = /*@__PURE__*/ proxyCustomElement(class
         this.cleanupCore?.();
     }
     render() {
-        // early return if there isn't a searchTerm or there is 1 or fewer pages of results
-        if (!this.searchTerm || this.searchResultsPagesCount <= 1) {
+        // Check if this is an initialQuery case (string requestProperties with empty searchTerm)
+        const isInitialQuery = typeof this.searchClientRequestProperties === 'string' &&
+            this.searchTerm.trim() === '';
+        // early return if there isn't a searchTerm (unless it's initialQuery) or there is 1 or fewer pages of results
+        if ((!this.searchTerm && !isInitialQuery) || this.searchResultsPagesCount <= 1) {
             return;
         }
         return (h("div", { class: 'searchcraft-search-results-per-page' }, h("div", { class: 'searchcraft-search-results-per-page-select' }, h("label", { class: 'searchcraft-search-results-per-page-select-label', htmlFor: 'searchcraft-search-results-per-page-select-input' }, "Results Per Page"), h("div", { class: 'searchcraft-search-results-per-page-select-input' }, h("searchcraft-select", { inputId: 'searchcraft-search-results-per-page-select-input', name: 'results-per-page', options: [...Array(5)].map((_, index) => {
@@ -77,6 +82,7 @@ const SearchcraftSearchResultsPerPage$1 = /*@__PURE__*/ proxyCustomElement(class
         "searchResultsPerPage": [32],
         "searchResultsCount": [32],
         "searchResultsPagesCount": [32],
+        "searchClientRequestProperties": [32],
         "initialSearchResultsPerPage": [32],
         "setSearchResultsPerPage": [32],
         "setSearchResultsPage": [32]

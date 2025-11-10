@@ -36,6 +36,7 @@ export declare class SearchcraftPagination {
     searchResultsPerPage: any;
     searchResultsPage: any;
     searchResultsCount: any;
+    searchClientRequestProperties: any;
     searchResultsPagesCount: number;
     searchResultsRangeMin: number;
     searchResultsRangeMax: number;

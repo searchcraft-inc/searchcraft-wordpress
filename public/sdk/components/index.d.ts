@@ -683,6 +683,11 @@ export interface SearchcraftStateValues {
 	searchClientRequestProperties: SearchClientRequestProperties | string | undefined | null;
 	searchClientResponseItems: SearchClientResponseItem[];
 	cachedSearchClientResponseItems: SearchClientResponseItem[];
+	cachedSearchResponseFacetPrime: FacetPrime | undefined | null;
+	cachedSupplementalFacetPrime: FacetPrime | undefined | null;
+	cachedSearchResponseTimeTaken: number | undefined;
+	cachedSearchResultsCount: number | undefined;
+	cachedSearchClientRequestProperties: SearchClientRequestProperties | string | undefined | null;
 	searchResponseTimeTaken: number | undefined;
 	searchResponseFacetPrime: FacetPrime | undefined | null;
 	supplementalFacetPrime: FacetPrime | undefined | null;
@@ -921,6 +926,10 @@ export namespace Components {
 		  * The id of the Searchcraft instance that this component should use.
 		 */
 		"searchcraftId"?: string;
+		/**
+		  * The value to display in the input field.
+		 */
+		"value"?: string;
 	}
 	/**
 	 * This web component serves as the input label for the searchcraft-input-form component.
@@ -2184,6 +2193,10 @@ declare namespace LocalJSX {
 		  * The id of the Searchcraft instance that this component should use.
 		 */
 		"searchcraftId"?: string;
+		/**
+		  * The value to display in the input field.
+		 */
+		"value"?: string;
 	}
 	/**
 	 * This web component serves as the input label for the searchcraft-input-form component.

@@ -1,4 +1,4 @@
-import { S as SearchcraftFacetList$1, d as defineCustomElement$1 } from './p-0c495408.js';
+import { S as SearchcraftFacetList$1, d as defineCustomElement$1 } from './p-c8566920.js';
 
 const SearchcraftFacetList = SearchcraftFacetList$1;
 const defineCustomElement = defineCustomElement$1;

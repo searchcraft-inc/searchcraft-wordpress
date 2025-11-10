@@ -1,5 +1,5 @@
+import type { AdClientResponseItem, FacetPathsForIndexField, FacetPrime, RangeValueForIndexField, SearchClientRequest, SearchClientRequestProperties, SearchClientResponseItem } from "../types/index";
 import type { StoreApi } from 'zustand';
-import type { FacetPathsForIndexField, FacetPrime, RangeValueForIndexField, SearchClientResponseItem, AdClientResponseItem, SearchClientRequestProperties, SearchClientRequest } from "../types/index";
 import type { SearchcraftCore } from "../classes/index";
 import type { SummaryClient } from "../clients/SummaryClient";
 /**
@@ -44,6 +44,11 @@ export interface SearchcraftStateValues {
     searchClientRequestProperties: SearchClientRequestProperties | string | undefined | null;
     searchClientResponseItems: SearchClientResponseItem[];
     cachedSearchClientResponseItems: SearchClientResponseItem[];
+    cachedSearchResponseFacetPrime: FacetPrime | undefined | null;
+    cachedSupplementalFacetPrime: FacetPrime | undefined | null;
+    cachedSearchResponseTimeTaken: number | undefined;
+    cachedSearchResultsCount: number | undefined;
+    cachedSearchClientRequestProperties: SearchClientRequestProperties | string | undefined | null;
     searchResponseTimeTaken: number | undefined;
     searchResponseFacetPrime: FacetPrime | undefined | null;
     supplementalFacetPrime: FacetPrime | undefined | null;

@@ -1,6 +1,6 @@
 import { p as proxyCustomElement, H, c as createEvent, h } from './p-5365011f.js';
-import './p-e2a10337.js';
 import { r as registry } from './p-e30203b1.js';
+import './p-e2a10337.js';
 
 /**
  * Helper function for getting a Node (FacetWithChildrenObject)
@@ -263,45 +263,86 @@ const SearchcraftFacetList = /*@__PURE__*/ proxyCustomElement(class SearchcraftF
     handleStateUpdate(_state) {
         const state = { ..._state };
         // Determine what action to take based on the current State
-        if (state.searchTerm.trim() === '') {
+        // Check if this is an initialQuery case (string requestProperties with empty searchTerm)
+        const isInitialQuery = typeof state.searchClientRequestProperties === 'string' &&
+            state.searchTerm.trim() === '';
+        if (state.searchTerm.trim() === '' && !isInitialQuery) {
             this.handleIncomingSearchResponse(state, 'SEARCH_TERM_EMPTY');
             this.lastSearchTerm = '';
         }
         else if (this.lastTimeTaken !== state.searchResponseTimeTaken &&
-            state.searchClientRequestProperties &&
-            typeof state.searchClientRequestProperties === 'object') {
-            const requestProperties = state.searchClientRequestProperties;
-            let actionType = 'UNKNOWN';
-            if (this.lastSearchTerm !== requestProperties.searchTerm) {
-                if (this.areAnyFacetPathsSelected) {
-                    actionType = 'NEW_SEARCH_TERM_WHILE_FACETS_ACTIVE';
+            state.searchClientRequestProperties) {
+            // Handle both object and string requestProperties (string is used for initialQuery)
+            if (typeof state.searchClientRequestProperties === 'object') {
+                const requestProperties = state.searchClientRequestProperties;
+                let actionType = 'UNKNOWN';
+                if (this.lastSearchTerm !== requestProperties.searchTerm) {
+                    if (this.areAnyFacetPathsSelected) {
+                        actionType = 'NEW_SEARCH_TERM_WHILE_FACETS_ACTIVE';
+                    }
+                    else {
+                        actionType = 'NEW_SEARCH_TERM';
+                    }
                 }
-                else {
+                else if (this.lastRangeValues !==
+                    JSON.stringify(requestProperties.rangeValueForIndexFields)) {
+                    actionType = 'RANGE_VALUE_UPDATE';
+                }
+                else if (this.lastFacetValues !==
+                    JSON.stringify(requestProperties.facetPathsForIndexFields)) {
+                    actionType = 'FACET_UPDATE';
+                }
+                else if (this.lastSortType !== requestProperties.order_by) {
+                    actionType = 'SORT_ORDER_UPDATE';
+                }
+                else if (this.lastSearchMode !== requestProperties.mode) {
+                    actionType = 'EXACT_MATCH_UPDATE';
+                }
+                this.lastRangeValues = JSON.stringify(requestProperties.rangeValueForIndexFields);
+                this.lastFacetValues = JSON.stringify(requestProperties.facetPathsForIndexFields);
+                this.lastSortType = requestProperties.order_by;
+                this.lastSearchMode = requestProperties.mode;
+                this.lastSearchTerm = requestProperties.searchTerm;
+                this.lastTimeTaken = state.searchResponseTimeTaken;
+                // Handle the incoming response, using the action we have determined.
+                this.handleIncomingSearchResponse(state, actionType);
+            }
+            else if (typeof state.searchClientRequestProperties === 'string') {
+                // Handle initialQuery case where requestProperties is a string
+                // For initialQuery, searchTerm will be empty but we still want to show facets
+                let actionType = 'NEW_SEARCH_TERM';
+                // Parse the request to get facet and range filters from the query array
+                const requestObj = JSON.parse(state.searchClientRequestProperties);
+                const queryArray = Array.isArray(requestObj.query)
+                    ? requestObj.query
+                    : [requestObj.query];
+                // Extract filter queries (those with occur: 'must')
+                const filterQueries = queryArray.filter((q) => q.occur === 'must');
+                const currentFilters = JSON.stringify(filterQueries);
+                // Determine the action type based on what changed
+                if (this.lastFacetValues !== undefined && this.lastFacetValues !== currentFilters) {
+                    // Filters have changed (not initial load)
+                    actionType = 'FACET_UPDATE';
+                }
+                else if (state.searchTerm.trim() === '' && this.lastSearchTerm === '') {
+                    // Initial load or no changes with empty search term
                     actionType = 'NEW_SEARCH_TERM';
                 }
+                else if (this.lastSearchTerm !== state.searchTerm) {
+                    // User has typed a new search term after initialQuery
+                    if (this.areAnyFacetPathsSelected) {
+                        actionType = 'NEW_SEARCH_TERM_WHILE_FACETS_ACTIVE';
+                    }
+                    else {
+                        actionType = 'NEW_SEARCH_TERM';
+                    }
+                }
+                this.lastFacetValues = currentFilters;
+                this.lastSearchTerm = state.searchTerm;
+                this.lastTimeTaken = state.searchResponseTimeTaken;
+                // Handle the incoming response, using the action we have determined.
+                this.handleIncomingSearchResponse(state, actionType);
             }
-            else if (this.lastRangeValues !==
-                JSON.stringify(requestProperties.rangeValueForIndexFields)) {
-                actionType = 'RANGE_VALUE_UPDATE';
-            }
-            else if (this.lastFacetValues !==
-                JSON.stringify(requestProperties.facetPathsForIndexFields)) {
-                actionType = 'FACET_UPDATE';
-            }
-            else if (this.lastSortType !== requestProperties.order_by) {
-                actionType = 'SORT_ORDER_UPDATE';
-            }
-            else if (this.lastSearchMode !== requestProperties.mode) {
-                actionType = 'EXACT_MATCH_UPDATE';
-            }
-            this.lastRangeValues = JSON.stringify(requestProperties.rangeValueForIndexFields);
-            this.lastFacetValues = JSON.stringify(requestProperties.facetPathsForIndexFields);
-            this.lastSortType = requestProperties.order_by;
-            this.lastSearchMode = requestProperties.mode;
-            this.lastSearchTerm = requestProperties.searchTerm;
-            this.lastTimeTaken = state.searchResponseTimeTaken;
-            // Handle the incoming response, using the action we have determined.
-            this.handleIncomingSearchResponse(state, actionType);
         }
     }
     onCoreAvailable(core) {
@@ -413,4 +454,4 @@ function defineCustomElement() {
 
 export { SearchcraftFacetList as S, defineCustomElement as d };
 
-//# sourceMappingURL=p-0c495408.js.map
+//# sourceMappingURL=p-c8566920.js.map

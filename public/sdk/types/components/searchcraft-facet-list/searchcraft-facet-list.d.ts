@@ -1,7 +1,7 @@
 import { type EventEmitter } from '../../stencil-public-runtime';
 import type { FacetWithChildrenObject } from "../../types/index";
-import type { SearchcraftState } from "../../store/index";
 import type { SearchcraftCore } from "../../classes/index";
+import type { SearchcraftState } from "../../store/index";
 type HandlerActionType = 'SEARCH_TERM_EMPTY' | 'NEW_SEARCH_TERM' | 'NEW_SEARCH_TERM_WHILE_FACETS_ACTIVE' | 'RANGE_VALUE_UPDATE' | 'EXACT_MATCH_UPDATE' | 'SORT_ORDER_UPDATE' | 'FACET_UPDATE' | 'UNKNOWN';
 /**
  * This web component is designed to display facets in a search interface, allowing users to refine their search results by applying filters based on various attributes.

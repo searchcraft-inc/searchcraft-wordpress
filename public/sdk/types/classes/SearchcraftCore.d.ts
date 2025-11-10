@@ -1,5 +1,5 @@
 import { type AdClient, MeasureClient, SearchClient } from "../clients/index";
-import type { AdClientResponseItem, SearchcraftConfig, SearchcraftSDKInfo, SubscriptionEventName, SubscriptionEventCallback, SubscriptionEventMap, UnsubscribeFunction, SearchClientRequestProperties } from "../types/index";
+import type { AdClientResponseItem, SearchClientRequestProperties, SearchcraftConfig, SearchcraftSDKInfo, SubscriptionEventCallback, SubscriptionEventMap, SubscriptionEventName, UnsubscribeFunction } from "../types/index";
 import { type SearchcraftStore } from "../store/index";
 /**
  * Javascript Class providing the functionality to interact with the Searchcraft BE

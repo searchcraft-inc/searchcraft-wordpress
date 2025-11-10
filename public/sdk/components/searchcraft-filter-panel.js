@@ -1,6 +1,6 @@
 import { p as proxyCustomElement, H, h } from './p-5365011f.js';
 import { r as registry } from './p-e30203b1.js';
-import { d as defineCustomElement$4 } from './p-0c495408.js';
+import { d as defineCustomElement$4 } from './p-c8566920.js';
 import { d as defineCustomElement$3 } from './p-c9b65e8f.js';
 import { d as defineCustomElement$2 } from './p-02ad136b.js';
 
@@ -102,7 +102,7 @@ const SearchcraftFilterPanel$1 = /*@__PURE__*/ proxyCustomElement(class Searchcr
      * Iterate through `items` and render them based on `type`
      */
     render() {
-        return (h("div", { key: 'b18a05516bea8d145d1ca015835d63fafbfc8bd8', class: 'searchcraft-filter-panel' }, this.items.map((filterItem) => {
+        return (h("div", { key: 'ee8974e38b296a1ba27111bc2a4244d8915f5839', class: 'searchcraft-filter-panel' }, this.items.map((filterItem) => {
             switch (filterItem.type) {
                 case 'dateRange': {
                     const item = filterItem;
