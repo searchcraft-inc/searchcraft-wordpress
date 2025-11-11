@@ -45,11 +45,17 @@ if ( $is_configured ) {
 	<?php endif; ?>
 
 	<?php if ( $is_configured ) : ?>
-		<h2 class="searchcraft-section-heading">Search Form Settings</h2>
+		<form method="post" class="searchcraft-form">
+			<?php wp_nonce_field( 'searchcraft_settings', 'searchcraft_nonce' ); ?>
+			<input type="hidden" name="searchcraft_action" value="layout_settings_config" />
+
+		<div class="searchcraft-header-with-button">
+			<h2 class="searchcraft-section-heading">Search Form Settings</h2>
+			<div class="searchcraft-save-buttons-top">
+				<?php submit_button( 'Save All Settings', 'primary', 'searchcraft_save_layout_settings', false ); ?>
+			</div>
+		</div>
 		<div class="searchcraft-overview-search-experience-config">
-			<form method="post" class="searchcraft-form">
-				<?php wp_nonce_field( 'searchcraft_settings', 'searchcraft_nonce' ); ?>
-				<input type="hidden" name="searchcraft_action" value="search_experience_config" />
 
 				<table class="form-table">
 					<tbody>
@@ -204,16 +210,8 @@ if ( $is_configured ) {
 								</p>
 							</td>
 						</tr>
-						<tr>
-							<td>
-								<div class="searchcraft-overview-index-management-buttons">
-									<?php submit_button( 'Save Search Form Settings', 'primary', 'searchcraft_save_search_experience_config', false ); ?>
-								</div>
-							</td>
-						</tr>
 					</tbody>
 				</table>
-			</form>
 		</div>
 
 		<h2 class="searchcraft-section-heading">Search Results Settings</h2>
@@ -221,9 +219,6 @@ if ( $is_configured ) {
 			<p class="results-description">
 				These settings only apply to the full search experience. Popover is only customizable via CSS in the advanced settings below.
 			</p>
-			<form method="post" class="searchcraft-form">
-				<?php wp_nonce_field( 'searchcraft_settings', 'searchcraft_nonce' ); ?>
-				<input type="hidden" name="searchcraft_action" value="search_results_config" />
 
 				<table class="form-table">
 					<tbody>
@@ -577,16 +572,8 @@ if ( $is_configured ) {
 								</fieldset>
 							</td>
 						</tr>
-						<tr>
-							<td>
-								<div class="searchcraft-overview-index-management-buttons">
-									<?php submit_button( 'Save Search Results Settings', 'primary', 'searchcraft_save_search_results_config', false ); ?>
-								</div>
-							</td>
-						</tr>
 					</tbody>
 				</table>
-			</form>
 		</div>
 
 		<h2 class="searchcraft-section-heading">Advanced</h2>
@@ -597,11 +584,7 @@ if ( $is_configured ) {
 					<span class="searchcraft-accordion-icon">▼</span>
 				</summary>
 				<div class="searchcraft-accordion-content">
-					<form method="post" class="searchcraft-form">
-						<?php wp_nonce_field( 'searchcraft_settings', 'searchcraft_nonce' ); ?>
-						<input type="hidden" name="searchcraft_action" value="advanced_config" />
-
-						<table class="form-table">
+					<table class="form-table">
 							<tbody>
 								<tr>
 									<th scope="row">
@@ -705,19 +688,17 @@ if ( $is_configured ) {
 										</p>
 									</td>
 								</tr>
-								<tr>
-									<td>
-										<div class="searchcraft-overview-index-management-buttons">
-											<?php submit_button( 'Save Advanced Settings', 'primary', 'searchcraft_save_advanced_config', false ); ?>
-										</div>
-									</td>
-								</tr>
 							</tbody>
 						</table>
-					</form>
 				</div>
 			</details>
 		</div>
+
+		<div class="searchcraft-save-buttons-bottom" style="margin-top: 20px;">
+			<?php submit_button( 'Save All Settings', 'primary', 'searchcraft_save_layout_settings', false ); ?>
+		</div>
+
+	</form>
 	<?php endif; ?>
 </div>
 <?php

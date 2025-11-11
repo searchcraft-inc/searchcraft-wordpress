@@ -387,14 +387,8 @@ class Searchcraft_Admin {
 				case 'delete_all_documents':
 					$this->searchcraft_on_delete_all_documents_request();
 					break;
-				case 'search_experience_config':
-					$this->searchcraft_on_search_experience_config_request( $_POST ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-					break;
-				case 'search_results_config':
-					$this->searchcraft_on_search_results_config_request( $_POST ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-					break;
-				case 'advanced_config':
-					$this->searchcraft_on_advanced_config_request( $_POST ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+				case 'layout_settings_config':
+					$this->searchcraft_on_layout_settings_config_request( $_POST ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 					break;
 				default:
 					break;
@@ -597,18 +591,23 @@ class Searchcraft_Admin {
 
 
 	/**
-	 * Handles the search experience configuration request.
+	 * Handles the unified layout settings configuration request.
+	 * This combines all layout-related settings: search form, search results, and advanced settings.
 	 *
 	 * @since 1.0.0
 	 * @param array $request The $_POST request from the form submission.
 	 */
-	private function searchcraft_on_search_experience_config_request( $request ) {
+	private function searchcraft_on_layout_settings_config_request( $request ) {
 		// Ensure request is an array.
 		if ( ! is_array( $request ) ) {
 			return;
 		}
 
 		$updated_settings = array();
+
+		// ========================================
+		// SEARCH FORM SETTINGS
+		// ========================================
 
 		// Handle search experience type.
 		if ( isset( $request['searchcraft_search_experience'] ) ) {
@@ -624,13 +623,16 @@ class Searchcraft_Admin {
 			$updated_settings['experience'] = $experience;
 		}
 
-		$behavior        = sanitize_text_field( wp_unslash( $request['searchcraft_search_behavior'] ) );
-		$valid_behaviors = array( 'on_page', 'stand_alone' );
-		if ( ! in_array( $valid_behaviors, $valid_behaviors, true ) ) {
-			$experience = 'on_page';
+		// Handle search behavior.
+		if ( isset( $request['searchcraft_search_behavior'] ) ) {
+			$behavior        = sanitize_text_field( wp_unslash( $request['searchcraft_search_behavior'] ) );
+			$valid_behaviors = array( 'on_page', 'stand_alone' );
+			if ( ! in_array( $behavior, $valid_behaviors, true ) ) {
+				$behavior = 'on_page';
+			}
+			update_option( 'searchcraft_search_behavior', $behavior );
+			$updated_settings['behavior'] = $behavior;
 		}
-		update_option( 'searchcraft_search_behavior', $behavior );
-		$updated_settings['behavior'] = $behavior;
 
 		// Handle search placeholder text.
 		if ( isset( $request['searchcraft_search_placeholder'] ) ) {
@@ -671,8 +673,6 @@ class Searchcraft_Admin {
 				$vertical_padding = 100;
 			}
 
-			// Default is 0, so no need to override empty values.
-
 			update_option( 'searchcraft_input_vertical_padding', $vertical_padding );
 			$updated_settings['vertical_padding'] = $vertical_padding;
 		}
@@ -699,24 +699,26 @@ class Searchcraft_Admin {
 			}
 		}
 
+		// Handle search icon color.
 		if ( isset( $request['searchcraft_search_icon_color'] ) ) {
 			$search_icon_color = sanitize_text_field( wp_unslash( $request['searchcraft_search_icon_color'] ) );
 
 			// Validate hex color format.
 			if ( ! preg_match( '/^#[a-fA-F0-9]{6}$/', $search_icon_color ) ) {
-				$search_icon_color = '#000000'; // Default to black if invalid.
+				$search_icon_color = '#000000';
 			}
 
 			update_option( 'searchcraft_search_icon_color', $search_icon_color );
 			$updated_settings['search_icon_color'] = $search_icon_color;
 		}
 
+		// Handle clear icon color.
 		if ( isset( $request['searchcraft_clear_icon_color'] ) ) {
 			$clear_icon_color = sanitize_text_field( wp_unslash( $request['searchcraft_clear_icon_color'] ) );
 
 			// Validate hex color format.
 			if ( ! preg_match( '/^#[a-fA-F0-9]{6}$/', $clear_icon_color ) ) {
-				$clear_icon_color = '#000000'; // Default to black if invalid.
+				$clear_icon_color = '#000000';
 			}
 
 			update_option( 'searchcraft_clear_icon_color', $clear_icon_color );
@@ -734,78 +736,277 @@ class Searchcraft_Admin {
 				$input_width = 100;
 			}
 
-			// Save the setting.
 			update_option( 'searchcraft_input_width', $input_width );
 			$updated_settings['input_width'] = $input_width;
 		}
 
-		// Show success message.
-		add_action(
-			'admin_notices',
-			function () use ( $updated_settings ) {
-				$messages = array();
-
-				if ( isset( $updated_settings['experience'] ) ) {
-					$experience_labels = array(
-						'full'    => 'Full Experience',
-						'popover' => 'Popover',
-					);
-					$label             = $experience_labels[ $updated_settings['experience'] ] ?? $updated_settings['experience'];
-					$messages[]        = 'Search experience: ' . $label;
-				}
-
-				if ( isset( $updated_settings['placeholder'] ) ) {
-					$messages[] = 'Search placeholder: ' . $updated_settings['placeholder'];
-				}
-
-				if ( isset( $updated_settings['padding'] ) ) {
-					$messages[] = 'Input component horizontal padding: ' . $updated_settings['padding'] . 'px';
-				}
-
-				if ( isset( $updated_settings['vertical_padding'] ) ) {
-					$messages[] = 'Input component vertical padding: ' . $updated_settings['vertical_padding'] . 'px';
-				}
-
-				if ( isset( $updated_settings['border_radius'] ) ) {
-					$messages[] = 'Input border radius: ' . $updated_settings['border_radius'];
-				}
-
-				if ( isset( $updated_settings['input_width'] ) ) {
-					$messages[] = 'Input width: ' . $updated_settings['input_width'] . '%';
-				}
-
-				if ( ! empty( $messages ) ) {
-					echo '<div class="notice notice-success is-dismissible">';
-					echo '<p><strong>Success:</strong> Search experience settings updated.</p>';
-					// echo '<ul>';
-					// foreach ( $messages as $message ) {
-					// 	echo '<li>' . esc_html( $message ) . '</li>';
-					// }
-					// echo '</ul>';
-					echo '</div>';
-				}
-			}
-		);
-	}
-
-	/**
-	 * Handles the search results configuration request.
-	 *
-	 * @since 1.0.0
-	 * @param array $request The $_POST request from the form submission.
-	 */
-	private function searchcraft_on_search_results_config_request( $request ) {
-		// Ensure request is an array.
-		if ( ! is_array( $request ) ) {
-			return;
-		}
-
-		$updated_settings = array();
+		// ========================================
+		// SEARCH RESULTS SETTINGS
+		// ========================================
 
 		// Handle AI summary setting.
 		$enable_ai_summary = isset( $request['searchcraft_enable_ai_summary'] ) ? true : false;
 		update_option( 'searchcraft_enable_ai_summary', $enable_ai_summary );
 		$updated_settings['ai_summary'] = $enable_ai_summary ? 'enabled' : 'disabled';
+
+		// Handle AI summary banner text.
+		if ( isset( $request['searchcraft_ai_summary_banner'] ) ) {
+			$ai_summary_banner = sanitize_text_field( wp_unslash( $request['searchcraft_ai_summary_banner'] ) );
+			update_option( 'searchcraft_ai_summary_banner', $ai_summary_banner );
+		}
+
+		// Handle filter panel setting.
+		$include_filter_panel = isset( $request['searchcraft_include_filter_panel'] ) ? true : false;
+		update_option( 'searchcraft_include_filter_panel', $include_filter_panel );
+		$updated_settings['filter_panel'] = $include_filter_panel ? 'enabled' : 'disabled';
+
+		// Handle filter panel toggle settings.
+		$enable_most_recent_toggle = isset( $request['searchcraft_enable_most_recent_toggle'] ) ? '1' : '0';
+		update_option( 'searchcraft_enable_most_recent_toggle', $enable_most_recent_toggle );
+
+		$enable_exact_match_toggle = isset( $request['searchcraft_enable_exact_match_toggle'] ) ? '1' : '0';
+		update_option( 'searchcraft_enable_exact_match_toggle', $enable_exact_match_toggle );
+
+		$enable_date_range = isset( $request['searchcraft_enable_date_range'] ) ? '1' : '0';
+		update_option( 'searchcraft_enable_date_range', $enable_date_range );
+
+		$enable_facets = isset( $request['searchcraft_enable_facets'] ) ? '1' : '0';
+		update_option( 'searchcraft_enable_facets', $enable_facets );
+
+		// Handle toggle button disabled color.
+		if ( isset( $request['searchcraft_toggle_button_disabled_color'] ) ) {
+			$toggle_button_disabled_color = sanitize_text_field( wp_unslash( $request['searchcraft_toggle_button_disabled_color'] ) );
+
+			// Validate hex color format.
+			if ( ! preg_match( '/^#[a-fA-F0-9]{6}$/', $toggle_button_disabled_color ) ) {
+				$toggle_button_disabled_color = '#E0E0E0';
+			}
+
+			update_option( 'searchcraft_toggle_button_disabled_color', $toggle_button_disabled_color );
+		}
+
+		// Handle results per page setting.
+		if ( isset( $request['searchcraft_results_per_page'] ) ) {
+			$results_per_page = absint( wp_unslash( $request['searchcraft_results_per_page'] ) );
+
+			// Validate the results per page value (between 1 and 100).
+			if ( $results_per_page < 1 ) {
+				$results_per_page = 1;
+			} elseif ( $results_per_page > 100 ) {
+				$results_per_page = 100;
+			}
+
+			update_option( 'searchcraft_results_per_page', $results_per_page );
+			$updated_settings['results_per_page'] = $results_per_page;
+		}
+
+		// Handle result orientation setting.
+		if ( isset( $request['searchcraft_result_orientation'] ) ) {
+			$result_orientation = sanitize_text_field( wp_unslash( $request['searchcraft_result_orientation'] ) );
+
+			// Validate the orientation value.
+			$valid_orientations = array( 'column', 'grid' );
+			if ( ! in_array( $result_orientation, $valid_orientations, true ) ) {
+				$result_orientation = 'column';
+			}
+
+			update_option( 'searchcraft_result_orientation', $result_orientation );
+			$updated_settings['result_orientation'] = $result_orientation;
+		}
+
+		// Handle image alignment setting.
+		if ( isset( $request['searchcraft_image_alignment'] ) ) {
+			$image_alignment = sanitize_text_field( wp_unslash( $request['searchcraft_image_alignment'] ) );
+
+			// Validate the alignment value.
+			$valid_alignments = array( 'left', 'right' );
+			if ( ! in_array( $image_alignment, $valid_alignments, true ) ) {
+				$image_alignment = 'left';
+			}
+
+			update_option( 'searchcraft_image_alignment', $image_alignment );
+			$updated_settings['image_alignment'] = $image_alignment;
+		}
+
+		// Handle display post date setting.
+		$display_post_date = isset( $request['searchcraft_display_post_date'] ) ? true : false;
+		update_option( 'searchcraft_display_post_date', $display_post_date );
+
+		// Handle display primary category setting.
+		$display_primary_category = isset( $request['searchcraft_display_primary_category'] ) ? '1' : '0';
+		update_option( 'searchcraft_display_primary_category', $display_primary_category );
+
+		// Handle brand color setting.
+		if ( isset( $request['searchcraft_brand_color'] ) ) {
+			$brand_color = sanitize_text_field( wp_unslash( $request['searchcraft_brand_color'] ) );
+
+			// Validate hex color format.
+			if ( ! preg_match( '/^#[a-fA-F0-9]{6}$/', $brand_color ) ) {
+				$brand_color = '#000000';
+			}
+
+			update_option( 'searchcraft_brand_color', $brand_color );
+			$updated_settings['brand_color'] = $brand_color;
+		}
+
+		// Handle result info text color.
+		if ( isset( $request['searchcraft_result_info_text_color'] ) ) {
+			$result_info_text_color = sanitize_text_field( wp_unslash( $request['searchcraft_result_info_text_color'] ) );
+
+			// Validate hex color format.
+			if ( ! preg_match( '/^#[a-fA-F0-9]{6}$/', $result_info_text_color ) ) {
+				$result_info_text_color = '#6C757D';
+			}
+
+			update_option( 'searchcraft_result_info_text_color', $result_info_text_color );
+		}
+
+		// Handle summary background color setting.
+		if ( isset( $request['searchcraft_summary_background_color'] ) ) {
+			$summary_background_color = sanitize_text_field( wp_unslash( $request['searchcraft_summary_background_color'] ) );
+
+			// Validate hex color format.
+			if ( ! preg_match( '/^#[a-fA-F0-9]{6}$/', $summary_background_color ) ) {
+				$summary_background_color = '#F5F5F5';
+			}
+
+			update_option( 'searchcraft_summary_background_color', $summary_background_color );
+		}
+
+		// Handle summary border color setting.
+		if ( isset( $request['searchcraft_summary_border_color'] ) ) {
+			$summary_border_color = sanitize_text_field( wp_unslash( $request['searchcraft_summary_border_color'] ) );
+
+			// Validate hex color format.
+			if ( ! preg_match( '/^#[a-fA-F0-9]{6}$/', $summary_border_color ) ) {
+				$summary_border_color = '#E0E0E0';
+			}
+
+			update_option( 'searchcraft_summary_border_color', $summary_border_color );
+		}
+
+		// Handle summary title color.
+		if ( isset( $request['searchcraft_summary_title_color'] ) ) {
+			$summary_title_color = sanitize_text_field( wp_unslash( $request['searchcraft_summary_title_color'] ) );
+
+			// Validate hex color format.
+			if ( ! preg_match( '/^#[a-fA-F0-9]{6}$/', $summary_title_color ) ) {
+				$summary_title_color = '#000000';
+			}
+
+			update_option( 'searchcraft_summary_title_color', $summary_title_color );
+		}
+
+		// Handle summary text color setting.
+		if ( isset( $request['searchcraft_summary_text_color'] ) ) {
+			$summary_text_color = sanitize_text_field( wp_unslash( $request['searchcraft_summary_text_color'] ) );
+
+			// Validate hex color format.
+			if ( ! preg_match( '/^#[a-fA-F0-9]{6}$/', $summary_text_color ) ) {
+				$summary_text_color = '#4C6876';
+			}
+
+			update_option( 'searchcraft_summary_text_color', $summary_text_color );
+		}
+
+		// Handle summary box border radius setting.
+		if ( isset( $request['searchcraft_summary_box_border_radius'] ) ) {
+			$summary_box_border_radius = absint( wp_unslash( $request['searchcraft_summary_box_border_radius'] ) );
+
+			// Validate the border radius value (between 0 and 1000).
+			if ( $summary_box_border_radius < 0 ) {
+				$summary_box_border_radius = 0;
+			} elseif ( $summary_box_border_radius > 1000 ) {
+				$summary_box_border_radius = 1000;
+			}
+
+			update_option( 'searchcraft_summary_box_border_radius', $summary_box_border_radius );
+		}
+
+		// ========================================
+		// ADVANCED SETTINGS
+		// ========================================
+
+		// Handle custom CSS setting.
+		if ( isset( $request['searchcraft_custom_css'] ) ) {
+			// Use wp_unslash and trim without sanitize_textarea_field to preserve CSS syntax.
+			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Custom sanitization below for CSS.
+			$custom_css = trim( wp_unslash( $request['searchcraft_custom_css'] ) );
+			// Strip any HTML/script tags from CSS.
+			$custom_css = wp_strip_all_tags( $custom_css );
+			// Additional CSS-specific sanitization to remove potential XSS.
+			$custom_css = preg_replace( '/javascript\s*:/i', '', $custom_css );
+			$custom_css = preg_replace( '/expression\s*\(/i', '', $custom_css );
+			$custom_css = preg_replace( '/@import/i', '', $custom_css );
+			update_option( 'searchcraft_custom_css', $custom_css );
+			$updated_settings['custom_css'] = true;
+		}
+
+		// Handle result template callback function setting.
+		if ( isset( $request['searchcraft_result_template'] ) ) {
+			// Use wp_unslash and trim without sanitize_textarea_field to preserve HTML/JS.
+			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Custom sanitization below for JavaScript template.
+			$result_template = trim( wp_unslash( $request['searchcraft_result_template'] ) );
+			// Additional sanitization for JavaScript callback - remove dangerous patterns.
+			$result_template = preg_replace( '/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/mi', '', $result_template );
+			// Remove potential XSS vectors while preserving template literal HTML.
+			$result_template = preg_replace( '/javascript\s*:/i', '', $result_template );
+			$result_template = preg_replace( '/on\w+\s*=/i', '', $result_template );
+			$result_template = preg_replace( '/eval\s*\(/i', '', $result_template );
+			update_option( 'searchcraft_result_template', $result_template );
+			$updated_settings['result_template'] = true;
+		}
+
+		// Handle search input container ID (always save, even if empty).
+		$input_container_id = '';
+		if ( isset( $request['searchcraft_search_input_container_id'] ) ) {
+			$input_container_id = sanitize_text_field( wp_unslash( $request['searchcraft_search_input_container_id'] ) );
+			// Remove any invalid characters for HTML IDs.
+			$input_container_id = preg_replace( '/[^a-zA-Z0-9_-]/', '', $input_container_id );
+		}
+		update_option( 'searchcraft_search_input_container_id', $input_container_id );
+
+		// Handle results container ID setting.
+		if ( isset( $request['searchcraft_results_container_id'] ) ) {
+			$results_container_id = sanitize_text_field( wp_unslash( $request['searchcraft_results_container_id'] ) );
+			// Remove any invalid characters for HTML IDs.
+			$results_container_id = preg_replace( '/[^a-zA-Z0-9_-]/', '', $results_container_id );
+			update_option( 'searchcraft_results_container_id', $results_container_id );
+		}
+
+		// Handle popover container ID setting.
+		if ( isset( $request['searchcraft_popover_container_id'] ) ) {
+			$popover_container_id = sanitize_text_field( wp_unslash( $request['searchcraft_popover_container_id'] ) );
+			$popover_container_id = preg_replace( '/[^a-zA-Z0-9_-]/', '', $popover_container_id );
+			update_option( 'searchcraft_popover_container_id', $popover_container_id );
+		}
+
+		// Handle popover element behavior setting.
+		if ( isset( $request['searchcraft_popover_element_behavior'] ) ) {
+			$popover_element_behavior = sanitize_text_field( wp_unslash( $request['searchcraft_popover_element_behavior'] ) );
+
+			// Validate the behavior value.
+			$valid_behaviors = array( 'replace', 'insert' );
+			if ( ! in_array( $popover_element_behavior, $valid_behaviors, true ) ) {
+				$popover_element_behavior = 'replace';
+			}
+
+			update_option( 'searchcraft_popover_element_behavior', $popover_element_behavior );
+		}
+
+		// Display unified success message.
+		add_action(
+			'admin_notices',
+			function () {
+				echo '<div class="notice notice-success is-dismissible">';
+				echo '<p><strong>Success:</strong> All layout settings have been saved.</p>';
+				echo '</div>';
+			}
+		);
+	}
+
+	/**
+	 * Checks if the current theme has a search form.
 
 		// Handle AI summary banner text.
 		if ( isset( $request['searchcraft_ai_summary_banner'] ) ) {
@@ -1053,128 +1254,6 @@ class Searchcraft_Admin {
 					// echo '<ul>';
 					// foreach ( $messages as $message ) {
 					// 	echo '<li>' . esc_html( $message ) . '</li>';
-					// }
-					// echo '</ul>';
-					echo '</div>';
-				}
-			}
-		);
-	}
-
-	/**
-	 * Handles the advanced configuration request.
-	 *
-	 * @since 1.0.0
-	 * @param array $request The $_POST request from the form submission.
-	 */
-	private function searchcraft_on_advanced_config_request( $request ) {
-		// Ensure request is an array.
-		if ( ! is_array( $request ) ) {
-			return;
-		}
-
-		$updated_settings = array();
-
-		// Handle custom CSS setting.
-		if ( isset( $request['searchcraft_custom_css'] ) ) {
-			// Use wp_unslash and trim without sanitize_textarea_field to preserve CSS syntax.
-			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Custom sanitization below for CSS.
-			$custom_css = trim( wp_unslash( $request['searchcraft_custom_css'] ) );
-			// Strip any HTML/script tags from CSS.
-			$custom_css = wp_strip_all_tags( $custom_css );
-			// Additional CSS-specific sanitization to remove potential XSS.
-			$custom_css = preg_replace( '/javascript\s*:/i', '', $custom_css );
-			$custom_css = preg_replace( '/expression\s*\(/i', '', $custom_css );
-			$custom_css = preg_replace( '/@import/i', '', $custom_css );
-			update_option( 'searchcraft_custom_css', $custom_css );
-			$updated_settings['custom_css'] = true;
-		}
-
-		// Handle result template callback function setting.
-		if ( isset( $request['searchcraft_result_template'] ) ) {
-			// Use wp_unslash and trim without sanitize_textarea_field to preserve HTML/JS.
-			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Custom sanitization below for JavaScript template.
-			$result_template = trim( wp_unslash( $request['searchcraft_result_template'] ) );
-			// Additional sanitization for JavaScript callback - remove dangerous patterns.
-			$result_template = preg_replace( '/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/mi', '', $result_template );
-			// Remove potential XSS vectors while preserving template literal HTML.
-			$result_template = preg_replace( '/javascript\s*:/i', '', $result_template );
-			$result_template = preg_replace( '/on\w+\s*=/i', '', $result_template );
-			$result_template = preg_replace( '/eval\s*\(/i', '', $result_template );
-			update_option( 'searchcraft_result_template', $result_template );
-			$updated_settings['result_template'] = true;
-		}
-
-		// Handle results container ID setting.
-		if ( isset( $request['searchcraft_results_container_id'] ) ) {
-			$results_container_id = sanitize_text_field( wp_unslash( $request['searchcraft_results_container_id'] ) );
-			// Remove any invalid characters for HTML IDs.
-			$results_container_id = preg_replace( '/[^a-zA-Z0-9_-]/', '', $results_container_id );
-			update_option( 'searchcraft_results_container_id', $results_container_id );
-			$updated_settings['results_container_id'] = true;
-		}
-
-		if ( isset( $request['searchcraft_search_input_container_id'] ) ) {
-			$input_container_id = sanitize_text_field( wp_unslash( $request['searchcraft_search_input_container_id'] ) );
-
-			// Remove any invalid characters for HTML IDs.
-			$input_container_id = preg_replace( '/[^a-zA-Z0-9_-]/', '', $input_container_id );
-
-			update_option( 'searchcraft_search_input_container_id', $input_container_id );
-			$updated_settings['search_input_container_id'] = $input_container_id;
-		}
-
-		// Handle popover container ID setting.
-		if ( isset( $request['searchcraft_popover_container_id'] ) ) {
-			$popover_container_id = sanitize_text_field( wp_unslash( $request['searchcraft_popover_container_id'] ) );
-
-			$popover_container_id = preg_replace( '/[^a-zA-Z0-9_-]/', '', $popover_container_id );
-			update_option( 'searchcraft_popover_container_id', $popover_container_id );
-			$updated_settings['popover_container_id'] = true;
-		}
-
-		// Handle popover element behavior setting.
-		if ( isset( $request['searchcraft_popover_element_behavior'] ) ) {
-			$popover_element_behavior = sanitize_text_field( wp_unslash( $request['searchcraft_popover_element_behavior'] ) );
-
-			// Validate the behavior value.
-			$valid_behaviors = array( 'replace', 'insert' );
-			if ( ! in_array( $popover_element_behavior, $valid_behaviors, true ) ) {
-				$popover_element_behavior = 'replace';
-			}
-
-			update_option( 'searchcraft_popover_element_behavior', $popover_element_behavior );
-			$updated_settings['popover_element_behavior'] = true;
-		}
-
-		// Display success message.
-		add_action(
-			'admin_notices',
-			function () use ( $updated_settings ) {
-				$messages = array();
-
-				if ( isset( $updated_settings['custom_css'] ) ) {
-					$messages[] = 'Custom CSS updated';
-				}
-
-				if ( isset( $updated_settings['result_template'] ) ) {
-					$messages[] = 'Result template callback function updated';
-				}
-
-				if ( isset( $updated_settings['results_container_id'] ) ) {
-					$messages[] = 'Results container element ID updated';
-				}
-
-				if ( isset( $updated_settings['popover_container_id'] ) ) {
-					$messages[] = 'Popover container element ID updated';
-				}
-
-				if ( ! empty( $messages ) ) {
-					echo '<div class="notice notice-success is-dismissible">';
-					echo '<p><strong>Success:</strong> Advanced settings updated.</p>';
-					// echo '<ul>';
-					// foreach ( $messages as $message ) {
-					// 	echo '<li>' . esc_html( $message ) .'</li>';
 					// }
 					// echo '</ul>';
 					echo '</div>';
