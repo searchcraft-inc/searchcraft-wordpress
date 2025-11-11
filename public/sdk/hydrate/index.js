@@ -2560,6 +2560,65 @@ class SearchcraftErrorMessage {
 }
 
 /**
+ * This is the default instance id for searchcraft core instances.
+ * When no id is specified in a component's props, use this one.
+ */
+const DEFAULT_CORE_INSTANCE_ID = 'searchcraft';
+/**
+ * CoreInstanceRegistry
+ *
+ * This class is responsible for managing all of the instances of SearchcraftCore on a page.
+ * It provides a means for consuming components to use the instance of SearchcraftCore that
+ * they need to use when that instance of core gets added to the Registry.
+ */
+class CoreInstanceRegistry {
+    coreInstances = {};
+    subscriptions = {};
+    /**
+     * Adds a SearchcraftCore instance to the Registry.
+     *
+     * When the instance is added, iterates through the onAvailable callbacks
+     * that have been subscribed via useCoreInstance.
+     *
+     * @param coreInstance The SearchcraftCore instance to add to the registry
+     * @param searchcraftId The unique identifier for this SearchcraftCore instance.
+     */
+    addCoreInstance(coreInstance, searchcraftId) {
+        const id = searchcraftId || DEFAULT_CORE_INSTANCE_ID;
+        this.coreInstances[id] = coreInstance;
+        for (const callback of this.subscriptions[id] || []) {
+            callback(coreInstance);
+        }
+    }
+    /**
+     * Use the specified instance of SearchcraftCore. When the instance becomes available,
+     * the onAvailable callback will be called.
+     *
+     * @param searchcraftId The SearchcraftCore instance to use.
+     * @param onAvailable The callback that gets called when the core instance becomes available.
+     */
+    useCoreInstance(searchcraftId, onAvailable) {
+        const id = searchcraftId || DEFAULT_CORE_INSTANCE_ID;
+        // If the core instance already is available, call the onAvailable callback immediately.
+        if (this.coreInstances[id]) {
+            onAvailable(this.coreInstances[id]);
+            return () => { };
+        }
+        // Add the callback to the collection of callbacks for this searchcraft instance.
+        if (!this.subscriptions[id]) {
+            this.subscriptions[id] = [];
+        }
+        this.subscriptions[id].push(onAvailable);
+        return () => {
+            if (this.subscriptions[id]) {
+                this.subscriptions[id] = this.subscriptions[id].filter((cb) => cb !== onAvailable);
+            }
+        };
+    }
+}
+const registry = new CoreInstanceRegistry();
+
+/**
  * Helper function for getting a Node (FacetWithChildrenObject)
  * at a given path. Traverses the node tree to get the node.
  */
@@ -4220,65 +4279,6 @@ const html = (strings, ...values) => {
 };
 
 /**
- * This is the default instance id for searchcraft core instances.
- * When no id is specified in a component's props, use this one.
- */
-const DEFAULT_CORE_INSTANCE_ID = 'searchcraft';
-/**
- * CoreInstanceRegistry
- *
- * This class is responsible for managing all of the instances of SearchcraftCore on a page.
- * It provides a means for consuming components to use the instance of SearchcraftCore that
- * they need to use when that instance of core gets added to the Registry.
- */
-class CoreInstanceRegistry {
-    coreInstances = {};
-    subscriptions = {};
-    /**
-     * Adds a SearchcraftCore instance to the Registry.
-     *
-     * When the instance is added, iterates through the onAvailable callbacks
-     * that have been subscribed via useCoreInstance.
-     *
-     * @param coreInstance The SearchcraftCore instance to add to the registry
-     * @param searchcraftId The unique identifier for this SearchcraftCore instance.
-     */
-    addCoreInstance(coreInstance, searchcraftId) {
-        const id = searchcraftId || DEFAULT_CORE_INSTANCE_ID;
-        this.coreInstances[id] = coreInstance;
-        for (const callback of this.subscriptions[id] || []) {
-            callback(coreInstance);
-        }
-    }
-    /**
-     * Use the specified instance of SearchcraftCore. When the instance becomes available,
-     * the onAvailable callback will be called.
-     *
-     * @param searchcraftId The SearchcraftCore instance to use.
-     * @param onAvailable The callback that gets called when the core instance becomes available.
-     */
-    useCoreInstance(searchcraftId, onAvailable) {
-        const id = searchcraftId || DEFAULT_CORE_INSTANCE_ID;
-        // If the core instance already is available, call the onAvailable callback immediately.
-        if (this.coreInstances[id]) {
-            onAvailable(this.coreInstances[id]);
-            return () => { };
-        }
-        // Add the callback to the collection of callbacks for this searchcraft instance.
-        if (!this.subscriptions[id]) {
-            this.subscriptions[id] = [];
-        }
-        this.subscriptions[id].push(onAvailable);
-        return () => {
-            if (this.subscriptions[id]) {
-                this.subscriptions[id] = this.subscriptions[id].filter((cb) => cb !== onAvailable);
-            }
-        };
-    }
-}
-const registry = new CoreInstanceRegistry();
-
-/**
  * This web component is designed to display facets in a search interface, allowing users to refine their search results by applying filters based on various attributes.
  * It is consumed within the `searchcraft-filter-panel`.
  *
@@ -4440,45 +4440,86 @@ class SearchcraftFacetList {
     handleStateUpdate(_state) {
         const state = { ..._state };
         // Determine what action to take based on the current State
-        if (state.searchTerm.trim() === '') {
+        // Check if this is an initialQuery case (string requestProperties with empty searchTerm)
+        const isInitialQuery = typeof state.searchClientRequestProperties === 'string' &&
+            state.searchTerm.trim() === '';
+        if (state.searchTerm.trim() === '' && !isInitialQuery) {
             this.handleIncomingSearchResponse(state, 'SEARCH_TERM_EMPTY');
             this.lastSearchTerm = '';
         }
         else if (this.lastTimeTaken !== state.searchResponseTimeTaken &&
-            state.searchClientRequestProperties &&
-            typeof state.searchClientRequestProperties === 'object') {
-            const requestProperties = state.searchClientRequestProperties;
-            let actionType = 'UNKNOWN';
-            if (this.lastSearchTerm !== requestProperties.searchTerm) {
-                if (this.areAnyFacetPathsSelected) {
-                    actionType = 'NEW_SEARCH_TERM_WHILE_FACETS_ACTIVE';
+            state.searchClientRequestProperties) {
+            // Handle both object and string requestProperties (string is used for initialQuery)
+            if (typeof state.searchClientRequestProperties === 'object') {
+                const requestProperties = state.searchClientRequestProperties;
+                let actionType = 'UNKNOWN';
+                if (this.lastSearchTerm !== requestProperties.searchTerm) {
+                    if (this.areAnyFacetPathsSelected) {
+                        actionType = 'NEW_SEARCH_TERM_WHILE_FACETS_ACTIVE';
+                    }
+                    else {
+                        actionType = 'NEW_SEARCH_TERM';
+                    }
                 }
-                else {
+                else if (this.lastRangeValues !==
+                    JSON.stringify(requestProperties.rangeValueForIndexFields)) {
+                    actionType = 'RANGE_VALUE_UPDATE';
+                }
+                else if (this.lastFacetValues !==
+                    JSON.stringify(requestProperties.facetPathsForIndexFields)) {
+                    actionType = 'FACET_UPDATE';
+                }
+                else if (this.lastSortType !== requestProperties.order_by) {
+                    actionType = 'SORT_ORDER_UPDATE';
+                }
+                else if (this.lastSearchMode !== requestProperties.mode) {
+                    actionType = 'EXACT_MATCH_UPDATE';
+                }
+                this.lastRangeValues = JSON.stringify(requestProperties.rangeValueForIndexFields);
+                this.lastFacetValues = JSON.stringify(requestProperties.facetPathsForIndexFields);
+                this.lastSortType = requestProperties.order_by;
+                this.lastSearchMode = requestProperties.mode;
+                this.lastSearchTerm = requestProperties.searchTerm;
+                this.lastTimeTaken = state.searchResponseTimeTaken;
+                // Handle the incoming response, using the action we have determined.
+                this.handleIncomingSearchResponse(state, actionType);
+            }
+            else if (typeof state.searchClientRequestProperties === 'string') {
+                // Handle initialQuery case where requestProperties is a string
+                // For initialQuery, searchTerm will be empty but we still want to show facets
+                let actionType = 'NEW_SEARCH_TERM';
+                // Parse the request to get facet and range filters from the query array
+                const requestObj = JSON.parse(state.searchClientRequestProperties);
+                const queryArray = Array.isArray(requestObj.query)
+                    ? requestObj.query
+                    : [requestObj.query];
+                // Extract filter queries (those with occur: 'must')
+                const filterQueries = queryArray.filter((q) => q.occur === 'must');
+                const currentFilters = JSON.stringify(filterQueries);
+                // Determine the action type based on what changed
+                if (this.lastFacetValues !== undefined && this.lastFacetValues !== currentFilters) {
+                    // Filters have changed (not initial load)
+                    actionType = 'FACET_UPDATE';
+                }
+                else if (state.searchTerm.trim() === '' && this.lastSearchTerm === '') {
+                    // Initial load or no changes with empty search term
                     actionType = 'NEW_SEARCH_TERM';
                 }
+                else if (this.lastSearchTerm !== state.searchTerm) {
+                    // User has typed a new search term after initialQuery
+                    if (this.areAnyFacetPathsSelected) {
+                        actionType = 'NEW_SEARCH_TERM_WHILE_FACETS_ACTIVE';
+                    }
+                    else {
+                        actionType = 'NEW_SEARCH_TERM';
+                    }
+                }
+                this.lastFacetValues = currentFilters;
+                this.lastSearchTerm = state.searchTerm;
+                this.lastTimeTaken = state.searchResponseTimeTaken;
+                // Handle the incoming response, using the action we have determined.
+                this.handleIncomingSearchResponse(state, actionType);
             }
-            else if (this.lastRangeValues !==
-                JSON.stringify(requestProperties.rangeValueForIndexFields)) {
-                actionType = 'RANGE_VALUE_UPDATE';
-            }
-            else if (this.lastFacetValues !==
-                JSON.stringify(requestProperties.facetPathsForIndexFields)) {
-                actionType = 'FACET_UPDATE';
-            }
-            else if (this.lastSortType !== requestProperties.order_by) {
-                actionType = 'SORT_ORDER_UPDATE';
-            }
-            else if (this.lastSearchMode !== requestProperties.mode) {
-                actionType = 'EXACT_MATCH_UPDATE';
-            }
-            this.lastRangeValues = JSON.stringify(requestProperties.rangeValueForIndexFields);
-            this.lastFacetValues = JSON.stringify(requestProperties.facetPathsForIndexFields);
-            this.lastSortType = requestProperties.order_by;
-            this.lastSearchMode = requestProperties.mode;
-            this.lastSearchTerm = requestProperties.searchTerm;
-            this.lastTimeTaken = state.searchResponseTimeTaken;
-            // Handle the incoming response, using the action we have determined.
-            this.handleIncomingSearchResponse(state, actionType);
         }
     }
     onCoreAvailable(core) {
@@ -4718,7 +4759,7 @@ class SearchcraftFilterPanel {
      * Iterate through `items` and render them based on `type`
      */
     render() {
-        return (hAsync("div", { key: 'b18a05516bea8d145d1ca015835d63fafbfc8bd8', class: 'searchcraft-filter-panel' }, this.items.map((filterItem) => {
+        return (hAsync("div", { key: 'ee8974e38b296a1ba27111bc2a4244d8915f5839', class: 'searchcraft-filter-panel' }, this.items.map((filterItem) => {
             switch (filterItem.type) {
                 case 'dateRange': {
                     const item = filterItem;
@@ -4838,6 +4879,10 @@ class SearchcraftInputForm {
      */
     placeholderBehavior;
     /**
+     * The value to display in the input field.
+     */
+    value;
+    /**
      * When the input becomes focused.
      */
     inputFocus;
@@ -4857,18 +4902,41 @@ class SearchcraftInputForm {
     cleanupCore;
     init() {
         if (this.core) {
+            // Initialize inputValue from prop if provided
+            if (this.value !== undefined && this.value.trim().length > 0) {
+                this.inputValue = this.value;
+                this.core.store.getState().setSearchTerm(this.value);
+                // Trigger search if autoSearch is enabled
+                if (this.autoSearch) {
+                    this.core.store.getState().search();
+                }
+            }
             this.inputInit?.emit();
         }
     }
     onCoreChange() {
         this.init();
     }
+    onValueChange(newValue) {
+        if (newValue !== undefined && newValue !== this.inputValue) {
+            this.inputValue = newValue;
+            this.core?.store.getState().setSearchTerm(newValue);
+            // Trigger search if autoSearch is enabled and value is not empty
+            if (this.autoSearch && newValue.trim().length > 0) {
+                this.core?.store.getState().search();
+            }
+        }
+    }
     onCoreAvailable(core) {
         this.core = core;
         this.init();
         this.unsubscribe = core.store.subscribe((state) => {
             this.searchTerm = state.searchTerm;
-            this.inputValue = state.searchTerm;
+            // Only update inputValue from store if value prop is not set
+            // OR if the store was cleared (empty string)
+            if (this.value === undefined || state.searchTerm === '') {
+                this.inputValue = state.searchTerm;
+            }
         });
     }
     connectedCallback() {
@@ -4897,6 +4965,8 @@ class SearchcraftInputForm {
         }
     };
     handleClearInput = () => {
+        // Clear the input value even if controlled by prop
+        this.inputValue = '';
         this.core?.store.getState().resetSearchValues();
         this.error = false;
     };
@@ -4915,14 +4985,15 @@ class SearchcraftInputForm {
         const inputGridStyles = {
             gap: shouldHaveVerticalGap ? '4px 8px' : '0px 8px',
         };
-        return (hAsync("form", { key: 'c1eea324038f640a9075d5714378d5c4b97168e0', class: 'searchcraft-input-form', onSubmit: this.handleFormSubmit }, hAsync("div", { key: 'f157c00510e5c3e75dd703996be24de5e97bbcd9', class: inputGridClassNames, style: inputGridStyles }, hAsync("div", { key: 'c97f3e5ef9ed6aee103dedc76b3ee1620b69ebba', class: 'searchcraft-input-form-button' }, hAsync("searchcraft-button", { key: '4bb5dfea8b9f8f2f0a7e5fc5c1b199ef9d209278', onButtonClick: this.handleFormSubmit, label: this.buttonLabel })), this.inputLabel && (hAsync("div", { key: 'aa8beca21ce414d645687ee73b7ca29c740438a2', class: 'searchcraft-input-form-label' }, hAsync("searchcraft-input-label", { key: '8c15364abcf2e43354b445be6c7ceb9387ea4a67', label: this.inputLabel }))), this.error && (hAsync("div", { key: '5987b6da22a25da50613ceb277bfe44b31ba8f37', class: 'searchcraft-input-form-error-message' }, hAsync("searchcraft-error-message", { key: 'f2a230f0cf3cf0bbaddbb37ef2f38afdf73b28f6' }, "Something went wrong."))), hAsync("div", { key: 'a0862217135ac6f9a96d9e64e6fca5f772eb8f51', class: 'searchcraft-input-form-input-wrapper' }, hAsync("input", { key: '7071be386f0c73a0230e0815640b134ee5139262', autoComplete: 'off', class: classNames('searchcraft-input-form-input', {
+        return (hAsync("form", { key: 'd214ace44e9209154d215e803de088aefa58a285', class: 'searchcraft-input-form', onSubmit: this.handleFormSubmit }, hAsync("div", { key: '5699f5dca28caf5e9584401f1883d2e08d26e3ec', class: inputGridClassNames, style: inputGridStyles }, hAsync("div", { key: 'ef792a946414a680e9c99c145246d00b9b8f2ffb', class: 'searchcraft-input-form-button' }, hAsync("searchcraft-button", { key: 'ba5a8cb98889bb486781af4915a21c94a0b1498a', onButtonClick: this.handleFormSubmit, label: this.buttonLabel })), this.inputLabel && (hAsync("div", { key: 'a9e770ef967f7ab1c6ddf8f87f23cea509894536', class: 'searchcraft-input-form-label' }, hAsync("searchcraft-input-label", { key: '93b29e630e71a3c7724921aa9586aab76e592f4f', label: this.inputLabel }))), this.error && (hAsync("div", { key: '641ef4f468d527c24a1635d49dcbbba03030686f', class: 'searchcraft-input-form-error-message' }, hAsync("searchcraft-error-message", { key: '2d839d17b702fe1b41d7e49aacfc52fb53315766' }, "Something went wrong."))), hAsync("div", { key: 'af0c73478de21447c992bd0037ba007d54f53a86', class: 'searchcraft-input-form-input-wrapper' }, hAsync("input", { key: '3de1be1aa71c143b58cd6080d422410bd400e4e5', autoComplete: 'off', class: classNames('searchcraft-input-form-input', {
                 'searchcraft-placeholder-hide-on-focus': this.placeholderBehavior === 'hide-on-focus',
             }), onFocus: () => this.inputFocus?.emit(), onBlur: () => this.inputBlur?.emit(), onInput: (event) => {
                 this.handleInput(event);
-            }, placeholder: this.placeholderValue, type: 'text', value: this.inputValue }), hAsync("div", { key: '178a7a21a84f012662312dc2b9145fff0aec6a44', class: 'searchcraft-input-form-input-icon' }, hAsync("svg", { key: '7fb86586c155f7075fb65280482eb2ab5ff8a9db', class: 'searchcraft-input-form-input-search-icon', viewBox: '0 0 20 20', fill: 'none', xmlns: 'http://www.w3.org/2000/svg', "aria-labelledby": 'searchcraft-title' }, hAsync("title", { key: '0a48667010f2c998917271f941877c5ec826329f' }, "Search icon"), hAsync("path", { key: '94c54dfa1406bdc6c2f87f3b31e1b01862b58e08', d: 'M17.5 17.5L13.875 13.875M15.8333 9.16667C15.8333 12.8486 12.8486 15.8333 9.16667 15.8333C5.48477 15.8333 2.5 12.8486 2.5 9.16667C2.5 5.48477 5.48477 2.5 9.16667 2.5C12.8486 2.5 15.8333 5.48477 15.8333 9.16667Z', stroke: 'currentColor', "stroke-width": '1.5', "stroke-linecap": 'round', "stroke-linejoin": 'round' }))), isShowingClearButton && (hAsync("button", { key: '931fc5e8842de1e8f3bab3fa163261c54c24148c', type: 'button', class: 'searchcraft-input-form-clear-button', onClick: this.handleClearInput }, hAsync("svg", { key: '0676b050222eb9a7bf2f7c7c112ae40c0644ecf7', class: 'searchcraft-input-form-clear-icon', viewBox: '0 0 22 22', fill: 'none', xmlns: 'http://www.w3.org/2000/svg', "aria-labelledby": 'icon-title' }, hAsync("title", { key: '002b23596bc977b5a942776e4f7b513db4584361' }, "Clear icon"), hAsync("path", { key: '05346b8f1ede39b9e1924760f400df10d8b0aa49', d: 'M14 8L8 14M8 8L14 14M21 11C21 16.5228 16.5228 21 11 21C5.47715 21 1 16.5228 1 11C1 5.47715 5.47715 1 11 1C16.5228 1 21 5.47715 21 11Z', stroke: 'currentColor', "stroke-width": '1.5', "stroke-linecap": 'round', "stroke-linejoin": 'round' }))))))));
+            }, placeholder: this.placeholderValue, type: 'text', value: this.inputValue }), hAsync("div", { key: 'fe9043c046e3b1b91129299f0860919ba8a8416b', class: 'searchcraft-input-form-input-icon' }, hAsync("svg", { key: '31ae1553cd214d5e2f97c9e3699862dff51a0916', class: 'searchcraft-input-form-input-search-icon', viewBox: '0 0 20 20', fill: 'none', xmlns: 'http://www.w3.org/2000/svg', "aria-labelledby": 'searchcraft-title' }, hAsync("title", { key: '9db677da65283ff15b0d4e79b5d9daf89637b33f' }, "Search icon"), hAsync("path", { key: '2a002eae6ed3725a432e7c3e4649c0bd2ffff7a0', d: 'M17.5 17.5L13.875 13.875M15.8333 9.16667C15.8333 12.8486 12.8486 15.8333 9.16667 15.8333C5.48477 15.8333 2.5 12.8486 2.5 9.16667C2.5 5.48477 5.48477 2.5 9.16667 2.5C12.8486 2.5 15.8333 5.48477 15.8333 9.16667Z', stroke: 'currentColor', "stroke-width": '1.5', "stroke-linecap": 'round', "stroke-linejoin": 'round' }))), isShowingClearButton && (hAsync("button", { key: 'b7e92b22c3234eb31d85b0aa98d7c682b2fc0021', type: 'button', class: 'searchcraft-input-form-clear-button', onClick: this.handleClearInput }, hAsync("svg", { key: 'bfbeb742f197da0cac6dd5df2627db9df5349207', class: 'searchcraft-input-form-clear-icon', viewBox: '0 0 22 22', fill: 'none', xmlns: 'http://www.w3.org/2000/svg', "aria-labelledby": 'icon-title' }, hAsync("title", { key: 'c62b9d237b3762609fed72e0520322fb5eabe979' }, "Clear icon"), hAsync("path", { key: '198a13760ce8b076ef8e791dec933b210ff3017a', d: 'M14 8L8 14M8 8L14 14M21 11C21 16.5228 16.5228 21 11 21C5.47715 21 1 16.5228 1 11C1 5.47715 5.47715 1 11 1C16.5228 1 21 5.47715 21 11Z', stroke: 'currentColor', "stroke-width": '1.5', "stroke-linecap": 'round', "stroke-linejoin": 'round' }))))))));
     }
     static get watchers() { return {
-        "core": ["onCoreChange"]
+        "core": ["onCoreChange"],
+        "value": ["onValueChange"]
     }; }
     static get cmpMeta() { return {
         "$flags$": 0,
@@ -4935,6 +5006,7 @@ class SearchcraftInputForm {
             "inputLabel": [1, "input-label"],
             "placeholderValue": [1, "placeholder-value"],
             "placeholderBehavior": [1, "placeholder-behavior"],
+            "value": [1],
             "inputValue": [32],
             "searchTerm": [32],
             "error": [32]
@@ -5046,6 +5118,7 @@ class SearchcraftPagination {
     searchResultsPerPage;
     searchResultsPage;
     searchResultsCount;
+    searchClientRequestProperties;
     // local vars
     searchResultsPagesCount = 1;
     searchResultsRangeMin = 1;
@@ -5061,6 +5134,7 @@ class SearchcraftPagination {
             this.searchResultsPerPage = state.searchResultsPerPage;
             this.searchResultsPage = state.searchResultsPage;
             this.searchResultsCount = state.searchResultsCount;
+            this.searchClientRequestProperties = state.searchClientRequestProperties;
             // local vars
             this.searchResultsPagesCount = Math.ceil(this.searchResultsCount / this.searchResultsPerPage);
             this.searchResultsRangeMin =
@@ -5120,8 +5194,11 @@ class SearchcraftPagination {
         return (hAsync("li", null, hAsync("span", { class: 'searchcraft-pagination-item searchcraft-pagination-item-active' }, this.searchResultsPage)));
     }
     render() {
-        // early return if there isn't a searchTerm or there is 1 or fewer pages of results
-        if (!this.searchTerm || this.searchResultsPagesCount <= 1) {
+        // Check if this is an initialQuery case (string requestProperties with empty searchTerm)
+        const isInitialQuery = typeof this.searchClientRequestProperties === 'string' &&
+            this.searchTerm.trim() === '';
+        // early return if there isn't a searchTerm (unless it's initialQuery) or there is 1 or fewer pages of results
+        if ((!this.searchTerm && !isInitialQuery) || this.searchResultsPagesCount <= 1) {
             return;
         }
         return (hAsync("div", { class: 'searchcraft-pagination' }, hAsync("div", { class: 'searchcraft-pagination-control' }, hAsync("searchcraft-button", { disabled: this.searchResultsPage === 1, hierarchy: 'tertiary', onButtonClick: () => this.handleGoToPage(Math.max(1, this.searchResultsPage - 1)), label: 'Previous', iconPosition: 'left', icon: hAsync("svg", { class: 'searchcraft-button-icon', width: '20', height: '20', viewBox: '0 0 20 20', fill: 'none', xmlns: 'http://www.w3.org/2000/svg' }, hAsync("title", null, "Previous page icon"), hAsync("path", { d: 'M12.5 15L7.5 10L12.5 5', stroke: 'currentColor', "stroke-width": '1.5', "stroke-linecap": 'round', "stroke-linejoin": 'round' })), iconOnly: true })), hAsync("ul", { class: 'searchcraft-pagination-list' }, this.renderOddPaginationItem(1), this.renderEvenPaginationItem(2), this.renderMiddlePaginationItem(), this.renderEvenPaginationItem(this.searchResultsPagesCount > 4
@@ -5139,6 +5216,7 @@ class SearchcraftPagination {
             "searchResultsPerPage": [32],
             "searchResultsPage": [32],
             "searchResultsCount": [32],
+            "searchClientRequestProperties": [32],
             "searchResultsPagesCount": [32],
             "searchResultsRangeMin": [32],
             "searchResultsRangeMax": [32],
@@ -6162,6 +6240,7 @@ class SearchcraftResultsInfo {
     searchResultsPage;
     searchResultsPerPage;
     searchResultsCount;
+    searchClientRequestProperties;
     // local vars
     count = 0;
     range = [0, 0];
@@ -6175,6 +6254,7 @@ class SearchcraftResultsInfo {
             this.searchResultsPage = state.searchResultsPage;
             this.searchResultsPerPage = state.searchResultsPerPage;
             this.searchResultsCount = state.searchResultsCount;
+            this.searchClientRequestProperties = state.searchClientRequestProperties;
             // local vars
             this.count = this.searchResultsCount;
             this.range[0] =
@@ -6197,7 +6277,12 @@ class SearchcraftResultsInfo {
         this.cleanupCore?.();
     }
     render() {
-        if (!this.searchTerm || this.searchResultsCount === 0) {
+        // Check if this is an initialQuery case (string requestProperties with empty searchTerm)
+        const isInitialQuery = typeof this.searchClientRequestProperties === 'string' &&
+            this.searchTerm.trim() === '';
+        // Only hide if there's no search term AND no initialQuery AND no results
+        if ((!this.searchTerm && !isInitialQuery) ||
+            this.searchResultsCount === 0) {
             return null;
         }
         return (hAsync("p", { class: 'searchcraft-results-info' }, typeof this.template !== 'undefined'
@@ -6218,6 +6303,7 @@ class SearchcraftResultsInfo {
             "searchResultsPage": [32],
             "searchResultsPerPage": [32],
             "searchResultsCount": [32],
+            "searchClientRequestProperties": [32],
             "count": [32],
             "range": [32],
             "responseTime": [32]
@@ -6592,6 +6678,7 @@ class SearchcraftSearchResultsPerPage {
     searchResultsPerPage;
     searchResultsCount;
     searchResultsPagesCount;
+    searchClientRequestProperties;
     // local vars
     initialSearchResultsPerPage;
     // store functions
@@ -6606,6 +6693,7 @@ class SearchcraftSearchResultsPerPage {
             this.searchResultsPerPage = state.searchResultsPerPage;
             this.searchResultsPage = state.searchResultsPage;
             this.searchResultsCount = state.searchResultsCount;
+            this.searchClientRequestProperties = state.searchClientRequestProperties;
             // local vars
             this.searchResultsPagesCount = Math.ceil(this.searchResultsCount / this.searchResultsPerPage);
             // store functions
@@ -6623,8 +6711,11 @@ class SearchcraftSearchResultsPerPage {
         this.cleanupCore?.();
     }
     render() {
-        // early return if there isn't a searchTerm or there is 1 or fewer pages of results
-        if (!this.searchTerm || this.searchResultsPagesCount <= 1) {
+        // Check if this is an initialQuery case (string requestProperties with empty searchTerm)
+        const isInitialQuery = typeof this.searchClientRequestProperties === 'string' &&
+            this.searchTerm.trim() === '';
+        // early return if there isn't a searchTerm (unless it's initialQuery) or there is 1 or fewer pages of results
+        if ((!this.searchTerm && !isInitialQuery) || this.searchResultsPagesCount <= 1) {
             return;
         }
         return (hAsync("div", { class: 'searchcraft-search-results-per-page' }, hAsync("div", { class: 'searchcraft-search-results-per-page-select' }, hAsync("label", { class: 'searchcraft-search-results-per-page-select-label', htmlFor: 'searchcraft-search-results-per-page-select-input' }, "Results Per Page"), hAsync("div", { class: 'searchcraft-search-results-per-page-select-input' }, hAsync("searchcraft-select", { inputId: 'searchcraft-search-results-per-page-select-input', name: 'results-per-page', options: [...Array(5)].map((_, index) => {
@@ -6650,6 +6741,7 @@ class SearchcraftSearchResultsPerPage {
             "searchResultsPerPage": [32],
             "searchResultsCount": [32],
             "searchResultsPagesCount": [32],
+            "searchClientRequestProperties": [32],
             "initialSearchResultsPerPage": [32],
             "setSearchResultsPerPage": [32],
             "setSearchResultsPage": [32]

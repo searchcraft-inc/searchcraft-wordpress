@@ -73,11 +73,11 @@ class Searchcraft_Public {
 			return;
 		}
 
-		// Enqueue SDK assets with higher priority to load after theme assets.
-		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_sdk_assets' ), 20 );
+		// Enqueue SDK assets early to ensure they're available for other scripts.
+		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_sdk_assets' ), 1 );
 
-		// Enqueue search header injection script.
-		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_sdk_settings' ), 25 );
+		// Enqueue search header injection script after SDK assets.
+		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_sdk_settings' ), 2 );
 
 		// Replace search forms.
 		add_filter( 'get_search_form', array( $this, 'replace_search_form' ) );
@@ -171,11 +171,12 @@ class Searchcraft_Public {
 	 * @since 1.0.0
 	 */
 	public function enqueue_sdk_settings() {
-		// Enqueue the search settings script.
+		// Enqueue the search settings script with dependency on SDK integration.
+		// This ensures the Searchcraft instance is created before templates are injected.
 		wp_enqueue_script(
 			'searchcraft-sdk-settings',
 			plugin_dir_url( __FILE__ ) . 'js/searchcraft-sdk-settings.js',
-			array(),
+			array( $this->plugin_name . '-sdk-integration' ),
 			$this->version,
 			true
 		);
@@ -207,51 +208,73 @@ class Searchcraft_Public {
 		);
 
 		// Include search query if available.
-		$search_query = get_search_query( false ); // Get unescaped query.
+		$search_query = get_search_query( true );
 		if ( ! empty( $search_query ) ) {
 			$js_config['searchQuery'] = $search_query;
 		}
 
-		// Include results per page setting.
-		$results_per_page            = get_option( 'searchcraft_results_per_page', 10 );
-		$js_config['resultsPerPage'] = intval( $results_per_page );
-
-		// Include custom result template callback function.
-		$result_template = get_option( 'searchcraft_result_template', '' );
-		if ( ! empty( $result_template ) ) {
-			$js_config['resultTemplateCallback'] = $result_template;
-		}
-
-		// Include AI summary settings.
+		// AI summary settings.
 		$enable_ai_summary            = get_option( 'searchcraft_enable_ai_summary', false );
 		$js_config['enableAiSummary'] = (bool) $enable_ai_summary;
-
-		// Include cortex URL if AI summary is enabled and cortex URL is configured.
 		if ( $enable_ai_summary && ! empty( $config['cortex_url'] ) ) {
 			$js_config['cortexURL'] = $config['cortex_url'];
 		}
+		$js_config['summaryBackgroundColor'] = get_option( 'searchcraft_summary_background_color', '#F5F5F5' );
+		$js_config['summaryBoxBorderRadius'] = get_option( 'searchcraft_summary_box_border_radius', '' );
 
-		// Include image alignment setting.
-		$image_alignment             = get_option( 'searchcraft_image_alignment', 'left' );
-		$js_config['imageAlignment'] = $image_alignment;
+		// General result layout options.
+		$js_config['brandColor'] = get_option( 'searchcraft_brand_color', '#000000' );
+		$result_template         = get_option( 'searchcraft_result_template', '' );
+		if ( ! empty( $result_template ) ) {
+			$js_config['resultTemplateCallback'] = $result_template;
+		}
+		$js_config['orientation']            = get_option( 'searchcraft_result_orientation', 'column' );
+		$js_config['displayPostDate']        = (bool) get_option( 'searchcraft_display_post_date', true );
+		$js_config['displayPrimaryCategory'] = (bool) get_option( 'searchcraft_display_primary_category', true );
+		$js_config['imageAlignment']         = get_option( 'searchcraft_image_alignment', 'left' );
+		if ( 'grid' === $js_config['orientation'] ) {
+			$js_config['imageAlignment'] = 'left';
+		}
 
-		// Include brand color setting.
-		$brand_color             = get_option( 'searchcraft_brand_color', '#000000' );
-		$js_config['brandColor'] = $brand_color;
+		// Filter panel settings.
+		$js_config['includeFilterPanel']     = (bool) get_option( 'searchcraft_include_filter_panel', false );
+		$js_config['enableMostRecentToggle'] = (bool) get_option( 'searchcraft_enable_most_recent_toggle', '1' );
+		$js_config['enableExactMatchToggle'] = (bool) get_option( 'searchcraft_enable_exact_match_toggle', '1' );
+		$js_config['enableDateRange']        = (bool) get_option( 'searchcraft_enable_date_range', '1' );
+		$js_config['enableFacets']           = (bool) get_option( 'searchcraft_enable_facets', '1' );
 
-		// Include summary background color setting.
-		$summary_background_color            = get_option( 'searchcraft_summary_background_color', '#F5F5F5' );
-		$js_config['summaryBackgroundColor'] = $summary_background_color;
-
-		// Include filter panel setting.
-		$include_filter_panel            = get_option( 'searchcraft_include_filter_panel', false );
-		$js_config['includeFilterPanel'] = (bool) $include_filter_panel;
-
-		// Include oldest post year.
+		// Date slider options.
 		$admin_instance              = new Searchcraft_Admin( 'searchcraft', SEARCHCRAFT_VERSION );
 		$oldest_post_year            = $admin_instance->get_oldest_post_year();
 		$js_config['oldestPostYear'] = $oldest_post_year;
 
+		$js_config['resultsPerPage'] = intval( get_option( 'searchcraft_results_per_page', 10 ) );
+
+		// Filter taxonomies.
+		$filter_taxonomies = get_option( 'searchcraft_filter_taxonomies', array( 'category' ) );
+		if ( ! is_array( $filter_taxonomies ) ) {
+			$filter_taxonomies = array( 'category' );
+		}
+		// Get taxonomy labels for display.
+		$taxonomy_config = array();
+		foreach ( $filter_taxonomies as $taxonomy_name ) {
+			$taxonomy_obj = get_taxonomy( $taxonomy_name );
+			if ( $taxonomy_obj ) {
+				$taxonomy_config[] = array(
+					'name'  => $taxonomy_name,
+					'label' => $taxonomy_obj->label,
+				);
+			}
+		}
+		// Sort taxonomies alphabetically by label.
+		usort(
+			$taxonomy_config,
+			function ( $a, $b ) {
+				return strcmp( $a['label'], $b['label'] );
+			}
+		);
+		$js_config['filterTaxonomies'] = $taxonomy_config;
+		$js_config['isWPSearchPage']   = (bool) is_search();
 		return $js_config;
 	}
 
@@ -269,8 +292,13 @@ class Searchcraft_Public {
 			return false;
 		}
 
-		// Get search experience setting.
-		$search_experience = get_option( 'searchcraft_search_experience', 'full' );
+		// Get saved settings.
+		$search_experience       = get_option( 'searchcraft_search_experience', 'full' );
+		$search_behavior         = get_option( 'searchcraft_search_behavior', 'on_page' );
+		$input_container_id      = get_option( 'searchcraft_search_input_container_id', '' );
+		$results_container_id    = get_option( 'searchcraft_results_container_id', '' );
+		$popover_container_id    = get_option( 'searchcraft_popover_container_id', '' );
+		$popover_insert_behavior = get_option( 'searchcraft_popover_element_behavior', 'replace' );
 
 		// Capture header template content.
 		ob_start();
@@ -282,16 +310,13 @@ class Searchcraft_Public {
 		include $results_template_path;
 		$results_template_content = ob_get_clean();
 
-		// Get configuration options.
-		$results_container_id    = get_option( 'searchcraft_results_container_id', '' );
-		$popover_container_id    = get_option( 'searchcraft_popover_container_id', '' );
-		$popover_insert_behavior = get_option( 'searchcraft_popover_element_behavior', 'replace' );
-
 		// Return all data in a single namespaced object.
 		return array(
 			'searchExperience'      => $search_experience,
+			'searchBehavior'        => $search_behavior,
 			'headerContent'         => $header_template_content,
 			'resultsContent'        => $results_template_content,
+			'inputContainerId'      => $input_container_id,
 			'resultsContainerId'    => $results_container_id,
 			'popoverContainerId'    => $popover_container_id,
 			'popoverInsertBehavior' => $popover_insert_behavior,
@@ -322,7 +347,7 @@ class Searchcraft_Public {
 
 		wp_enqueue_script(
 			$this->plugin_name . '-sdk-components',
-			plugin_dir_url( __FILE__ ) . 'sdk/components/index.js?v=0.12.0',
+			plugin_dir_url( __FILE__ ) . 'sdk/components/index.js?v=0.12.1',
 			$script_deps,
 			$this->version,
 			true
@@ -361,14 +386,14 @@ class Searchcraft_Public {
 		// Add CSS for Searchcraft components.
 		wp_enqueue_style(
 			$this->plugin_name . '-sdk-hologram-styles',
-			plugin_dir_url( __FILE__ ) . 'sdk/themes/hologram.css?v=0.12.0',
+			plugin_dir_url( __FILE__ ) . 'sdk/themes/hologram.css?v=0.12.1',
 			$style_deps,
 			$this->version,
 			'all'
 		);
 		wp_enqueue_style(
 			$this->plugin_name . '-sdk-styles',
-			plugin_dir_url( __FILE__ ) . 'css/searchcraft-sdk.css?v=0.12.0',
+			plugin_dir_url( __FILE__ ) . 'css/searchcraft-sdk.css?v=0.12.1',
 			$style_deps,
 			$this->version,
 			'all'

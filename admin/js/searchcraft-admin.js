@@ -70,8 +70,43 @@ function initPasswordToggle() {
 		}
 	});
 }
+
+/**
+ * Initialize button with spinner functionality
+ * Handles all forms that contain .searchcraft-button-with-spinner elements
+ */
+function initButtonWithSpinner() {
+	const buttonContainers = document.querySelectorAll('.searchcraft-button-with-spinner');
+
+	buttonContainers.forEach(function(container) {
+		// Find the form that contains this button container
+		const form = container.closest('form');
+
+		if (!form) {
+			return;
+		}
+
+		// Find the button and spinner within this container
+		const button = container.querySelector('input[type="submit"], button[type="submit"]');
+		const spinner = container.querySelector('.searchcraft-spinner');
+
+		if (button && spinner) {
+			// Add submit event listener to the form
+			form.addEventListener('submit', function() {
+				// Disable the button and show spinner
+				button.disabled = true;
+				button.style.display = 'none';
+				spinner.style.display = 'inline-block';
+			});
+		}
+	});
+}
 // Layout tab form toggling
 function toggleFormFields() {
+	const fullRadio = document.querySelector('input[name="searchcraft_search_experience"][value="full"]');
+	const fullOnlyRows = document.querySelectorAll('.searchcraft-full-only');
+	const popoverOnlyRows = document.querySelectorAll('.searchcraft-popover-only');
+
 	const isFullSelected = fullRadio && fullRadio.checked;
 
 	// Show/hide full experience fields
@@ -93,6 +128,64 @@ function toggleFormFields() {
 	});
 }
 
+/**
+ * Toggle filter panel options visibility
+ */
+function toggleFilterPanelOptions() {
+	const filterPanelCheckbox = document.getElementById('searchcraft_include_filter_panel');
+	const filterPanelOptions = document.querySelector('.searchcraft-filter-panel-options');
+
+	if (filterPanelCheckbox && filterPanelOptions) {
+		if (filterPanelCheckbox.checked) {
+			filterPanelOptions.style.display = '';
+		} else {
+			filterPanelOptions.style.display = 'none';
+		}
+	}
+}
+
+/**
+ * Toggle AI summary banner text visibility
+ */
+function toggleAiSummaryLayout() {
+	const aiSummaryCheckbox = document.getElementById('searchcraft_enable_ai_summary');
+	const aiSummarySettings = document.querySelectorAll('.searchcraft-ai-summary-row');
+
+	if (!aiSummaryCheckbox || !aiSummarySettings) {
+		return;
+	}
+	aiSummarySettings.forEach(function(element) {
+		if (aiSummaryCheckbox.checked) {
+			element.style.display = '';
+		} else {
+			element.style.display = 'none';
+		}
+	});
+}
+
+/**
+ * Toggle column orientation options visibility
+ * Hides options when grid is selected, shows them when column is selected
+ */
+function toggleResultOrientationOptions() {
+	const columnRadio = document.querySelector('input[name="searchcraft_result_orientation"][value="column"]');
+	const columnOrientationOptions = document.querySelectorAll('.searchcraft-column-orientation-option');
+
+	if (!columnRadio || !columnOrientationOptions.length) {
+		return;
+	}
+
+	const isColumnSelected = columnRadio.checked;
+
+	columnOrientationOptions.forEach(function(element) {
+		if (isColumnSelected) {
+			element.style.display = '';
+		} else {
+			element.style.display = 'none';
+		}
+	});
+}
+
 document.addEventListener('DOMContentLoaded', function() {
 	// Initialize color pickers
 	initColorPickers();
@@ -100,12 +193,14 @@ document.addEventListener('DOMContentLoaded', function() {
 	// Initialize password toggle functionality
 	initPasswordToggle();
 
+	// Initialize button with spinner functionality
+	initButtonWithSpinner();
+
 	// layout tab functionality
 	if (document.querySelector('.searchcraft-layout')) {
 		const fullRadio = document.querySelector('input[name="searchcraft_search_experience"][value="full"]');
 		const popoverRadio = document.querySelector('input[name="searchcraft_search_experience"][value="popover"]');
-		const fullOnlyRows = document.querySelectorAll('.searchcraft-full-only');
-		const popoverOnlyRows = document.querySelectorAll('.searchcraft-popover-only');
+
 		// Initial state
 		toggleFormFields();
 
@@ -115,6 +210,38 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 		if (popoverRadio) {
 			popoverRadio.addEventListener('change', toggleFormFields);
+		}
+
+		// Filter panel options toggle
+		const filterPanelCheckbox = document.getElementById('searchcraft_include_filter_panel');
+		if (filterPanelCheckbox) {
+			// Initial state
+			toggleFilterPanelOptions();
+
+			// Add event listener
+			filterPanelCheckbox.addEventListener('change', toggleFilterPanelOptions);
+		}
+
+		// AI summary banner text toggle
+		const aiSummaryCheckbox = document.getElementById('searchcraft_enable_ai_summary');
+		if (aiSummaryCheckbox) {
+			// Initial state
+			toggleAiSummaryLayout();
+
+			// Add event listener
+			aiSummaryCheckbox.addEventListener('change', toggleAiSummaryLayout);
+		}
+
+		// Result orientation options toggle
+		const columnRadio = document.querySelector('input[name="searchcraft_result_orientation"][value="column"]');
+		const gridRadio = document.querySelector('input[name="searchcraft_result_orientation"][value="grid"]');
+		if (columnRadio && gridRadio) {
+			// Initial state
+			toggleResultOrientationOptions();
+
+			// Add event listeners
+			columnRadio.addEventListener('change', toggleResultOrientationOptions);
+			gridRadio.addEventListener('change', toggleResultOrientationOptions);
 		}
 	}
 });

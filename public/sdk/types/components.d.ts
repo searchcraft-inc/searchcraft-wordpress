@@ -178,6 +178,10 @@ export namespace Components {
           * The id of the Searchcraft instance that this component should use.
          */
         "searchcraftId"?: string;
+        /**
+          * The value to display in the input field.
+         */
+        "value"?: string;
     }
     /**
      * This web component serves as the input label for the searchcraft-input-form component.
@@ -1437,6 +1441,10 @@ declare namespace LocalJSX {
           * The id of the Searchcraft instance that this component should use.
          */
         "searchcraftId"?: string;
+        /**
+          * The value to display in the input field.
+         */
+        "value"?: string;
     }
     /**
      * This web component serves as the input label for the searchcraft-input-form component.

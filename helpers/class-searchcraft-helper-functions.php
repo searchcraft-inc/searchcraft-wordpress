@@ -300,24 +300,24 @@ class Searchcraft_Helper_Functions {
 		if ( is_string( $e ) ) {
 			// If it's a string, log it directly.
 			// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-			error_log( "[{$timestamp}] [Searchcraft error]: " . $e . "\n" );
+			error_log( "[{$timestamp}] [Searchcraft log]: " . $e . "\n" );
 		} elseif ( $e instanceof \Exception ) {
 			// Log the main exception message.
 			// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-			error_log( "[{$timestamp}] [Searchcraft error]: " . $e->getMessage() . "\n" );
+			error_log( "[{$timestamp}] [Searchcraft log]: " . $e->getMessage() . "\n" );
 
 			// Log additional error data if available and the method exists.
 			if ( method_exists( $e, 'getErrorData' ) ) {
 				$e_data = $e->getErrorData();
 				if ( ! empty( $e_data ) ) {
 					// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-					error_log( "[{$timestamp}] [Searchcraft error details]: " . wp_json_encode( $e_data, JSON_PRETTY_PRINT ) . "\n" );
+					error_log( "[{$timestamp}] [Searchcraft log details]: " . wp_json_encode( $e_data, JSON_PRETTY_PRINT ) . "\n" );
 				}
 			}
 		} else {
 			// Fallback for other types.
 			// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log, WordPress.PHP.DevelopmentFunctions.error_log_print_r
-			error_log( "[{$timestamp}] [Searchcraft error]: " . print_r( $e, true ) . "\n" );
+			error_log( "[{$timestamp}] [Searchcraft log]: " . print_r( $e, true ) . "\n" );
 		}
 
 		// Log the custom message if provided.

@@ -25,11 +25,29 @@ require_once 'common-template-values.php';
 <style>
 :root {
 	--sc-color-brand: <?php echo esc_attr( $searchcraft_brand_color ); ?>;
+	--sc-result-info-text-color: <?php echo esc_attr( $searchcraft_result_info_text_color ); ?>;
 	--sc-input-form-border-radius: <?php echo esc_attr( $searchcraft_input_border_radius ); ?>px;
+	--sc-search-icon-color: <?php echo esc_attr( $searchcraft_search_icon_color ); ?>;
+	--sc-clear-icon-color: <?php echo esc_attr( $searchcraft_clear_icon_color ); ?>;
+	--sc-toggle-button-disabled-color: <?php echo esc_attr( $searchcraft_toggle_button_disabled_color ); ?>;
+	--sc-summary-title-color: <?php echo esc_attr( $searchcraft_summary_title_color ); ?>;
+	--sc-summary-text-color: <?php echo esc_attr( $searchcraft_summary_text_color ); ?>;
 }
 
 .searchcraft-input-form-input {
 	padding: 12px 44px !important;
+}
+
+.searchcraft-input-form-input-search-icon {
+	color: var(--sc-search-icon-color);
+}
+
+.searchcraft-input-form-clear-icon {
+	color: var(--sc-clear-icon-color);
+}
+
+button.searchcraft-toggle-button-background {
+	background-color: var(--sc-toggle-button-disabled-color);
 }
 
 .searchcraft-full-search-experience .searchcraft-input-form-input {
@@ -43,14 +61,50 @@ require_once 'common-template-values.php';
 .searchcraft-input-container {
 	padding-bottom: 20px;
 }
+.searchcraft-input-form-inline {
+	flex: 1;
+	width: 100%;
+	min-width: 0;
+}
 
+.searchcraft-input-form-inline-container {
+	align-items: center;
+	display: flex;
+	flex-direction: row;
+	gap: 8px;
+	margin-bottom: -40px;
+	width: 100%;
+}
+
+/* Make the grid container flex to align input and button horizontally */
+.searchcraft-input-form-inline .searchcraft-input-form-grid-inline {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	width: 100%;
+}
+
+/* Input wrapper takes remaining space */
+.searchcraft-input-form-inline .searchcraft-input-form-input-wrapper-inline {
+	flex: 1;
+	min-width: 0;
+}
+
+/* Button stays at its natural width */
+.searchcraft-inline-submit {
+	align-items: center;
+	display: flex;
+	flex-shrink: 0;
+	justify-content: center;
+	text-align: center;
+	min-width: 20%;
+}
 .searchcraft-popover-container {
 	max-width: var(--wp--style--global--wide-size, 1200px);
 	min-width: 260px;
 	margin: 0 auto;
 	width: <?php echo esc_attr( $searchcraft_input_width ); ?>%;
 }
-
 .searchcraft-full-search-experience {
 	max-width: var(--wp--style--global--wide-size, 1200px);
 	margin: 0 auto;
@@ -61,10 +115,71 @@ require_once 'common-template-values.php';
 	font-weight: bold;
 }
 
+<?php if ( 'grid' === $searchcraft_result_orientation ) : ?>
+/* Grid layout for search results */
+.searchcraft-search-results {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 24px;
+	padding: 0;
+}
+
+/* Individual search result card */
+.searchcraft-result-item {
+	display: block;
+	height: 100%;
+}
+.searchcraft-result-item a {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+}
+
+/* Image container */
+.searchcraft-result-image {
+	aspect-ratio: 4/3;
+	margin-bottom: 16px;
+	overflow: hidden;
+	max-width: 100%;
+	width: 100%;
+}
+
+.searchcraft-result-image img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
+}
+.searchcraft-result-content {
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+}
+
+/* Responsive breakpoints */
+@media (max-width: 1024px) {
+	.searchcraft-search-results {
+		grid-template-columns: repeat(2, 1fr);
+		gap: 20px;
+	}
+}
+@media (max-width: 640px) {
+	.searchcraft-search-results {
+		grid-template-columns: 1fr;
+		gap: 24px;
+	}
+
+	.search-result-content-title {
+		font-size: 20px;
+	}
+}
+<?php endif // End of grid layout styles. ?>
+
+
 /* Filter panel positioning */
 .searchcraft-main-content {
 	display: flex;
-	gap: 20px;
+	gap: 40px;
 	align-items: flex-start;
 }
 
@@ -78,6 +193,7 @@ require_once 'common-template-values.php';
 .searchcraft-results-content {
 	flex: 1;
 	order: 2;
+	padding-top: 30px;
 }
 .searchcraft-result-primary-category {
 	color: <?php echo esc_attr( $searchcraft_brand_color ); ?>;
@@ -100,7 +216,7 @@ require_once 'common-template-values.php';
 .searchcraft-summary-container {
 	background-color: <?php echo esc_attr( $searchcraft_summary_background_color ); ?>;
 	border: 1px solid <?php echo esc_attr( $searchcraft_summary_border_color ); ?>;
-	border-radius: 12px;
+	border-radius: <?php echo esc_attr( $searchcraft_summary_box_border_radius ); ?>px;
 	margin-bottom: 20px;
 	padding: 40px;
 	display: none; /* Hide by default to prevent flash */
@@ -140,6 +256,7 @@ require_once 'common-template-values.php';
 }
 
 .searchcraft-summary-box-footer {
+	color: var(--sc-summary-text-color);
 	font-size: 12px;
 	line-height: 14px;
 	margin: 0;
@@ -162,6 +279,7 @@ require_once 'common-template-values.php';
 	gap: 4px;
 	padding-bottom: 10px;
 	padding-top: 20px;
+	color: var(--sc-result-info-text-color);
 }
 
 /* Mobile styles */
@@ -206,7 +324,7 @@ require_once 'common-template-values.php';
 
 searchcraft-summary-box {
 	background-color: <?php echo esc_attr( $searchcraft_summary_background_color ); ?>;
-	border-radius: 12px;
+	border-radius: <?php echo esc_attr( $searchcraft_summary_box_border_radius ); ?>px;
 }
 searchcraft-summary-box, .searchcraft-summary-box {
 	background-color: <?php echo esc_attr( $searchcraft_summary_background_color ); ?>;
@@ -222,12 +340,26 @@ searchcraft-summary-box, .searchcraft-summary-box {
 	}
 
 	& h1, h2, h3, h4, h5 {
+		color: var(--sc-summary-title-color);
 		font-weight: bold;
+	}
+
+	& p {
+		color: var(--sc-summary-text-color);
 	}
 
 	& a {
 		color: <?php echo esc_attr( $searchcraft_brand_color ); ?>;
 	}
+}
+.searchcraft-summary-footer-container {
+	color: var(--sc-summary-text-color);
+}
+.searchcraft-footer-link {
+  color: var(--sc-summary-text-color);
+}
+.searchcraft-footer-link:hover {
+  color: var(--sc-color-brand);
 }
 .searchcraft-filter-panel-header {
 	display: none;
@@ -249,11 +381,12 @@ searchcraft-summary-box, .searchcraft-summary-box {
 	color: #000000;
 }
 /* Hide results container when it contains empty state */
-body:has(.searchcraft-full-search-experience .searchcraft-input-form-input:placeholder-shown) .searchcraft-results-container,
+body:has(.searchcraft-full-search-experience .searchcraft-input-form-input:placeholder-shown) .searchcraft-results-container:has(.searchcraft-search-results-empty-state),
 body:has(.searchcraft-full-search-experience .searchcraft-input-form-input:placeholder-shown) .searchcraft-pagination-container {
 	display: none;
 }
-body:has(.searchcraft-full-search-experience .searchcraft-input-form-input:not(:placeholder-shown)) .searchcraft-results-container {
+body:has(.searchcraft-full-search-experience .searchcraft-input-form-input:not(:placeholder-shown)) .searchcraft-results-container,
+.searchcraft-results-container:has(searchcraft-search-results:not(:empty)) {
 	border-top: 1px solid #e9ecef;
 	padding-top: 20px;
 	margin-bottom: 20px;
@@ -272,20 +405,20 @@ body:has(.searchcraft-full-search-experience .searchcraft-input-form-input:not(:
 }
 
 /* Hide summary containers when search results are empty */
-body:has(.searchcraft-full-search-experience .searchcraft-input-form-input:placeholder-shown) .searchcraft-summary-header-container,
-body:has(.searchcraft-full-search-experience .searchcraft-input-form-input:placeholder-shown) .searchcraft-summary-footer-container {
+body:has(.searchcraft-full-search-experience .searchcraft-input-form-input:placeholder-shown):has(.searchcraft-search-results-empty-state) .searchcraft-summary-header-container,
+body:has(.searchcraft-full-search-experience .searchcraft-input-form-input:placeholder-shown):has(.searchcraft-search-results-empty-state) .searchcraft-summary-footer-container {
 	display: none;
 }
 
-/* Hide filter panel when input is empty */
-body:has(.searchcraft-full-search-experience .searchcraft-input-form-input:placeholder-shown) #searchcraft-filter-panel-container,
-body:has(.searchcraft-full-search-experience searchcraft-input-form input:placeholder-shown) #searchcraft-filter-panel-container {
+/* Hide filter panel when input is empty and no results */
+body:has(.searchcraft-full-search-experience .searchcraft-input-form-input:placeholder-shown):has(.searchcraft-search-results-empty-state) #searchcraft-filter-panel-container,
+body:has(.searchcraft-full-search-experience searchcraft-input-form input:placeholder-shown):has(.searchcraft-search-results-empty-state) #searchcraft-filter-panel-container {
 	display: none;
 }
 
-/* Hide summary containers when input is empty */
-body:has(.searchcraft-full-search-experience .searchcraft-input-form-input:placeholder-shown) .searchcraft-summary-container,
-body:has(.searchcraft-full-search-experience searchcraft-input-form input:placeholder-shown) .searchcraft-summary-container {
+/* Hide summary containers when input is empty and no results */
+body:has(.searchcraft-full-search-experience .searchcraft-input-form-input:placeholder-shown):has(.searchcraft-search-results-empty-state) .searchcraft-summary-container,
+body:has(.searchcraft-full-search-experience searchcraft-input-form input:placeholder-shown):has(.searchcraft-search-results-empty-state) .searchcraft-summary-container {
 	display: none;
 }
 
@@ -293,7 +426,10 @@ body:has(.searchcraft-full-search-experience searchcraft-input-form input:placeh
 <?php
 $custom_css = get_option( 'searchcraft_custom_css', '' );
 if ( ! empty( $custom_css ) ) {
-	echo esc_html( wp_strip_all_tags( $custom_css ) );
+	// CSS is already sanitized on save (tags stripped, XSS patterns removed).
+	// Output directly without additional escaping to preserve CSS syntax.
+	// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- CSS is sanitized on save.
+	echo $custom_css;
 }
 ?>
 </style>
@@ -306,9 +442,27 @@ if ( ! empty( $custom_css ) ) {
 			</div>
 		<?php else : ?>
 			<div class="searchcraft-full-search-experience">
-				<div class="searchcraft-input-container">
-					<searchcraft-input-form placeholder-value="<?php echo esc_attr( $search_placeholder ); ?>"></searchcraft-input-form>
+				<?php if ( 'stand_alone' === $search_behavior && ! is_search() ) : ?>
+					<div class="searchcraft-input-container searchcraft-input-form-inline-container">
+						<form class="searchcraft-input-form searchcraft-input-form-inline" role="search" method="get" action="<?php echo site_url(); ?>">
+							<div class="searchcraft-input-form-grid searchcraft-input-form-grid-button-none searchcraft-input-form-grid-inline" style="gap: 0px 8px;">
+								<div class="searchcraft-input-form-input-wrapper searchcraft-input-form-input-wrapper-inline">
+									<input autocomplete="off" class="searchcraft-input-form-input" placeholder="<?php echo esc_attr( $search_placeholder ); ?>" type="search" name="s">
+										<div class="searchcraft-input-form-input-icon">
+											<svg class="searchcraft-input-form-input-search-icon" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-labelledby="searchcraft-title"><title>Search icon</title><path d="M17.5 17.5L13.875 13.875M15.8333 9.16667C15.8333 12.8486 12.8486 15.8333 9.16667 15.8333C5.48477 15.8333 2.5 12.8486 2.5 9.16667C2.5 5.48477 5.48477 2.5 9.16667 2.5C12.8486 2.5 15.8333 5.48477 15.8333 9.16667Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+										</div>
+								</div>
+								<button aria-label="Search" class="searchcraft-button searchcraft-button-primary searchcraft-inline-submit" type="submit">
+									<span>Search</span>
+								</button>
+							</div>
+						</form>
 				</div>
+				<?php else : ?>
+				<div class="searchcraft-input-container">
+						<searchcraft-input-form <?php echo esc_attr( $value_attr ); ?> placeholder-value="<?php echo esc_attr( $search_placeholder ); ?>" auto-search></searchcraft-input-form>
+				</div>
+				<?php endif; ?>
 			</div>
 		<?php endif; ?>
 	<?php else : ?>

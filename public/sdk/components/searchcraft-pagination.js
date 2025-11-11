@@ -17,6 +17,7 @@ const SearchcraftPagination$1 = /*@__PURE__*/ proxyCustomElement(class Searchcra
     searchResultsPerPage;
     searchResultsPage;
     searchResultsCount;
+    searchClientRequestProperties;
     // local vars
     searchResultsPagesCount = 1;
     searchResultsRangeMin = 1;
@@ -32,6 +33,7 @@ const SearchcraftPagination$1 = /*@__PURE__*/ proxyCustomElement(class Searchcra
             this.searchResultsPerPage = state.searchResultsPerPage;
             this.searchResultsPage = state.searchResultsPage;
             this.searchResultsCount = state.searchResultsCount;
+            this.searchClientRequestProperties = state.searchClientRequestProperties;
             // local vars
             this.searchResultsPagesCount = Math.ceil(this.searchResultsCount / this.searchResultsPerPage);
             this.searchResultsRangeMin =
@@ -91,8 +93,11 @@ const SearchcraftPagination$1 = /*@__PURE__*/ proxyCustomElement(class Searchcra
         return (h("li", null, h("span", { class: 'searchcraft-pagination-item searchcraft-pagination-item-active' }, this.searchResultsPage)));
     }
     render() {
-        // early return if there isn't a searchTerm or there is 1 or fewer pages of results
-        if (!this.searchTerm || this.searchResultsPagesCount <= 1) {
+        // Check if this is an initialQuery case (string requestProperties with empty searchTerm)
+        const isInitialQuery = typeof this.searchClientRequestProperties === 'string' &&
+            this.searchTerm.trim() === '';
+        // early return if there isn't a searchTerm (unless it's initialQuery) or there is 1 or fewer pages of results
+        if ((!this.searchTerm && !isInitialQuery) || this.searchResultsPagesCount <= 1) {
             return;
         }
         return (h("div", { class: 'searchcraft-pagination' }, h("div", { class: 'searchcraft-pagination-control' }, h("searchcraft-button", { disabled: this.searchResultsPage === 1, hierarchy: 'tertiary', onButtonClick: () => this.handleGoToPage(Math.max(1, this.searchResultsPage - 1)), label: 'Previous', iconPosition: 'left', icon: h("svg", { class: 'searchcraft-button-icon', width: '20', height: '20', viewBox: '0 0 20 20', fill: 'none', xmlns: 'http://www.w3.org/2000/svg' }, h("title", null, "Previous page icon"), h("path", { d: 'M12.5 15L7.5 10L12.5 5', stroke: 'currentColor', "stroke-width": '1.5', "stroke-linecap": 'round', "stroke-linejoin": 'round' })), iconOnly: true })), h("ul", { class: 'searchcraft-pagination-list' }, this.renderOddPaginationItem(1), this.renderEvenPaginationItem(2), this.renderMiddlePaginationItem(), this.renderEvenPaginationItem(this.searchResultsPagesCount > 4
@@ -107,6 +112,7 @@ const SearchcraftPagination$1 = /*@__PURE__*/ proxyCustomElement(class Searchcra
         "searchResultsPerPage": [32],
         "searchResultsPage": [32],
         "searchResultsCount": [32],
+        "searchClientRequestProperties": [32],
         "searchResultsPagesCount": [32],
         "searchResultsRangeMin": [32],
         "searchResultsRangeMax": [32],

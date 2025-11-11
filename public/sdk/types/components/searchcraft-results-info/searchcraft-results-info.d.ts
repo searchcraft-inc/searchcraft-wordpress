@@ -59,6 +59,7 @@ export declare class SearchcraftResultsInfo {
     searchResultsPage: any;
     searchResultsPerPage: any;
     searchResultsCount: any;
+    searchClientRequestProperties: any;
     count: number;
     range: number[];
     responseTime: string;

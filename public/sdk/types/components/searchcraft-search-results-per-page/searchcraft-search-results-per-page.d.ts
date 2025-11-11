@@ -43,6 +43,7 @@ export declare class SearchcraftSearchResultsPerPage {
     searchResultsPerPage: any;
     searchResultsCount: any;
     searchResultsPagesCount: any;
+    searchClientRequestProperties: any;
     initialSearchResultsPerPage: any;
     setSearchResultsPerPage: (perPage: number) => void;
     setSearchResultsPage: (page: number) => void;

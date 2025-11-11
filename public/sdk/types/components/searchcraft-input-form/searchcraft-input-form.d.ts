@@ -61,6 +61,10 @@ export declare class SearchcraftInputForm {
      */
     placeholderBehavior?: 'hide-on-focus' | 'hide-on-text-entered';
     /**
+     * The value to display in the input field.
+     */
+    value?: string;
+    /**
      * When the input becomes focused.
      */
     inputFocus?: EventEmitter<void>;
@@ -80,6 +84,7 @@ export declare class SearchcraftInputForm {
     private cleanupCore?;
     init(): void;
     onCoreChange(): void;
+    onValueChange(newValue: string | undefined): void;
     onCoreAvailable(core: SearchcraftCore): void;
     connectedCallback(): void;
     disconnectedCallback(): void;

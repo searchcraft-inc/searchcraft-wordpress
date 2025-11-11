@@ -376,7 +376,9 @@ class Searchcraft_Admin {
 				case 'config':
 					$config_data = isset( $_POST['searchcraft_config'] ) && is_array( $_POST['searchcraft_config'] ) ? $_POST['searchcraft_config'] : array(); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized,WordPress.Security.ValidatedSanitizedInput.MissingUnslash
 					$reset_flag  = isset( $_POST['searchcraft_reset_config'] );
-					$save_flag   = isset( $_POST['searchcraft_save_config'] );
+					// Note: We can't rely on the submit button name being in POST because JavaScript hides it before submission.
+					// Instead, treat it as a save if we have config data and we're not resetting.
+					$save_flag   = ! $reset_flag && ! empty( $config_data );
 					$this->searchcraft_on_config_request( $config_data, $reset_flag, $save_flag );
 					break;
 				case 'reindex_all_documents':
@@ -385,14 +387,8 @@ class Searchcraft_Admin {
 				case 'delete_all_documents':
 					$this->searchcraft_on_delete_all_documents_request();
 					break;
-				case 'search_experience_config':
-					$this->searchcraft_on_search_experience_config_request( $_POST ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-					break;
-				case 'search_results_config':
-					$this->searchcraft_on_search_results_config_request( $_POST ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-					break;
-				case 'advanced_config':
-					$this->searchcraft_on_advanced_config_request( $_POST ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+				case 'layout_settings_config':
+					$this->searchcraft_on_layout_settings_config_request( $_POST ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 					break;
 				default:
 					break;
@@ -423,12 +419,15 @@ class Searchcraft_Admin {
 
 		// Handle save request.
 		if ( $save_flag && ! empty( $config_data ) ) {
+			// Get existing config to preserve values that aren't being changed.
+			$existing_config = Searchcraft_Config::get_all();
+
 			// Sanitize the input data with proper validation.
 			$sanitized_config = array(
 				'endpoint_url' => isset( $config_data['endpoint_url'] ) ? esc_url_raw( wp_unslash( $config_data['endpoint_url'] ) ) : '',
 				'index_id'     => isset( $config_data['index_id'] ) ? sanitize_text_field( wp_unslash( $config_data['index_id'] ) ) : '',
-				'read_key'     => isset( $config_data['read_key'] ) ? sanitize_text_field( wp_unslash( $config_data['read_key'] ) ) : '',
-				'ingest_key'   => isset( $config_data['ingest_key'] ) ? sanitize_text_field( wp_unslash( $config_data['ingest_key'] ) ) : '',
+				'read_key'     => isset( $config_data['read_key'] ) && ! empty( $config_data['read_key'] ) ? sanitize_text_field( wp_unslash( $config_data['read_key'] ) ) : $existing_config['read_key'],
+				'ingest_key'   => isset( $config_data['ingest_key'] ) && ! empty( $config_data['ingest_key'] ) ? sanitize_text_field( wp_unslash( $config_data['ingest_key'] ) ) : $existing_config['ingest_key'],
 				'cortex_url'   => isset( $config_data['cortex_url'] ) && ! empty( $config_data['cortex_url'] ) ? esc_url_raw( wp_unslash( $config_data['cortex_url'] ) ) : '',
 			);
 
@@ -439,17 +438,69 @@ class Searchcraft_Admin {
 				// Save the configuration.
 				$success = Searchcraft_Config::set_multiple( $sanitized_config );
 
+				// Get previous taxonomy selections.
+				$previous_taxonomies = get_option( 'searchcraft_filter_taxonomies', array() );
+
+				// Save taxonomy filter selections.
+				$filter_taxonomies = isset( $_POST['searchcraft_filter_taxonomies'] ) && is_array( $_POST['searchcraft_filter_taxonomies'] ) // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in searchcraft_request_handler().
+					? array_map( 'sanitize_text_field', wp_unslash( $_POST['searchcraft_filter_taxonomies'] ) ) // phpcs:ignore WordPress.Security.NonceVerification.Missing
+					: array();
+
+				// Always include category in the filter taxonomies.
+				if ( ! in_array( 'category', $filter_taxonomies, true ) ) {
+					$filter_taxonomies[] = 'category';
+				}
+
+				update_option( 'searchcraft_filter_taxonomies', $filter_taxonomies );
+
+				// Check if taxonomies have changed and need index update.
+				// We need to update if taxonomies changed, regardless of whether we're adding or removing them.
+				$taxonomies_changed = ( serialize( $previous_taxonomies ) !== serialize( $filter_taxonomies ) ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.serialize_serialize
+				$needs_index_update = $taxonomies_changed;
+
 				if ( $success ) {
 					// Clear cached data since configuration has changed.
 					delete_transient( 'searchcraft_index_stats' );
 					delete_transient( 'searchcraft_index' );
+					// Update index schema if taxonomies changed.
+					if ( $needs_index_update ) {
+						$index_update_result = $this->searchcraft_update_index_schema( $filter_taxonomies );
 
-					add_action(
-						'admin_notices',
-						function () {
-							echo '<div class="notice notice-success is-dismissible"><p>Configuration saved successfully.</p></div>';
+						if ( $index_update_result['success'] ) {
+							$message = 'Configuration saved successfully.';
+							if ( $index_update_result['reindexed'] ) {
+								$message .= ' Index schema updated and documents re-indexed.';
+							} else {
+								$message .= ' Index schema updated.';
+							}
+
+							add_action(
+								'admin_notices',
+								function () use ( $message ) {
+									echo '<div class="notice notice-success is-dismissible"><p>' . esc_html( $message ) . '</p></div>';
+								}
+							);
+						} else {
+							$error_message = $index_update_result['error'];
+							add_action(
+								'admin_notices',
+								function () use ( $error_message ) {
+									echo '<div class="notice notice-error is-dismissible">';
+									echo '<p><strong>Configuration saved, but there was an issue:</strong></p>';
+									echo '<p>' . esc_html( $error_message ) . '</p>';
+									echo '<p>Please check the error logs for more details or contact support.</p>';
+									echo '</div>';
+								}
+							);
 						}
-					);
+					} else {
+						add_action(
+							'admin_notices',
+							function () {
+								echo '<div class="notice notice-success is-dismissible"><p>Configuration saved successfully.</p></div>';
+							}
+						);
+					}
 				} else {
 					add_action(
 						'admin_notices',
@@ -520,7 +571,7 @@ class Searchcraft_Admin {
 				'admin_notices',
 				function () {
 					echo '<div class="notice notice-success is-dismissible">';
-					echo '<p><strong>Success:</strong> All documents have been re-indexed in Searchcraft.</p>';
+					echo '<p><strong>Success:</strong> All documents have been added to the Searchcraft index.</p>';
 					echo '</div>';
 				}
 			);
@@ -530,28 +581,31 @@ class Searchcraft_Admin {
 				'admin_notices',
 				function () use ( $e ) {
 					echo '<div class="notice notice-error is-dismissible">';
-					echo '<p><strong>Error:</strong> Failed to re-index documents. ' . esc_html( $e->getMessage() ) . '</p>';
+					echo '<p><strong>Error:</strong> Failed to index documents. ' . esc_html( $e->getMessage() ) . '</p>';
 					echo '</div>';
 				}
 			);
 		}
 	}
 
-
-
 	/**
-	 * Handles the search experience configuration request.
+	 * Handles the unified layout settings configuration request.
+	 * This combines all layout-related settings: search form, search results, and advanced settings.
 	 *
 	 * @since 1.0.0
 	 * @param array $request The $_POST request from the form submission.
 	 */
-	private function searchcraft_on_search_experience_config_request( $request ) {
+	private function searchcraft_on_layout_settings_config_request( $request ) {
 		// Ensure request is an array.
 		if ( ! is_array( $request ) ) {
 			return;
 		}
 
 		$updated_settings = array();
+
+		// ========================================
+		// SEARCH FORM SETTINGS
+		// ========================================
 
 		// Handle search experience type.
 		if ( isset( $request['searchcraft_search_experience'] ) ) {
@@ -563,9 +617,19 @@ class Searchcraft_Admin {
 				$experience = 'full';
 			}
 
-			// Save the setting.
 			update_option( 'searchcraft_search_experience', $experience );
 			$updated_settings['experience'] = $experience;
+		}
+
+		// Handle search behavior.
+		if ( isset( $request['searchcraft_search_behavior'] ) ) {
+			$behavior        = sanitize_text_field( wp_unslash( $request['searchcraft_search_behavior'] ) );
+			$valid_behaviors = array( 'on_page', 'stand_alone' );
+			if ( ! in_array( $behavior, $valid_behaviors, true ) ) {
+				$behavior = 'on_page';
+			}
+			update_option( 'searchcraft_search_behavior', $behavior );
+			$updated_settings['behavior'] = $behavior;
 		}
 
 		// Handle search placeholder text.
@@ -577,21 +641,8 @@ class Searchcraft_Admin {
 				$placeholder = 'Search...';
 			}
 
-			// Save the setting.
 			update_option( 'searchcraft_search_placeholder', $placeholder );
 			$updated_settings['placeholder'] = $placeholder;
-		}
-
-		// Handle popover container ID.
-		if ( isset( $request['searchcraft_popover_container_id'] ) ) {
-			$container_id = sanitize_text_field( wp_unslash( $request['searchcraft_popover_container_id'] ) );
-
-			// Remove any invalid characters for HTML IDs.
-			$container_id = preg_replace( '/[^a-zA-Z0-9_-]/', '', $container_id );
-
-			// Save the setting.
-			update_option( 'searchcraft_popover_container_id', $container_id );
-			$updated_settings['popover_container_id'] = $container_id;
 		}
 
 		// Handle input component horizontal padding.
@@ -605,12 +656,6 @@ class Searchcraft_Admin {
 				$padding = 200;
 			}
 
-			// Use default if zero or empty.
-			if ( 0 === $padding && empty( $request['searchcraft_input_padding'] ) ) {
-				$padding = 50;
-			}
-
-			// Save the setting.
 			update_option( 'searchcraft_input_padding', $padding );
 			$updated_settings['padding'] = $padding;
 		}
@@ -626,9 +671,6 @@ class Searchcraft_Admin {
 				$vertical_padding = 100;
 			}
 
-			// Default is 0, so no need to override empty values.
-
-			// Save the setting.
 			update_option( 'searchcraft_input_vertical_padding', $vertical_padding );
 			$updated_settings['vertical_padding'] = $vertical_padding;
 		}
@@ -655,6 +697,32 @@ class Searchcraft_Admin {
 			}
 		}
 
+		// Handle search icon color.
+		if ( isset( $request['searchcraft_search_icon_color'] ) ) {
+			$search_icon_color = sanitize_text_field( wp_unslash( $request['searchcraft_search_icon_color'] ) );
+
+			// Validate hex color format.
+			if ( ! preg_match( '/^#[a-fA-F0-9]{6}$/', $search_icon_color ) ) {
+				$search_icon_color = '#000000';
+			}
+
+			update_option( 'searchcraft_search_icon_color', $search_icon_color );
+			$updated_settings['search_icon_color'] = $search_icon_color;
+		}
+
+		// Handle clear icon color.
+		if ( isset( $request['searchcraft_clear_icon_color'] ) ) {
+			$clear_icon_color = sanitize_text_field( wp_unslash( $request['searchcraft_clear_icon_color'] ) );
+
+			// Validate hex color format.
+			if ( ! preg_match( '/^#[a-fA-F0-9]{6}$/', $clear_icon_color ) ) {
+				$clear_icon_color = '#000000';
+			}
+
+			update_option( 'searchcraft_clear_icon_color', $clear_icon_color );
+			$updated_settings['clear_icon_color'] = $clear_icon_color;
+		}
+
 		// Handle input width.
 		if ( isset( $request['searchcraft_input_width'] ) ) {
 			$input_width = absint( wp_unslash( $request['searchcraft_input_width'] ) );
@@ -666,73 +734,13 @@ class Searchcraft_Admin {
 				$input_width = 100;
 			}
 
-			// Save the setting.
 			update_option( 'searchcraft_input_width', $input_width );
 			$updated_settings['input_width'] = $input_width;
 		}
 
-		// Show success message.
-		add_action(
-			'admin_notices',
-			function () use ( $updated_settings ) {
-				$messages = array();
-
-				if ( isset( $updated_settings['experience'] ) ) {
-					$experience_labels = array(
-						'full'    => 'Full Experience',
-						'popover' => 'Popover',
-					);
-					$label             = $experience_labels[ $updated_settings['experience'] ] ?? $updated_settings['experience'];
-					$messages[]        = 'Search experience: ' . $label;
-				}
-
-				if ( isset( $updated_settings['placeholder'] ) ) {
-					$messages[] = 'Search placeholder: ' . $updated_settings['placeholder'];
-				}
-
-				if ( isset( $updated_settings['padding'] ) ) {
-					$messages[] = 'Input component horizontal padding: ' . $updated_settings['padding'] . 'px';
-				}
-
-				if ( isset( $updated_settings['vertical_padding'] ) ) {
-					$messages[] = 'Input component vertical padding: ' . $updated_settings['vertical_padding'] . 'px';
-				}
-
-				if ( isset( $updated_settings['border_radius'] ) ) {
-					$messages[] = 'Input border radius: ' . $updated_settings['border_radius'];
-				}
-
-				if ( isset( $updated_settings['input_width'] ) ) {
-					$messages[] = 'Input width: ' . $updated_settings['input_width'] . '%';
-				}
-
-				if ( ! empty( $messages ) ) {
-					echo '<div class="notice notice-success is-dismissible">';
-					echo '<p><strong>Success:</strong> Search experience settings updated.</p>';
-					echo '<ul>';
-					foreach ( $messages as $message ) {
-						echo '<li>' . esc_html( $message ) . '</li>';
-					}
-					echo '</ul>';
-					echo '</div>';
-				}
-			}
-		);
-	}
-
-	/**
-	 * Handles the search results configuration request.
-	 *
-	 * @since 1.0.0
-	 * @param array $request The $_POST request from the form submission.
-	 */
-	private function searchcraft_on_search_results_config_request( $request ) {
-		// Ensure request is an array.
-		if ( ! is_array( $request ) ) {
-			return;
-		}
-
-		$updated_settings = array();
+		// ========================================
+		// SEARCH RESULTS SETTINGS
+		// ========================================
 
 		// Handle AI summary setting.
 		$enable_ai_summary = isset( $request['searchcraft_enable_ai_summary'] ) ? true : false;
@@ -743,13 +751,37 @@ class Searchcraft_Admin {
 		if ( isset( $request['searchcraft_ai_summary_banner'] ) ) {
 			$ai_summary_banner = sanitize_text_field( wp_unslash( $request['searchcraft_ai_summary_banner'] ) );
 			update_option( 'searchcraft_ai_summary_banner', $ai_summary_banner );
-			$updated_settings['ai_summary_banner'] = $ai_summary_banner;
 		}
 
 		// Handle filter panel setting.
 		$include_filter_panel = isset( $request['searchcraft_include_filter_panel'] ) ? true : false;
 		update_option( 'searchcraft_include_filter_panel', $include_filter_panel );
 		$updated_settings['filter_panel'] = $include_filter_panel ? 'enabled' : 'disabled';
+
+		// Handle filter panel toggle settings.
+		$enable_most_recent_toggle = isset( $request['searchcraft_enable_most_recent_toggle'] ) ? '1' : '0';
+		update_option( 'searchcraft_enable_most_recent_toggle', $enable_most_recent_toggle );
+
+		$enable_exact_match_toggle = isset( $request['searchcraft_enable_exact_match_toggle'] ) ? '1' : '0';
+		update_option( 'searchcraft_enable_exact_match_toggle', $enable_exact_match_toggle );
+
+		$enable_date_range = isset( $request['searchcraft_enable_date_range'] ) ? '1' : '0';
+		update_option( 'searchcraft_enable_date_range', $enable_date_range );
+
+		$enable_facets = isset( $request['searchcraft_enable_facets'] ) ? '1' : '0';
+		update_option( 'searchcraft_enable_facets', $enable_facets );
+
+		// Handle toggle button disabled color.
+		if ( isset( $request['searchcraft_toggle_button_disabled_color'] ) ) {
+			$toggle_button_disabled_color = sanitize_text_field( wp_unslash( $request['searchcraft_toggle_button_disabled_color'] ) );
+
+			// Validate hex color format.
+			if ( ! preg_match( '/^#[a-fA-F0-9]{6}$/', $toggle_button_disabled_color ) ) {
+				$toggle_button_disabled_color = '#E0E0E0';
+			}
+
+			update_option( 'searchcraft_toggle_button_disabled_color', $toggle_button_disabled_color );
+		}
 
 		// Handle results per page setting.
 		if ( isset( $request['searchcraft_results_per_page'] ) ) {
@@ -762,9 +794,22 @@ class Searchcraft_Admin {
 				$results_per_page = 100;
 			}
 
-			// Save the setting.
 			update_option( 'searchcraft_results_per_page', $results_per_page );
 			$updated_settings['results_per_page'] = $results_per_page;
+		}
+
+		// Handle result orientation setting.
+		if ( isset( $request['searchcraft_result_orientation'] ) ) {
+			$result_orientation = sanitize_text_field( wp_unslash( $request['searchcraft_result_orientation'] ) );
+
+			// Validate the orientation value.
+			$valid_orientations = array( 'column', 'grid' );
+			if ( ! in_array( $result_orientation, $valid_orientations, true ) ) {
+				$result_orientation = 'column';
+			}
+
+			update_option( 'searchcraft_result_orientation', $result_orientation );
+			$updated_settings['result_orientation'] = $result_orientation;
 		}
 
 		// Handle image alignment setting.
@@ -777,10 +822,17 @@ class Searchcraft_Admin {
 				$image_alignment = 'left';
 			}
 
-			// Save the setting.
 			update_option( 'searchcraft_image_alignment', $image_alignment );
 			$updated_settings['image_alignment'] = $image_alignment;
 		}
+
+		// Handle display post date setting.
+		$display_post_date = isset( $request['searchcraft_display_post_date'] ) ? true : false;
+		update_option( 'searchcraft_display_post_date', $display_post_date );
+
+		// Handle display primary category setting.
+		$display_primary_category = isset( $request['searchcraft_display_primary_category'] ) ? '1' : '0';
+		update_option( 'searchcraft_display_primary_category', $display_primary_category );
 
 		// Handle brand color setting.
 		if ( isset( $request['searchcraft_brand_color'] ) ) {
@@ -788,12 +840,23 @@ class Searchcraft_Admin {
 
 			// Validate hex color format.
 			if ( ! preg_match( '/^#[a-fA-F0-9]{6}$/', $brand_color ) ) {
-				$brand_color = '#000000'; // Default to black if invalid.
+				$brand_color = '#000000';
 			}
 
-			// Save the setting.
 			update_option( 'searchcraft_brand_color', $brand_color );
 			$updated_settings['brand_color'] = $brand_color;
+		}
+
+		// Handle result info text color.
+		if ( isset( $request['searchcraft_result_info_text_color'] ) ) {
+			$result_info_text_color = sanitize_text_field( wp_unslash( $request['searchcraft_result_info_text_color'] ) );
+
+			// Validate hex color format.
+			if ( ! preg_match( '/^#[a-fA-F0-9]{6}$/', $result_info_text_color ) ) {
+				$result_info_text_color = '#6C757D';
+			}
+
+			update_option( 'searchcraft_result_info_text_color', $result_info_text_color );
 		}
 
 		// Handle summary background color setting.
@@ -802,12 +865,10 @@ class Searchcraft_Admin {
 
 			// Validate hex color format.
 			if ( ! preg_match( '/^#[a-fA-F0-9]{6}$/', $summary_background_color ) ) {
-				$summary_background_color = '#F5F5F5'; // Default to light grey if invalid.
+				$summary_background_color = '#F5F5F5';
 			}
 
-			// Save the setting.
 			update_option( 'searchcraft_summary_background_color', $summary_background_color );
-			$updated_settings['summary_background_color'] = $summary_background_color;
 		}
 
 		// Handle summary border color setting.
@@ -816,80 +877,61 @@ class Searchcraft_Admin {
 
 			// Validate hex color format.
 			if ( ! preg_match( '/^#[a-fA-F0-9]{6}$/', $summary_border_color ) ) {
-				$summary_border_color = '#E0E0E0'; // Default to light grey if invalid.
+				$summary_border_color = '#E0E0E0';
 			}
 
-			// Save the setting.
 			update_option( 'searchcraft_summary_border_color', $summary_border_color );
-			$updated_settings['summary_border_color'] = $summary_border_color;
 		}
 
-		// Display success message.
-		add_action(
-			'admin_notices',
-			function () use ( $updated_settings ) {
-				$messages = array();
+		// Handle summary title color.
+		if ( isset( $request['searchcraft_summary_title_color'] ) ) {
+			$summary_title_color = sanitize_text_field( wp_unslash( $request['searchcraft_summary_title_color'] ) );
 
-				if ( isset( $updated_settings['ai_summary'] ) ) {
-					$messages[] = sprintf( 'AI summary %s', $updated_settings['ai_summary'] );
-				}
-
-				if ( isset( $updated_settings['filter_panel'] ) ) {
-					$messages[] = sprintf( 'Filter panel %s', $updated_settings['filter_panel'] );
-				}
-
-				if ( isset( $updated_settings['results_per_page'] ) ) {
-					$messages[] = sprintf( 'Results per page set to %d', $updated_settings['results_per_page'] );
-				}
-
-				if ( isset( $updated_settings['image_alignment'] ) ) {
-					$messages[] = sprintf( 'Image alignment set to %s', $updated_settings['image_alignment'] );
-				}
-
-				if ( isset( $updated_settings['brand_color'] ) ) {
-					$messages[] = sprintf( 'Brand color set to %s', $updated_settings['brand_color'] );
-				}
-
-				if ( isset( $updated_settings['summary_background_color'] ) ) {
-					$messages[] = sprintf( 'Summary background color set to %s', $updated_settings['summary_background_color'] );
-				}
-
-				if ( isset( $updated_settings['summary_border_color'] ) ) {
-					$messages[] = sprintf( 'Summary border color set to %s', $updated_settings['summary_border_color'] );
-				}
-
-				if ( ! empty( $messages ) ) {
-					echo '<div class="notice notice-success is-dismissible">';
-					echo '<p><strong>Success:</strong> Search results settings updated.</p>';
-					echo '<ul>';
-					foreach ( $messages as $message ) {
-						echo '<li>' . esc_html( $message ) . '</li>';
-					}
-					echo '</ul>';
-					echo '</div>';
-				}
+			// Validate hex color format.
+			if ( ! preg_match( '/^#[a-fA-F0-9]{6}$/', $summary_title_color ) ) {
+				$summary_title_color = '#000000';
 			}
-		);
-	}
 
-	/**
-	 * Handles the advanced configuration request.
-	 *
-	 * @since 1.0.0
-	 * @param array $request The $_POST request from the form submission.
-	 */
-	private function searchcraft_on_advanced_config_request( $request ) {
-		// Ensure request is an array.
-		if ( ! is_array( $request ) ) {
-			return;
+			update_option( 'searchcraft_summary_title_color', $summary_title_color );
 		}
 
-		$updated_settings = array();
+		// Handle summary text color setting.
+		if ( isset( $request['searchcraft_summary_text_color'] ) ) {
+			$summary_text_color = sanitize_text_field( wp_unslash( $request['searchcraft_summary_text_color'] ) );
+
+			// Validate hex color format.
+			if ( ! preg_match( '/^#[a-fA-F0-9]{6}$/', $summary_text_color ) ) {
+				$summary_text_color = '#4C6876';
+			}
+
+			update_option( 'searchcraft_summary_text_color', $summary_text_color );
+		}
+
+		// Handle summary box border radius setting.
+		if ( isset( $request['searchcraft_summary_box_border_radius'] ) ) {
+			$summary_box_border_radius = absint( wp_unslash( $request['searchcraft_summary_box_border_radius'] ) );
+
+			// Validate the border radius value (between 0 and 1000).
+			if ( $summary_box_border_radius < 0 ) {
+				$summary_box_border_radius = 0;
+			} elseif ( $summary_box_border_radius > 1000 ) {
+				$summary_box_border_radius = 1000;
+			}
+
+			update_option( 'searchcraft_summary_box_border_radius', $summary_box_border_radius );
+		}
+
+		// ========================================
+		// ADVANCED SETTINGS
+		// ========================================
 
 		// Handle custom CSS setting.
 		if ( isset( $request['searchcraft_custom_css'] ) ) {
-			// Sanitize CSS - strip tags but preserve CSS syntax.
-			$custom_css = sanitize_textarea_field( wp_unslash( $request['searchcraft_custom_css'] ) );
+			// Use wp_unslash and trim without sanitize_textarea_field to preserve CSS syntax.
+			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Custom sanitization below for CSS.
+			$custom_css = trim( wp_unslash( $request['searchcraft_custom_css'] ) );
+			// Strip any HTML/script tags from CSS.
+			$custom_css = wp_strip_all_tags( $custom_css );
 			// Additional CSS-specific sanitization to remove potential XSS.
 			$custom_css = preg_replace( '/javascript\s*:/i', '', $custom_css );
 			$custom_css = preg_replace( '/expression\s*\(/i', '', $custom_css );
@@ -900,17 +942,27 @@ class Searchcraft_Admin {
 
 		// Handle result template callback function setting.
 		if ( isset( $request['searchcraft_result_template'] ) ) {
-			$result_template = sanitize_textarea_field( wp_unslash( $request['searchcraft_result_template'] ) );
+			// Use wp_unslash and trim without sanitize_textarea_field to preserve HTML/JS.
+			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Custom sanitization below for JavaScript template.
+			$result_template = trim( wp_unslash( $request['searchcraft_result_template'] ) );
 			// Additional sanitization for JavaScript callback - remove dangerous patterns.
 			$result_template = preg_replace( '/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/mi', '', $result_template );
 			// Remove potential XSS vectors while preserving template literal HTML.
 			$result_template = preg_replace( '/javascript\s*:/i', '', $result_template );
 			$result_template = preg_replace( '/on\w+\s*=/i', '', $result_template );
 			$result_template = preg_replace( '/eval\s*\(/i', '', $result_template );
-			$result_template = trim( $result_template );
 			update_option( 'searchcraft_result_template', $result_template );
 			$updated_settings['result_template'] = true;
 		}
+
+		// Handle search input container ID (always save, even if empty).
+		$input_container_id = '';
+		if ( isset( $request['searchcraft_search_input_container_id'] ) ) {
+			$input_container_id = sanitize_text_field( wp_unslash( $request['searchcraft_search_input_container_id'] ) );
+			// Remove any invalid characters for HTML IDs.
+			$input_container_id = preg_replace( '/[^a-zA-Z0-9_-]/', '', $input_container_id );
+		}
+		update_option( 'searchcraft_search_input_container_id', $input_container_id );
 
 		// Handle results container ID setting.
 		if ( isset( $request['searchcraft_results_container_id'] ) ) {
@@ -918,16 +970,13 @@ class Searchcraft_Admin {
 			// Remove any invalid characters for HTML IDs.
 			$results_container_id = preg_replace( '/[^a-zA-Z0-9_-]/', '', $results_container_id );
 			update_option( 'searchcraft_results_container_id', $results_container_id );
-			$updated_settings['results_container_id'] = true;
 		}
 
 		// Handle popover container ID setting.
 		if ( isset( $request['searchcraft_popover_container_id'] ) ) {
 			$popover_container_id = sanitize_text_field( wp_unslash( $request['searchcraft_popover_container_id'] ) );
-
 			$popover_container_id = preg_replace( '/[^a-zA-Z0-9_-]/', '', $popover_container_id );
 			update_option( 'searchcraft_popover_container_id', $popover_container_id );
-			$updated_settings['popover_container_id'] = true;
 		}
 
 		// Handle popover element behavior setting.
@@ -941,41 +990,15 @@ class Searchcraft_Admin {
 			}
 
 			update_option( 'searchcraft_popover_element_behavior', $popover_element_behavior );
-			$updated_settings['popover_element_behavior'] = true;
 		}
 
-		// Display success message.
+		// Display unified success message.
 		add_action(
 			'admin_notices',
-			function () use ( $updated_settings ) {
-				$messages = array();
-
-				if ( isset( $updated_settings['custom_css'] ) ) {
-					$messages[] = 'Custom CSS updated';
-				}
-
-				if ( isset( $updated_settings['result_template'] ) ) {
-					$messages[] = 'Result template callback function updated';
-				}
-
-				if ( isset( $updated_settings['results_container_id'] ) ) {
-					$messages[] = 'Results container element ID updated';
-				}
-
-				if ( isset( $updated_settings['popover_container_id'] ) ) {
-					$messages[] = 'Popover container element ID updated';
-				}
-
-				if ( ! empty( $messages ) ) {
-					echo '<div class="notice notice-success is-dismissible">';
-					echo '<p><strong>Success:</strong> Advanced settings updated.</p>';
-					echo '<ul>';
-					foreach ( $messages as $message ) {
-						echo '<li>' . esc_html( $message ) .'</li>';
-					}
-					echo '</ul>';
-					echo '</div>';
-				}
+			function () {
+				echo '<div class="notice notice-success is-dismissible">';
+				echo '<p><strong>Success:</strong> All layout settings have been saved.</p>';
+				echo '</div>';
 			}
 		);
 	}
@@ -1085,6 +1108,129 @@ class Searchcraft_Admin {
 	}
 
 	/**
+	 * Update the index schema to include taxonomy fields.
+	 *
+	 * @since 1.0.0
+	 * @param array $taxonomies Array of taxonomy names to add as facet fields.
+	 * @return array Result array with 'success', 'error', and 'reindexed' keys.
+	 */
+	private function searchcraft_update_index_schema( $taxonomies ) {
+		$result = array(
+			'success'   => false,
+			'error'     => '',
+			'reindexed' => false,
+		);
+
+		// Get the ingest client.
+		$ingest_client = $this->searchcraft_get_ingest_client();
+		if ( ! $ingest_client ) {
+			$result['error'] = 'Unable to get ingest client.';
+			return $result;
+		}
+
+		// Get the index ID.
+		$index_id = Searchcraft_Config::get_index_id();
+		if ( empty( $index_id ) ) {
+			$result['error'] = 'Index ID is not configured.';
+			return $result;
+		}
+
+		try {
+			// Get the current index configuration.
+			$response       = $ingest_client->index()->getIndex( $index_id );
+			$current_index  = $response['data'] ?? $response;
+			$current_fields = $current_index['fields'] ?? array();
+
+			// Check if documents exist in the index.
+			$stats          = $this->searchcraft_get_index_stats();
+			$document_count = isset( $stats['document_count'] ) ? (int) $stats['document_count'] : 0;
+
+			// Get all public taxonomies to identify which fields are taxonomy fields.
+			$all_taxonomies = get_taxonomies( array( 'public' => true ), 'names' );
+
+			// Build the desired taxonomy fields based on selected taxonomies.
+			$desired_taxonomy_fields = array();
+			foreach ( $taxonomies as $taxonomy_name ) {
+				// Skip category as it should already be in the base schema.
+				if ( 'category' === $taxonomy_name ) {
+					continue;
+				}
+
+				$desired_taxonomy_fields[ $taxonomy_name ] = array(
+					'indexed'  => true,
+					'multi'    => true,
+					'required' => false,
+					'stored'   => true,
+					'type'     => 'facet',
+				);
+			}
+
+			// Start with current fields and update taxonomy fields.
+			$updated_fields = $current_fields;
+
+			// Remove taxonomy fields that are no longer selected.
+			foreach ( $current_fields as $field_name => $field_config ) {
+				// Check if this is a taxonomy field that's no longer selected.
+				if ( isset( $all_taxonomies[ $field_name ] ) &&
+					'category' !== $field_name &&
+					! isset( $desired_taxonomy_fields[ $field_name ] ) ) {
+					unset( $updated_fields[ $field_name ] );
+				}
+			}
+
+			// Add or update selected taxonomy fields.
+			foreach ( $desired_taxonomy_fields as $taxonomy_name => $field_config ) {
+				$updated_fields[ $taxonomy_name ] = $field_config;
+			}
+
+			// Check if fields actually changed.
+			if ( serialize( $current_fields ) === serialize( $updated_fields ) ) { // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.serialize_serialize
+				$result['success'] = true;
+				return $result;
+			}
+
+			// Update the index with new fields.
+			$update_payload = array(
+				'fields' => $updated_fields,
+			);
+
+			// Preserve other important index settings.
+			if ( isset( $current_index['language'] ) ) {
+				$update_payload['language'] = $current_index['language'];
+			}
+			if ( isset( $current_index['search_fields'] ) ) {
+				$update_payload['search_fields'] = $current_index['search_fields'];
+			}
+			if ( isset( $current_index['weight_multipliers'] ) ) {
+				$update_payload['weight_multipliers'] = $current_index['weight_multipliers'];
+			}
+
+			$ingest_client->index()->updateIndex( $index_id, $update_payload );
+
+			// If documents exist, re-index them to include the new taxonomy data.
+			if ( $document_count > 0 ) {
+				try {
+					$this->searchcraft_add_all_documents();
+					$result['reindexed'] = true;
+				} catch ( \Exception $e ) {
+					// Index schema was updated but re-indexing failed.
+					$result['success'] = true;
+					$result['error']   = 'Index schema updated, but re-indexing failed: ' . $e->getMessage();
+					Searchcraft_Helper_Functions::searchcraft_error_log( 'Searchcraft: Re-indexing failed after schema update: ' . $e->getMessage() );
+					return $result;
+				}
+			}
+
+			$result['success'] = true;
+		} catch ( \Exception $e ) {
+			$result['error'] = $e->getMessage();
+			Searchcraft_Helper_Functions::searchcraft_error_log( 'Searchcraft: Failed to update index schema: ' . $e->getMessage() );
+		}
+
+		return $result;
+	}
+
+	/**
 	 * Retrieves the read and ingest API keys from the client.
 	 *
 	 * @since 1.0.0
@@ -1110,6 +1256,7 @@ class Searchcraft_Admin {
 	 *
 	 * @since 1.0.0
 	 * @param WP_Post|array $posts A single WP_Post object or an array of WP_Post objects.
+	 * @throws \Exception If the API request fails or document validation fails.
 	 */
 	public function searchcraft_add_documents( $posts ) {
 		// Normalize input to always be an array.
@@ -1158,7 +1305,7 @@ class Searchcraft_Admin {
 			if ( ! empty( $post_categories ) ) {
 				foreach ( $post_categories as $category ) {
 					// Build category path including parent categories.
-					$category_path = $this->searchcraft_get_category_path( $category );
+					$category_path = $this->searchcraft_get_term_path( $category, 'category' );
 					if ( ! empty( $category_path ) ) {
 						$categories[] = $category_path;
 					}
@@ -1171,6 +1318,33 @@ class Searchcraft_Admin {
 			if ( ! empty( $post_tags ) ) {
 				foreach ( $post_tags as $tag ) {
 					$tags[] = $tag->name;
+				}
+			}
+
+			// Get selected filter taxonomies.
+			$selected_taxonomies = get_option( 'searchcraft_filter_taxonomies', array( 'category' ) );
+			if ( ! is_array( $selected_taxonomies ) ) {
+				$selected_taxonomies = array( 'category' );
+			}
+
+			// Build taxonomy data for selected taxonomies as RESTful paths.
+			$taxonomy_data = array();
+			foreach ( $selected_taxonomies as $taxonomy_name ) {
+				// Skip category as it's already handled above.
+				if ( 'category' === $taxonomy_name ) {
+					continue;
+				}
+
+				$terms = get_the_terms( $post->ID, $taxonomy_name );
+				if ( ! empty( $terms ) && ! is_wp_error( $terms ) ) {
+					$taxonomy_data[ $taxonomy_name ] = array();
+					foreach ( $terms as $term ) {
+						// Build term path including parent terms.
+						$term_path = $this->searchcraft_get_term_path( $term, $taxonomy_name );
+						if ( ! empty( $term_path ) ) {
+							$taxonomy_data[ $taxonomy_name ][] = $term_path;
+						}
+					}
 				}
 			}
 
@@ -1225,6 +1399,13 @@ class Searchcraft_Admin {
 				'tags'                  => $tags,
 			);
 
+			// Add custom taxonomy data to the document.
+			if ( ! empty( $taxonomy_data ) ) {
+				foreach ( $taxonomy_data as $taxonomy_name => $terms ) {
+					$document[ $taxonomy_name ] = $terms;
+				}
+			}
+
 			$documents[] = $document;
 		}
 
@@ -1259,6 +1440,8 @@ class Searchcraft_Admin {
 				} else {
 					Searchcraft_Helper_Functions::searchcraft_error_log( "Searchcraft: Failed to add {$count} documents: " . $e->getMessage() );
 				}
+				// Re-throw the exception so it can be caught by calling code.
+				throw $e;
 			}
 		}
 	}
@@ -1570,32 +1753,33 @@ class Searchcraft_Admin {
 	}
 
 	/**
-	 * Build a RESTful category path for a given category.
+	 * Build a RESTful path for a given taxonomy term.
 	 *
-	 * Creates a path like "/category/subcategory" by traversing up the category hierarchy.
+	 * Creates a path like "/parent/child" by traversing up the term hierarchy.
 	 *
 	 * @since 1.0.0
-	 * @param WP_Term $category The category term object.
-	 * @return string The RESTful category path.
+	 * @param WP_Term $term     The taxonomy term object.
+	 * @param string  $taxonomy The taxonomy name (e.g., 'category', 'post_tag', custom taxonomies).
+	 * @return string The RESTful term path.
 	 */
-	private function searchcraft_get_category_path( $category ) {
-		$path_parts       = array();
-		$current_category = $category;
+	private function searchcraft_get_term_path( $term, $taxonomy ) {
+		$path_parts   = array();
+		$current_term = $term;
 
-		// Traverse up the category hierarchy.
-		while ( $current_category ) {
-			// Add current category slug to the beginning of the path.
-			array_unshift( $path_parts, $current_category->slug );
+		// Traverse up the term hierarchy.
+		while ( $current_term ) {
+			// Add current term slug to the beginning of the path.
+			array_unshift( $path_parts, $current_term->slug );
 
-			// Get parent category if it exists.
-			if ( $current_category->parent ) {
-				$current_category = get_term( $current_category->parent, 'category' );
+			// Get parent term if it exists.
+			if ( $current_term->parent ) {
+				$current_term = get_term( $current_term->parent, $taxonomy );
 				// Check if get_term returned an error.
-				if ( is_wp_error( $current_category ) ) {
+				if ( is_wp_error( $current_term ) ) {
 					break;
 				}
 			} else {
-				$current_category = null;
+				$current_term = null;
 			}
 		}
 

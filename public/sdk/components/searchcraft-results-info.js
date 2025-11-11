@@ -21,6 +21,7 @@ const SearchcraftResultsInfo$1 = /*@__PURE__*/ proxyCustomElement(class Searchcr
     searchResultsPage;
     searchResultsPerPage;
     searchResultsCount;
+    searchClientRequestProperties;
     // local vars
     count = 0;
     range = [0, 0];
@@ -34,6 +35,7 @@ const SearchcraftResultsInfo$1 = /*@__PURE__*/ proxyCustomElement(class Searchcr
             this.searchResultsPage = state.searchResultsPage;
             this.searchResultsPerPage = state.searchResultsPerPage;
             this.searchResultsCount = state.searchResultsCount;
+            this.searchClientRequestProperties = state.searchClientRequestProperties;
             // local vars
             this.count = this.searchResultsCount;
             this.range[0] =
@@ -56,7 +58,12 @@ const SearchcraftResultsInfo$1 = /*@__PURE__*/ proxyCustomElement(class Searchcr
         this.cleanupCore?.();
     }
     render() {
-        if (!this.searchTerm || this.searchResultsCount === 0) {
+        // Check if this is an initialQuery case (string requestProperties with empty searchTerm)
+        const isInitialQuery = typeof this.searchClientRequestProperties === 'string' &&
+            this.searchTerm.trim() === '';
+        // Only hide if there's no search term AND no initialQuery AND no results
+        if ((!this.searchTerm && !isInitialQuery) ||
+            this.searchResultsCount === 0) {
             return null;
         }
         return (h("p", { class: 'searchcraft-results-info' }, typeof this.template !== 'undefined'
@@ -74,6 +81,7 @@ const SearchcraftResultsInfo$1 = /*@__PURE__*/ proxyCustomElement(class Searchcr
         "searchResultsPage": [32],
         "searchResultsPerPage": [32],
         "searchResultsCount": [32],
+        "searchClientRequestProperties": [32],
         "count": [32],
         "range": [32],
         "responseTime": [32]

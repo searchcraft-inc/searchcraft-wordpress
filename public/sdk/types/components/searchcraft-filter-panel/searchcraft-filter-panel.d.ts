@@ -1,5 +1,5 @@
 import type { SearchcraftCore } from "../../classes/index";
-import type { FilterItem, DateRangeFilterItem } from "../../types/index";
+import type { DateRangeFilterItem, FilterItem } from "../../types/index";
 /**
  * This web component represents a series of filters that allows users to refine and control their search queries by applying various filter criteria.
  *
