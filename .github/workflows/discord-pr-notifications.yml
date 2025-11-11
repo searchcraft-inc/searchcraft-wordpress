@@ -119,9 +119,13 @@ jobs:
             commit_text="${pr_commits} commits"
           fi
 
-          # Export all variables
+          # Export all variables using proper format for multiline values
           echo "pr_number=${pr_number}" >> $GITHUB_OUTPUT
-          echo "pr_title=${pr_title}" >> $GITHUB_OUTPUT
+          {
+            echo "pr_title<<EOF"
+            echo "${pr_title}"
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
           echo "pr_url=${pr_url}" >> $GITHUB_OUTPUT
           echo "pr_author=${pr_author}" >> $GITHUB_OUTPUT
           echo "pr_author_url=${pr_author_url}" >> $GITHUB_OUTPUT
@@ -131,7 +135,11 @@ jobs:
           echo "pr_deletions=${pr_deletions}" >> $GITHUB_OUTPUT
           echo "pr_changed_files=${pr_changed_files}" >> $GITHUB_OUTPUT
           echo "commit_text=${commit_text}" >> $GITHUB_OUTPUT
-          echo "pr_body=${pr_body}" >> $GITHUB_OUTPUT
+          {
+            echo "pr_body<<EOF"
+            echo "${pr_body}"
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
           echo "pr_updated_at=${pr_updated_at}" >> $GITHUB_OUTPUT
 
       - name: Send Discord notification
