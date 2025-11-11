@@ -2,7 +2,6 @@
  * Searchcraft SDK Settings and Template Injection
  *
  * Handles the injection of search header and results templates based on configuration.
- * This script replaces the inline JavaScript previously generated in inject_search_header_script.
  *
  * @since 1.0.0
  */
@@ -40,8 +39,8 @@
         // Handle full experience or popover with no container specified
         if (settings.searchExperience === 'full' ||
             (settings.searchExperience === 'popover' && !settings.popoverContainerId)) {
-
-            injectSearchHeader(settings.headerContent);
+            console.log(settings);
+            injectSearchHeader(settings.headerContent, settings.inputContainerId);
             // Inject results content for full experience
             if (settings.searchExperience === 'full' && settings.resultsContent) {
                 injectSearchResults(settings.resultsContent, settings.resultsContainerId);
@@ -193,14 +192,26 @@
     }
 
     /**
-     * Inject search header after the first header element
+     * Inject search header after the first header element or into a specific container
      *
      * @param {string} headerContent - The HTML content for the search header
+     * @param {string} inputContainerId - Optional container ID to inject the header into
      */
-    function injectSearchHeader(headerContent) {
-        const firstHeader = document.querySelector('header') || document.querySelector('[id="header"]');
+    function injectSearchHeader(headerContent, inputContainerId) {
         const searchHeaderDiv = document.createElement('div');
         searchHeaderDiv.innerHTML = headerContent;
+
+        // If inputContainerId is provided and not empty, inject as first element in that container
+        if (inputContainerId && inputContainerId.trim() !== '') {
+            const targetContainer = document.getElementById(inputContainerId);
+            if (targetContainer) {
+                targetContainer.insertBefore(searchHeaderDiv, targetContainer.firstChild);
+                return;
+            }
+        }
+
+        // Default behavior: inject after the first header element
+        const firstHeader = document.querySelector('header') || document.querySelector('[id="header"]');
 
         if (firstHeader) {
             // Insert after the header element

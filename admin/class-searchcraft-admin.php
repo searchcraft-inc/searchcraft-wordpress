@@ -645,27 +645,6 @@ class Searchcraft_Admin {
 			$updated_settings['placeholder'] = $placeholder;
 		}
 
-		if ( isset( $request['searchcraft_search_input_container_id'] ) ) {
-			$input_container_id = sanitize_text_field( wp_unslash( $request['searchcraft_search_input_container_id'] ) );
-
-			// Remove any invalid characters for HTML IDs.
-			$input_container_id = preg_replace( '/[^a-zA-Z0-9_-]/', '', $input_container_id );
-
-			update_option( 'searchcraft_search_input_container_id', $input_container_id );
-			$updated_settings['search_input_container_id'] = $input_container_id;
-		}
-
-		// Handle popover container ID.
-		if ( isset( $request['searchcraft_popover_container_id'] ) ) {
-			$container_id = sanitize_text_field( wp_unslash( $request['searchcraft_popover_container_id'] ) );
-
-			// Remove any invalid characters for HTML IDs.
-			$container_id = preg_replace( '/[^a-zA-Z0-9_-]/', '', $container_id );
-
-			update_option( 'searchcraft_popover_container_id', $container_id );
-			$updated_settings['popover_container_id'] = $container_id;
-		}
-
 		// Handle input component horizontal padding.
 		if ( isset( $request['searchcraft_input_padding'] ) ) {
 			$padding = absint( wp_unslash( $request['searchcraft_input_padding'] ) );
@@ -1135,6 +1114,16 @@ class Searchcraft_Admin {
 			$updated_settings['results_container_id'] = true;
 		}
 
+		if ( isset( $request['searchcraft_search_input_container_id'] ) ) {
+			$input_container_id = sanitize_text_field( wp_unslash( $request['searchcraft_search_input_container_id'] ) );
+
+			// Remove any invalid characters for HTML IDs.
+			$input_container_id = preg_replace( '/[^a-zA-Z0-9_-]/', '', $input_container_id );
+
+			update_option( 'searchcraft_search_input_container_id', $input_container_id );
+			$updated_settings['search_input_container_id'] = $input_container_id;
+		}
+
 		// Handle popover container ID setting.
 		if ( isset( $request['searchcraft_popover_container_id'] ) ) {
 			$popover_container_id = sanitize_text_field( wp_unslash( $request['searchcraft_popover_container_id'] ) );
@@ -1183,11 +1172,11 @@ class Searchcraft_Admin {
 				if ( ! empty( $messages ) ) {
 					echo '<div class="notice notice-success is-dismissible">';
 					echo '<p><strong>Success:</strong> Advanced settings updated.</p>';
-					echo '<ul>';
-					foreach ( $messages as $message ) {
-						echo '<li>' . esc_html( $message ) .'</li>';
-					}
-					echo '</ul>';
+					// echo '<ul>';
+					// foreach ( $messages as $message ) {
+					// 	echo '<li>' . esc_html( $message ) .'</li>';
+					// }
+					// echo '</ul>';
 					echo '</div>';
 				}
 			}
