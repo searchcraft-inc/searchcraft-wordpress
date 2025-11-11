@@ -4,7 +4,7 @@ Contributors: searchcraft
 Tags:         search, fuzzy search, better search, instant search, search replacement
 Requires at least: 5.3
 Tested up to: 6.8
-Stable tag:   1.0.0
+Stable tag:   1.0.1
 License:      Apache 2.0
 License URI:  LICENSE.txt
 
@@ -68,7 +68,26 @@ If you would like to report an issue or suggest an enhancement you may contact t
 Searchcraft Cloud customers may also reach out via our Discord server for assistance or to request a custom feature.
 
 == Changelog ==
-* 1.0.0 - Initial release. Uses Searchcraft JavaScript SDK v0.11.1 and Searchcraft PHP Client v0.7.5
+
+= 1.0.1 =
+
+* Update Searchcraft JavaScript SDK to v0.12.1
+* Layout configuration screen is now a single form with a unified save button
+* Added ability to choose a DOM elemnent by ID to inject the search form into. This overrides the default auto-detect behavior when used.
+* Additional layout customization options and more color settings.
+* Support for initialQuery.
+* Added additional layout advanced options and support for submitting to the stand alone WordPress search page.
+* Added documentation link for custom result templates.
+* Added support to choose between column and grid layouts, hiding showing primary category and pub date without needing a custom result template.
+* Filter panel and summary box customization features.
+* Re-arranged layout admin tab to group AI summary settings together.
+* Made first load of overview tab more intuitive.
+* Support for custom taxonomies as facet fields.
+* General bug-fixes and improvments.
+
+= 1.0.0 =
+
+* Initial release. Uses Searchcraft JavaScript SDK v0.11.1 and Searchcraft PHP Client v0.7.5
 
 == External services ==
 

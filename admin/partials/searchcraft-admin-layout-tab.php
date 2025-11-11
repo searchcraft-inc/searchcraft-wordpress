@@ -19,14 +19,22 @@ if ( ! defined( 'ABSPATH' ) ) {
 $is_configured = Searchcraft_Config::is_configured();
 
 // Get layout settings if configured.
-$search_experience    = 'full';
-$include_filter_panel = false;
-$results_per_page     = 10;
+$search_experience         = 'full';
+$include_filter_panel      = false;
+$results_per_page          = 10;
+$enable_most_recent_toggle = true;
+$enable_exact_match_toggle = true;
+$enable_date_range         = true;
+$enable_facets             = true;
 
 if ( $is_configured ) {
-	$search_experience    = get_option( 'searchcraft_search_experience', 'full' );
-	$include_filter_panel = get_option( 'searchcraft_include_filter_panel', false );
-	$results_per_page     = get_option( 'searchcraft_results_per_page', 10 );
+	$search_experience         = get_option( 'searchcraft_search_experience', 'full' );
+	$include_filter_panel      = get_option( 'searchcraft_include_filter_panel', false );
+	$results_per_page          = get_option( 'searchcraft_results_per_page', 10 );
+	$enable_most_recent_toggle = get_option( 'searchcraft_enable_most_recent_toggle', '1' );
+	$enable_exact_match_toggle = get_option( 'searchcraft_enable_exact_match_toggle', '1' );
+	$enable_date_range         = get_option( 'searchcraft_enable_date_range', '1' );
+	$enable_facets             = get_option( 'searchcraft_enable_facets', '1' );
 }
 ?>
 <div class="searchcraft-layout">
@@ -37,11 +45,17 @@ if ( $is_configured ) {
 	<?php endif; ?>
 
 	<?php if ( $is_configured ) : ?>
-		<h2 class="searchcraft-section-heading">Search Form Settings</h2>
+		<form method="post" class="searchcraft-form">
+			<?php wp_nonce_field( 'searchcraft_settings', 'searchcraft_nonce' ); ?>
+			<input type="hidden" name="searchcraft_action" value="layout_settings_config" />
+
+		<div class="searchcraft-header-with-button">
+			<h2 class="searchcraft-section-heading">Search Form Settings</h2>
+			<div class="searchcraft-save-buttons-top">
+				<?php submit_button( 'Save All Settings', 'primary', 'searchcraft_save_layout_settings', false ); ?>
+			</div>
+		</div>
 		<div class="searchcraft-overview-search-experience-config">
-			<form method="post" class="searchcraft-form">
-				<?php wp_nonce_field( 'searchcraft_settings', 'searchcraft_nonce' ); ?>
-				<input type="hidden" name="searchcraft_action" value="search_experience_config" />
 
 				<table class="form-table">
 					<tbody>
@@ -66,11 +80,11 @@ if ( $is_configured ) {
 									</label>
 								</fieldset>
 								<p class="description">
-									Choose how you want search to be presented to your users. The full experience provides a dedicated search page, while the popover offers a more integrated approach.
+									Choose how you want search to be presented to your users. The full experience provides deep filtering controls while the popover offers a simple, single input experience.
 								</p>
 							</td>
 						</tr>
-						<tr class="searchcraft-full-only">
+						<tr>
 							<th scope="row">
 								<label for="searchcraft_search_placeholder">Search Placeholder Text</label>
 							</th>
@@ -86,11 +100,33 @@ if ( $is_configured ) {
 						</tr>
 						<tr class="searchcraft-full-only">
 							<th scope="row">
+								<label>Search Behavior</label>
+							</th>
+							<td>
+								<?php
+								$search_behavior = get_option( 'searchcraft_search_behavior', 'on_page' );
+								?>
+								<fieldset>
+									<legend class="screen-reader-text"><span>Search Behavior</span></legend>
+									<label>
+										<input type="radio" name="searchcraft_search_behavior" value="on_page" <?php checked( $search_behavior, 'on_page' ); ?> />
+										<strong>On Page</strong> - Loads results on any page with the search form. Pushes down the existing layout while displaying search results.
+									</label>
+									<br><br>
+									<label>
+										<input type="radio" name="searchcraft_search_behavior" value="stand_alone" <?php checked( $search_behavior, 'stand_alone' ); ?> />
+										<strong>Submit to Search Page</strong> - Submits the first search query to the stand-alone search page. From there you can make additional searches.
+									</label>
+								</fieldset>
+							</td>
+						</tr>
+						<tr class="searchcraft-full-only">
+							<th scope="row">
 								<label for="searchcraft_input_padding">Input Component Horizontal Padding</label>
 							</th>
 							<td>
 								<?php
-								$input_padding = get_option( 'searchcraft_input_padding', '50' );
+								$input_padding = get_option( 'searchcraft_input_padding', '0' );
 								?>
 								<input type="number" name="searchcraft_input_padding" id="searchcraft_input_padding" value="<?php echo esc_attr( $input_padding ); ?>" class="small-text" min="0" max="200" />
 								<span>px</span>
@@ -129,6 +165,36 @@ if ( $is_configured ) {
 								</p>
 							</td>
 						</tr>
+						<tr class="searchcraft-full-only">
+							<th scope="row">
+								<label for="searchcraft_search_icon_color">Search Icon Color</label>
+							</th>
+							<td>
+								<?php
+								$search_icon_color = get_option( 'searchcraft_search_icon_color', '#000000' );
+								?>
+								<input type="color" name="searchcraft_search_icon_color" id="searchcraft_search_icon_color" value="<?php echo esc_attr( $search_icon_color ); ?>" class="searchcraft-color-picker" />
+								<input type="text" name="searchcraft_search_icon_color_hex" id="searchcraft_search_icon_color_hex" value="<?php echo esc_attr( $search_icon_color ); ?>" class="regular-text searchcraft-hex-input" pattern="^#[0-9A-Fa-f]{6}$" placeholder="#000000" />
+								<p class="description">
+									Choose the color for the search icon. You can use the color picker or enter a hex color code directly (e.g., #000000).
+								</p>
+							</td>
+						</tr>
+						<tr class="searchcraft-full-only">
+							<th scope="row">
+								<label for="searchcraft_clear_icon_color">Clear Search Button Color</label>
+							</th>
+							<td>
+								<?php
+								$clear_icon_color = get_option( 'searchcraft_clear_icon_color', '#000000' );
+								?>
+								<input type="color" name="searchcraft_clear_icon_color" id="searchcraft_clear_icon_color" value="<?php echo esc_attr( $clear_icon_color ); ?>" class="searchcraft-color-picker" />
+								<input type="text" name="searchcraft_clear_icon_color_hex" id="searchcraft_clear_icon_color_hex" value="<?php echo esc_attr( $clear_icon_color ); ?>" class="regular-text searchcraft-hex-input" pattern="^#[0-9A-Fa-f]{6}$" placeholder="#000000" />
+								<p class="description">
+									Choose the color for the clear search button icon. You can use the color picker or enter a hex color code directly (e.g., #000000).
+								</p>
+							</td>
+						</tr>
 						<tr class="searchcraft-popover-only">
 							<th scope="row">
 								<label for="searchcraft_input_width">Input Width</label>
@@ -144,16 +210,8 @@ if ( $is_configured ) {
 								</p>
 							</td>
 						</tr>
-						<tr>
-							<td>
-								<div class="searchcraft-overview-index-management-buttons">
-									<?php submit_button( 'Save Search Form Settings', 'primary', 'searchcraft_save_search_experience_config', false ); ?>
-								</div>
-							</td>
-						</tr>
 					</tbody>
 				</table>
-			</form>
 		</div>
 
 		<h2 class="searchcraft-section-heading">Search Results Settings</h2>
@@ -161,9 +219,6 @@ if ( $is_configured ) {
 			<p class="results-description">
 				These settings only apply to the full search experience. Popover is only customizable via CSS in the advanced settings below.
 			</p>
-			<form method="post" class="searchcraft-form">
-				<?php wp_nonce_field( 'searchcraft_settings', 'searchcraft_nonce' ); ?>
-				<input type="hidden" name="searchcraft_action" value="search_results_config" />
 
 				<table class="form-table">
 					<tbody>
@@ -187,7 +242,7 @@ if ( $is_configured ) {
 								</p>
 							</td>
 						</tr>
-						<tr>
+						<tr class="searchcraft-ai-summary-row">
 							<th scope="row">
 								<label for="searchcraft_ai_summary_banner">AI Summary Banner Text</label>
 							</th>
@@ -201,28 +256,114 @@ if ( $is_configured ) {
 								</p>
 							</td>
 						</tr>
-						<tr>
+						<tr class="searchcraft-ai-summary-row">
 							<th scope="row">
-								<label for="searchcraft_include_filter_panel">Include Filter Panel</label>
+								<label for="searchcraft_summary_box_border_radius">Summary Box Border Radius</label>
 							</th>
 							<td>
-								<label for="searchcraft_include_filter_panel">
-									<input
-										type="checkbox"
-										name="searchcraft_include_filter_panel"
-										id="searchcraft_include_filter_panel"
-										value="1"
-										<?php checked( $include_filter_panel, true ); ?>
-									/>
-									Include advanced filter panel on the search page.
-								</label>
+								<?php
+								$summary_box_border_radius = get_option( 'searchcraft_summary_box_border_radius', '' );
+								?>
+								<input type="number" name="searchcraft_summary_box_border_radius" id="searchcraft_summary_box_border_radius" value="<?php echo esc_attr( $summary_box_border_radius ); ?>" class="small-text" min="0" max="1000" />
+								<span>px</span>
 								<p class="description">
-									When enabled, the search form will include additional filtering options
-									such as category filters, date ranges, and other advanced search criteria.
+									The border radius for the AI summary box (0-1000px). Leave empty for default styling.
 								</p>
 							</td>
 						</tr>
+						<tr class="searchcraft-ai-summary-row">
+							<th scope="row">
+								<label for="searchcraft_summary_background_color">Summary Box Background</label>
+							</th>
+							<td>
+								<?php
+								$summary_background_color = get_option( 'searchcraft_summary_background_color', '#F5F5F5' );
+								?>
+								<input type="color" name="searchcraft_summary_background_color" id="searchcraft_summary_background_color" value="<?php echo esc_attr( $summary_background_color ); ?>" class="searchcraft-color-picker" />
+								<input type="text" name="searchcraft_summary_background_color_hex" id="searchcraft_summary_background_color_hex" value="<?php echo esc_attr( $summary_background_color ); ?>" class="regular-text searchcraft-hex-input" pattern="^#[0-9A-Fa-f]{6}$" placeholder="#F5F5F5" />
+								<p class="description">
+									Choose the background color for the AI summary box. You can use the color picker or enter a hex color code directly (e.g., #F5F5F5).
+								</p>
+							</td>
+						</tr>
+						<tr class="searchcraft-ai-summary-row">
+							<th scope="row">
+								<label for="searchcraft_summary_border_color">Summary Box Border</label>
+							</th>
+							<td>
+								<?php
+								$summary_border_color = get_option( 'searchcraft_summary_border_color', '#E0E0E0' );
+								?>
+								<input type="color" name="searchcraft_summary_border_color" id="searchcraft_summary_border_color" value="<?php echo esc_attr( $summary_border_color ); ?>" class="searchcraft-color-picker" />
+								<input type="text" name="searchcraft_summary_border_color_hex" id="searchcraft_summary_border_color_hex" value="<?php echo esc_attr( $summary_border_color ); ?>" class="regular-text searchcraft-hex-input" pattern="^#[0-9A-Fa-f]{6}$" placeholder="#E0E0E0" />
+								<p class="description">
+									Choose the border color for the AI summary box. You can use the color picker or enter a hex color code directly (e.g., #E0E0E0).
+								</p>
+							</td>
+						</tr>
+						<tr class="searchcraft-ai-summary-row">
+							<th scope="row">
+								<label for="searchcraft_summary_title_color">Summary Box Title Color</label>
+							</th>
+							<td>
+								<?php
+								$summary_title_color = get_option( 'searchcraft_summary_title_color', '#000000' );
+								?>
+								<input type="color" name="searchcraft_summary_title_color" id="searchcraft_summary_title_color" value="<?php echo esc_attr( $summary_title_color ); ?>" class="searchcraft-color-picker" />
+								<input type="text" name="searchcraft_summary_title_color_hex" id="searchcraft_summary_title_color_hex" value="<?php echo esc_attr( $summary_title_color ); ?>" class="regular-text searchcraft-hex-input" pattern="^#[0-9A-Fa-f]{6}$" placeholder="#000000" />
+								<p class="description">
+									Choose the color for the AI summary box title/headings. You can use the color picker or enter a hex color code directly (e.g., #000000).
+								</p>
+							</td>
+						</tr>
+						<tr class="searchcraft-ai-summary-row">
+							<th scope="row">
+								<label for="searchcraft_summary_text_color">Summary Box Text Color</label>
+							</th>
+							<td>
+								<?php
+								$summary_text_color = get_option( 'searchcraft_summary_text_color', '#4C6876' );
+								?>
+								<input type="color" name="searchcraft_summary_text_color" id="searchcraft_summary_text_color" value="<?php echo esc_attr( $summary_text_color ); ?>" class="searchcraft-color-picker" />
+								<input type="text" name="searchcraft_summary_text_color_hex" id="searchcraft_summary_text_color_hex" value="<?php echo esc_attr( $summary_text_color ); ?>" class="regular-text searchcraft-hex-input" pattern="^#[0-9A-Fa-f]{6}$" placeholder="#4C6876" />
+								<p class="description">
+									Choose the color for the AI summary box text content. You can use the color picker or enter a hex color code directly (e.g., #4C6876).
+								</p>
+							</td>
+						</tr>
+						<tr class="searchcraft-section-divider">
+							<td colspan="2" style="padding: 1.5rem 1rem 1rem;">
+								<div style="border-top: 2px solid var(--scwp-gray-10); padding-top: 1rem;">
+									<strong style="color: var(--scwp-gray-50); font-size: 0.9em; text-transform: uppercase; letter-spacing: 0.5px;">Result Layout Options</strong>
+								</div>
+							</td>
+						</tr>
 						<tr>
+							<th scope="row">
+								<label>Result Orientation</label>
+							</th>
+							<td>
+								<?php
+								$result_orientation = get_option( 'searchcraft_result_orientation', 'column' );
+								?>
+								<fieldset>
+									<legend class="screen-reader-text"><span>Result Orientation</span></legend>
+									<label>
+										<input type="radio" name="searchcraft_result_orientation" value="column" <?php checked( $result_orientation, 'column' ); ?> />
+										<strong>Column</strong> - Display search results in a single column layout
+									</label>
+									<br><br>
+									<label>
+										<input type="radio" name="searchcraft_result_orientation" value="grid" <?php checked( $result_orientation, 'grid' ); ?> />
+										<strong>Grid</strong> - Display search results in a multi-column grid layout
+									</label>
+								</fieldset>
+								<p class="description">
+									Choose how search results should be displayed. Column layout shows results stacked vertically, while grid layout displays results in a responsive multi-column format.
+								</p>
+							</td>
+						</tr>
+						<tr class="searchcraft-column-orientation-option">
 							<th scope="row">
 								<label>Image Alignment</label>
 							</th>
@@ -244,6 +385,46 @@ if ( $is_configured ) {
 								</fieldset>
 								<p class="description">
 									Choose whether images in search results should be aligned to the left or right of the content. Applies to the default template only, if you are using a custom template, you will need to implement this yourself.
+								</p>
+							</td>
+						</tr>
+						<tr">
+							<th scope="row">
+								<label for="searchcraft_display_post_date">Display Post Date</label>
+							</th>
+							<td>
+								<label for="searchcraft_display_post_date">
+									<input
+										type="checkbox"
+										name="searchcraft_display_post_date"
+										id="searchcraft_display_post_date"
+										value="1"
+										<?php checked( get_option( 'searchcraft_display_post_date', false ) ); ?>
+									/>
+									Show the post date in search results.
+								</label>
+								<p class="description">
+									When enabled, the publication date will be displayed for each search result. Applies to the default template only.
+								</p>
+							</td>
+						</tr>
+						<tr>
+							<th scope="row">
+								<label for="searchcraft_display_primary_category">Display Primary Category</label>
+							</th>
+							<td>
+								<label for="searchcraft_display_primary_category">
+									<input
+										type="checkbox"
+										name="searchcraft_display_primary_category"
+										id="searchcraft_display_primary_category"
+										value="1"
+										<?php checked( get_option( 'searchcraft_display_primary_category', true ) ); ?>
+									/>
+									Show the primary category in search results.
+								</label>
+								<p class="description">
+									When enabled, the primary category will be displayed for each search result. Applies to the default template only.
 								</p>
 							</td>
 						</tr>
@@ -279,44 +460,120 @@ if ( $is_configured ) {
 						</tr>
 						<tr>
 							<th scope="row">
-								<label for="searchcraft_summary_background_color">Summary Box Background</label>
+								<label for="searchcraft_result_info_text_color">Result Info Text Color</label>
 							</th>
 							<td>
 								<?php
-								$summary_background_color = get_option( 'searchcraft_summary_background_color', '#F5F5F5' );
+								$result_info_text_color = get_option( 'searchcraft_result_info_text_color', '#6C757D' );
 								?>
-								<input type="color" name="searchcraft_summary_background_color" id="searchcraft_summary_background_color" value="<?php echo esc_attr( $summary_background_color ); ?>" class="searchcraft-color-picker" />
-								<input type="text" name="searchcraft_summary_background_color_hex" id="searchcraft_summary_background_color_hex" value="<?php echo esc_attr( $summary_background_color ); ?>" class="regular-text searchcraft-hex-input" pattern="^#[0-9A-Fa-f]{6}$" placeholder="#F5F5F5" />
+								<input type="color" name="searchcraft_result_info_text_color" id="searchcraft_result_info_text_color" value="<?php echo esc_attr( $result_info_text_color ); ?>" class="searchcraft-color-picker" />
+								<input type="text" name="searchcraft_result_info_text_color_hex" id="searchcraft_result_info_text_color_hex" value="<?php echo esc_attr( $result_info_text_color ); ?>" class="regular-text searchcraft-hex-input" pattern="^#[0-9A-Fa-f]{6}$" placeholder="#6C757D" />
 								<p class="description">
-									Choose the background color for the AI summary box. You can use the color picker or enter a hex color code directly (e.g., #F5F5F5).
+									Choose the text color for the search results info (e.g., "X results found in Yms"). You can use the color picker or enter a hex color code directly (e.g., #6C757D).
 								</p>
 							</td>
 						</tr>
-						<tr>
+												<tr>
 							<th scope="row">
-								<label for="searchcraft_summary_border_color">Summary Box Border</label>
+								<label for="searchcraft_include_filter_panel">Include Filter Panel</label>
 							</th>
 							<td>
-								<?php
-								$summary_border_color = get_option( 'searchcraft_summary_border_color', '#E0E0E0' );
-								?>
-								<input type="color" name="searchcraft_summary_border_color" id="searchcraft_summary_border_color" value="<?php echo esc_attr( $summary_border_color ); ?>" class="searchcraft-color-picker" />
-								<input type="text" name="searchcraft_summary_border_color_hex" id="searchcraft_summary_border_color_hex" value="<?php echo esc_attr( $summary_border_color ); ?>" class="regular-text searchcraft-hex-input" pattern="^#[0-9A-Fa-f]{6}$" placeholder="#E0E0E0" />
+								<label for="searchcraft_include_filter_panel">
+									<input
+										type="checkbox"
+										name="searchcraft_include_filter_panel"
+										id="searchcraft_include_filter_panel"
+										value="1"
+										<?php checked( $include_filter_panel, true ); ?>
+									/>
+									Include advanced filter panel on the search page.
+								</label>
 								<p class="description">
-									Choose the border color for the AI summary box. You can use the color picker or enter a hex color code directly (e.g., #E0E0E0).
+									When enabled, the search form will include additional filtering options
+									such as category filters, date ranges, and other advanced search criteria.
 								</p>
 							</td>
 						</tr>
-						<tr>
-							<td>
-								<div class="searchcraft-overview-index-management-buttons">
-									<?php submit_button( 'Save Search Results Settings', 'primary', 'searchcraft_save_search_results_config', false ); ?>
-								</div>
+						<tr class="searchcraft-filter-panel-options" style="<?php echo $include_filter_panel ? '' : 'display:none;'; ?>">
+							<th scope="row"></th>
+							<td style="padding-left: 2em;">
+								<fieldset style="border-left: 3px solid #ddd; padding-left: 1em; margin-left: 0;">
+									<legend style="font-weight: 600; margin-bottom: 0.5em;">Filter Panel Options</legend>
+
+									<label for="searchcraft_enable_most_recent_toggle" style="display: block; margin-bottom: 1em;">
+										<input
+											type="checkbox"
+											name="searchcraft_enable_most_recent_toggle"
+											id="searchcraft_enable_most_recent_toggle"
+											value="1"
+											<?php checked( $enable_most_recent_toggle, true ); ?>
+										/>
+										<strong>Enable Most Recent Filter</strong>
+										<p class="description" style="margin: 0.25em 0 0 1.5em;">
+											Show the "Most Recent" toggle in the filter panel.
+										</p>
+									</label>
+
+									<label for="searchcraft_enable_exact_match_toggle" style="display: block; margin-bottom: 1em;">
+										<input
+											type="checkbox"
+											name="searchcraft_enable_exact_match_toggle"
+											id="searchcraft_enable_exact_match_toggle"
+											value="1"
+											<?php checked( $enable_exact_match_toggle, true ); ?>
+										/>
+										<strong>Enable Exact Match Filter</strong>
+										<p class="description" style="margin: 0.25em 0 0 1.5em;">
+											Show the "Exact Match" toggle in the filter panel.
+										</p>
+									</label>
+
+									<label for="searchcraft_enable_date_range" style="display: block; margin-bottom: 1em;">
+										<input
+											type="checkbox"
+											name="searchcraft_enable_date_range"
+											id="searchcraft_enable_date_range"
+											value="1"
+											<?php checked( $enable_date_range, true ); ?>
+										/>
+										<strong>Enable Date Range Filter</strong>
+										<p class="description" style="margin: 0.25em 0 0 1.5em;">
+											Show the date range filter in the filter panel.
+										</p>
+									</label>
+
+									<label for="searchcraft_enable_facets" style="display: block; margin-bottom: 1em;">
+										<input
+											type="checkbox"
+											name="searchcraft_enable_facets"
+											id="searchcraft_enable_facets"
+											value="1"
+											<?php checked( $enable_facets, true ); ?>
+										/>
+										<strong>Enable Facets</strong>
+										<p class="description" style="margin: 0.25em 0 0 1.5em;">
+											Show category/taxonomy facets in the filter panel.
+										</p>
+									</label>
+
+									<div style="margin-top: 1em;">
+										<label for="searchcraft_toggle_button_disabled_color" style="display: block; margin-bottom: 0.5em;">
+											<strong>Toggle Button Disabled State Color</strong>
+										</label>
+										<?php
+										$toggle_button_disabled_color = get_option( 'searchcraft_toggle_button_disabled_color', '#E0E0E0' );
+										?>
+										<input type="color" name="searchcraft_toggle_button_disabled_color" id="searchcraft_toggle_button_disabled_color" value="<?php echo esc_attr( $toggle_button_disabled_color ); ?>" class="searchcraft-color-picker" />
+										<input type="text" name="searchcraft_toggle_button_disabled_color_hex" id="searchcraft_toggle_button_disabled_color_hex" value="<?php echo esc_attr( $toggle_button_disabled_color ); ?>" class="regular-text searchcraft-hex-input" pattern="^#[0-9A-Fa-f]{6}$" placeholder="#E0E0E0" />
+										<p class="description" style="margin: 0.25em 0 0 0;">
+											Choose the background color for toggle buttons in their disabled state. Enabled state uses the brand color by default.
+										</p>
+									</div>
+								</fieldset>
 							</td>
 						</tr>
 					</tbody>
 				</table>
-			</form>
 		</div>
 
 		<h2 class="searchcraft-section-heading">Advanced</h2>
@@ -327,11 +584,7 @@ if ( $is_configured ) {
 					<span class="searchcraft-accordion-icon">▼</span>
 				</summary>
 				<div class="searchcraft-accordion-content">
-					<form method="post" class="searchcraft-form">
-						<?php wp_nonce_field( 'searchcraft_settings', 'searchcraft_nonce' ); ?>
-						<input type="hidden" name="searchcraft_action" value="advanced_config" />
-
-						<table class="form-table">
+					<table class="form-table">
 							<tbody>
 								<tr>
 									<th scope="row">
@@ -342,7 +595,7 @@ if ( $is_configured ) {
 											name="searchcraft_custom_css"
 											id="searchcraft_custom_css"
 											class="large-text code searchcraft-css-editor"
-											rows="10"
+											rows="30"
 											placeholder="/* Enter your custom CSS here */&#10;.searchcraft-results {&#10;    /* Your styles */&#10;}"
 										><?php echo esc_textarea( get_option( 'searchcraft_custom_css', '' ) ); ?></textarea>
 										<p class="description">
@@ -364,6 +617,8 @@ if ( $is_configured ) {
 										><?php echo esc_textarea( get_option( 'searchcraft_result_template', '' ) ); ?></textarea>
 										<p class="description">
 											Write a JavaScript callback function to customize how search results are displayed. The function receives <code>(item, index, { html })</code> parameters and should return a template literal using the <code>html</code> tagged template function. Available item properties include: <code>post_title</code>, <code>post_excerpt</code>, <code>permalink</code>, <code>post_date</code>, <code>featured_image_url</code>, etc.
+											<br/>
+											For more details on custom templates refer to <a href="https://docs.searchcraft.io/sdks/javascript/working-with-templates/" target="_blank">the documentation</a>.
 										</p>
 									</td>
 								</tr>
@@ -407,6 +662,20 @@ if ( $is_configured ) {
 								</tr>
 								<tr class="searchcraft-full-only">
 									<th scope="row">
+										<label for="searchcraft_search_input_container_id">Search Box Container Element ID</label>
+									</th>
+									<td>
+										<?php
+										$input_container_id = get_option( 'searchcraft_search_input_container_id', '' );
+										?>
+										<input type="text" name="searchcraft_search_input_container_id" id="searchcraft_search_input_container_id" value="<?php echo esc_attr( $input_container_id ); ?>" class="regular-text" placeholder="my-search-input-container" />
+										<p class="description">
+											If specified, the search box input form will load as the first element inside of the HTML element that matches this <a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/id" target="_blank">ID</a>. Note: this element must be present on every page you want the search input to appear on. Leave empty to use the default auto-detection behavior.
+										</p>
+									</td>
+								</tr>
+								<tr class="searchcraft-full-only">
+									<th scope="row">
 										<label for="searchcraft_results_container_id">Results Container Element ID</label>
 									</th>
 									<td>
@@ -419,19 +688,17 @@ if ( $is_configured ) {
 										</p>
 									</td>
 								</tr>
-								<tr>
-									<td>
-										<div class="searchcraft-overview-index-management-buttons">
-											<?php submit_button( 'Save Advanced Settings', 'primary', 'searchcraft_save_advanced_config', false ); ?>
-										</div>
-									</td>
-								</tr>
 							</tbody>
 						</table>
-					</form>
 				</div>
 			</details>
 		</div>
+
+		<div class="searchcraft-save-buttons-bottom" style="margin-top: 20px;">
+			<?php submit_button( 'Save All Settings', 'primary', 'searchcraft_save_layout_settings', false ); ?>
+		</div>
+
+	</form>
 	<?php endif; ?>
 </div>
 <?php

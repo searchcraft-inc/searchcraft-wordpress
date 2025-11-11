@@ -50,7 +50,7 @@
     async function loadSearchcraftSDK() {
         try {
             // Get the SDK script element to determine the module URL
-            const sdkScript = document.querySelector('script[src*="sdk_0.11.1/components/index.js"]');
+            const sdkScript = document.querySelector('script[src*="sdk/components/index.js?v=0.12.1"]');
             if (!sdkScript) {
                 console.error('Searchcraft: SDK script not found');
                 showConfigurationError('SDK script not found');
@@ -66,34 +66,48 @@
                 showConfigurationError('Searchcraft class not found in SDK module');
                 return;
             }
-
+            const isWPSearchPage = searchcraft_config.isWPSearchPage || false;
             const config = {
                 indexName: searchcraft_config.indexName,
                 readKey: searchcraft_config.readKey,
                 endpointURL: searchcraft_config.endpointURL,
                 searchDebounceDelay: 50,
-                searchResultsPerPage: parseInt(searchcraft_config.resultsPerPage) || 10,
-                //initialQuery: JSON.stringify({query: [{occur: "should", exact: {ctx: "*"}}], offset: 0, limit: 20})
+                searchResultsPerPage: parseInt(searchcraft_config.resultsPerPage) || 10
             };
-            (searchcraft_config.cortexURL && searchcraft_config.enableAiSummary) && (config.cortexURL = searchcraft_config.cortexURL);
+
+            // Add cortexURL if AI summary is enabled
+            if (searchcraft_config.cortexURL && searchcraft_config.enableAiSummary) {
+                config.cortexURL = searchcraft_config.cortexURL;
+            }
+
+            // Set initialQuery based on page type
+            if (isWPSearchPage) {
+                if (searchcraft_config.searchQuery) {
+                    // Don't set initial query.
+                } else {
+                    config.initialQuery = JSON.stringify({query: {exact: {ctx: "*"}}});
+                }
+            }
+
             const includeFilterPanel = searchcraft_config.includeFilterPanel || false;
+
             const defaultResultTemplate = (item, index, { html }) => {
                 const postDate = item.post_date ? new Date(item.post_date).toLocaleDateString() : '';
                 const image = item?.featured_image_url && item.featured_image_url.length > 0 ? html`
                     <div class="searchcraft-result-image">
                         <img src="${item.featured_image_url}" alt="${item.post_title}" />
                     </div>` : '';
-
+                const by = (item.post_author_name && postDate && searchcraft_config.displayPostDate) ? 'By ' : '';
                 return html`
-                <a class="searchcraft-result-item" href="${item.permalink}" target="_blank" rel="noreferrer">
+                <a class="searchcraft-result-item" href="${item.permalink}">
                     ${searchcraft_config.imageAlignment === 'left' ? image : ''}
                     <div class="searchcraft-result-content">
-                        ${item.primary_category_name ? html`<h4 class="searchcraft-result-primary-category">${item.primary_category_name}</h4>` : ''}
+                        ${(item.primary_category_name && searchcraft_config.displayPrimaryCategory) ? html`<h4 class="searchcraft-result-primary-category">${item.primary_category_name}</h4>` : ''}
                         <h3 class="searchcraft-result-title">${item.post_title}</h3>
                         <p class="searchcraft-result-excerpt">${item.post_excerpt}</p>
                         <div class="searchcraft-result-meta flex">
-                            ${postDate ? html`<time class="searchcraft-result-date">${postDate}</time>` : ''}
-                            ${item.post_author_name ? html`• <span class="searchcraft-result-author-name">By ${item.post_author_name}</span>` : ''}
+                            ${(postDate && searchcraft_config.displayPostDate) ? html`<time class="searchcraft-result-date">${postDate}</time> • ` : ''}
+                            ${item.post_author_name ? html`<span class="searchcraft-result-author-name">${by}${item.post_author_name}</span>` : ''}
                         </div>
                     </div>
                     ${searchcraft_config.imageAlignment === 'right' ? image : ''}
@@ -106,7 +120,6 @@
             if (searchcraft_config.resultTemplateCallback) {
                 try {
                     searchcraftResultTemplate = new Function('return ' + searchcraft_config.resultTemplateCallback)();
-                    console.log('Searchcraft: Using custom result template callback');
                 } catch (error) {
                     console.warn('Searchcraft: Invalid custom result template callback, using default template', error);
                     searchcraftResultTemplate = defaultResultTemplate;
@@ -114,185 +127,30 @@
             }
 
             const searchcraft = new Searchcraft(config);
-            const searchResults = document.querySelectorAll('searchcraft-search-results');
-            searchResults.forEach((results) => {
-                results.template = searchcraftResultTemplate;
-                inheritTextStyles(results);
-            });
 
-            // Configure summary box if AI summary is enabled
-            if (searchcraft_config.enableAiSummary) {
-                const summaryBoxes = document.querySelectorAll('searchcraft-summary-box');
-                summaryBoxes.forEach((summaryBox) => {
-                    inheritTextStyles(summaryBox);
+            // Make searchcraft instance globally available
+            window.searchcraft = searchcraft;
+
+            // Wait for the SDK to fully initialize before dispatching ready event
+            // The SDK initializes clients asynchronously and emits 'initialized' when done
+            searchcraft.subscribe('initialized', () => {
+
+                // Dispatch event to signal SDK is ready
+                // DOM configuration will happen after templates are injected
+                const sdkReadyEvent = new CustomEvent('searchcraft:sdk-ready', {
+                    detail: {
+                        searchcraft: window.searchcraft,
+                        config: searchcraft_config,
+                        resultTemplate: searchcraftResultTemplate,
+                        includeFilterPanel: includeFilterPanel
+                    }
                 });
-            }
-            if (includeFilterPanel) {
-                const filterPanel = document.querySelector('searchcraft-filter-panel');
-                if (filterPanel) {
-                    const today = new Date();
-                    const pastDate = new Date(today);
-                    const currentYear = today.getFullYear();
-                    const oldestYear = parseInt(searchcraft_config.oldestPostYear);
-                    pastDate.setFullYear(oldestYear);
-                    let filterPanelItems = [
-                        {
-                            type: 'mostRecentToggle',
-                            fieldName: 'post_date',
-                            label: 'Most Recent',
-                            options: {
-                                subLabel: 'Show the most recently published posts first.',
-                            },
-                        },
-                        {
-                            type: 'exactMatchToggle',
-                            label: 'Exact Match',
-                            options: {
-                                subLabel: 'Only show results that precisely match your search.',
-                            },
-                        },
-                        {
-                            type: 'dateRange',
-                            fieldName: 'post_date',
-                            label: 'Filter by Year',
-                            options: {
-                                minDate: pastDate,
-                                granularity: 'year',
-                            },
-                        },
-                        {
-                            type: 'facets',
-                            fieldName: 'categories',
-                            label: 'Filter by Category',
-                            options: {
-                                showSublevel: true,
-                            },
-                        },
-                    ];
-                    filterPanelItems = filterPanelItems.filter(filter => {
-                        if (filter.type === 'dateRange') {
-                            return currentYear !== oldestYear;
-                        }
-                        return true;
-                    });
-                    filterPanel.items = filterPanelItems;
-                }
-            }
-            if (searchcraft_config.searchQuery) {
-                await searchcraft.getResponseItems({
-                    requestProperties: {
-                        mode: 'fuzzy',
-                        searchTerm: searchcraft_config.searchQuery,
-                    },
-                    shouldCacheResultsForEmptyState: false
-                });
-                const searchInput = document.querySelector('searchcraft-input-form');
-                searchInput.inputValue = searchcraft_config.searchQuery;
-                setTimeout( () => {
-                    searchInput.inputValue = searchcraft_config.searchQuery;
-                }, 300);
-            }
-
-            const popoverForms = document.querySelectorAll('searchcraft-popover-form');
-            const popoverResultMappings = {
-                href: {
-                    fieldNames: [
-                        {
-                            fieldName: "permalink",
-                            dataType: "text",
-                        },
-                    ],
-                },
-                title: {
-                    fieldNames: [{ fieldName: "post_title", dataType: "text" }],
-                },
-                subtitle: {
-                    fieldNames: [{ fieldName: "post_excerpt", dataType: "text" }],
-                },
-                imageSource: {
-                    fieldNames: [{ fieldName: "featured_image_url", dataType: "text" }],
-                },
-                imageAlt: {
-                    fieldNames: [{ fieldName: "post_title", dataType: "text" }],
-                },
-            };
-
-            popoverForms.forEach((form) => {
-                form.popoverResultMappings = popoverResultMappings;
-
-                // Inherit text styles from parent
-                inheritTextStyles(form);
-            });
-
-            // Configure input forms and inherit styles
-            const inputForms = document.querySelectorAll('searchcraft-input-form');
-            inputForms.forEach((form) => {
-                inheritTextStyles(form);
+                document.dispatchEvent(sdkReadyEvent);
             });
 
         } catch (error) {
             console.error('Searchcraft: Failed to initialize SDK', error);
             showConfigurationError('Failed to initialize Searchcraft SDK.');
-        }
-    }
-
-    /**
-     * Inherit text styles from parent element
-     */
-    function inheritTextStyles(component) {
-        try {
-            // Get computed styles from the parent element
-            const parent = component.parentElement;
-            if (!parent) return;
-
-            const parentStyles = window.getComputedStyle(parent);
-
-            // Extract text-related properties
-            const textProperties = {
-                'font-family': parentStyles.fontFamily,
-                'font-size': parentStyles.fontSize,
-                'font-weight': parentStyles.fontWeight,
-                'line-height': parentStyles.lineHeight,
-                'color': parentStyles.color,
-                'letter-spacing': parentStyles.letterSpacing,
-                'text-transform': parentStyles.textTransform
-            };
-
-            // Apply styles to the component
-            Object.entries(textProperties).forEach(([property, value]) => {
-                if (value && value !== 'normal') {
-                    component.style.setProperty(property, value, 'important');
-                }
-            });
-
-            // If the component has a shadow root, inject styles there too
-            if (component.shadowRoot) {
-                const style = document.createElement('style');
-                style.textContent = `
-                    * {
-                        font-family: ${textProperties['font-family']} !important;
-                        font-size: ${textProperties['font-size']} !important;
-                        font-weight: ${textProperties['font-weight']} !important;
-                        line-height: ${textProperties['line-height']} !important;
-                        color: ${textProperties['color']} !important;
-                        letter-spacing: ${textProperties['letter-spacing']} !important;
-                        text-transform: ${textProperties['text-transform']} !important;
-                    }
-                    input, input:focus, input:active {
-                        font-family: ${textProperties['font-family']} !important;
-                        font-size: ${textProperties['font-size']} !important;
-                        font-weight: ${textProperties['font-weight']} !important;
-                        line-height: ${textProperties['line-height']} !important;
-                        color: ${textProperties['color']} !important;
-                        letter-spacing: ${textProperties['letter-spacing']} !important;
-                        text-transform: ${textProperties['text-transform']} !important;
-                    }
-                `;
-                component.shadowRoot.appendChild(style);
-            }
-
-        } catch (error) {
-            console.debug('Could not inherit text styles:', error);
         }
     }
 
