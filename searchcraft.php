@@ -10,7 +10,7 @@
  * Plugin Name:       Searchcraft
  * Plugin URI:        https://github.com/searchcraft-inc/searchcraft-wordpress
  * Description:       Bring fast, relevant search to your site. Searchcraft replaces the default search with a customizable, tunable, highly relevant search experience.
- * Version:           1.0.0
+ * Version:           1.0.1
  * Author:            Searchcraft, Inc.
  * Author URI:        https://searchcraft.io/
  * License:           Apache 2.0
