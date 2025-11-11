@@ -159,6 +159,36 @@ if ( $is_configured ) {
 								</p>
 							</td>
 						</tr>
+						<tr class="searchcraft-full-only">
+							<th scope="row">
+								<label for="searchcraft_search_icon_color">Search Icon Color</label>
+							</th>
+							<td>
+								<?php
+								$search_icon_color = get_option( 'searchcraft_search_icon_color', '#000000' );
+								?>
+								<input type="color" name="searchcraft_search_icon_color" id="searchcraft_search_icon_color" value="<?php echo esc_attr( $search_icon_color ); ?>" class="searchcraft-color-picker" />
+								<input type="text" name="searchcraft_search_icon_color_hex" id="searchcraft_search_icon_color_hex" value="<?php echo esc_attr( $search_icon_color ); ?>" class="regular-text searchcraft-hex-input" pattern="^#[0-9A-Fa-f]{6}$" placeholder="#000000" />
+								<p class="description">
+									Choose the color for the search icon. You can use the color picker or enter a hex color code directly (e.g., #000000).
+								</p>
+							</td>
+						</tr>
+						<tr class="searchcraft-full-only">
+							<th scope="row">
+								<label for="searchcraft_clear_icon_color">Clear Search Button Color</label>
+							</th>
+							<td>
+								<?php
+								$clear_icon_color = get_option( 'searchcraft_clear_icon_color', '#000000' );
+								?>
+								<input type="color" name="searchcraft_clear_icon_color" id="searchcraft_clear_icon_color" value="<?php echo esc_attr( $clear_icon_color ); ?>" class="searchcraft-color-picker" />
+								<input type="text" name="searchcraft_clear_icon_color_hex" id="searchcraft_clear_icon_color_hex" value="<?php echo esc_attr( $clear_icon_color ); ?>" class="regular-text searchcraft-hex-input" pattern="^#[0-9A-Fa-f]{6}$" placeholder="#000000" />
+								<p class="description">
+									Choose the color for the clear search button icon. You can use the color picker or enter a hex color code directly (e.g., #000000).
+								</p>
+							</td>
+						</tr>
 						<tr class="searchcraft-popover-only">
 							<th scope="row">
 								<label for="searchcraft_input_width">Input Width</label>
@@ -273,6 +303,36 @@ if ( $is_configured ) {
 								<input type="text" name="searchcraft_summary_border_color_hex" id="searchcraft_summary_border_color_hex" value="<?php echo esc_attr( $summary_border_color ); ?>" class="regular-text searchcraft-hex-input" pattern="^#[0-9A-Fa-f]{6}$" placeholder="#E0E0E0" />
 								<p class="description">
 									Choose the border color for the AI summary box. You can use the color picker or enter a hex color code directly (e.g., #E0E0E0).
+								</p>
+							</td>
+						</tr>
+						<tr class="searchcraft-ai-summary-row">
+							<th scope="row">
+								<label for="searchcraft_summary_title_color">Summary Box Title Color</label>
+							</th>
+							<td>
+								<?php
+								$summary_title_color = get_option( 'searchcraft_summary_title_color', '#000000' );
+								?>
+								<input type="color" name="searchcraft_summary_title_color" id="searchcraft_summary_title_color" value="<?php echo esc_attr( $summary_title_color ); ?>" class="searchcraft-color-picker" />
+								<input type="text" name="searchcraft_summary_title_color_hex" id="searchcraft_summary_title_color_hex" value="<?php echo esc_attr( $summary_title_color ); ?>" class="regular-text searchcraft-hex-input" pattern="^#[0-9A-Fa-f]{6}$" placeholder="#000000" />
+								<p class="description">
+									Choose the color for the AI summary box title/headings. You can use the color picker or enter a hex color code directly (e.g., #000000).
+								</p>
+							</td>
+						</tr>
+						<tr class="searchcraft-ai-summary-row">
+							<th scope="row">
+								<label for="searchcraft_summary_text_color">Summary Box Text Color</label>
+							</th>
+							<td>
+								<?php
+								$summary_text_color = get_option( 'searchcraft_summary_text_color', '#4C6876' );
+								?>
+								<input type="color" name="searchcraft_summary_text_color" id="searchcraft_summary_text_color" value="<?php echo esc_attr( $summary_text_color ); ?>" class="searchcraft-color-picker" />
+								<input type="text" name="searchcraft_summary_text_color_hex" id="searchcraft_summary_text_color_hex" value="<?php echo esc_attr( $summary_text_color ); ?>" class="regular-text searchcraft-hex-input" pattern="^#[0-9A-Fa-f]{6}$" placeholder="#4C6876" />
+								<p class="description">
+									Choose the color for the AI summary box text content. You can use the color picker or enter a hex color code directly (e.g., #4C6876).
 								</p>
 							</td>
 						</tr>
@@ -403,6 +463,21 @@ if ( $is_configured ) {
 								</p>
 							</td>
 						</tr>
+						<tr>
+							<th scope="row">
+								<label for="searchcraft_result_info_text_color">Result Info Text Color</label>
+							</th>
+							<td>
+								<?php
+								$result_info_text_color = get_option( 'searchcraft_result_info_text_color', '#6C757D' );
+								?>
+								<input type="color" name="searchcraft_result_info_text_color" id="searchcraft_result_info_text_color" value="<?php echo esc_attr( $result_info_text_color ); ?>" class="searchcraft-color-picker" />
+								<input type="text" name="searchcraft_result_info_text_color_hex" id="searchcraft_result_info_text_color_hex" value="<?php echo esc_attr( $result_info_text_color ); ?>" class="regular-text searchcraft-hex-input" pattern="^#[0-9A-Fa-f]{6}$" placeholder="#6C757D" />
+								<p class="description">
+									Choose the text color for the search results info (e.g., "X results found in Yms"). You can use the color picker or enter a hex color code directly (e.g., #6C757D).
+								</p>
+							</td>
+						</tr>
 												<tr>
 							<th scope="row">
 								<label for="searchcraft_include_filter_panel">Include Filter Panel</label>
@@ -472,7 +547,7 @@ if ( $is_configured ) {
 										</p>
 									</label>
 
-									<label for="searchcraft_enable_facets" style="display: block; margin-bottom: 0;">
+									<label for="searchcraft_enable_facets" style="display: block; margin-bottom: 1em;">
 										<input
 											type="checkbox"
 											name="searchcraft_enable_facets"
@@ -485,6 +560,20 @@ if ( $is_configured ) {
 											Show category/taxonomy facets in the filter panel.
 										</p>
 									</label>
+
+									<div style="margin-top: 1em;">
+										<label for="searchcraft_toggle_button_disabled_color" style="display: block; margin-bottom: 0.5em;">
+											<strong>Toggle Button Disabled State Color</strong>
+										</label>
+										<?php
+										$toggle_button_disabled_color = get_option( 'searchcraft_toggle_button_disabled_color', '#E0E0E0' );
+										?>
+										<input type="color" name="searchcraft_toggle_button_disabled_color" id="searchcraft_toggle_button_disabled_color" value="<?php echo esc_attr( $toggle_button_disabled_color ); ?>" class="searchcraft-color-picker" />
+										<input type="text" name="searchcraft_toggle_button_disabled_color_hex" id="searchcraft_toggle_button_disabled_color_hex" value="<?php echo esc_attr( $toggle_button_disabled_color ); ?>" class="regular-text searchcraft-hex-input" pattern="^#[0-9A-Fa-f]{6}$" placeholder="#E0E0E0" />
+										<p class="description" style="margin: 0.25em 0 0 0;">
+											Choose the background color for toggle buttons in their disabled state. Enabled state uses the brand color by default.
+										</p>
+									</div>
 								</fieldset>
 							</td>
 						</tr>

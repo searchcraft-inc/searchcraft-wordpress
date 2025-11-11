@@ -720,6 +720,30 @@ class Searchcraft_Admin {
 			}
 		}
 
+		if ( isset( $request['searchcraft_search_icon_color'] ) ) {
+			$search_icon_color = sanitize_text_field( wp_unslash( $request['searchcraft_search_icon_color'] ) );
+
+			// Validate hex color format.
+			if ( ! preg_match( '/^#[a-fA-F0-9]{6}$/', $search_icon_color ) ) {
+				$search_icon_color = '#000000'; // Default to black if invalid.
+			}
+
+			update_option( 'searchcraft_search_icon_color', $search_icon_color );
+			$updated_settings['search_icon_color'] = $search_icon_color;
+		}
+
+		if ( isset( $request['searchcraft_clear_icon_color'] ) ) {
+			$clear_icon_color = sanitize_text_field( wp_unslash( $request['searchcraft_clear_icon_color'] ) );
+
+			// Validate hex color format.
+			if ( ! preg_match( '/^#[a-fA-F0-9]{6}$/', $clear_icon_color ) ) {
+				$clear_icon_color = '#000000'; // Default to black if invalid.
+			}
+
+			update_option( 'searchcraft_clear_icon_color', $clear_icon_color );
+			$updated_settings['clear_icon_color'] = $clear_icon_color;
+		}
+
 		// Handle input width.
 		if ( isset( $request['searchcraft_input_width'] ) ) {
 			$input_width = absint( wp_unslash( $request['searchcraft_input_width'] ) );
@@ -833,6 +857,18 @@ class Searchcraft_Admin {
 		update_option( 'searchcraft_enable_facets', $enable_facets );
 		$updated_settings['enable_facets'] = '1' === $enable_facets ? 'enabled' : 'disabled';
 
+		if ( isset( $request['searchcraft_toggle_button_disabled_color'] ) ) {
+			$toggle_button_disabled_color = sanitize_text_field( wp_unslash( $request['searchcraft_toggle_button_disabled_color'] ) );
+
+			// Validate hex color format.
+			if ( ! preg_match( '/^#[a-fA-F0-9]{6}$/', $toggle_button_disabled_color ) ) {
+				$toggle_button_disabled_color = '#E0E0E0'; // Default to light gray if invalid.
+			}
+
+			update_option( 'searchcraft_toggle_button_disabled_color', $toggle_button_disabled_color );
+			$updated_settings['toggle_button_disabled_color'] = $toggle_button_disabled_color;
+		}
+
 		// Handle results per page setting.
 		if ( isset( $request['searchcraft_results_per_page'] ) ) {
 			$results_per_page = absint( wp_unslash( $request['searchcraft_results_per_page'] ) );
@@ -903,6 +939,18 @@ class Searchcraft_Admin {
 			$updated_settings['brand_color'] = $brand_color;
 		}
 
+		if ( isset( $request['searchcraft_result_info_text_color'] ) ) {
+			$result_info_text_color = sanitize_text_field( wp_unslash( $request['searchcraft_result_info_text_color'] ) );
+
+			// Validate hex color format.
+			if ( ! preg_match( '/^#[a-fA-F0-9]{6}$/', $result_info_text_color ) ) {
+				$result_info_text_color = '#6C757D'; // Default to gray if invalid.
+			}
+
+			update_option( 'searchcraft_result_info_text_color', $result_info_text_color );
+			$updated_settings['result_info_text_color'] = $result_info_text_color;
+		}
+
 		// Handle summary background color setting.
 		if ( isset( $request['searchcraft_summary_background_color'] ) ) {
 			$summary_background_color = sanitize_text_field( wp_unslash( $request['searchcraft_summary_background_color'] ) );
@@ -929,6 +977,33 @@ class Searchcraft_Admin {
 			// Save the setting.
 			update_option( 'searchcraft_summary_border_color', $summary_border_color );
 			$updated_settings['summary_border_color'] = $summary_border_color;
+		}
+
+		if ( isset( $request['searchcraft_summary_title_color'] ) ) {
+			$summary_title_color = sanitize_text_field( wp_unslash( $request['searchcraft_summary_title_color'] ) );
+
+			// Validate hex color format.
+			if ( ! preg_match( '/^#[a-fA-F0-9]{6}$/', $summary_title_color ) ) {
+				$summary_title_color = '#000000'; // Default to black if invalid.
+			}
+
+			// Save the setting.
+			update_option( 'searchcraft_summary_title_color', $summary_title_color );
+			$updated_settings['summary_title_color'] = $summary_title_color;
+		}
+
+		// Handle summary text color setting.
+		if ( isset( $request['searchcraft_summary_text_color'] ) ) {
+			$summary_text_color = sanitize_text_field( wp_unslash( $request['searchcraft_summary_text_color'] ) );
+
+			// Validate hex color format.
+			if ( ! preg_match( '/^#[a-fA-F0-9]{6}$/', $summary_text_color ) ) {
+				$summary_text_color = '#4C6876'; // Default to gray-blue if invalid.
+			}
+
+			// Save the setting.
+			update_option( 'searchcraft_summary_text_color', $summary_text_color );
+			$updated_settings['summary_text_color'] = $summary_text_color;
 		}
 
 		// Handle summary box border radius setting.
@@ -996,11 +1071,11 @@ class Searchcraft_Admin {
 				if ( ! empty( $messages ) ) {
 					echo '<div class="notice notice-success is-dismissible">';
 					echo '<p><strong>Success:</strong> Search results settings updated.</p>';
-					echo '<ul>';
-					foreach ( $messages as $message ) {
-						echo '<li>' . esc_html( $message ) . '</li>';
-					}
-					echo '</ul>';
+					// echo '<ul>';
+					// foreach ( $messages as $message ) {
+					// 	echo '<li>' . esc_html( $message ) . '</li>';
+					// }
+					// echo '</ul>';
 					echo '</div>';
 				}
 			}

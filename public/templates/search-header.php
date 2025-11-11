@@ -25,11 +25,29 @@ require_once 'common-template-values.php';
 <style>
 :root {
 	--sc-color-brand: <?php echo esc_attr( $searchcraft_brand_color ); ?>;
+	--sc-result-info-text-color: <?php echo esc_attr( $searchcraft_result_info_text_color ); ?>;
 	--sc-input-form-border-radius: <?php echo esc_attr( $searchcraft_input_border_radius ); ?>px;
+	--sc-search-icon-color: <?php echo esc_attr( $searchcraft_search_icon_color ); ?>;
+	--sc-clear-icon-color: <?php echo esc_attr( $searchcraft_clear_icon_color ); ?>;
+	--sc-toggle-button-disabled-color: <?php echo esc_attr( $searchcraft_toggle_button_disabled_color ); ?>;
+	--sc-summary-title-color: <?php echo esc_attr( $searchcraft_summary_title_color ); ?>;
+	--sc-summary-text-color: <?php echo esc_attr( $searchcraft_summary_text_color ); ?>;
 }
 
 .searchcraft-input-form-input {
 	padding: 12px 44px !important;
+}
+
+.searchcraft-input-form-input-search-icon {
+	color: var(--sc-search-icon-color);
+}
+
+.searchcraft-input-form-clear-icon {
+	color: var(--sc-clear-icon-color);
+}
+
+button.searchcraft-toggle-button-background {
+	background-color: var(--sc-toggle-button-disabled-color);
 }
 
 .searchcraft-full-search-experience .searchcraft-input-form-input {
@@ -238,6 +256,7 @@ require_once 'common-template-values.php';
 }
 
 .searchcraft-summary-box-footer {
+	color: var(--sc-summary-text-color);
 	font-size: 12px;
 	line-height: 14px;
 	margin: 0;
@@ -260,6 +279,7 @@ require_once 'common-template-values.php';
 	gap: 4px;
 	padding-bottom: 10px;
 	padding-top: 20px;
+	color: var(--sc-result-info-text-color);
 }
 
 /* Mobile styles */
@@ -320,12 +340,26 @@ searchcraft-summary-box, .searchcraft-summary-box {
 	}
 
 	& h1, h2, h3, h4, h5 {
+		color: var(--sc-summary-title-color);
 		font-weight: bold;
+	}
+
+	& p {
+		color: var(--sc-summary-text-color);
 	}
 
 	& a {
 		color: <?php echo esc_attr( $searchcraft_brand_color ); ?>;
 	}
+}
+.searchcraft-summary-footer-container {
+	color: var(--sc-summary-text-color);
+}
+.searchcraft-footer-link {
+  color: var(--sc-summary-text-color);
+}
+.searchcraft-footer-link:hover {
+  color: var(--sc-color-brand);
 }
 .searchcraft-filter-panel-header {
 	display: none;
