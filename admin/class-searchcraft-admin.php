@@ -1467,6 +1467,9 @@ class Searchcraft_Admin {
 				}
 				// Re-throw the exception so it can be caught by calling code.
 				throw $e;
+			} finally {
+				// Free memory: unset large variables to help garbage collection.
+				unset( $documents, $ingest_client );
 			}
 		}
 	}
@@ -1540,18 +1543,51 @@ class Searchcraft_Admin {
 	 * It first removes existing documents from the index, then adds the refreshed ones
 	 * in batches to handle large numbers of posts efficiently.
 	 *
+	 * Uses cursor-based pagination for optimal performance on large datasets.
+	 *
 	 * @since 1.0.0
 	 */
 	public function searchcraft_add_all_documents() {
-		// First, get a count of all eligible posts to determine if batching is needed.
-		$count_query = new WP_Query(
-			array(
-				'post_type'      => 'any',
-				'post_status'    => 'publish',
-				'posts_per_page' => 1,
-				'fields'         => 'ids',
+		global $wpdb;
+
+		// Get count of eligible posts using direct SQL for better performance.
+		// This counts posts that are either not excluded or don't have the exclusion meta key.
+		// Note, we replaced the previous WP_Query approach because this direct query is more efficient.
+		$total_posts = $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+			"SELECT COUNT(DISTINCT p.ID)
+			 FROM {$wpdb->posts} p
+			 LEFT JOIN {$wpdb->postmeta} pm ON p.ID = pm.post_id
+			     AND pm.meta_key = '_searchcraft_exclude_from_index'
+			 WHERE p.post_status = 'publish'
+			 AND (pm.meta_value != '1' OR pm.meta_value IS NULL)"
+		);
+
+		if ( 0 === $total_posts ) {
+			return;
+		}
+
+		// Remove all existing documents from the index first.
+		$this->searchcraft_delete_all_documents();
+
+		// Define batch size.
+		$batch_size = 4000;
+		$batches    = ceil( $total_posts / $batch_size );
+		$last_id    = 0;
+
+		// Process posts in batches using cursor-based pagination.
+		for ( $batch = 0; $batch < $batches; $batch++ ) {
+			// Build query args for this batch.
+			$query_args = array(
+				'post_type'              => 'any',
+				'posts_per_page'         => $batch_size,
+				'post_status'            => 'publish',
+				'orderby'                => 'ID',
+				'order'                  => 'ASC',
+				'no_found_rows'          => true,  // Don't calculate total rows (performance optimization).
+				'update_post_meta_cache' => false, // Don't prime meta cache (memory optimization).
+				'update_post_term_cache' => false, // Don't prime term cache (memory optimization).
 				// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
-				'meta_query'     => array(
+				'meta_query'             => array(
 					'relation' => 'OR',
 					// Include posts where the exclusion flag is not set to '1'.
 					array(
@@ -1565,62 +1601,41 @@ class Searchcraft_Admin {
 						'compare' => 'NOT EXISTS',
 					),
 				),
-			)
-		);
-
-		$total_posts = $count_query->found_posts;
-
-		if ( 0 === $total_posts ) {
-			return;
-		}
-
-		// Remove all existing documents from the index first.
-		$this->searchcraft_delete_all_documents();
-
-		// Define batch size.
-		$batch_size = 50000;
-		$batches    = ceil( $total_posts / $batch_size );
-
-		// Process posts in batches.
-		for ( $batch = 0; $batch < $batches; $batch++ ) {
-			$offset = $batch * $batch_size;
-
-			// Query posts for this batch.
-			$batch_query = new WP_Query(
-				array(
-					'post_type'      => 'any',
-					'posts_per_page' => $batch_size,
-					'offset'         => $offset,
-					'post_status'    => 'publish',
-					// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
-					'meta_query'     => array(
-						'relation' => 'OR',
-						// Include posts where the exclusion flag is not set to '1'.
-						array(
-							'key'     => '_searchcraft_exclude_from_index',
-							'value'   => '1',
-							'compare' => '!=',
-						),
-						// Or where the exclusion flag doesn't exist at all.
-						array(
-							'key'     => '_searchcraft_exclude_from_index',
-							'compare' => 'NOT EXISTS',
-						),
-					),
-				)
 			);
 
+			// Use cursor-based pagination: only fetch posts with ID greater than the last processed ID.
+			if ( $last_id > 0 ) {
+				$query_args['post__not_in'] = range( 1, $last_id );
+			}
+
+			// Query posts for this batch.
+			$batch_query = new WP_Query( $query_args );
+
 			if ( $batch_query->have_posts() ) {
+				$posts = $batch_query->posts;
+
+				// Remember the last ID for cursor-based pagination.
+				$last_id = end( $posts )->ID;
+
 				// Add this batch of documents to the index.
-				$this->searchcraft_add_documents( $batch_query->posts );
+				$this->searchcraft_add_documents( $posts );
 
 				// Log progress.
 				$processed = min( ( $batch + 1 ) * $batch_size, $total_posts );
 				Searchcraft_Helper_Functions::searchcraft_error_log( 'Searchcraft: Processed batch ' . ( $batch + 1 ) . " of {$batches} ({$processed}/{$total_posts} posts)" );
 			}
 
-			// Clean up memory.
+			// Aggressive memory cleanup between batches.
 			wp_reset_postdata();
+			unset( $batch_query, $posts, $query_args );
+
+			// Flush WordPress object cache to prevent memory buildup.
+			wp_cache_flush();
+
+			// Force garbage collection to free memory immediately.
+			if ( function_exists( 'gc_collect_cycles' ) ) {
+				gc_collect_cycles();
+			}
 		}
 
 		// Log completion.
