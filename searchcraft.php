@@ -146,15 +146,14 @@ function searchcraft_activation_notice() {
 add_action( 'admin_notices', 'searchcraft_activation_notice' );
 
 /**
- * Initialize and run the Searchcraft plugin.
+ * Initialize the Searchcraft plugin.
  *
- * This function creates an instance of the main plugin class and starts
- * the plugin execution.
+ * Creates an instance of the main plugin class, which loads dependencies
+ * and initializes the admin and public-facing components.
  *
  * @since 1.0.0
  */
 function run_searchcraft() {
-	$plugin = new Searchcraft();
-	$plugin->run();
+	new Searchcraft();
 }
 run_searchcraft();

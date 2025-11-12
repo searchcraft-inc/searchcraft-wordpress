@@ -83,6 +83,16 @@ class Searchcraft_Admin {
 		$this->plugin_name    = $plugin_name;
 		$this->plugin_version = $plugin_version;
 
+		// Initialize all hooks.
+		$this->init_hooks();
+	}
+
+	/**
+	 * Initialize all WordPress hooks for admin functionality.
+	 *
+	 * @since 1.0.0
+	 */
+	private function init_hooks() {
 		// Only run setup if we're in the admin area and not during plugin activation.
 		if ( is_admin() && ! ( defined( 'WP_INSTALLING' ) && WP_INSTALLING ) ) {
 			// Defer setup to avoid memory issues during activation.
@@ -92,6 +102,21 @@ class Searchcraft_Admin {
 		// Clear oldest post year transient when posts are published/updated.
 		add_action( 'publish_post', array( $this, 'clear_oldest_post_year_transient' ) );
 		add_action( 'delete_post', array( $this, 'clear_oldest_post_year_transient' ) );
+
+		// Register admin-specific hooks.
+		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_styles' ) );
+		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
+		add_action( 'admin_menu', array( $this, 'searchcraft_add_menu_page' ) );
+		add_action( 'admin_init', array( $this, 'searchcraft_request_handler' ) );
+
+		// Use wp_after_insert_post instead of transition_post_status to ensure Yoast SEO meta data is saved first.
+		add_action( 'wp_after_insert_post', array( $this, 'searchcraft_on_publish_post' ), 10, 4 );
+		add_action( 'transition_post_status', array( $this, 'searchcraft_on_unpublish_post' ), 10, 3 );
+
+		add_action( 'add_meta_boxes', array( $this, 'searchcraft_add_exclude_from_searchcraft_meta_box' ) );
+		// 'save_post' happens before 'transition_post_status' in the execution order
+		// So we will have the updated '_searchcraft_exclude_from_index' value before publishing the post
+		add_action( 'save_post', array( $this, 'searchcraft_on_save_post' ) );
 	}
 
 	/**
