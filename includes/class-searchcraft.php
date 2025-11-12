@@ -20,8 +20,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * The core plugin class
  *
- * This is used to define internationalization, admin-specific hooks, and
- * public-facing site hooks.
+ * This is used to load dependencies and initialize the admin and public-facing
+ * functionality of the plugin.
  *
  * Also maintains the unique identifier of this plugin as well as the current
  * version of the plugin.
@@ -32,15 +32,6 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @author     Searchcraft, Inc.
  */
 class Searchcraft {
-
-	/**
-	 * The loader that's responsible for maintaining and registering all hooks that power
-	 * the plugin.
-	 *
-	 * @since    1.0.0
-	 * @var Searchcraft_Loader $loader Maintains and registers all hooks for the plugin.
-	 */
-	protected $loader;
 
 	/**
 	 * The unique identifier of this plugin.
@@ -62,8 +53,7 @@ class Searchcraft {
 	 * Define the core functionality of the plugin.
 	 *
 	 * Set the plugin name and the plugin version that can be used throughout the plugin.
-	 * Load the dependencies, define the locale, and set the hooks for the admin area and
-	 * the public-facing side of the site.
+	 * Load the dependencies and initialize the admin and public-facing functionality.
 	 *
 	 * @since 1.0.0
 	 */
@@ -76,8 +66,7 @@ class Searchcraft {
 		$this->plugin_name = 'searchcraft';
 
 		$this->load_dependencies();
-		$this->define_admin_hooks();
-		$this->define_public_hooks();
+		$this->init_components();
 	}
 
 	/**
@@ -85,22 +74,14 @@ class Searchcraft {
 	 *
 	 * Include the following files that make up the plugin:
 	 *
-	 * - Searchcraft_Loader. Orchestrates the hooks of the plugin.
+	 * - Searchcraft_Config. Manages plugin configuration.
+	 * - Searchcraft_Helper_Functions. Provides helper functions.
 	 * - Searchcraft_Admin. Defines all hooks for the admin area.
 	 * - Searchcraft_Public. Defines all hooks for the public side of the site.
-	 *
-	 * Create an instance of the loader which will be used to register the hooks
-	 * with WordPress.
 	 *
 	 * @since 1.0.0
 	 */
 	private function load_dependencies() {
-		/**
-		 * The class responsible for orchestrating the actions and filters of the
-		 * core plugin.
-		 */
-		require_once plugin_dir_path( __DIR__ ) . 'includes/class-searchcraft-loader.php';
-
 		/**
 		 * The class responsible for configuration management.
 		 */
@@ -121,53 +102,22 @@ class Searchcraft {
 		 * side of the site, including SDK integration.
 		 */
 		require_once plugin_dir_path( __DIR__ ) . 'public/class-searchcraft-public.php';
-
-		$this->loader = new Searchcraft_Loader();
 	}
 
 	/**
-	 * Register all of the hooks related to the admin area functionality
-	 * of the plugin.
+	 * Initialize the admin and public-facing components.
+	 *
+	 * Creates instances of the admin and public classes, which register
+	 * their own hooks in their constructors.
 	 *
 	 * @since 1.0.0
 	 */
-	private function define_admin_hooks() {
-		$plugin_admin = new Searchcraft_Admin( $this->get_plugin_name(), $this->get_plugin_version() );
+	private function init_components() {
+		// Initialize admin functionality.
+		new Searchcraft_Admin( $this->get_plugin_name(), $this->get_plugin_version() );
 
-		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
-		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
-
-		$this->loader->add_action( 'admin_menu', $plugin_admin, 'searchcraft_add_menu_page' );
-
-		$this->loader->add_action( 'admin_init', $plugin_admin, 'searchcraft_request_handler' );
-
-		// Use wp_after_insert_post instead of transition_post_status to ensure Yoast SEO meta data is saved first.
-		$this->loader->add_action( 'wp_after_insert_post', $plugin_admin, 'searchcraft_on_publish_post', 10, 4 );
-		$this->loader->add_action( 'transition_post_status', $plugin_admin, 'searchcraft_on_unpublish_post', 10, 3 );
-
-		$this->loader->add_action( 'add_meta_boxes', $plugin_admin, 'searchcraft_add_exclude_from_searchcraft_meta_box' );
-		// 'save_post' happens before 'transition_post_status' in the execution order
-		// So we will have the updated '_searchcraft_exclude_from_index' value before publishing the post
-		$this->loader->add_action( 'save_post', $plugin_admin, 'searchcraft_on_save_post' );
-	}
-
-	/**
-	 * Register all of the hooks related to the public-facing functionality
-	 * of the plugin.
-	 *
-	 * @since 1.0.0
-	 */
-	private function define_public_hooks() {
-		$plugin_public = new Searchcraft_Public( $this->get_plugin_name(), $this->get_plugin_version() );
-	}
-
-	/**
-	 * Run the loader to execute all of the hooks with WordPress.
-	 *
-	 * @since 1.0.0
-	 */
-	public function run() {
-		$this->loader->run();
+		// Initialize public-facing functionality.
+		new Searchcraft_Public( $this->get_plugin_name(), $this->get_plugin_version() );
 	}
 
 	/**
@@ -189,15 +139,5 @@ class Searchcraft {
 	 */
 	public function get_plugin_version() {
 		return $this->plugin_version;
-	}
-
-	/**
-	 * The reference to the class that orchestrates the hooks with the plugin.
-	 *
-	 * @since 1.0.0
-	 * @return Searchcraft_Loader Orchestrates the hooks of the plugin.
-	 */
-	public function get_loader() {
-		return $this->loader;
 	}
 }
