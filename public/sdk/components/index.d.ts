@@ -183,6 +183,7 @@ export interface FacetsFilterItem extends FilterItem {
 	type: "facets";
 	options: {
 		showSublevel: boolean;
+		exclude?: string[];
 	};
 }
 export interface NumericFilterItem extends FilterItem {
@@ -833,6 +834,10 @@ export namespace Components {
 	 * ```
 	 */
 	interface SearchcraftFacetList {
+		/**
+		  * Array of facet values to exclude from rendering.
+		 */
+		"exclude"?: string[];
 		/**
 		  * The name of the field where facets are applied.
 		 */
@@ -2082,6 +2087,10 @@ declare namespace LocalJSX {
 	 * ```
 	 */
 	interface SearchcraftFacetList {
+		/**
+		  * Array of facet values to exclude from rendering.
+		 */
+		"exclude"?: string[];
 		/**
 		  * The name of the field where facets are applied.
 		 */

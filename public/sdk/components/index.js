@@ -1701,7 +1701,7 @@ class SearchcraftCore {
 }
 
 const name = "@searchcraft/javascript-sdk";
-const version = "0.12.1";
+const version = "0.12.2";
 
 /**
  * @fileoverview entry point for your component library

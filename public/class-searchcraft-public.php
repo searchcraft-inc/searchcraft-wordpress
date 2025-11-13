@@ -347,7 +347,7 @@ class Searchcraft_Public {
 
 		wp_enqueue_script(
 			$this->plugin_name . '-sdk-components',
-			plugin_dir_url( __FILE__ ) . 'sdk/components/index.js?v=0.12.1',
+			plugin_dir_url( __FILE__ ) . 'sdk/components/index.js?v=0.12.2',
 			$script_deps,
 			$this->version,
 			true
@@ -386,14 +386,14 @@ class Searchcraft_Public {
 		// Add CSS for Searchcraft components.
 		wp_enqueue_style(
 			$this->plugin_name . '-sdk-hologram-styles',
-			plugin_dir_url( __FILE__ ) . 'sdk/themes/hologram.css?v=0.12.1',
+			plugin_dir_url( __FILE__ ) . 'sdk/themes/hologram.css?v=0.12.2',
 			$style_deps,
 			$this->version,
 			'all'
 		);
 		wp_enqueue_style(
 			$this->plugin_name . '-sdk-styles',
-			plugin_dir_url( __FILE__ ) . 'css/searchcraft-sdk.css?v=0.12.1',
+			plugin_dir_url( __FILE__ ) . 'css/searchcraft-sdk.css?v=0.12.2',
 			$style_deps,
 			$this->version,
 			'all'
