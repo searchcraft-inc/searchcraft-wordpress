@@ -242,6 +242,7 @@ class Searchcraft_Public {
 		$js_config['enableExactMatchToggle'] = (bool) get_option( 'searchcraft_enable_exact_match_toggle', '1' );
 		$js_config['enableDateRange']        = (bool) get_option( 'searchcraft_enable_date_range', '1' );
 		$js_config['enableFacets']           = (bool) get_option( 'searchcraft_enable_facets', '1' );
+		$js_config['hideUncategorized']      = (bool) get_option( 'searchcraft_hide_uncategorized', false );
 
 		// Date slider options.
 		$admin_instance              = new Searchcraft_Admin( 'searchcraft', SEARCHCRAFT_VERSION );
@@ -347,7 +348,7 @@ class Searchcraft_Public {
 
 		wp_enqueue_script(
 			$this->plugin_name . '-sdk-components',
-			plugin_dir_url( __FILE__ ) . 'sdk/components/index.js?v=0.12.1',
+			plugin_dir_url( __FILE__ ) . 'sdk/components/index.js?v=0.12.2',
 			$script_deps,
 			$this->version,
 			true
@@ -386,14 +387,14 @@ class Searchcraft_Public {
 		// Add CSS for Searchcraft components.
 		wp_enqueue_style(
 			$this->plugin_name . '-sdk-hologram-styles',
-			plugin_dir_url( __FILE__ ) . 'sdk/themes/hologram.css?v=0.12.1',
+			plugin_dir_url( __FILE__ ) . 'sdk/themes/hologram.css?v=0.12.2',
 			$style_deps,
 			$this->version,
 			'all'
 		);
 		wp_enqueue_style(
 			$this->plugin_name . '-sdk-styles',
-			plugin_dir_url( __FILE__ ) . 'css/searchcraft-sdk.css?v=0.12.1',
+			plugin_dir_url( __FILE__ ) . 'css/searchcraft-sdk.css?v=0.12.2',
 			$style_deps,
 			$this->version,
 			'all'

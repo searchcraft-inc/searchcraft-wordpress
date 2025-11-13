@@ -1,6 +1,6 @@
 import { p as proxyCustomElement, H, h } from './p-5365011f.js';
 import { r as registry } from './p-e30203b1.js';
-import { d as defineCustomElement$4 } from './p-c8566920.js';
+import { d as defineCustomElement$4 } from './p-e8d97093.js';
 import { d as defineCustomElement$3 } from './p-c9b65e8f.js';
 import { d as defineCustomElement$2 } from './p-02ad136b.js';
 
@@ -122,7 +122,7 @@ const SearchcraftFilterPanel$1 = /*@__PURE__*/ proxyCustomElement(class Searchcr
                 case 'facets': {
                     const item = filterItem;
                     // return "filters-list"
-                    return (h("div", { class: 'searchcraft-filter-panel-section' }, h("p", { class: 'searchcraft-filter-panel-label' }, filterItem.label), h("searchcraft-facet-list", { fieldName: item.fieldName, onFacetSelectionUpdated: (event) => {
+                    return (h("div", { class: 'searchcraft-filter-panel-section' }, h("p", { class: 'searchcraft-filter-panel-label' }, filterItem.label), h("searchcraft-facet-list", { fieldName: item.fieldName, exclude: item.options.exclude, onFacetSelectionUpdated: (event) => {
                             this.handleFacetSelectionUpdated(item.fieldName, event.detail.paths);
                         } })));
                 }

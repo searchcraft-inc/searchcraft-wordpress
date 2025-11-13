@@ -76,8 +76,12 @@ const mergeFacetTrees = (currentTree, incomingTree) => {
  * It uses the `path` of each Facet to build the tree.
  *
  * @param facetWithChildArray
+ * @param exclude - Optional array of facet values or paths to exclude from the tree.
+ *                  - Values starting with "/" are treated as full paths and exclude the path and all children
+ *                    (e.g., "/news" excludes "/news", "/news/local", "/news/national", etc.)
+ *                  - Values without "/" are treated as segment names (e.g., "local" excludes all paths containing "local")
  */
-const facetWithChildrenArrayToCompleteFacetTree = (rootArray) => {
+const facetWithChildrenArrayToCompleteFacetTree = (rootArray, exclude) => {
     // 1) Start with an empty tree at root "/"
     const tree = {
         path: '/',
@@ -100,6 +104,29 @@ const facetWithChildrenArrayToCompleteFacetTree = (rootArray) => {
     // 3) Insert each flat node into our tree, creating missing ancestors
     for (const { path, count } of allFacets) {
         const segments = path.split('/').filter(Boolean); // "/sports/outdoors" -> ["sports","outdoors"]
+        // Skip this facet if it matches any excluded value
+        if (exclude && exclude.length > 0) {
+            let shouldExclude = false;
+            for (const excludeValue of exclude) {
+                if (excludeValue.startsWith('/')) {
+                    // Full path exclusion: prefix match (excludes the path and all children)
+                    if (path === excludeValue || path.startsWith(`${excludeValue}/`)) {
+                        shouldExclude = true;
+                        break;
+                    }
+                }
+                else {
+                    // Segment exclusion: check if any segment matches
+                    if (segments.includes(excludeValue)) {
+                        shouldExclude = true;
+                        break;
+                    }
+                }
+            }
+            if (shouldExclude) {
+                continue;
+            }
+        }
         let cursor = tree; // start at the root
         for (const segment of segments) {
             // Build the full path of this level
@@ -135,6 +162,10 @@ const SearchcraftFacetList = /*@__PURE__*/ proxyCustomElement(class SearchcraftF
      * The name of the field where facets are applied.
      */
     fieldName = '';
+    /**
+     * Array of facet values to exclude from rendering.
+     */
+    exclude;
     /**
      * Emitted when the facets are updated.
      */
@@ -189,7 +220,7 @@ const SearchcraftFacetList = /*@__PURE__*/ proxyCustomElement(class SearchcraftF
             path: '/',
             count: 0,
             children: incomingFacetsWithChildrenArray || [],
-        });
+        }, this.exclude);
         // Determine what action to take to accumulate items into the `facetTreeCollectedFromSearchResponse`.
         // This facet tree gets accumulated in different ways depending on what action type occured.
         switch (actionType) {
@@ -213,7 +244,7 @@ const SearchcraftFacetList = /*@__PURE__*/ proxyCustomElement(class SearchcraftF
                         path: '/',
                         count: 0,
                         children: supplementalFacetsWithChildrenArray || [],
-                    });
+                    }, this.exclude);
                     this.facetTreeCollectedFromSearchResponse = mergeFacetTrees(supplementalFacetTree, incomingFacetTree);
                 }
                 else {
@@ -255,7 +286,7 @@ const SearchcraftFacetList = /*@__PURE__*/ proxyCustomElement(class SearchcraftF
             }
         }
         this.facetTreeFromFacetPathsNotInSearchResponse =
-            facetWithChildrenArrayToCompleteFacetTree(collectedFacetArray);
+            facetWithChildrenArrayToCompleteFacetTree(collectedFacetArray, this.exclude);
         // Merges facetTreeCollectedFromSearchResponse with selectedFacetPathsNotInCurrentFacetTree.
         // This results in a single, final facet tree that gets rendered in as Checkboxes
         this.renderedFacetTree = deepMergeWithSpread(this.facetTreeFromFacetPathsNotInSearchResponse, this.facetTreeCollectedFromSearchResponse);
@@ -434,6 +465,7 @@ const SearchcraftFacetList = /*@__PURE__*/ proxyCustomElement(class SearchcraftF
 }, [0, "searchcraft-facet-list", {
         "searchcraftId": [1, "searchcraft-id"],
         "fieldName": [1, "field-name"],
+        "exclude": [16],
         "selectedPaths": [32],
         "facetTreeCollectedFromSearchResponse": [32],
         "renderedFacetTree": [32]
@@ -454,4 +486,4 @@ function defineCustomElement() {
 
 export { SearchcraftFacetList as S, defineCustomElement as d };
 
-//# sourceMappingURL=p-c8566920.js.map
+//# sourceMappingURL=p-e8d97093.js.map

@@ -34,6 +34,10 @@ export declare class SearchcraftFacetList {
      */
     fieldName: string;
     /**
+     * Array of facet values to exclude from rendering.
+     */
+    exclude?: string[];
+    /**
      * Emitted when the facets are updated.
      */
     facetSelectionUpdated?: EventEmitter<{
