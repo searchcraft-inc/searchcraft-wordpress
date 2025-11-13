@@ -229,8 +229,8 @@ class Searchcraft_Public {
 			$js_config['resultTemplateCallback'] = $result_template;
 		}
 		$js_config['orientation']            = get_option( 'searchcraft_result_orientation', 'column' );
-		$js_config['displayPostDate']        = (bool) get_option( 'searchcraft_display_post_date', true );
-		$js_config['displayPrimaryCategory'] = (bool) get_option( 'searchcraft_display_primary_category', true );
+		$js_config['displayPostDate']        = (bool) get_option( 'searchcraft_display_post_date', false );
+		$js_config['displayPrimaryCategory'] = (bool) get_option( 'searchcraft_display_primary_category', false );
 		$js_config['imageAlignment']         = get_option( 'searchcraft_image_alignment', 'left' );
 		if ( 'grid' === $js_config['orientation'] ) {
 			$js_config['imageAlignment'] = 'left';
