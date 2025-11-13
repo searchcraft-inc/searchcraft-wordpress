@@ -796,6 +796,9 @@ class Searchcraft_Admin {
 		$enable_facets = isset( $request['searchcraft_enable_facets'] ) ? '1' : '0';
 		update_option( 'searchcraft_enable_facets', $enable_facets );
 
+		$hide_uncategorized = isset( $request['searchcraft_hide_uncategorized'] ) ? true : false;
+		update_option( 'searchcraft_hide_uncategorized', $hide_uncategorized );
+
 		// Handle toggle button disabled color.
 		if ( isset( $request['searchcraft_toggle_button_disabled_color'] ) ) {
 			$toggle_button_disabled_color = sanitize_text_field( wp_unslash( $request['searchcraft_toggle_button_disabled_color'] ) );

@@ -242,6 +242,7 @@ class Searchcraft_Public {
 		$js_config['enableExactMatchToggle'] = (bool) get_option( 'searchcraft_enable_exact_match_toggle', '1' );
 		$js_config['enableDateRange']        = (bool) get_option( 'searchcraft_enable_date_range', '1' );
 		$js_config['enableFacets']           = (bool) get_option( 'searchcraft_enable_facets', '1' );
+		$js_config['hideUncategorized']      = (bool) get_option( 'searchcraft_hide_uncategorized', false );
 
 		// Date slider options.
 		$admin_instance              = new Searchcraft_Admin( 'searchcraft', SEARCHCRAFT_VERSION );

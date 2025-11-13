@@ -122,13 +122,17 @@
                 if (searchcraft_config.filterTaxonomies && Array.isArray(searchcraft_config.filterTaxonomies)) {
                     searchcraft_config.filterTaxonomies.forEach(taxonomy => {
                         const taxonomyName = taxonomy.name === "category" ? "categories" : taxonomy.name;
+                        const options = {
+                            showSublevel: true,
+                        }
+                        if (taxonomyName === 'categories' && searchcraft_config.hideUncategorized) {
+                            options.exclude = ['/uncategorized']
+                        }
                         filterPanelItems.push({
                             type: 'facets',
                             fieldName: taxonomyName,
                             label: `${taxonomy.label}`,
-                            options: {
-                                showSublevel: true,
-                            },
+                            options
                         });
                     });
                 }
