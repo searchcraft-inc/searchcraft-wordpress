@@ -33,7 +33,6 @@ require_once 'common-template-values.php';
 	--sc-summary-title-color: <?php echo esc_attr( $searchcraft_summary_title_color ); ?>;
 	--sc-summary-text-color: <?php echo esc_attr( $searchcraft_summary_text_color ); ?>;
 }
-
 .searchcraft-input-form-input {
 	padding: 12px 44px !important;
 }
@@ -189,7 +188,6 @@ button.searchcraft-toggle-button-background {
 	order: 1;
 	padding-top: 20px;
 }
-
 .searchcraft-results-content {
 	flex: 1;
 	order: 2;
@@ -475,4 +473,3 @@ if ( ! empty( $custom_css ) ) {
 		</div>
 	<?php endif; ?>
 </div>
-
