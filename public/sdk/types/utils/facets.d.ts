@@ -29,6 +29,10 @@ export declare const mergeFacetTrees: (currentTree: FacetTree, incomingTree: Fac
  * It uses the `path` of each Facet to build the tree.
  *
  * @param facetWithChildArray
+ * @param exclude - Optional array of facet values or paths to exclude from the tree.
+ *                  - Values starting with "/" are treated as full paths and exclude the path and all children
+ *                    (e.g., "/news" excludes "/news", "/news/local", "/news/national", etc.)
+ *                  - Values without "/" are treated as segment names (e.g., "local" excludes all paths containing "local")
  */
-export declare const facetWithChildrenArrayToCompleteFacetTree: (rootArray: FacetWithChildrenArray) => FacetTree;
+export declare const facetWithChildrenArrayToCompleteFacetTree: (rootArray: FacetWithChildrenArray, exclude?: string[]) => FacetTree;
 //# sourceMappingURL=facets.d.ts.map

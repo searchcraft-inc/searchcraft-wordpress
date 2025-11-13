@@ -145,6 +145,22 @@ function toggleFilterPanelOptions() {
 }
 
 /**
+ * Toggle facets options visibility
+ */
+function toggleFacetsOptions() {
+	const facetsCheckbox = document.getElementById('searchcraft_enable_facets');
+	const facetsOptions = document.querySelector('.searchcraft-facets-options');
+
+	if (facetsCheckbox && facetsOptions) {
+		if (facetsCheckbox.checked) {
+			facetsOptions.style.display = '';
+		} else {
+			facetsOptions.style.display = 'none';
+		}
+	}
+}
+
+/**
  * Toggle AI summary banner text visibility
  */
 function toggleAiSummaryLayout() {
@@ -220,6 +236,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
 			// Add event listener
 			filterPanelCheckbox.addEventListener('change', toggleFilterPanelOptions);
+		}
+
+		// Facets options toggle
+		const facetsCheckbox = document.getElementById('searchcraft_enable_facets');
+		if (facetsCheckbox) {
+			// Initial state
+			toggleFacetsOptions();
+
+			// Add event listener
+			facetsCheckbox.addEventListener('change', toggleFacetsOptions);
 		}
 
 		// AI summary banner text toggle

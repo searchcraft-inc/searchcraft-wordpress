@@ -8,6 +8,7 @@ export interface FacetsFilterItem extends FilterItem {
     type: 'facets';
     options: {
         showSublevel: boolean;
+        exclude?: string[];
     };
 }
 export interface NumericFilterItem extends FilterItem {

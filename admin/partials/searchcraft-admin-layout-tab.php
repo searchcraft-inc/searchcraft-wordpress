@@ -26,6 +26,7 @@ $enable_most_recent_toggle = true;
 $enable_exact_match_toggle = true;
 $enable_date_range         = true;
 $enable_facets             = true;
+$hide_uncategorized        = false;
 
 if ( $is_configured ) {
 	$search_experience         = get_option( 'searchcraft_search_experience', 'full' );
@@ -35,6 +36,7 @@ if ( $is_configured ) {
 	$enable_exact_match_toggle = get_option( 'searchcraft_enable_exact_match_toggle', '1' );
 	$enable_date_range         = get_option( 'searchcraft_enable_date_range', '1' );
 	$enable_facets             = get_option( 'searchcraft_enable_facets', '1' );
+	$hide_uncategorized        = get_option( 'searchcraft_hide_uncategorized', false );
 }
 ?>
 <div class="searchcraft-layout">
@@ -555,6 +557,22 @@ if ( $is_configured ) {
 											Show category/taxonomy facets in the filter panel.
 										</p>
 									</label>
+
+									<div class="searchcraft-facets-options" style="<?php echo $enable_facets ? '' : 'display:none;'; ?> padding-left: 2em; margin-bottom: 1em;">
+										<label for="searchcraft_hide_uncategorized" style="display: block;">
+											<input
+												type="checkbox"
+												name="searchcraft_hide_uncategorized"
+												id="searchcraft_hide_uncategorized"
+												value="1"
+												<?php checked( $hide_uncategorized, true ); ?>
+											/>
+											<strong>Hide Uncategorized</strong>
+											<p class="description" style="margin: 0.25em 0 0 1.5em;">
+												Hide the "Uncategorized" option from category facets.
+											</p>
+										</label>
+									</div>
 
 									<div style="margin-top: 1em;">
 										<label for="searchcraft_toggle_button_disabled_color" style="display: block; margin-bottom: 0.5em;">
