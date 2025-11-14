@@ -167,7 +167,7 @@ $has_read_key   = ! empty( Searchcraft_Config::get_read_key() );
 		$excluded_taxonomies = array( 'post_tag', 'post_format' );
 		$taxonomies = array_filter(
 			$taxonomies,
-			function( $taxonomy_obj ) use ( $excluded_taxonomies ) {
+			function ( $taxonomy_obj ) use ( $excluded_taxonomies ) {
 				return ! in_array( $taxonomy_obj->name, $excluded_taxonomies, true );
 			}
 		);
@@ -219,6 +219,37 @@ $has_read_key   = ! empty( Searchcraft_Config::get_read_key() );
 							</fieldset>
 							<p class="description">
 								Select which taxonomies should be available as filter options in the search interface.
+							</p>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		<?php endif; ?>
+
+		<?php if ( get_option( 'ppma_activated', true ) ) : ?>
+			<h3>Author Options</h3>
+			<table class="form-table">
+				<tbody>
+					<tr>
+						<th scope="row">
+							<label for="searchcraft_use_publishpress_authors">PublishPress Authors</label>
+						</th>
+						<td>
+							<?php
+							$use_publishpress_authors = get_option( 'searchcraft_use_publishpress_authors', '1' );
+							?>
+							<label>
+								<input
+									type="checkbox"
+									id="searchcraft_use_publishpress_authors"
+									name="searchcraft_use_publishpress_authors"
+									value="1"
+									<?php checked( $use_publishpress_authors, '1' ); ?>
+								/>
+								Use PublishPress Authors
+							</label>
+							<p class="description">
+								When enabled, the plugin will use PublishPress Authors for post author information instead of the default WordPress author.
 							</p>
 						</td>
 					</tr>

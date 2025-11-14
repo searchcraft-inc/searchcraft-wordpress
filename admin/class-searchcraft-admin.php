@@ -468,7 +468,7 @@ class Searchcraft_Admin {
 
 				// Save taxonomy filter selections.
 				$filter_taxonomies = isset( $_POST['searchcraft_filter_taxonomies'] ) && is_array( $_POST['searchcraft_filter_taxonomies'] ) // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in searchcraft_request_handler().
-					? array_map( 'sanitize_text_field', wp_unslash( $_POST['searchcraft_filter_taxonomies'] ) ) // phpcs:ignore WordPress.Security.NonceVerification.Missing
+					? array_map( 'sanitize_text_field', wp_unslash( $_POST['searchcraft_filter_taxonomies'] ) ) // phpcs:ignore WordPress.Security.NonceVerification.Missing  -- Nonce verified in searchcraft_request_handler().
 					: array();
 
 				// Always include category in the filter taxonomies.
@@ -477,6 +477,10 @@ class Searchcraft_Admin {
 				}
 
 				update_option( 'searchcraft_filter_taxonomies', $filter_taxonomies );
+
+				// Save PublishPress Authors setting.
+				$use_publishpress_authors = isset( $_POST['searchcraft_use_publishpress_authors'] ) ? '1' : '0'; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in searchcraft_request_handler().
+				update_option( 'searchcraft_use_publishpress_authors', $use_publishpress_authors );
 
 				// Check if taxonomies have changed and need index update.
 				// We need to update if taxonomies changed, regardless of whether we're adding or removing them.
@@ -1376,8 +1380,26 @@ class Searchcraft_Admin {
 				}
 			}
 
-			// Get author name.
-			$author_name = get_the_author_meta( 'display_name', $post->post_author );
+			// Get author ID and name.
+			$author_ids   = array( (string) $post->post_author );
+			$author_names = array( get_the_author_meta( 'display_name', $post->post_author ) );
+
+			// Check if PublishPress Authors is enabled and available.
+			$use_publishpress_authors = (bool) get_option( 'searchcraft_use_publishpress_authors', false );
+			if ( true === $use_publishpress_authors && get_option( 'ppma_activated', true ) ) {
+				$authors = get_multiple_authors( $post );
+				if ( ! empty( $authors ) && is_array( $authors ) ) {
+					// Use all authors from PublishPress Authors.
+					$author_ids   = array();
+					$author_names = array();
+					foreach ( $authors as $author ) {
+						if ( isset( $author->term_id ) && isset( $author->display_name ) ) {
+							$author_ids[]   = (string) $author->term_id;
+							$author_names[] = $author->display_name;
+						}
+					}
+				}
+			}
 
 			// Get primary category name (the one used in permalinks).
 			$primary_category_name = '';
@@ -1416,8 +1438,8 @@ class Searchcraft_Admin {
 				'post_title'            => $post->post_title,
 				'post_excerpt'          => get_the_excerpt( $post ),
 				'post_content'          => $clean_content,
-				'post_author_id'        => (string) $post->post_author,
-				'post_author_name'      => $author_name,
+				'post_author_id'        => $author_ids,
+				'post_author_name'      => $author_names,
 				'post_date'             => gmdate( 'c', strtotime( $post->post_date ) ), // Convert to ISO 8601 format.
 				'primary_category_name' => $primary_category_name,
 				'keyphrase'             => $yoast_keyphrase,
