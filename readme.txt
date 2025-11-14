@@ -69,6 +69,10 @@ Searchcraft Cloud customers may also reach out via our Discord server for assist
 
 == Changelog ==
 
+= 1.1.0 =
+
+* Adds support for multiple authors on a post and and a configuration option for using PostPublish authors instead of the stock WP authors if the plugin is present.
+
 = 1.0.3 =
 
 * Update Searchcraft JavaScript SDK to v0.12.2 (related to facet exclusion feature)
