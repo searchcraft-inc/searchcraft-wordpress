@@ -465,6 +465,9 @@ class Searchcraft_Admin {
 
 				// Get previous taxonomy selections.
 				$previous_taxonomies = get_option( 'searchcraft_filter_taxonomies', array() );
+				if ( ! is_array( $previous_taxonomies ) ) {
+					$previous_taxonomies = array();
+				}
 
 				// Save taxonomy filter selections.
 				$filter_taxonomies = isset( $_POST['searchcraft_filter_taxonomies'] ) && is_array( $_POST['searchcraft_filter_taxonomies'] ) // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in searchcraft_request_handler().
@@ -475,6 +478,15 @@ class Searchcraft_Admin {
 				if ( ! in_array( 'category', $filter_taxonomies, true ) ) {
 					$filter_taxonomies[] = 'category';
 				}
+
+				// Normalize previous taxonomies to also include category for fair comparison.
+				if ( ! in_array( 'category', $previous_taxonomies, true ) ) {
+					$previous_taxonomies[] = 'category';
+				}
+
+				// Sort both arrays to ensure order doesn't affect comparison.
+				sort( $previous_taxonomies );
+				sort( $filter_taxonomies );
 
 				update_option( 'searchcraft_filter_taxonomies', $filter_taxonomies );
 
@@ -1203,7 +1215,7 @@ class Searchcraft_Admin {
 			// Remove taxonomy fields that are no longer selected.
 			foreach ( $current_fields as $field_name => $field_config ) {
 				// Check if this is a taxonomy field that's no longer selected.
-				if ( isset( $all_taxonomies[ $field_name ] ) &&
+				if ( in_array( $field_name, $all_taxonomies, true ) &&
 					'category' !== $field_name &&
 					! isset( $desired_taxonomy_fields[ $field_name ] ) ) {
 					unset( $updated_fields[ $field_name ] );
