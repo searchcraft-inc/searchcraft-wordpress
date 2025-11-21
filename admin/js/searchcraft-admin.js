@@ -202,6 +202,44 @@ function toggleResultOrientationOptions() {
 	});
 }
 
+/**
+ * Toggle custom fields option visibility for custom post types
+ */
+function toggleCustomFieldsOption(checkbox) {
+	const postType = checkbox.getAttribute('data-post-type');
+	const customFieldsOption = document.querySelector('.searchcraft-custom-fields-option[data-post-type="' + postType + '"]');
+
+	if (customFieldsOption) {
+		const customFieldsCheckbox = customFieldsOption.querySelector('input[type="checkbox"]');
+
+		if (checkbox.checked) {
+			customFieldsOption.style.display = '';
+		} else {
+			customFieldsOption.style.display = 'none';
+			if (customFieldsCheckbox) {
+				customFieldsCheckbox.checked = false;
+			}
+		}
+	}
+}
+
+/**
+ * Initialize custom post type checkboxes
+ */
+function initCustomPostTypeCheckboxes() {
+	const customPostTypeCheckboxes = document.querySelectorAll('.searchcraft-custom-post-type-checkbox');
+
+	customPostTypeCheckboxes.forEach(function(checkbox) {
+		// Set initial state
+		toggleCustomFieldsOption(checkbox);
+
+		// Add event listener
+		checkbox.addEventListener('change', function() {
+			toggleCustomFieldsOption(this);
+		});
+	});
+}
+
 document.addEventListener('DOMContentLoaded', function() {
 	// Initialize color pickers
 	initColorPickers();
@@ -211,6 +249,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
 	// Initialize button with spinner functionality
 	initButtonWithSpinner();
+
+	// Initialize custom post type checkboxes
+	initCustomPostTypeCheckboxes();
 
 	// layout tab functionality
 	if (document.querySelector('.searchcraft-layout')) {

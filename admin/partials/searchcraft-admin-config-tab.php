@@ -19,6 +19,53 @@ $config         = Searchcraft_Config::get_all();
 $is_configured  = Searchcraft_Config::is_configured();
 $has_ingest_key = ! empty( Searchcraft_Config::get_ingest_key() );
 $has_read_key   = ! empty( Searchcraft_Config::get_read_key() );
+
+// Get all public taxonomies.
+$taxonomies          = get_taxonomies(
+	array(
+		'public' => true,
+	),
+	'objects'
+);
+$excluded_taxonomies = array( 'post_tag', 'post_format' );
+$taxonomies          = array_filter(
+	$taxonomies,
+	function ( $taxonomy_obj ) use ( $excluded_taxonomies ) {
+		return ! in_array( $taxonomy_obj->name, $excluded_taxonomies, true );
+	}
+);
+$selected_taxonomies = get_option( 'searchcraft_filter_taxonomies', array() );
+if ( ! is_array( $selected_taxonomies ) ) {
+	$selected_taxonomies = array();
+}
+if ( empty( $selected_taxonomies ) ) {
+	$selected_taxonomies = array( 'category' );
+}
+
+// Get all public post types.
+$all_post_types     = get_post_types(
+	array(
+		'public' => true,
+	),
+	'objects'
+);
+$builtin_post_types = array( 'post', 'page', 'attachment' );
+$custom_post_types  = array_filter(
+	$all_post_types,
+	function ( $post_type_obj ) use ( $builtin_post_types ) {
+		return ! in_array( $post_type_obj->name, $builtin_post_types, true );
+	}
+);
+
+$selected_custom_post_types = get_option( 'searchcraft_custom_post_types', array() );
+if ( ! is_array( $selected_custom_post_types ) ) {
+	$selected_custom_post_types = array();
+}
+
+$custom_post_types_with_fields = get_option( 'searchcraft_custom_post_types_with_fields', array() );
+if ( ! is_array( $custom_post_types_with_fields ) ) {
+	$custom_post_types_with_fields = array();
+}
 ?>
 <div class="searchcraft-config-section">
 	<h2 class="searchcraft-section-heading">Searchcraft Configuration</h2>
@@ -154,36 +201,6 @@ $has_read_key   = ! empty( Searchcraft_Config::get_read_key() );
 			</tbody>
 		</table>
 
-		<?php
-		// Get all public taxonomies.
-		$taxonomies = get_taxonomies(
-			array(
-				'public' => true,
-			),
-			'objects'
-		);
-
-		// Filter out post_tag and post_format.
-		$excluded_taxonomies = array( 'post_tag', 'post_format' );
-		$taxonomies = array_filter(
-			$taxonomies,
-			function ( $taxonomy_obj ) use ( $excluded_taxonomies ) {
-				return ! in_array( $taxonomy_obj->name, $excluded_taxonomies, true );
-			}
-		);
-
-		// Get currently selected taxonomies for filters.
-		$selected_taxonomies = get_option( 'searchcraft_filter_taxonomies', array() );
-		if ( ! is_array( $selected_taxonomies ) ) {
-			$selected_taxonomies = array();
-		}
-
-		// Ensure category is always in the selected list by default.
-		if ( empty( $selected_taxonomies ) ) {
-			$selected_taxonomies = array( 'category' );
-		}
-		?>
-
 		<?php if ( ! empty( $taxonomies ) ) : ?>
 			<h3>Filter Options</h3>
 			<table class="form-table">
@@ -226,7 +243,70 @@ $has_read_key   = ! empty( Searchcraft_Config::get_read_key() );
 			</table>
 		<?php endif; ?>
 
-		<?php if ( get_option( 'ppma_activated', true ) ) : ?>
+		<?php if ( ! empty( $custom_post_types ) ) : ?>
+			<h3>Custom Post Types</h3>
+			<table class="form-table">
+				<tbody>
+					<tr>
+						<th scope="row">
+							<label>Include these custom post types in search</label>
+						</th>
+						<td>
+							<fieldset>
+								<legend class="screen-reader-text"><span>Select custom post types to include in search</span></legend>
+								<?php foreach ( $custom_post_types as $post_type_obj ) : ?>
+									<?php
+									$is_checked        = in_array( $post_type_obj->name, $selected_custom_post_types, true );
+									$meta_keys         = Searchcraft_Helper_Functions::searchcraft_get_meta_keys_for_post_type( $post_type_obj->name );
+									$has_custom_fields = ! empty( $meta_keys );
+									$fields_checked    = in_array( $post_type_obj->name, $custom_post_types_with_fields, true );
+									?>
+									<div style="margin-bottom: 12px;">
+										<label style="display: block; margin-bottom: 4px;">
+											<input
+												type="checkbox"
+												name="searchcraft_custom_post_types[]"
+												value="<?php echo esc_attr( $post_type_obj->name ); ?>"
+												class="searchcraft-custom-post-type-checkbox"
+												data-post-type="<?php echo esc_attr( $post_type_obj->name ); ?>"
+												<?php checked( $is_checked ); ?>
+											/>
+											<strong><?php echo esc_html( $post_type_obj->label ); ?></strong>
+											<?php if ( ! empty( $post_type_obj->description ) ) : ?>
+												- <?php echo esc_html( $post_type_obj->description ); ?>
+											<?php else : ?>
+												(<?php echo esc_html( $post_type_obj->name ); ?>)
+											<?php endif; ?>
+										</label>
+										<?php if ( $has_custom_fields ) : ?>
+											<div class="searchcraft-custom-fields-option" data-post-type="<?php echo esc_attr( $post_type_obj->name ); ?>" style="padding-left: 2em; margin-top: 4px;<?php echo $is_checked ? '' : 'display:none;'; ?>">
+												<label>
+													<input
+														type="checkbox"
+														name="searchcraft_custom_post_types_with_fields[]"
+														value="<?php echo esc_attr( $post_type_obj->name ); ?>"
+														<?php checked( $fields_checked ); ?>
+													/>
+													Include custom fields
+												</label>
+											</div>
+										<?php endif; ?>
+									</div>
+								<?php endforeach; ?>
+							</fieldset>
+							<p class="description">
+								Select which custom post types should be included in the search index. If a custom post type has custom fields, you can optionally include those fields in the search.
+							</p>
+							<p class="description">
+								<strong>Note:</strong> To display custom fields in a search result you will need to create a <a href="https://docs.searchcraft.io/sdks/javascript/working-with-templates/" target="_blank">custom template</a>.
+							</p>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		<?php endif; ?>
+
+		<?php if ( get_option( 'ppma_activated' ) ) : ?>
 			<h3>Author Options</h3>
 			<table class="form-table">
 				<tbody>
