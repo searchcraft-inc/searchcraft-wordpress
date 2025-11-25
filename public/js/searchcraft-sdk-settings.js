@@ -39,7 +39,6 @@
         // Handle full experience or popover with no container specified
         if (settings.searchExperience === 'full' ||
             (settings.searchExperience === 'popover' && !settings.popoverContainerId)) {
-            console.log(settings);
             injectSearchHeader(settings.headerContent, settings.inputContainerId);
             // Inject results content for full experience
             if (settings.searchExperience === 'full' && settings.resultsContent) {
@@ -91,6 +90,7 @@
                 const currentYear = today.getFullYear();
                 const oldestYear = parseInt(searchcraft_config.oldestPostYear);
                 pastDate.setFullYear(oldestYear);
+
                 let filterPanelItems = [
                     {
                         type: 'mostRecentToggle',
@@ -136,6 +136,19 @@
                         });
                     });
                 }
+
+                // Add post type filter if enabled
+                if (searchcraft_config.postTypes && Array.isArray(searchcraft_config.postTypes)) {
+                    filterPanelItems.push({
+                        type: 'facets',
+                        fieldName: 'type',
+                        label: 'Content Type',
+                        options: {
+                            showSublevel: false,
+                        }
+                    });
+                }
+
                 filterPanelItems = filterPanelItems.filter(filter => {
                     // Filter based on config settings
                     if (filter.type === 'mostRecentToggle') {

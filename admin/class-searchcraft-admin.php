@@ -987,6 +987,9 @@ class Searchcraft_Admin {
 		$hide_uncategorized = isset( $request['searchcraft_hide_uncategorized'] ) ? true : false;
 		update_option( 'searchcraft_hide_uncategorized', $hide_uncategorized );
 
+		$enable_post_type_filter = isset( $request['searchcraft_enable_post_type_filter'] ) ? true : false;
+		update_option( 'searchcraft_enable_post_type_filter', $enable_post_type_filter );
+
 		// Handle toggle button disabled color.
 		if ( isset( $request['searchcraft_toggle_button_disabled_color'] ) ) {
 			$toggle_button_disabled_color = sanitize_text_field( wp_unslash( $request['searchcraft_toggle_button_disabled_color'] ) );
@@ -1489,10 +1492,11 @@ class Searchcraft_Admin {
 			// Add 'type' field if custom post types are selected.
 			if ( ! empty( $selected_custom_post_types ) ) {
 				$updated_fields['type'] = array(
-					'type'     => 'text',
+					'type'     => 'facet',
 					'stored'   => true,
 					'indexed'  => true,
 					'required' => false,
+					'multi'    => false,
 				);
 			} else {
 				// Remove 'type' field if no custom post types are selected.
@@ -1757,7 +1761,7 @@ class Searchcraft_Admin {
 			// Create document.
 			$document = array(
 				'id'                    => (string) $post->ID,
-				'type'                  => $post->post_type,
+				'type'                  => '/' . $post->post_type,
 				'post_title'            => $post->post_title,
 				'post_excerpt'          => get_the_excerpt( $post ),
 				'post_content'          => $clean_content,

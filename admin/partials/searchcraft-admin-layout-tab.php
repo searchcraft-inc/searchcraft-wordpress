@@ -27,6 +27,7 @@ $enable_exact_match_toggle = true;
 $enable_date_range         = true;
 $enable_facets             = true;
 $hide_uncategorized        = false;
+$enable_post_type_filter   = false;
 
 if ( $is_configured ) {
 	$search_experience         = get_option( 'searchcraft_search_experience', 'full' );
@@ -37,7 +38,12 @@ if ( $is_configured ) {
 	$enable_date_range         = get_option( 'searchcraft_enable_date_range', '1' );
 	$enable_facets             = get_option( 'searchcraft_enable_facets', '1' );
 	$hide_uncategorized        = get_option( 'searchcraft_hide_uncategorized', false );
+	$enable_post_type_filter   = get_option( 'searchcraft_enable_post_type_filter', false );
 }
+
+// Check if custom post types are enabled.
+$selected_custom_post_types = get_option( 'searchcraft_custom_post_types', array() );
+$has_custom_post_types = ! empty( $selected_custom_post_types );
 ?>
 <div class="searchcraft-layout">
 	<?php if ( ! $is_configured ) : ?>
@@ -543,6 +549,22 @@ if ( $is_configured ) {
 											Show the date range filter in the filter panel.
 										</p>
 									</label>
+
+									<?php if ( $has_custom_post_types ) : ?>
+										<label for="searchcraft_enable_post_type_filter" style="display: block; margin-bottom: 1em;">
+											<input
+												type="checkbox"
+												name="searchcraft_enable_post_type_filter"
+												id="searchcraft_enable_post_type_filter"
+												value="1"
+												<?php checked( $enable_post_type_filter, true ); ?>
+											/>
+											<strong>Enable Content Type Filter</strong>
+											<p class="description" style="margin: 0.25em 0 0 1.5em;">
+												Show a content type filter in the filter panel to allow filtering by post type.
+											</p>
+										</label>
+									<?php endif; ?>
 
 									<label for="searchcraft_enable_facets" style="display: block; margin-bottom: 1em;">
 										<input

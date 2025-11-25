@@ -244,6 +244,38 @@ class Searchcraft_Public {
 		$js_config['enableFacets']           = (bool) get_option( 'searchcraft_enable_facets', '1' );
 		$js_config['hideUncategorized']      = (bool) get_option( 'searchcraft_hide_uncategorized', false );
 
+		// Post type filter settings.
+		$enable_post_type_filter    = (bool) get_option( 'searchcraft_enable_post_type_filter', false );
+		$selected_custom_post_types = get_option( 'searchcraft_custom_post_types', array() );
+
+		// If custom post types are enabled and post type filter is enabled, add post types to config.
+		if ( ! empty( $selected_custom_post_types ) && $enable_post_type_filter ) {
+			// Build array of all post types (built-in + custom).
+			$post_types_config = array(
+				array(
+					'name'  => '/post',
+					'label' => 'Posts',
+				),
+				array(
+					'name'  => '/page',
+					'label' => 'Pages',
+				),
+			);
+
+			// Add custom post types with their labels.
+			foreach ( $selected_custom_post_types as $post_type_name ) {
+				$post_type_obj = get_post_type_object( $post_type_name );
+				if ( $post_type_obj ) {
+					$post_types_config[] = array(
+						'name'  => '/' . $post_type_name,
+						'label' => $post_type_obj->label,
+					);
+				}
+			}
+
+			$js_config['postTypes'] = $post_types_config;
+		}
+
 		// Date slider options.
 		$admin_instance              = new Searchcraft_Admin( 'searchcraft', SEARCHCRAFT_VERSION );
 		$oldest_post_year            = $admin_instance->get_oldest_post_year();
