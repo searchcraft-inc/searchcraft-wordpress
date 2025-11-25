@@ -91,23 +91,26 @@
                 const oldestYear = parseInt(searchcraft_config.oldestPostYear);
                 pastDate.setFullYear(oldestYear);
 
-                let filterPanelItems = [
-                    {
+                // Define all available filter items
+                const availableFilterItems = {
+                    'most_recent': {
                         type: 'mostRecentToggle',
                         fieldName: 'post_date',
                         label: 'Most Recent',
                         options: {
                             subLabel: 'Show the most recently published posts first.',
                         },
+                        enabled: searchcraft_config.enableMostRecentToggle == true,
                     },
-                    {
+                    'exact_match': {
                         type: 'exactMatchToggle',
                         label: 'Exact Match',
                         options: {
                             subLabel: 'Only show results that precisely match your search.',
                         },
+                        enabled: searchcraft_config.enableExactMatchToggle == true,
                     },
-                    {
+                    'date_range': {
                         type: 'dateRange',
                         fieldName: 'post_date',
                         label: 'Filter by Year',
@@ -115,57 +118,65 @@
                             minDate: pastDate,
                             granularity: 'year',
                         },
+                        // Only show date range if enabled AND there's more than one year of data
+                        enabled: searchcraft_config.enableDateRange == true && currentYear !== oldestYear,
                     },
-                ];
-
-                // Add facets for each enabled taxonomy
-                if (searchcraft_config.filterTaxonomies && Array.isArray(searchcraft_config.filterTaxonomies)) {
-                    searchcraft_config.filterTaxonomies.forEach(taxonomy => {
-                        const taxonomyName = taxonomy.name === "category" ? "categories" : taxonomy.name;
-                        const options = {
-                            showSublevel: true,
-                        }
-                        if (taxonomyName === 'categories' && searchcraft_config.hideUncategorized) {
-                            options.exclude = ['/uncategorized']
-                        }
-                        filterPanelItems.push({
-                            type: 'facets',
-                            fieldName: taxonomyName,
-                            label: `${taxonomy.label}`,
-                            options
-                        });
-                    });
-                }
-
-                // Add post type filter if enabled
-                if (searchcraft_config.postTypes && Array.isArray(searchcraft_config.postTypes)) {
-                    filterPanelItems.push({
+                    'post_type': {
                         type: 'facets',
                         fieldName: 'type',
                         label: 'Content Type',
                         options: {
                             showSublevel: false,
-                        }
-                    });
-                }
+                        },
+                        enabled: searchcraft_config.postTypes && Array.isArray(searchcraft_config.postTypes),
+                    },
+                    'facets': {
+                        type: 'facets',
+                        // This will be populated with taxonomy facets
+                        enabled: searchcraft_config.enableFacets == true,
+                    }
+                };
 
-                filterPanelItems = filterPanelItems.filter(filter => {
-                    // Filter based on config settings
-                    if (filter.type === 'mostRecentToggle') {
-                        return searchcraft_config.enableMostRecentToggle == true;
+                // Get the filter panel order from config
+                const filterPanelOrder = searchcraft_config.filterPanelOrder ||
+                    ['most_recent', 'exact_match', 'date_range', 'post_type', 'facets'];
+
+                // Build filterPanelItems array based on the saved order
+                let filterPanelItems = [];
+
+                filterPanelOrder.forEach(itemKey => {
+                    const item = availableFilterItems[itemKey];
+
+                    if (!item || !item.enabled) {
+                        return;
                     }
-                    if (filter.type === 'exactMatchToggle') {
-                        return searchcraft_config.enableExactMatchToggle == true;
+
+                    // Special handling for facets - add taxonomy facets
+                    if (itemKey === 'facets') {
+                        if (searchcraft_config.filterTaxonomies && Array.isArray(searchcraft_config.filterTaxonomies)) {
+                            searchcraft_config.filterTaxonomies.forEach(taxonomy => {
+                                const taxonomyName = taxonomy.name === "category" ? "categories" : taxonomy.name;
+                                const options = {
+                                    showSublevel: true,
+                                }
+                                if (taxonomyName === 'categories' && searchcraft_config.hideUncategorized) {
+                                    options.exclude = ['/uncategorized']
+                                }
+                                filterPanelItems.push({
+                                    type: 'facets',
+                                    fieldName: taxonomyName,
+                                    label: `${taxonomy.label}`,
+                                    options
+                                });
+                            });
+                        }
+                    } else {
+                        // Add the item (without the 'enabled' property)
+                        const { enabled, ...itemConfig } = item;
+                        filterPanelItems.push(itemConfig);
                     }
-                    if (filter.type === 'dateRange') {
-                        // Only show date range if enabled AND there's more than one year of data
-                        return searchcraft_config.enableDateRange == true && currentYear !== oldestYear;
-                    }
-                    if (filter.type === 'facets') {
-                        return searchcraft_config.enableFacets == true;
-                    }
-                    return true;
                 });
+
                 filterPanel.items = filterPanelItems;
             }
         }

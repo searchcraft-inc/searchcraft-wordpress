@@ -44,6 +44,12 @@ if ( $is_configured ) {
 // Check if custom post types are enabled.
 $selected_custom_post_types = get_option( 'searchcraft_custom_post_types', array() );
 $has_custom_post_types = ! empty( $selected_custom_post_types );
+
+// Get filter panel order.
+$filter_panel_order = get_option( 'searchcraft_filter_panel_order', array( 'most_recent', 'exact_match', 'date_range', 'post_type', 'facets' ) );
+if ( ! is_array( $filter_panel_order ) || empty( $filter_panel_order ) ) {
+	$filter_panel_order = array( 'most_recent', 'exact_match', 'date_range', 'post_type', 'facets' );
+}
 ?>
 <div class="searchcraft-layout">
 	<?php if ( ! $is_configured ) : ?>
@@ -507,93 +513,104 @@ $has_custom_post_types = ! empty( $selected_custom_post_types );
 							<td style="padding-left: 2em;">
 								<fieldset style="border-left: 3px solid #ddd; padding-left: 1em; margin-left: 0;">
 									<legend style="font-weight: 600; margin-bottom: 0.5em;">Filter Panel Options</legend>
+									<p class="description" style="margin-bottom: 1em;">
+										Drag and drop to reorder the filter panel items. The order here will be reflected in the filter panel on the search page.
+									</p>
+									<input type="hidden" name="searchcraft_filter_panel_order" id="searchcraft_filter_panel_order" value="<?php echo esc_attr( implode( ',', $filter_panel_order ) ); ?>" />
 
-									<label for="searchcraft_enable_most_recent_toggle" style="display: block; margin-bottom: 1em;">
-										<input
-											type="checkbox"
-											name="searchcraft_enable_most_recent_toggle"
-											id="searchcraft_enable_most_recent_toggle"
-											value="1"
-											<?php checked( $enable_most_recent_toggle, true ); ?>
-										/>
-										<strong>Enable Most Recent Filter</strong>
-										<p class="description" style="margin: 0.25em 0 0 1.5em;">
-											Show the "Most Recent" toggle in the filter panel.
-										</p>
-									</label>
+									<div id="searchcraft-filter-panel-items" class="searchcraft-sortable-list">
+										<?php
+										// Define all filter items with their properties.
+										$filter_items = array(
+											'most_recent' => array(
+												'id'          => 'searchcraft_enable_most_recent_toggle',
+												'name'        => 'searchcraft_enable_most_recent_toggle',
+												'label'       => 'Enable Most Recent Filter',
+												'description' => 'Show the "Most Recent" toggle in the filter panel.',
+												'checked'     => $enable_most_recent_toggle,
+												'always_show' => true,
+											),
+											'exact_match' => array(
+												'id'          => 'searchcraft_enable_exact_match_toggle',
+												'name'        => 'searchcraft_enable_exact_match_toggle',
+												'label'       => 'Enable Exact Match Filter',
+												'description' => 'Show the "Exact Match" toggle in the filter panel.',
+												'checked'     => $enable_exact_match_toggle,
+												'always_show' => true,
+											),
+											'date_range'  => array(
+												'id'          => 'searchcraft_enable_date_range',
+												'name'        => 'searchcraft_enable_date_range',
+												'label'       => 'Enable Date Range Filter',
+												'description' => 'Show the date range filter in the filter panel.',
+												'checked'     => $enable_date_range,
+												'always_show' => true,
+											),
+											'post_type'   => array(
+												'id'          => 'searchcraft_enable_post_type_filter',
+												'name'        => 'searchcraft_enable_post_type_filter',
+												'label'       => 'Enable Content Type Filter',
+												'description' => 'Show a content type filter in the filter panel to allow filtering by post type.',
+												'checked'     => $enable_post_type_filter,
+												'always_show' => $has_custom_post_types,
+											),
+											'facets'      => array(
+												'id'          => 'searchcraft_enable_facets',
+												'name'        => 'searchcraft_enable_facets',
+												'label'       => 'Enable Facets',
+												'description' => 'Show category/taxonomy facets in the filter panel.',
+												'checked'     => $enable_facets,
+												'always_show' => true,
+												'has_suboption' => true,
+											),
+										);
 
-									<label for="searchcraft_enable_exact_match_toggle" style="display: block; margin-bottom: 1em;">
-										<input
-											type="checkbox"
-											name="searchcraft_enable_exact_match_toggle"
-											id="searchcraft_enable_exact_match_toggle"
-											value="1"
-											<?php checked( $enable_exact_match_toggle, true ); ?>
-										/>
-										<strong>Enable Exact Match Filter</strong>
-										<p class="description" style="margin: 0.25em 0 0 1.5em;">
-											Show the "Exact Match" toggle in the filter panel.
-										</p>
-									</label>
-
-									<label for="searchcraft_enable_date_range" style="display: block; margin-bottom: 1em;">
-										<input
-											type="checkbox"
-											name="searchcraft_enable_date_range"
-											id="searchcraft_enable_date_range"
-											value="1"
-											<?php checked( $enable_date_range, true ); ?>
-										/>
-										<strong>Enable Date Range Filter</strong>
-										<p class="description" style="margin: 0.25em 0 0 1.5em;">
-											Show the date range filter in the filter panel.
-										</p>
-									</label>
-
-									<?php if ( $has_custom_post_types ) : ?>
-										<label for="searchcraft_enable_post_type_filter" style="display: block; margin-bottom: 1em;">
-											<input
-												type="checkbox"
-												name="searchcraft_enable_post_type_filter"
-												id="searchcraft_enable_post_type_filter"
-												value="1"
-												<?php checked( $enable_post_type_filter, true ); ?>
-											/>
-											<strong>Enable Content Type Filter</strong>
-											<p class="description" style="margin: 0.25em 0 0 1.5em;">
-												Show a content type filter in the filter panel to allow filtering by post type.
-											</p>
-										</label>
-									<?php endif; ?>
-
-									<label for="searchcraft_enable_facets" style="display: block; margin-bottom: 1em;">
-										<input
-											type="checkbox"
-											name="searchcraft_enable_facets"
-											id="searchcraft_enable_facets"
-											value="1"
-											<?php checked( $enable_facets, true ); ?>
-										/>
-										<strong>Enable Facets</strong>
-										<p class="description" style="margin: 0.25em 0 0 1.5em;">
-											Show category/taxonomy facets in the filter panel.
-										</p>
-									</label>
-
-									<div class="searchcraft-facets-options" style="<?php echo $enable_facets ? '' : 'display:none;'; ?> padding-left: 2em; margin-bottom: 1em;">
-										<label for="searchcraft_hide_uncategorized" style="display: block;">
-											<input
-												type="checkbox"
-												name="searchcraft_hide_uncategorized"
-												id="searchcraft_hide_uncategorized"
-												value="1"
-												<?php checked( $hide_uncategorized, true ); ?>
-											/>
-											<strong>Hide Uncategorized</strong>
-											<p class="description" style="margin: 0.25em 0 0 1.5em;">
-												Hide the "Uncategorized" option from category facets.
-											</p>
-										</label>
+										// Render items in the saved order.
+										foreach ( $filter_panel_order as $item_key ) {
+											if ( ! isset( $filter_items[ $item_key ] ) ) {
+												continue;
+											}
+											$item = $filter_items[ $item_key ];
+											if ( ! $item['always_show'] ) {
+												continue;
+											}
+											?>
+											<div class="searchcraft-filter-item" data-filter-key="<?php echo esc_attr( $item_key ); ?>" draggable="true">
+												<span class="searchcraft-drag-handle dashicons dashicons-menu" title="Drag to reorder"></span>
+												<label for="<?php echo esc_attr( $item['id'] ); ?>" style="display: block; margin-bottom: 0;">
+													<input
+														type="checkbox"
+														name="<?php echo esc_attr( $item['name'] ); ?>"
+														id="<?php echo esc_attr( $item['id'] ); ?>"
+														value="1"
+														<?php checked( $item['checked'], true ); ?>
+													/>
+													<strong><?php echo esc_html( $item['label'] ); ?></strong>
+													<p class="description" style="margin: 0.25em 0 0 1.5em;">
+														<?php echo esc_html( $item['description'] ); ?>
+													</p>
+												</label>
+												<?php if ( isset( $item['has_suboption'] ) && $item['has_suboption'] ) : ?>
+													<div class="searchcraft-facets-options" style="<?php echo $enable_facets ? '' : 'display:none;'; ?> padding-left: 2em; margin-top: 0.5em;">
+														<label for="searchcraft_hide_uncategorized" style="display: block;">
+															<input
+																type="checkbox"
+																name="searchcraft_hide_uncategorized"
+																id="searchcraft_hide_uncategorized"
+																value="1"
+																<?php checked( $hide_uncategorized, true ); ?>
+															/>
+															<strong>Hide Uncategorized</strong>
+															<p class="description" style="margin: 0.25em 0 0 1.5em;">
+																Hide the "Uncategorized" option from category facets.
+															</p>
+														</label>
+													</div>
+												<?php endif; ?>
+											</div>
+											<?php
+										}
+										?>
 									</div>
 
 									<div style="margin-top: 1em;">

@@ -240,6 +240,117 @@ function initCustomPostTypeCheckboxes() {
 	});
 }
 
+/**
+ * Initialize drag and drop for filter panel items
+ */
+function initFilterPanelDragDrop() {
+	const container = document.getElementById('searchcraft-filter-panel-items');
+	if (!container) {
+		return;
+	}
+
+	const items = container.querySelectorAll('.searchcraft-filter-item');
+	let draggedElement = null;
+
+	items.forEach(function(item) {
+		// Dragstart event
+		item.addEventListener('dragstart', function(e) {
+			draggedElement = this;
+			this.classList.add('dragging');
+			e.dataTransfer.effectAllowed = 'move';
+			e.dataTransfer.setData('text/html', this.innerHTML);
+		});
+
+		// Dragend event
+		item.addEventListener('dragend', function() {
+			this.classList.remove('dragging');
+			// Remove all drag-over classes
+			items.forEach(function(item) {
+				item.classList.remove('drag-over');
+			});
+			draggedElement = null;
+			// Update the hidden input with new order
+			updateFilterPanelOrder();
+		});
+
+		// Dragover event
+		item.addEventListener('dragover', function(e) {
+			if (e.preventDefault) {
+				e.preventDefault();
+			}
+			e.dataTransfer.dropEffect = 'move';
+
+			if (this === draggedElement) {
+				return false;
+			}
+
+			// Remove drag-over from all items
+			items.forEach(function(item) {
+				item.classList.remove('drag-over');
+			});
+
+			// Add drag-over to current item
+			this.classList.add('drag-over');
+
+			return false;
+		});
+
+		// Dragleave event
+		item.addEventListener('dragleave', function() {
+			this.classList.remove('drag-over');
+		});
+
+		// Drop event
+		item.addEventListener('drop', function(e) {
+			if (e.stopPropagation) {
+				e.stopPropagation();
+			}
+
+			if (draggedElement !== this) {
+				// Get the bounding rectangles
+				const draggedRect = draggedElement.getBoundingClientRect();
+				const targetRect = this.getBoundingClientRect();
+
+				// Determine if we should insert before or after
+				if (draggedRect.top < targetRect.top) {
+					// Dragging from top to bottom - insert after
+					this.parentNode.insertBefore(draggedElement, this.nextSibling);
+				} else {
+					// Dragging from bottom to top - insert before
+					this.parentNode.insertBefore(draggedElement, this);
+				}
+			}
+
+			this.classList.remove('drag-over');
+			return false;
+		});
+	});
+}
+
+/**
+ * Update the hidden input field with the current order of filter panel items
+ */
+function updateFilterPanelOrder() {
+	const container = document.getElementById('searchcraft-filter-panel-items');
+	const hiddenInput = document.getElementById('searchcraft_filter_panel_order');
+
+	if (!container || !hiddenInput) {
+		return;
+	}
+
+	const items = container.querySelectorAll('.searchcraft-filter-item');
+	const order = [];
+
+	items.forEach(function(item) {
+		const filterKey = item.getAttribute('data-filter-key');
+		if (filterKey) {
+			order.push(filterKey);
+		}
+	});
+
+	hiddenInput.value = order.join(',');
+}
+
 document.addEventListener('DOMContentLoaded', function() {
 	// Initialize color pickers
 	initColorPickers();
@@ -310,5 +421,8 @@ document.addEventListener('DOMContentLoaded', function() {
 			columnRadio.addEventListener('change', toggleResultOrientationOptions);
 			gridRadio.addEventListener('change', toggleResultOrientationOptions);
 		}
+
+		// Initialize drag and drop for filter panel items
+		initFilterPanelDragDrop();
 	}
 });

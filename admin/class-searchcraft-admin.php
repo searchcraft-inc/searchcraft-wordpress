@@ -990,6 +990,25 @@ class Searchcraft_Admin {
 		$enable_post_type_filter = isset( $request['searchcraft_enable_post_type_filter'] ) ? true : false;
 		update_option( 'searchcraft_enable_post_type_filter', $enable_post_type_filter );
 
+		// Handle filter panel order.
+		if ( isset( $request['searchcraft_filter_panel_order'] ) ) {
+			$filter_panel_order = sanitize_text_field( wp_unslash( $request['searchcraft_filter_panel_order'] ) );
+			$filter_panel_order_array = array_filter( array_map( 'trim', explode( ',', $filter_panel_order ) ) );
+
+			// Validate that we have valid filter keys.
+			$valid_keys = array( 'most_recent', 'exact_match', 'date_range', 'post_type', 'facets' );
+			$filter_panel_order_array = array_intersect( $filter_panel_order_array, $valid_keys );
+
+			// Ensure all keys are present (add missing ones at the end).
+			foreach ( $valid_keys as $key ) {
+				if ( ! in_array( $key, $filter_panel_order_array, true ) ) {
+					$filter_panel_order_array[] = $key;
+				}
+			}
+
+			update_option( 'searchcraft_filter_panel_order', $filter_panel_order_array );
+		}
+
 		// Handle toggle button disabled color.
 		if ( isset( $request['searchcraft_toggle_button_disabled_color'] ) ) {
 			$toggle_button_disabled_color = sanitize_text_field( wp_unslash( $request['searchcraft_toggle_button_disabled_color'] ) );

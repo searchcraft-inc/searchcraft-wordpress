@@ -244,6 +244,13 @@ class Searchcraft_Public {
 		$js_config['enableFacets']           = (bool) get_option( 'searchcraft_enable_facets', '1' );
 		$js_config['hideUncategorized']      = (bool) get_option( 'searchcraft_hide_uncategorized', false );
 
+		// Filter panel order.
+		$filter_panel_order = get_option( 'searchcraft_filter_panel_order', array( 'most_recent', 'exact_match', 'date_range', 'post_type', 'facets' ) );
+		if ( ! is_array( $filter_panel_order ) || empty( $filter_panel_order ) ) {
+			$filter_panel_order = array( 'most_recent', 'exact_match', 'date_range', 'post_type', 'facets' );
+		}
+		$js_config['filterPanelOrder'] = $filter_panel_order;
+
 		// Post type filter settings.
 		$enable_post_type_filter    = (bool) get_option( 'searchcraft_enable_post_type_filter', false );
 		$selected_custom_post_types = get_option( 'searchcraft_custom_post_types', array() );
