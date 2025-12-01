@@ -28,7 +28,7 @@ require_once 'common-template-values.php';
 <div class="searchcraft-main-content">
 	<?php if ( $searchcraft_include_filter_panel ) : ?>
 	<div id="searchcraft-filter-panel-container">
-		<h3 class="searchcraft-filter-panel-header">Filters</h3>
+		<h3 class="searchcraft-filter-panel-header" data-toggle-filter-panel>Filters</h3>
 		<searchcraft-filter-panel />
 	</div>
 	<?php endif; ?>

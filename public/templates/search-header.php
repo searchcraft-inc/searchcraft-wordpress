@@ -281,11 +281,10 @@ button.searchcraft-toggle-button-background {
 }
 
 /* Mobile styles */
-@media (max-width: 768px) {
+@media (max-width: 767px) {
 	.searchcraft-main-content {
 		flex-direction: column;
 	}
-
 	#searchcraft-filter-panel-container {
 		flex: none;
 		width: 100%;
@@ -294,6 +293,7 @@ button.searchcraft-toggle-button-background {
 
 	.searchcraft-results-content {
 		order: 2; /* Below filter panel on mobile */
+		padding-top: 0px;
 	}
 	body:has(#wpadminbar) .searchcraft-popover-form-modal {
 		margin-top: 44px;
@@ -310,6 +310,17 @@ button.searchcraft-toggle-button-background {
 
 	.searchcraft-popover-container {
 		/*text-align: center;*/
+	}
+
+	/* Mobile: Image above content for column orientation */
+	.searchcraft-result-item {
+		flex-direction: column !important;
+	}
+
+	.searchcraft-result-image {
+		order: -1 !important; /* Always place image first, regardless of HTML order */
+		max-width: 100% !important;
+		width: 100% !important;
 	}
 }
 
@@ -370,6 +381,17 @@ searchcraft-summary-box, .searchcraft-summary-box {
 .searchcraft-toggle-button-label, .searchcraft-filter-panel-label {
 	font-size: 1rem;
 }
+
+.searchcraft-filter-panel-header,
+.searchcraft-facet-list-checkbox-label,
+.searchcraft-filter-panel-label,
+.searchcraft-slider-end-label,
+.searchcraft-slider-start-label,
+.searchcraft-toggle-button-label,
+.searchcraft-toggle-button-sub-label {
+	color: <?php echo esc_attr( $searchcraft_filter_label_color ); ?>;
+}
+
 .searchcraft-toggle-button {
 	border-bottom: 1px solid #e9ecef;
 	margin-bottom: 10px;
