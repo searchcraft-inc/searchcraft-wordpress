@@ -626,6 +626,20 @@ if ( ! is_array( $filter_panel_order ) || empty( $filter_panel_order ) ) {
 											Choose the background color for toggle buttons in their disabled state. Enabled state uses the brand color by default.
 										</p>
 									</div>
+
+									<div style="margin-top: 1em;">
+										<label for="searchcraft_filter_label_color" style="display: block; margin-bottom: 0.5em;">
+											<strong>Filter Label Color</strong>
+										</label>
+										<?php
+										$filter_label_color = get_option( 'searchcraft_filter_label_color', '#000000' );
+										?>
+										<input type="color" name="searchcraft_filter_label_color" id="searchcraft_filter_label_color" value="<?php echo esc_attr( $filter_label_color ); ?>" class="searchcraft-color-picker" />
+										<input type="text" name="searchcraft_filter_label_color_hex" id="searchcraft_filter_label_color_hex" value="<?php echo esc_attr( $filter_label_color ); ?>" class="regular-text searchcraft-hex-input" pattern="^#[0-9A-Fa-f]{6}$" placeholder="#000000" />
+										<p class="description" style="margin: 0.25em 0 0 0;">
+											Choose the color for filter panel labels (e.g., "Categories", "Most Recent").
+										</p>
+									</div>
 								</fieldset>
 							</td>
 						</tr>

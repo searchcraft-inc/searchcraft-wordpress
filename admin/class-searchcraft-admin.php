@@ -1021,6 +1021,18 @@ class Searchcraft_Admin {
 			update_option( 'searchcraft_toggle_button_disabled_color', $toggle_button_disabled_color );
 		}
 
+		// Handle filter label color.
+		if ( isset( $request['searchcraft_filter_label_color'] ) ) {
+			$filter_label_color = sanitize_text_field( wp_unslash( $request['searchcraft_filter_label_color'] ) );
+
+			// Validate hex color format.
+			if ( ! preg_match( '/^#[a-fA-F0-9]{6}$/', $filter_label_color ) ) {
+				$filter_label_color = '#000000';
+			}
+
+			update_option( 'searchcraft_filter_label_color', $filter_label_color );
+		}
+
 		// Handle results per page setting.
 		if ( isset( $request['searchcraft_results_per_page'] ) ) {
 			$results_per_page = absint( wp_unslash( $request['searchcraft_results_per_page'] ) );
