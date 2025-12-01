@@ -130,6 +130,14 @@ export namespace Components {
          */
         "items": FilterItem[];
         /**
+          * Controls whether the filter panel automatically hides/shows based on window size. - 'auto': Automatically hide/show based on window width - 'manual': User controls visibility manually
+         */
+        "responsiveBehavior"?: 'auto' | 'manual';
+        /**
+          * The breakpoint (in pixels) below which the filter panel will be hidden. Defaults to 768px (--sc-breakpoint-md).
+         */
+        "responsiveBreakpoint"?: number;
+        /**
           * The id of the Searchcraft instance that this component should use.
          */
         "searchcraftId"?: string;
@@ -1384,6 +1392,14 @@ declare namespace LocalJSX {
           * The items to filter.
          */
         "items"?: FilterItem[];
+        /**
+          * Controls whether the filter panel automatically hides/shows based on window size. - 'auto': Automatically hide/show based on window width - 'manual': User controls visibility manually
+         */
+        "responsiveBehavior"?: 'auto' | 'manual';
+        /**
+          * The breakpoint (in pixels) below which the filter panel will be hidden. Defaults to 768px (--sc-breakpoint-md).
+         */
+        "responsiveBreakpoint"?: number;
         /**
           * The id of the Searchcraft instance that this component should use.
          */

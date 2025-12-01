@@ -12,7 +12,7 @@ const SearchcraftInputLabel = /*@__PURE__*/ proxyCustomElement(class Searchcraft
     inputLabelClassName = '';
     label = '';
     render() {
-        return (h("label", { key: '3622c616d480e57b1dfaa2d61637a30b843cb968', class: classNames('searchcraft-input-label', this.inputLabelClassName), htmlFor: 'searchcraft-input-id' }, this.label));
+        return (h("label", { key: '1008f9beb320aaa94026604b283eb65a96023265', class: classNames('searchcraft-input-label', this.inputLabelClassName), htmlFor: 'searchcraft-input-id' }, this.label));
     }
 }, [0, "searchcraft-input-label", {
         "inputLabelClassName": [1, "input-label-class-name"],
@@ -34,4 +34,4 @@ function defineCustomElement() {
 
 export { SearchcraftInputLabel as S, defineCustomElement as d };
 
-//# sourceMappingURL=p-1adf78b9.js.map
+//# sourceMappingURL=p-fa799946.js.map

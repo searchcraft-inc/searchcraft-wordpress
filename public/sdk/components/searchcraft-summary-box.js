@@ -1,7 +1,7 @@
 import { p as proxyCustomElement, H, h } from './p-5365011f.js';
 import { r as registry } from './p-e30203b1.js';
 import { c as commonjsGlobal, D as DOMPurify } from './p-e2a10337.js';
-import { d as defineCustomElement$2 } from './p-919734fe.js';
+import { d as defineCustomElement$2 } from './p-46ddde99.js';
 
 var marked_umd = {exports: {}};
 
@@ -2284,7 +2284,7 @@ const SearchcraftSummaryBox$1 = /*@__PURE__*/ proxyCustomElement(class Searchcra
         return h("div", { class: 'searchcraft-summary-box-content' }, this.summary);
     }
     render() {
-        return h("div", { key: 'c88d0bf7e12ad0fa0c019d207854a6e92babc683', class: 'searchcraft-summary-box' }, this.renderContent());
+        return h("div", { key: '94033d861f93036430eca149b3c017fb6099fb17', class: 'searchcraft-summary-box' }, this.renderContent());
     }
 }, [0, "searchcraft-summary-box", {
         "searchcraftId": [1, "searchcraft-id"],

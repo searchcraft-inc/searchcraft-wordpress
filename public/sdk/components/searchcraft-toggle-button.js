@@ -1,4 +1,4 @@
-import { S as SearchcraftToggleButton$1, d as defineCustomElement$1 } from './p-02ad136b.js';
+import { S as SearchcraftToggleButton$1, d as defineCustomElement$1 } from './p-16181756.js';
 
 const SearchcraftToggleButton = SearchcraftToggleButton$1;
 const defineCustomElement = defineCustomElement$1;

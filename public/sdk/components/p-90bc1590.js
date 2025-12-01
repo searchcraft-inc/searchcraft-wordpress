@@ -1,7 +1,7 @@
 import { p as proxyCustomElement, H, h } from './p-5365011f.js';
 import { r as registry } from './p-e30203b1.js';
 import { d as defineCustomElement$2 } from './p-87435aac.js';
-import { d as defineCustomElement$1 } from './p-fc8ccffa.js';
+import { d as defineCustomElement$1 } from './p-38b2dad0.js';
 
 const SearchcraftPopoverListView = /*@__PURE__*/ proxyCustomElement(class SearchcraftPopoverListView extends H {
     constructor() {
@@ -146,4 +146,4 @@ function defineCustomElement() {
 
 export { SearchcraftPopoverListView as S, defineCustomElement as d };
 
-//# sourceMappingURL=p-b13c7fbb.js.map
+//# sourceMappingURL=p-90bc1590.js.map

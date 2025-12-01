@@ -654,6 +654,7 @@ export interface SearchcraftStateFunctions {
 	search: (options?: {
 		skipSummary?: boolean;
 	}) => Promise<void>;
+	setFilterPanelVisibility: (isVisible: boolean) => void;
 	setPopoverVisibility: (isVisible: boolean) => void;
 	setSearchResultsCount: (count: number) => void;
 	setSearchResultsPage: (page: number) => void;
@@ -676,6 +677,7 @@ export interface SearchcraftStateValues {
 	hotkey: string;
 	hotkeyModifier: "ctrl" | "meta" | "alt" | "option";
 	facetPathsForIndexFields: Record<string, FacetPathsForIndexField>;
+	isFilterPanelVisible: boolean;
 	isPopoverVisible: boolean;
 	isSearchInProgress: boolean;
 	rangeValueForIndexFields: Record<string, RangeValueForIndexField>;
@@ -878,6 +880,14 @@ export namespace Components {
 		  * The items to filter.
 		 */
 		"items": FilterItem[];
+		/**
+		  * Controls whether the filter panel automatically hides/shows based on window size. - 'auto': Automatically hide/show based on window width - 'manual': User controls visibility manually
+		 */
+		"responsiveBehavior"?: "auto" | "manual";
+		/**
+		  * The breakpoint (in pixels) below which the filter panel will be hidden. Defaults to 768px (--sc-breakpoint-md).
+		 */
+		"responsiveBreakpoint"?: number;
 		/**
 		  * The id of the Searchcraft instance that this component should use.
 		 */
@@ -2137,6 +2147,14 @@ declare namespace LocalJSX {
 		  * The items to filter.
 		 */
 		"items"?: FilterItem[];
+		/**
+		  * Controls whether the filter panel automatically hides/shows based on window size. - 'auto': Automatically hide/show based on window width - 'manual': User controls visibility manually
+		 */
+		"responsiveBehavior"?: "auto" | "manual";
+		/**
+		  * The breakpoint (in pixels) below which the filter panel will be hidden. Defaults to 768px (--sc-breakpoint-md).
+		 */
+		"responsiveBreakpoint"?: number;
 		/**
 		  * The id of the Searchcraft instance that this component should use.
 		 */

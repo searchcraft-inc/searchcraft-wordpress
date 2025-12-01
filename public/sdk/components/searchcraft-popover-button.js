@@ -101,7 +101,7 @@ const SearchcraftPopoverButton$1 = /*@__PURE__*/ proxyCustomElement(class Search
         }
     }
     render() {
-        return (h("button", { key: 'ef815c1ea4ecde68fe152f80b811a95ccb9a38be', class: `searchcraft-popover-button ${this.type ? ` searchcraft-popover-button-${this.type}` : ''}`, innerHTML: typeof this.template !== 'undefined'
+        return (h("button", { key: '4f11d81bb189a929372d9e398a0913b3b626e42c', class: `searchcraft-popover-button ${this.type ? ` searchcraft-popover-button-${this.type}` : ''}`, innerHTML: typeof this.template !== 'undefined'
                 ? this.template({ isPopoverVisible: this.isPopoverVisible }, { html })
                 : undefined, onClick: this.handleOnClick.bind(this), type: 'button' }, typeof this.template !== 'undefined'
             ? undefined

@@ -157,10 +157,10 @@ const SearchcraftSlider = /*@__PURE__*/ proxyCustomElement(class SearchcraftSlid
             100;
         const startLabel = this.getLabel(this.startValue);
         const endLabel = this.getLabel(this.endValue);
-        return (h("div", { key: '2c72254f52151edd2e2fa89c092fc788db0b5562', class: 'searchcraft-slider' }, h("div", { key: '98c25badf2c9386d7173ea552e510dcc168e7fc7', class: 'searchcraft-slider-range' }, h("div", { key: '50774db2253e34b1bce68acc0a40b2706cab542d', class: 'searchcraft-slider-active-range', style: {
+        return (h("div", { key: 'd5035ed8bcbf95c0ef5b2a7a9ef471e318a9dc30', class: 'searchcraft-slider' }, h("div", { key: 'f5f7bc48703250b4f6c75a1f07c921233bd957d5', class: 'searchcraft-slider-range' }, h("div", { key: 'fc2ec9f9786986a7306ffe43b54c47c35a1f086a', class: 'searchcraft-slider-active-range', style: {
                 left: `${startPercent}%`,
                 width: `${endPercent - startPercent}%`,
-            } }), h("input", { key: '229afedc1318a63cbd75806805210cf4f5695e6e', class: classNames('searchcraft-slider-input', 'searchcraft-slider-input-min-handle'), max: this.upperBound, min: this.lowerBound, onInput: this.handleStartValueChange.bind(this), step: this.step, style: { zIndex: this.lastFocusedHandle === 'min' ? '2' : '1' }, type: 'range', value: this.startValue }), h("input", { key: '6aa038b01daaba86f501ebbbec30fc6720b549b3', class: classNames('searchcraft-slider-input', 'searchcraft-slider-input-max-handle'), max: this.upperBound, min: this.lowerBound, onInput: this.handleEndValueChange.bind(this), step: this.step, style: { zIndex: this.lastFocusedHandle === 'max' ? '2' : '1' }, type: 'range', value: this.endValue })), h("div", { key: 'f70501538635c3b08ad1e6ac101d0b3192ef8e04', class: 'searchcraft-slider-label' }, h("span", { key: 'ddd539b86774f8900771d77d5ef7eb3a67c98d59', class: 'searchcraft-slider-start-label' }, startLabel), h("span", { key: 'b754a9c8d284e0623032cee6b92f9df88873ec04', class: 'searchcraft-slider-end-label' }, endLabel))));
+            } }), h("input", { key: '716316b5ce507c40db5b7bd408f47b3bece88494', class: classNames('searchcraft-slider-input', 'searchcraft-slider-input-min-handle'), max: this.upperBound, min: this.lowerBound, onInput: this.handleStartValueChange.bind(this), step: this.step, style: { zIndex: this.lastFocusedHandle === 'min' ? '2' : '1' }, type: 'range', value: this.startValue }), h("input", { key: 'e2ad0d586136185faccb50d6d7fb113a64ddac42', class: classNames('searchcraft-slider-input', 'searchcraft-slider-input-max-handle'), max: this.upperBound, min: this.lowerBound, onInput: this.handleEndValueChange.bind(this), step: this.step, style: { zIndex: this.lastFocusedHandle === 'max' ? '2' : '1' }, type: 'range', value: this.endValue })), h("div", { key: '7e9ab9fa9563cac6a1dfdd11910e04084ae5348d', class: 'searchcraft-slider-label' }, h("span", { key: '0909279f460c4be84c1088c5981a5f5299e8e2a0', class: 'searchcraft-slider-start-label' }, startLabel), h("span", { key: '4b610a68f97fcbc0aa1eda428dfa1e53b00efe43', class: 'searchcraft-slider-end-label' }, endLabel))));
     }
 }, [0, "searchcraft-slider", {
         "max": [2],
@@ -190,4 +190,4 @@ function defineCustomElement() {
 
 export { SearchcraftSlider as S, defineCustomElement as d };
 
-//# sourceMappingURL=p-c9b65e8f.js.map
+//# sourceMappingURL=p-afe7ce60.js.map

@@ -1191,6 +1191,7 @@ const initialSearchcraftStateValues = {
     hotkey: 'k',
     hotkeyModifier: 'meta',
     facetPathsForIndexFields: {},
+    isFilterPanelVisible: true,
     isPopoverVisible: false,
     isSearchInProgress: false,
     rangeValueForIndexFields: {},
@@ -1396,6 +1397,9 @@ const createSearchcraftStore = (searchcraftId, initialState = {}) => {
                     shouldCacheResultsForEmptyState: false,
                 });
             },
+            setFilterPanelVisibility: (isVisible) => set({
+                isFilterPanelVisible: isVisible,
+            }),
             setPopoverVisibility: (isVisible) => set({
                 isPopoverVisible: isVisible,
             }),
@@ -1701,7 +1705,7 @@ class SearchcraftCore {
 }
 
 const name = "@searchcraft/javascript-sdk";
-const version = "0.12.2";
+const version = "0.13.0";
 
 /**
  * @fileoverview entry point for your component library

@@ -55,7 +55,7 @@ const SearchcraftPopoverListItem = /*@__PURE__*/ proxyCustomElement(class Search
         }
     };
     render() {
-        return (h("div", { key: 'fe1f0a2803c05c7f7901a1e34e3751283683b841', class: 'searchcraft-popover-list-item' }, h("a", { key: 'b1765b28e4df4483554e4aa1e776f85817f45709', class: 'searchcraft-popover-list-item-link', href: this.href, onClick: this.handleLinkClick.bind(this) }, this.imageSource && (h("div", { key: 'd47112466fe3414278f88db73294c829eceb63ba', class: 'searchcraft-popover-list-item-image-wrapper' }, h("img", { key: 'cf65d6520a2586f9b056775a0d1c3e85cb81cdd7', alt: this.imageAlt, src: this.imageSource, class: 'searchcraft-popover-list-item-image' }))), h("div", { key: 'b6bdaf2e52e216d20c23790b4b53563be8709d40', class: 'searchcraft-popover-list-item-content' }, this.title && (h("p", { key: '21a6541924914c8ea2b798d0e910c6e4544b7e46', class: 'searchcraft-popover-list-item-content-title' }, this.title)), this.subtitle && (h("p", { key: '625a1d6b1a7e6bfb848fd49cb316968b396b0473', class: 'searchcraft-popover-list-item-content-subtitle' }, this.subtitle))))));
+        return (h("div", { key: 'd1c9c310b8abc9d2370efb802eac1edf4189519d', class: 'searchcraft-popover-list-item' }, h("a", { key: '30eb1a5076c5b4b95ae43147eaee0bb72ce46179', class: 'searchcraft-popover-list-item-link', href: this.href, onClick: this.handleLinkClick.bind(this) }, this.imageSource && (h("div", { key: 'd18ff55823dc2c61f3786f423936af8b009aeeda', class: 'searchcraft-popover-list-item-image-wrapper' }, h("img", { key: '56f4cc1d472f7da05e64fcf52c560a7ad0cdf7a6', alt: this.imageAlt, src: this.imageSource, class: 'searchcraft-popover-list-item-image' }))), h("div", { key: '78a0f0235d5e71d10076b70ccbaf4b58e0d6fea0', class: 'searchcraft-popover-list-item-content' }, this.title && (h("p", { key: '4489047af56e5aa295cb5f036e970dcad053d3b7', class: 'searchcraft-popover-list-item-content-title' }, this.title)), this.subtitle && (h("p", { key: '4d177c227a1dbf1233022d738403c8eb93ba328d', class: 'searchcraft-popover-list-item-content-subtitle' }, this.subtitle))))));
     }
 }, [0, "searchcraft-popover-list-item", {
         "item": [16],
@@ -84,4 +84,4 @@ function defineCustomElement() {
 
 export { SearchcraftPopoverListItem as S, defineCustomElement as d };
 
-//# sourceMappingURL=p-fc8ccffa.js.map
+//# sourceMappingURL=p-38b2dad0.js.map
