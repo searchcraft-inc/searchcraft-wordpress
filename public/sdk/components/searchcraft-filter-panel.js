@@ -1,13 +1,15 @@
-import { p as proxyCustomElement, H, h } from './p-5365011f.js';
-import { r as registry } from './p-e30203b1.js';
-import { d as defineCustomElement$4 } from './p-e8d97093.js';
-import { d as defineCustomElement$3 } from './p-afe7ce60.js';
-import { d as defineCustomElement$2 } from './p-16181756.js';
+import { p as proxyCustomElement, H, h } from './p-DO5g2x-l.js';
+import { r as registry } from './p-D0j0UFpV.js';
+import { d as defineCustomElement$4 } from './p-BV4HUriZ.js';
+import { d as defineCustomElement$3 } from './p-BbSxfaD7.js';
+import { d as defineCustomElement$2 } from './p-D5p2scT9.js';
 
 const SearchcraftFilterPanel$1 = /*@__PURE__*/ proxyCustomElement(class SearchcraftFilterPanel extends H {
-    constructor() {
+    constructor(registerHost) {
         super();
-        this.__registerHost();
+        if (registerHost !== false) {
+            this.__registerHost();
+        }
     }
     /**
      * The id of the Searchcraft instance that this component should use.
@@ -293,7 +295,7 @@ const SearchcraftFilterPanel$1 = /*@__PURE__*/ proxyCustomElement(class Searchcr
             }
         })));
     }
-}, [0, "searchcraft-filter-panel", {
+}, [768, "searchcraft-filter-panel", {
         "searchcraftId": [1, "searchcraft-id"],
         "items": [16],
         "responsiveBreakpoint": [2, "responsive-breakpoint"],
@@ -334,5 +336,6 @@ const SearchcraftFilterPanel = SearchcraftFilterPanel$1;
 const defineCustomElement = defineCustomElement$1;
 
 export { SearchcraftFilterPanel, defineCustomElement };
+//# sourceMappingURL=searchcraft-filter-panel.js.map
 
 //# sourceMappingURL=searchcraft-filter-panel.js.map

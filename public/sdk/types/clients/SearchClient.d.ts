@@ -1,5 +1,5 @@
 import type { SearchcraftCore } from "../classes/index";
-import type { SearchcraftConfig, SearchcraftResponse, SearchClientRequestProperties } from "../types/index";
+import type { SearchClientRequestProperties, SearchcraftConfig, SearchcraftResponse } from "../types/index";
 export declare class SearchClient {
     private config;
     private userId;

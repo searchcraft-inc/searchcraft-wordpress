@@ -5,8 +5,9 @@ export declare class MeasureClient {
     private config;
     private sdkInfo;
     private userId;
+    private userType;
     sessionId: string;
-    constructor(config: SearchcraftConfig, sdkInfo: SearchcraftSDKInfo, userId: string);
+    constructor(config: SearchcraftConfig, sdkInfo: SearchcraftSDKInfo, userId: string, userType: 'authenticated' | 'anonymous');
     /**
      * Getter for the base url used by the /measure endpoints.
      */

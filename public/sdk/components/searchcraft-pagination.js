@@ -1,12 +1,14 @@
-import { p as proxyCustomElement, H, h } from './p-5365011f.js';
-import { r as registry } from './p-e30203b1.js';
-import { c as classNames } from './p-5cdc6210.js';
-import { d as defineCustomElement$2 } from './p-acf23bab.js';
+import { p as proxyCustomElement, H, h } from './p-DO5g2x-l.js';
+import { r as registry } from './p-D0j0UFpV.js';
+import { c as classNames } from './p-BfTCfPZ1.js';
+import { d as defineCustomElement$2 } from './p-C681KruS.js';
 
 const SearchcraftPagination$1 = /*@__PURE__*/ proxyCustomElement(class SearchcraftPagination extends H {
-    constructor() {
+    constructor(registerHost) {
         super();
-        this.__registerHost();
+        if (registerHost !== false) {
+            this.__registerHost();
+        }
     }
     /**
      * The id of the Searchcraft instance that this component should use.
@@ -97,7 +99,8 @@ const SearchcraftPagination$1 = /*@__PURE__*/ proxyCustomElement(class Searchcra
         const isInitialQuery = typeof this.searchClientRequestProperties === 'string' &&
             this.searchTerm.trim() === '';
         // early return if there isn't a searchTerm (unless it's initialQuery) or there is 1 or fewer pages of results
-        if ((!this.searchTerm && !isInitialQuery) || this.searchResultsPagesCount <= 1) {
+        if ((!this.searchTerm && !isInitialQuery) ||
+            this.searchResultsPagesCount <= 1) {
             return;
         }
         return (h("div", { class: 'searchcraft-pagination' }, h("div", { class: 'searchcraft-pagination-control' }, h("searchcraft-button", { disabled: this.searchResultsPage === 1, hierarchy: 'tertiary', onButtonClick: () => this.handleGoToPage(Math.max(1, this.searchResultsPage - 1)), label: 'Previous', iconPosition: 'left', icon: h("svg", { class: 'searchcraft-button-icon', width: '20', height: '20', viewBox: '0 0 20 20', fill: 'none', xmlns: 'http://www.w3.org/2000/svg' }, h("title", null, "Previous page icon"), h("path", { d: 'M12.5 15L7.5 10L12.5 5', stroke: 'currentColor', "stroke-width": '1.5', "stroke-linecap": 'round', "stroke-linejoin": 'round' })), iconOnly: true })), h("ul", { class: 'searchcraft-pagination-list' }, this.renderOddPaginationItem(1), this.renderEvenPaginationItem(2), this.renderMiddlePaginationItem(), this.renderEvenPaginationItem(this.searchResultsPagesCount > 4
@@ -106,7 +109,7 @@ const SearchcraftPagination$1 = /*@__PURE__*/ proxyCustomElement(class Searchcra
                 this.handleGoToPage(Math.min(this.searchResultsPagesCount, this.searchResultsPage + 1));
             }, label: 'Next', iconPosition: 'right', icon: h("svg", { class: 'searchcraft-button-icon', width: '20', height: '20', viewBox: '0 0 20 20', fill: 'none', xmlns: 'http://www.w3.org/2000/svg' }, h("title", null, "Next page icon"), h("path", { d: 'M7.5 15L12.5 10L7.5 5', stroke: 'currentColor', "stroke-width": '1.5', "stroke-linecap": 'round', "stroke-linejoin": 'round' })), iconOnly: true }))));
     }
-}, [0, "searchcraft-pagination", {
+}, [768, "searchcraft-pagination", {
         "searchcraftId": [1, "searchcraft-id"],
         "searchTerm": [32],
         "searchResultsPerPage": [32],
@@ -141,5 +144,6 @@ const SearchcraftPagination = SearchcraftPagination$1;
 const defineCustomElement = defineCustomElement$1;
 
 export { SearchcraftPagination, defineCustomElement };
+//# sourceMappingURL=searchcraft-pagination.js.map
 
 //# sourceMappingURL=searchcraft-pagination.js.map

@@ -1,5 +1,5 @@
-import type { AdClientResponseItem, SearchClientResponseItem, PopoverResultMappings } from "../../types/index";
 import type { SearchcraftCore } from "../../classes/index";
+import type { AdClientResponseItem, PopoverResultMappings, SearchClientResponseItem } from "../../types/index";
 /**
  * This web component is designed to display a list of results within a popover interface.
  * It is consumed within the `searchcraft-popover-form` component.

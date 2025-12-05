@@ -1,11 +1,13 @@
-import { p as proxyCustomElement, H, h } from './p-5365011f.js';
-import { r as registry } from './p-e30203b1.js';
-import { h as html } from './p-b4b67072.js';
+import { p as proxyCustomElement, H, h } from './p-DO5g2x-l.js';
+import { r as registry } from './p-D0j0UFpV.js';
+import { h as html } from './p-_aHgRsRD.js';
 
 const SearchcraftPopoverButton$1 = /*@__PURE__*/ proxyCustomElement(class SearchcraftPopoverButton extends H {
-    constructor() {
+    constructor(registerHost) {
         super();
-        this.__registerHost();
+        if (registerHost !== false) {
+            this.__registerHost();
+        }
     }
     /**
      * A callback function responsible for rendering the button contents.
@@ -109,7 +111,7 @@ const SearchcraftPopoverButton$1 = /*@__PURE__*/ proxyCustomElement(class Search
                 ? this.renderSlot()
                 : 'Open Popover'));
     }
-}, [4, "searchcraft-popover-button", {
+}, [772, "searchcraft-popover-button", {
         "template": [16],
         "type": [1],
         "searchcraftId": [1, "searchcraft-id"],
@@ -137,5 +139,6 @@ const SearchcraftPopoverButton = SearchcraftPopoverButton$1;
 const defineCustomElement = defineCustomElement$1;
 
 export { SearchcraftPopoverButton, defineCustomElement };
+//# sourceMappingURL=searchcraft-popover-button.js.map
 
 //# sourceMappingURL=searchcraft-popover-button.js.map

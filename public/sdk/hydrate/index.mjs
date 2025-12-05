@@ -32,6 +32,7 @@ function hydrateFactory($stencilWindow, $stencilHydrateOpts, $stencilHydrateResu
   var CharacterData = $stencilWindow.CharacterData;
   var CSS = $stencilWindow.CSS;
   var CustomEvent = $stencilWindow.CustomEvent;
+  var CSSStyleSheet = $stencilWindow.CSSStyleSheet;
   var Document = $stencilWindow.Document;
   var ShadowRoot = $stencilWindow.ShadowRoot;
   var DocumentFragment = $stencilWindow.DocumentFragment;
@@ -123,11 +124,13 @@ function hydrateFactory($stencilWindow, $stencilHydrateOpts, $stencilHydrateResu
     /*hydrateAppClosure start*/
 
 
+var node_crypto = require('node:crypto');
+
 const NAMESPACE = 'searchcraft-javascript-sdk';
-const BUILD = /* searchcraft-javascript-sdk */ { allRenderFn: true, appendChildSlotFix: false, asyncLoading: true, attachStyles: true, cloneNodeFix: false, cmpDidLoad: true, cmpDidRender: false, cmpDidUnload: false, cmpDidUpdate: false, cmpShouldUpdate: false, cmpWillLoad: false, cmpWillRender: false, cmpWillUpdate: false, connectedCallback: true, constructableCSS: false, cssAnnotations: true, devTools: false, disconnectedCallback: true, element: false, event: true, experimentalScopedSlotChanges: false, experimentalSlotFixes: false, formAssociated: false, hasRenderFn: true, hostListener: false, hostListenerTarget: false, hostListenerTargetBody: false, hostListenerTargetDocument: false, hostListenerTargetParent: false, hostListenerTargetWindow: false, hotModuleReplacement: false, hydrateClientSide: true, hydrateServerSide: true, hydratedAttribute: false, hydratedClass: true, hydratedSelectorName: "hydrated", invisiblePrehydration: true, isDebug: false, isDev: false, isTesting: false, lazyLoad: true, lifecycle: true, lifecycleDOMEvents: false, member: true, method: false, mode: false, modernPropertyDecls: true, observeAttribute: true, profile: false, prop: true, propBoolean: true, propMutable: false, propNumber: true, propString: true, reflect: false, scoped: false, scopedSlotTextContentFix: false, scriptDataOpts: false, shadowDelegatesFocus: false, shadowDom: false, shadowDomShim: true, slot: true, slotChildNodesFix: false, slotRelocation: true, state: true, style: false, svg: true, taskQueue: true, updatable: true, vdomAttribute: true, vdomClass: true, vdomFunctional: true, vdomKey: true, vdomListener: true, vdomPropOrAttr: true, vdomRef: false, vdomRender: true, vdomStyle: true, vdomText: true, vdomXlink: false, watchCallback: true };
+const BUILD = /* searchcraft-javascript-sdk */ { hydratedSelectorName: "hydrated", shadowDom: false, slotRelocation: true, state: true, updatable: true};
 
 /*
- Stencil Hydrate Platform v4.25.0 | MIT Licensed | https://stenciljs.com
+ Stencil Hydrate Platform v4.38.3 | MIT Licensed | https://stenciljs.com
  */
 var __defProp = Object.defineProperty;
 var __export = (target, all) => {
@@ -138,6 +141,30 @@ var __export = (target, all) => {
 // src/utils/constants.ts
 var SVG_NS = "http://www.w3.org/2000/svg";
 var HTML_NS = "http://www.w3.org/1999/xhtml";
+var PrimitiveType = /* @__PURE__ */ ((PrimitiveType2) => {
+  PrimitiveType2["Undefined"] = "undefined";
+  PrimitiveType2["Null"] = "null";
+  PrimitiveType2["String"] = "string";
+  PrimitiveType2["Number"] = "number";
+  PrimitiveType2["SpecialNumber"] = "number";
+  PrimitiveType2["Boolean"] = "boolean";
+  PrimitiveType2["BigInt"] = "bigint";
+  return PrimitiveType2;
+})(PrimitiveType || {});
+var NonPrimitiveType = /* @__PURE__ */ ((NonPrimitiveType2) => {
+  NonPrimitiveType2["Array"] = "array";
+  NonPrimitiveType2["Date"] = "date";
+  NonPrimitiveType2["Map"] = "map";
+  NonPrimitiveType2["Object"] = "object";
+  NonPrimitiveType2["RegularExpression"] = "regexp";
+  NonPrimitiveType2["Set"] = "set";
+  NonPrimitiveType2["Channel"] = "channel";
+  NonPrimitiveType2["Symbol"] = "symbol";
+  return NonPrimitiveType2;
+})(NonPrimitiveType || {});
+var TYPE_CONSTANT = "type";
+var VALUE_CONSTANT = "value";
+var SERIALIZED_PREFIX = "serialized:";
 
 // src/utils/es2022-rewire-class-members.ts
 var reWireGetterSetter = (instance, hostRef) => {
@@ -147,24 +174,134 @@ var reWireGetterSetter = (instance, hostRef) => {
   members.map(([memberName, [memberFlags]]) => {
     if ((memberFlags & 31 /* Prop */ || memberFlags & 32 /* State */)) {
       const ogValue = instance[memberName];
-      const ogDescriptor = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(instance), memberName);
-      Object.defineProperty(instance, memberName, {
-        get() {
-          return ogDescriptor.get.call(this);
-        },
-        set(newValue) {
-          ogDescriptor.set.call(this, newValue);
-        },
-        configurable: true,
-        enumerable: true
-      });
+      const ogDescriptor = getPropertyDescriptor(Object.getPrototypeOf(instance), memberName) || Object.getOwnPropertyDescriptor(instance, memberName);
+      if (ogDescriptor) {
+        Object.defineProperty(instance, memberName, {
+          get() {
+            return ogDescriptor.get.call(this);
+          },
+          set(newValue) {
+            ogDescriptor.set.call(this, newValue);
+          },
+          configurable: true,
+          enumerable: true
+        });
+      }
       instance[memberName] = hostRef.$instanceValues$.has(memberName) ? hostRef.$instanceValues$.get(memberName) : ogValue;
     }
   });
 };
+function getPropertyDescriptor(obj, memberName) {
+  while (obj) {
+    const desc = Object.getOwnPropertyDescriptor(obj, memberName);
+    if (desc == null ? void 0 : desc.get) return desc;
+    obj = Object.getPrototypeOf(obj);
+  }
+  return void 0;
+}
 var isComplexType = (o) => {
   o = typeof o;
   return o === "object" || o === "function";
+};
+
+// src/utils/regular-expression.ts
+var escapeRegExpSpecialCharacters = (text) => {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+};
+
+// src/utils/remote-value.ts
+var RemoteValue = class _RemoteValue {
+  /**
+   * Deserializes a LocalValue serialized object back to its original JavaScript representation
+   *
+   * @param serialized The serialized LocalValue object
+   * @returns The original JavaScript value/object
+   */
+  static fromLocalValue(serialized) {
+    const type = serialized[TYPE_CONSTANT];
+    const value = VALUE_CONSTANT in serialized ? serialized[VALUE_CONSTANT] : void 0;
+    switch (type) {
+      case "string" /* String */:
+        return value;
+      case "boolean" /* Boolean */:
+        return value;
+      case "bigint" /* BigInt */:
+        return BigInt(value);
+      case "undefined" /* Undefined */:
+        return void 0;
+      case "null" /* Null */:
+        return null;
+      case "number" /* Number */:
+        if (value === "NaN") return NaN;
+        if (value === "-0") return -0;
+        if (value === "Infinity") return Infinity;
+        if (value === "-Infinity") return -Infinity;
+        return value;
+      case "array" /* Array */:
+        return value.map((item) => _RemoteValue.fromLocalValue(item));
+      case "date" /* Date */:
+        return new Date(value);
+      case "map" /* Map */:
+        const map2 = /* @__PURE__ */ new Map();
+        for (const [key, val] of value) {
+          const deserializedKey = typeof key === "object" && key !== null ? _RemoteValue.fromLocalValue(key) : key;
+          const deserializedValue = _RemoteValue.fromLocalValue(val);
+          map2.set(deserializedKey, deserializedValue);
+        }
+        return map2;
+      case "object" /* Object */:
+        const obj = {};
+        for (const [key, val] of value) {
+          obj[key] = _RemoteValue.fromLocalValue(val);
+        }
+        return obj;
+      case "regexp" /* RegularExpression */:
+        const { pattern, flags } = value;
+        return new RegExp(pattern, flags);
+      case "set" /* Set */:
+        const set = /* @__PURE__ */ new Set();
+        for (const item of value) {
+          set.add(_RemoteValue.fromLocalValue(item));
+        }
+        return set;
+      case "symbol" /* Symbol */:
+        return Symbol(value);
+      default:
+        throw new Error(`Unsupported type: ${type}`);
+    }
+  }
+  /**
+   * Utility method to deserialize multiple LocalValues at once
+   *
+   * @param serializedValues Array of serialized LocalValue objects
+   * @returns Array of deserialized JavaScript values
+   */
+  static fromLocalValueArray(serializedValues) {
+    return serializedValues.map((value) => _RemoteValue.fromLocalValue(value));
+  }
+  /**
+   * Verifies if the given object matches the structure of a serialized LocalValue
+   *
+   * @param obj Object to verify
+   * @returns boolean indicating if the object has LocalValue structure
+   */
+  static isLocalValueObject(obj) {
+    if (typeof obj !== "object" || obj === null) {
+      return false;
+    }
+    if (!obj.hasOwnProperty(TYPE_CONSTANT)) {
+      return false;
+    }
+    const type = obj[TYPE_CONSTANT];
+    const hasTypeProperty = Object.values({ ...PrimitiveType, ...NonPrimitiveType }).includes(type);
+    if (!hasTypeProperty) {
+      return false;
+    }
+    if (type !== "null" /* Null */ && type !== "undefined" /* Undefined */) {
+      return obj.hasOwnProperty(VALUE_CONSTANT);
+    }
+    return true;
+  }
 };
 
 // src/utils/result.ts
@@ -216,6 +353,32 @@ var unwrapErr = (result) => {
   }
 };
 
+// src/utils/serialize.ts
+function deserializeProperty(value) {
+  if (typeof value !== "string" || !value.startsWith(SERIALIZED_PREFIX)) {
+    return value;
+  }
+  return RemoteValue.fromLocalValue(JSON.parse(atob(value.slice(SERIALIZED_PREFIX.length))));
+}
+
+// src/utils/style.ts
+function createStyleSheetIfNeededAndSupported(styles2) {
+  return void 0;
+}
+
+// src/utils/shadow-root.ts
+var globalStyleSheet;
+function createShadowRoot(cmpMeta) {
+  var _a;
+  const shadowRoot = this.attachShadow({ mode: "open" });
+  if (globalStyleSheet === void 0) globalStyleSheet = (_a = createStyleSheetIfNeededAndSupported()) != null ? _a : null;
+  if (globalStyleSheet) {
+    {
+      shadowRoot.adoptedStyleSheets = [...shadowRoot.adoptedStyleSheets, globalStyleSheet];
+    }
+  }
+}
+
 // src/runtime/runtime-constants.ts
 var CONTENT_REF_ID = "r";
 var ORG_LOCATION_ID = "o";
@@ -233,12 +396,11 @@ var DEFAULT_DOC_DATA = {
 
 // src/runtime/slot-polyfill-utils.ts
 var updateFallbackSlotVisibility = (elm) => {
-  const childNodes = elm.__childNodes || elm.childNodes;
+  const childNodes = internalCall(elm, "childNodes");
   if (elm.tagName && elm.tagName.includes("-") && elm["s-cr"] && elm.tagName !== "SLOT-FB") {
     getHostSlotNodes(childNodes, elm.tagName).forEach((slotNode) => {
-      var _a;
       if (slotNode.nodeType === 1 /* ElementNode */ && slotNode.tagName === "SLOT-FB") {
-        if ((_a = getHostSlotChildNodes(slotNode, slotNode["s-sn"], false)) == null ? void 0 : _a.length) {
+        if (getSlotChildSiblings(slotNode, getSlotName(slotNode), false).length) {
           slotNode.hidden = true;
         } else {
           slotNode.hidden = false;
@@ -246,11 +408,23 @@ var updateFallbackSlotVisibility = (elm) => {
       }
     });
   }
-  for (const childNode of childNodes) {
-    if (childNode.nodeType === 1 /* ElementNode */ && (childNode.__childNodes || childNode.childNodes).length) {
+  let i2 = 0;
+  for (i2 = 0; i2 < childNodes.length; i2++) {
+    const childNode = childNodes[i2];
+    if (childNode.nodeType === 1 /* ElementNode */ && internalCall(childNode, "childNodes").length) {
       updateFallbackSlotVisibility(childNode);
     }
   }
+};
+var getSlottedChildNodes = (childNodes) => {
+  const result = [];
+  for (let i2 = 0; i2 < childNodes.length; i2++) {
+    const slottedNode = childNodes[i2]["s-nr"] || void 0;
+    if (slottedNode && slottedNode.isConnected) {
+      result.push(slottedNode);
+    }
+  }
+  return result;
 };
 function getHostSlotNodes(childNodes, hostName, slotName) {
   let i2 = 0;
@@ -258,19 +432,19 @@ function getHostSlotNodes(childNodes, hostName, slotName) {
   let childNode;
   for (; i2 < childNodes.length; i2++) {
     childNode = childNodes[i2];
-    if (childNode["s-sr"] && childNode["s-hn"] === hostName && (slotName === void 0 || childNode["s-sn"] === slotName)) {
+    if (childNode["s-sr"] && (!hostName || childNode["s-hn"] === hostName) && (slotName === void 0)) {
       slottedNodes.push(childNode);
-      if (typeof slotName !== "undefined") return slottedNodes;
     }
     slottedNodes = [...slottedNodes, ...getHostSlotNodes(childNode.childNodes, hostName, slotName)];
   }
   return slottedNodes;
 }
-var getHostSlotChildNodes = (node, slotName, includeSlot = true) => {
+var getSlotChildSiblings = (slot, slotName, includeSlot = true) => {
   const childNodes = [];
-  if (includeSlot && node["s-sr"] || !node["s-sr"]) childNodes.push(node);
-  while ((node = node.nextSibling) && node["s-sn"] === slotName) {
-    childNodes.push(node);
+  if (includeSlot && slot["s-sr"] || !slot["s-sr"]) childNodes.push(slot);
+  let node = slot;
+  while (node = node.nextSibling) {
+    if (getSlotName(node) === slotName && (includeSlot || !node["s-sr"])) childNodes.push(node);
   }
   return childNodes;
 };
@@ -290,37 +464,71 @@ var isNodeLocatedInSlot = (nodeToRelocate, slotName) => {
   return slotName === "";
 };
 var addSlotRelocateNode = (newChild, slotNode, prepend, position) => {
-  let slottedNodeLocation;
   if (newChild["s-ol"] && newChild["s-ol"].isConnected) {
-    slottedNodeLocation = newChild["s-ol"];
-  } else {
-    slottedNodeLocation = document.createTextNode("");
-    slottedNodeLocation["s-nr"] = newChild;
+    return;
   }
+  const slottedNodeLocation = document.createTextNode("");
+  slottedNodeLocation["s-nr"] = newChild;
   if (!slotNode["s-cr"] || !slotNode["s-cr"].parentNode) return;
   const parent = slotNode["s-cr"].parentNode;
-  const appendMethod = prepend ? parent.__prepend || parent.prepend : parent.__appendChild || parent.appendChild;
+  const appendMethod = internalCall(parent, "appendChild");
   if (typeof position !== "undefined") {
-    {
-      slottedNodeLocation["s-oo"] = position;
-      const childNodes = parent.__childNodes || parent.childNodes;
-      const slotRelocateNodes = [slottedNodeLocation];
-      childNodes.forEach((n) => {
-        if (n["s-nr"]) slotRelocateNodes.push(n);
-      });
-      slotRelocateNodes.sort((a, b) => {
-        if (!a["s-oo"] || a["s-oo"] < b["s-oo"]) return -1;
-        else if (!b["s-oo"] || b["s-oo"] < a["s-oo"]) return 1;
-        return 0;
-      });
-      slotRelocateNodes.forEach((n) => appendMethod.call(parent, n));
-    }
+    slottedNodeLocation["s-oo"] = position;
+    const childNodes = internalCall(parent, "childNodes");
+    const slotRelocateNodes = [slottedNodeLocation];
+    childNodes.forEach((n) => {
+      if (n["s-nr"]) slotRelocateNodes.push(n);
+    });
+    slotRelocateNodes.sort((a, b) => {
+      if (!a["s-oo"] || a["s-oo"] < (b["s-oo"] || 0)) return -1;
+      else if (!b["s-oo"] || b["s-oo"] < a["s-oo"]) return 1;
+      return 0;
+    });
+    slotRelocateNodes.forEach((n) => appendMethod.call(parent, n));
   } else {
     appendMethod.call(parent, slottedNodeLocation);
   }
   newChild["s-ol"] = slottedNodeLocation;
   newChild["s-sh"] = slotNode["s-hn"];
 };
+var getSlotName = (node) => typeof node["s-sn"] === "string" ? node["s-sn"] : node.nodeType === 1 && node.getAttribute("slot") || void 0;
+function patchSlotNode(node) {
+  if (node.assignedElements || node.assignedNodes || !node["s-sr"]) return;
+  const assignedFactory = (elementsOnly) => (function(opts) {
+    const toReturn = [];
+    const slotName = this["s-sn"];
+    if (opts == null ? void 0 : opts.flatten) {
+      console.error(`
+          Flattening is not supported for Stencil non-shadow slots.
+          You can use \`.childNodes\` to nested slot fallback content.
+          If you have a particular use case, please open an issue on the Stencil repo.
+        `);
+    }
+    const parent = this["s-cr"].parentElement;
+    const slottedNodes = parent.__childNodes ? parent.childNodes : getSlottedChildNodes(parent.childNodes);
+    slottedNodes.forEach((n) => {
+      if (slotName === getSlotName(n)) {
+        toReturn.push(n);
+      }
+    });
+    if (elementsOnly) {
+      return toReturn.filter((n) => n.nodeType === 1 /* ElementNode */);
+    }
+    return toReturn;
+  }).bind(node);
+  node.assignedElements = assignedFactory(true);
+  node.assignedNodes = assignedFactory(false);
+}
+function internalCall(node, method) {
+  if ("__" + method in node) {
+    const toReturn = node["__" + method];
+    if (typeof toReturn !== "function") return toReturn;
+    return toReturn.bind(node);
+  } else {
+    if (typeof node[method] !== "function") return node[method];
+    return node[method].bind(node);
+  }
+}
 var createTime = (fnName, tagName = "") => {
   {
     return () => {
@@ -335,6 +543,7 @@ var uniqueTime = (key, measureText) => {
     };
   }
 };
+var getScopeId = (cmp, mode) => "sc-" + (cmp.$tagName$);
 var h = (nodeName, vnodeData, ...children) => {
   let child = null;
   let key = null;
@@ -449,6 +658,7 @@ var convertToPrivate = (node) => {
 
 // src/runtime/client-hydrate.ts
 var initializeClientHydrate = (hostElm, tagName, hostId, hostRef) => {
+  var _a, _b;
   const endHydrate = createTime("hydrateClient", tagName);
   const shadowRoot = hostElm.shadowRoot;
   const childRenderNodes = [];
@@ -457,8 +667,8 @@ var initializeClientHydrate = (hostElm, tagName, hostId, hostRef) => {
   const shadowRootNodes = null;
   const vnode = newVNode(tagName, null);
   vnode.$elm$ = hostElm;
-  if (!plt.$orgLocNodes$) {
-    initializeDocumentHydrate(doc.body, plt.$orgLocNodes$ = /* @__PURE__ */ new Map());
+  if (win.document && (!plt.$orgLocNodes$ || !plt.$orgLocNodes$.size)) {
+    initializeDocumentHydrate(win.document.body, plt.$orgLocNodes$ = /* @__PURE__ */ new Map());
   }
   hostElm[HYDRATE_ID] = hostId;
   hostElm.removeAttribute(HYDRATE_ID);
@@ -485,8 +695,19 @@ var initializeClientHydrate = (hostElm, tagName, hostId, hostRef) => {
       if (childRenderNode.$tag$ === "slot") {
         node["s-cr"] = hostElm["s-cr"];
       }
+    } else if (((_a = childRenderNode.$tag$) == null ? void 0 : _a.toString().includes("-")) && childRenderNode.$tag$ !== "slot-fb" && !childRenderNode.$elm$.shadowRoot) {
+      const cmpMeta = getHostRef(childRenderNode.$elm$);
+      if (cmpMeta) {
+        const scopeId3 = getScopeId(
+          cmpMeta.$cmpMeta$);
+        const styleSheet = win.document.querySelector(`style[sty-id="${scopeId3}"]`);
+        if (styleSheet) {
+          hostElm.shadowRoot.append(styleSheet.cloneNode(true));
+        }
+      }
     }
     if (childRenderNode.$tag$ === "slot") {
+      childRenderNode.$name$ = childRenderNode.$elm$["s-sn"] || childRenderNode.$elm$["name"] || null;
       if (childRenderNode.$children$) {
         childRenderNode.$flags$ |= 2 /* isSlotFallback */;
         if (!childRenderNode.$elm$.childNodes.length) {
@@ -499,7 +720,7 @@ var initializeClientHydrate = (hostElm, tagName, hostId, hostRef) => {
       }
     }
     if (orgLocationNode && orgLocationNode.isConnected) {
-      if (shadowRoot && orgLocationNode["s-en"] === "") {
+      if (orgLocationNode.parentElement.shadowRoot && orgLocationNode["s-en"] === "") {
         orgLocationNode.parentNode.insertBefore(node, orgLocationNode.nextSibling);
       }
       orgLocationNode.parentNode.removeChild(orgLocationNode);
@@ -507,7 +728,9 @@ var initializeClientHydrate = (hostElm, tagName, hostId, hostRef) => {
         node["s-oo"] = parseInt(childRenderNode.$nodeId$);
       }
     }
-    plt.$orgLocNodes$.delete(orgLocationId);
+    if (orgLocationNode && !orgLocationNode["s-id"]) {
+      plt.$orgLocNodes$.delete(orgLocationId);
+    }
   }
   const hosts = [];
   const snLen = slottedNodes.length;
@@ -528,17 +751,22 @@ var initializeClientHydrate = (hostElm, tagName, hostId, hostRef) => {
       }
       if (!hosts[slottedItem.hostId]) continue;
       const hostEle = hosts[slottedItem.hostId];
-      if (!hostEle.shadowRoot || !shadowRoot) {
-        slottedItem.slot["s-cr"] = hostEle["s-cr"];
-        if (!slottedItem.slot["s-cr"] && hostEle.shadowRoot) {
-          slottedItem.slot["s-cr"] = hostEle;
-        } else {
-          slottedItem.slot["s-cr"] = (hostEle.__childNodes || hostEle.childNodes)[0];
-        }
-        addSlotRelocateNode(slottedItem.node, slottedItem.slot, false, slottedItem.node["s-oo"]);
-      }
       if (hostEle.shadowRoot && slottedItem.node.parentElement !== hostEle) {
         hostEle.appendChild(slottedItem.node);
+      }
+      if (!hostEle.shadowRoot || !shadowRoot) {
+        if (!slottedItem.slot["s-cr"]) {
+          slottedItem.slot["s-cr"] = hostEle["s-cr"];
+          if (!slottedItem.slot["s-cr"] && hostEle.shadowRoot) {
+            slottedItem.slot["s-cr"] = hostEle;
+          } else {
+            slottedItem.slot["s-cr"] = (hostEle.__childNodes || hostEle.childNodes)[0];
+          }
+        }
+        addSlotRelocateNode(slottedItem.node, slottedItem.slot, false, slottedItem.node["s-oo"]);
+        if (((_b = slottedItem.node.parentElement) == null ? void 0 : _b.shadowRoot) && slottedItem.node["getAttribute"] && slottedItem.node.getAttribute("slot")) {
+          slottedItem.node.removeAttribute("slot");
+        }
       }
     }
   }
@@ -594,9 +822,6 @@ var clientHydrate = (parentVNode, childRenderNodes, slotNodes, shadowRootNodes, 
           parentVNode.$children$[childVNode.$index$] = childVNode;
         }
         parentVNode = childVNode;
-        if (shadowRootNodes && childVNode.$depth$ === "0") {
-          shadowRootNodes[childVNode.$index$] = childVNode.$elm$;
-        }
       }
     }
     if (node.shadowRoot) {
@@ -644,7 +869,7 @@ var clientHydrate = (parentVNode, childRenderNodes, slotNodes, shadowRootNodes, 
         $text$: null
       });
       if (childNodeType === TEXT_NODE_ID) {
-        childVNode.$elm$ = node.nextSibling;
+        childVNode.$elm$ = findCorrespondingNode(node, 3 /* TextNode */);
         if (childVNode.$elm$ && childVNode.$elm$.nodeType === 3 /* TextNode */) {
           childVNode.$text$ = childVNode.$elm$.textContent;
           childRenderNodes.push(childVNode);
@@ -655,12 +880,9 @@ var clientHydrate = (parentVNode, childRenderNodes, slotNodes, shadowRootNodes, 
             }
             parentVNode.$children$[childVNode.$index$] = childVNode;
           }
-          if (shadowRootNodes && childVNode.$depth$ === "0") {
-            shadowRootNodes[childVNode.$index$] = childVNode.$elm$;
-          }
         }
       } else if (childNodeType === COMMENT_NODE_ID) {
-        childVNode.$elm$ = node.nextSibling;
+        childVNode.$elm$ = findCorrespondingNode(node, 8 /* CommentNode */);
         if (childVNode.$elm$ && childVNode.$elm$.nodeType === 8 /* CommentNode */) {
           childRenderNodes.push(childVNode);
           node.remove();
@@ -692,6 +914,10 @@ var clientHydrate = (parentVNode, childRenderNodes, slotNodes, shadowRootNodes, 
     vnode.$elm$ = node;
     vnode.$index$ = "0";
     parentVNode.$children$ = [vnode];
+  } else {
+    if (node.nodeType === 3 /* TextNode */ && !node.wholeText.trim() && !node["s-nr"]) {
+      node.remove();
+    }
   }
   return parentVNode;
 };
@@ -746,11 +972,12 @@ function addSlot(slotName, slotId, childVNode, node, parentVNode, childRenderNod
     const slot = childVNode.$elm$;
     const shouldMove = parentNodeId && parentNodeId !== childVNode.$hostId$ && parentVNode.$elm$.shadowRoot;
     addSlottedNodes(slottedNodes, slotId, slotName, node, shouldMove ? parentNodeId : childVNode.$hostId$);
+    patchSlotNode(node);
     if (shouldMove) {
       parentVNode.$elm$.insertBefore(slot, parentVNode.$elm$.children[0]);
     }
-    childRenderNodes.push(childVNode);
   }
+  childRenderNodes.push(childVNode);
   slotNodes.push(childVNode);
   if (!parentVNode.$children$) {
     parentVNode.$children$ = [];
@@ -758,21 +985,50 @@ function addSlot(slotName, slotId, childVNode, node, parentVNode, childRenderNod
   parentVNode.$children$[childVNode.$index$] = childVNode;
 }
 var addSlottedNodes = (slottedNodes, slotNodeId, slotName, slotNode, hostId) => {
+  var _a, _b;
   let slottedNode = slotNode.nextSibling;
   slottedNodes[slotNodeId] = slottedNodes[slotNodeId] || [];
-  while (slottedNode && ((slottedNode["getAttribute"] && slottedNode.getAttribute("slot") || slottedNode["s-sn"]) === slotName || slotName === "" && !slottedNode["s-sn"] && (slottedNode.nodeType === 8 /* CommentNode */ && slottedNode.nodeValue.indexOf(".") !== 1 || slottedNode.nodeType === 3 /* TextNode */))) {
-    slottedNode["s-sn"] = slotName;
-    slottedNodes[slotNodeId].push({ slot: slotNode, node: slottedNode, hostId });
-    slottedNode = slottedNode.nextSibling;
-  }
+  if (!slottedNode || ((_a = slottedNode.nodeValue) == null ? void 0 : _a.startsWith(SLOT_NODE_ID + "."))) return;
+  do {
+    if (slottedNode && ((slottedNode["getAttribute"] && slottedNode.getAttribute("slot") || slottedNode["s-sn"]) === slotName || slotName === "" && !slottedNode["s-sn"] && (!slottedNode["getAttribute"] || !slottedNode.getAttribute("slot")) && (slottedNode.nodeType === 8 /* CommentNode */ || slottedNode.nodeType === 3 /* TextNode */))) {
+      slottedNode["s-sn"] = slotName;
+      slottedNodes[slotNodeId].push({ slot: slotNode, node: slottedNode, hostId });
+    }
+    slottedNode = slottedNode == null ? void 0 : slottedNode.nextSibling;
+  } while (slottedNode && !((_b = slottedNode.nodeValue) == null ? void 0 : _b.startsWith(SLOT_NODE_ID + ".")));
 };
-var parsePropertyValue = (propValue, propType) => {
+var findCorrespondingNode = (node, type) => {
+  let sibling = node;
+  do {
+    sibling = sibling.nextSibling;
+  } while (sibling && (sibling.nodeType !== type || !sibling.nodeValue));
+  return sibling;
+};
+var createSupportsRuleRe = (selector) => {
+  const safeSelector2 = escapeRegExpSpecialCharacters(selector);
+  return new RegExp(
+    // First capture group: match any context before the selector that's not inside @supports selector()
+    // Using negative lookahead to avoid matching inside @supports selector(...) condition
+    `(^|[^@]|@(?!supports\\s+selector\\s*\\([^{]*?${safeSelector2}))(${safeSelector2}\\b)`,
+    "g"
+  );
+};
+createSupportsRuleRe("::slotted");
+createSupportsRuleRe(":host");
+createSupportsRuleRe(":host-context");
+var parsePropertyValue = (propValue, propType, isFormAssociated) => {
+  if (typeof propValue === "string" && propValue.startsWith(SERIALIZED_PREFIX)) {
+    propValue = deserializeProperty(propValue);
+    return propValue;
+  }
   if (propValue != null && !isComplexType(propValue)) {
     if (propType & 4 /* Boolean */) {
-      return propValue === "false" ? false : propValue === "" || !!propValue;
+      {
+        return propValue === "false" ? false : propValue === "" || !!propValue;
+      }
     }
     if (propType & 2 /* Number */) {
-      return parseFloat(propValue);
+      return typeof propValue === "string" ? parseFloat(propValue) : typeof propValue === "number" ? propValue : NaN;
     }
     if (propType & 1 /* String */) {
       return String(propValue);
@@ -781,7 +1037,10 @@ var parsePropertyValue = (propValue, propType) => {
   }
   return propValue;
 };
-var getElement = (ref) => getHostRef(ref).$hostElement$ ;
+var getElement = (ref) => {
+  var _a;
+  return (_a = getHostRef(ref)) == null ? void 0 : _a.$hostElement$ ;
+};
 
 // src/runtime/event-emitter.ts
 var createEvent = (ref, name, flags) => {
@@ -789,9 +1048,9 @@ var createEvent = (ref, name, flags) => {
   return {
     emit: (detail) => {
       return emitEvent(elm, name, {
-        bubbles: !!(flags & 4 /* Bubbles */),
-        composed: !!(flags & 2 /* Composed */),
-        cancelable: !!(flags & 1 /* Cancellable */),
+        bubbles: true,
+        composed: true,
+        cancelable: true,
         detail
       });
     }
@@ -802,103 +1061,104 @@ var emitEvent = (elm, name, opts) => {
   elm.dispatchEvent(ev);
   return ev;
 };
-var setAccessor = (elm, memberName, oldValue, newValue, isSvg, flags) => {
-  if (oldValue !== newValue) {
-    let isProp = isMemberInElement(elm, memberName);
-    let ln = memberName.toLowerCase();
-    if (memberName === "class") {
-      const classList = elm.classList;
-      const oldClasses = parseClassList(oldValue);
-      let newClasses = parseClassList(newValue);
-      if (elm["s-si"]) {
-        newClasses.push(elm["s-si"]);
-        oldClasses.forEach((c) => {
-          if (c.startsWith(elm["s-si"])) newClasses.push(c);
-        });
-        newClasses = [...new Set(newClasses)];
-        classList.add(...newClasses);
-        delete elm["s-si"];
-      } else {
-        classList.remove(...oldClasses.filter((c) => c && !newClasses.includes(c)));
-        classList.add(...newClasses.filter((c) => c && !oldClasses.includes(c)));
-      }
-    } else if (memberName === "style") {
-      {
-        for (const prop in oldValue) {
-          if (!newValue || newValue[prop] == null) {
-            {
-              elm.style[prop] = "";
-            }
-          }
-        }
-      }
-      for (const prop in newValue) {
-        if (!oldValue || newValue[prop] !== oldValue[prop]) {
-          {
-            elm.style[prop] = newValue[prop];
-          }
-        }
-      }
-    } else if (memberName === "key") ; else if ((!isProp ) && memberName[0] === "o" && memberName[1] === "n") {
-      if (memberName[2] === "-") {
-        memberName = memberName.slice(3);
-      } else if (isMemberInElement(win, ln)) {
-        memberName = ln.slice(2);
-      } else {
-        memberName = ln[2] + memberName.slice(3);
-      }
-      if (oldValue || newValue) {
-        const capture = memberName.endsWith(CAPTURE_EVENT_SUFFIX);
-        memberName = memberName.replace(CAPTURE_EVENT_REGEX, "");
-        if (oldValue) {
-          plt.rel(elm, memberName, oldValue, capture);
-        }
-        if (newValue) {
-          plt.ael(elm, memberName, newValue, capture);
-        }
-      }
+var setAccessor = (elm, memberName, oldValue, newValue, isSvg, flags, initialRender) => {
+  if (oldValue === newValue) {
+    return;
+  }
+  let isProp = isMemberInElement(elm, memberName);
+  let ln = memberName.toLowerCase();
+  if (memberName === "class") {
+    const classList = elm.classList;
+    const oldClasses = parseClassList(oldValue);
+    let newClasses = parseClassList(newValue);
+    if ((elm["s-si"] || elm["s-sc"]) && initialRender) {
+      const scopeId2 = elm["s-sc"] || elm["s-si"];
+      newClasses.push(scopeId2);
+      oldClasses.forEach((c) => {
+        if (c.startsWith(scopeId2)) newClasses.push(c);
+      });
+      newClasses = [...new Set(newClasses)].filter((c) => c);
+      classList.add(...newClasses);
     } else {
-      const isComplex = isComplexType(newValue);
-      if ((isProp || isComplex && newValue !== null) && !isSvg) {
-        try {
-          if (!elm.tagName.includes("-")) {
-            const n = newValue == null ? "" : newValue;
-            if (memberName === "list") {
-              isProp = false;
-            } else if (oldValue == null || elm[memberName] != n) {
-              if (typeof elm.__lookupSetter__(memberName) === "function") {
-                elm[memberName] = n;
-              } else {
-                elm.setAttribute(memberName, n);
-              }
-            }
-          } else if (elm[memberName] !== newValue) {
-            elm[memberName] = newValue;
+      classList.remove(...oldClasses.filter((c) => c && !newClasses.includes(c)));
+      classList.add(...newClasses.filter((c) => c && !oldClasses.includes(c)));
+    }
+  } else if (memberName === "style") {
+    {
+      for (const prop in oldValue) {
+        if (!newValue || newValue[prop] == null) {
+          {
+            elm.style[prop] = "";
           }
-        } catch (e) {
         }
       }
-      if (newValue == null || newValue === false) {
-        if (newValue !== false || elm.getAttribute(memberName) === "") {
-          {
-            elm.removeAttribute(memberName);
-          }
-        }
-      } else if ((!isProp || flags & 4 /* isHost */ || isSvg) && !isComplex) {
-        newValue = newValue === true ? "" : newValue;
+    }
+    for (const prop in newValue) {
+      if (!oldValue || newValue[prop] !== oldValue[prop]) {
         {
-          elm.setAttribute(memberName, newValue);
+          elm.style[prop] = newValue[prop];
         }
+      }
+    }
+  } else if (memberName === "key") ; else if ((!isProp ) && memberName[0] === "o" && memberName[1] === "n") {
+    if (memberName[2] === "-") {
+      memberName = memberName.slice(3);
+    } else if (isMemberInElement(win, ln)) {
+      memberName = ln.slice(2);
+    } else {
+      memberName = ln[2] + memberName.slice(3);
+    }
+    if (oldValue || newValue) {
+      const capture = memberName.endsWith(CAPTURE_EVENT_SUFFIX);
+      memberName = memberName.replace(CAPTURE_EVENT_REGEX, "");
+      if (oldValue) {
+        plt.rel(elm, memberName, oldValue, capture);
+      }
+      if (newValue) {
+        plt.ael(elm, memberName, newValue, capture);
+      }
+    }
+  } else {
+    const isComplex = isComplexType(newValue);
+    if ((isProp || isComplex && newValue !== null) && !isSvg) {
+      try {
+        if (!elm.tagName.includes("-")) {
+          const n = newValue == null ? "" : newValue;
+          if (memberName === "list") {
+            isProp = false;
+          } else if (oldValue == null || elm[memberName] != n) {
+            if (typeof elm.__lookupSetter__(memberName) === "function") {
+              elm[memberName] = n;
+            } else {
+              elm.setAttribute(memberName, n);
+            }
+          }
+        } else if (elm[memberName] !== newValue) {
+          elm[memberName] = newValue;
+        }
+      } catch (e) {
+      }
+    }
+    if (newValue == null || newValue === false) {
+      if (newValue !== false || elm.getAttribute(memberName) === "") {
+        {
+          elm.removeAttribute(memberName);
+        }
+      }
+    } else if ((!isProp || flags & 4 /* isHost */ || isSvg) && !isComplex && elm.nodeType === 1 /* ElementNode */) {
+      newValue = newValue === true ? "" : newValue;
+      {
+        elm.setAttribute(memberName, newValue);
       }
     }
   }
 };
 var parseClassListRegex = /\s/;
 var parseClassList = (value) => {
-  if (typeof value === "object" && "baseVal" in value) {
+  if (typeof value === "object" && value && "baseVal" in value) {
     value = value.baseVal;
   }
-  if (!value) {
+  if (!value || typeof value !== "string") {
     return [];
   }
   return value.split(parseClassListRegex);
@@ -907,19 +1167,35 @@ var CAPTURE_EVENT_SUFFIX = "Capture";
 var CAPTURE_EVENT_REGEX = new RegExp(CAPTURE_EVENT_SUFFIX + "$");
 
 // src/runtime/vdom/update-element.ts
-var updateElement = (oldVnode, newVnode, isSvgMode2) => {
+var updateElement = (oldVnode, newVnode, isSvgMode2, isInitialRender) => {
   const elm = newVnode.$elm$.nodeType === 11 /* DocumentFragment */ && newVnode.$elm$.host ? newVnode.$elm$.host : newVnode.$elm$;
   const oldVnodeAttrs = oldVnode && oldVnode.$attrs$ || {};
   const newVnodeAttrs = newVnode.$attrs$ || {};
   {
     for (const memberName of sortedAttrNames(Object.keys(oldVnodeAttrs))) {
       if (!(memberName in newVnodeAttrs)) {
-        setAccessor(elm, memberName, oldVnodeAttrs[memberName], void 0, isSvgMode2, newVnode.$flags$);
+        setAccessor(
+          elm,
+          memberName,
+          oldVnodeAttrs[memberName],
+          void 0,
+          isSvgMode2,
+          newVnode.$flags$,
+          isInitialRender
+        );
       }
     }
   }
   for (const memberName of sortedAttrNames(Object.keys(newVnodeAttrs))) {
-    setAccessor(elm, memberName, oldVnodeAttrs[memberName], newVnodeAttrs[memberName], isSvgMode2, newVnode.$flags$);
+    setAccessor(
+      elm,
+      memberName,
+      oldVnodeAttrs[memberName],
+      newVnodeAttrs[memberName],
+      isSvgMode2,
+      newVnode.$flags$,
+      isInitialRender
+    );
   }
 };
 function sortedAttrNames(attrNames) {
@@ -960,14 +1236,22 @@ var createElm = (oldParentVNode, newParentVNode, childIndex) => {
     }
   }
   if (newVNode2.$text$ !== null) {
-    elm = newVNode2.$elm$ = doc.createTextNode(newVNode2.$text$);
+    elm = newVNode2.$elm$ = win.document.createTextNode(newVNode2.$text$);
   } else if (newVNode2.$flags$ & 1 /* isSlotReference */) {
     elm = newVNode2.$elm$ = slotReferenceDebugNode(newVNode2) ;
+    {
+      updateElement(null, newVNode2, isSvgMode);
+    }
   } else {
     if (!isSvgMode) {
       isSvgMode = newVNode2.$tag$ === "svg";
     }
-    elm = newVNode2.$elm$ = doc.createElementNS(
+    if (!win.document) {
+      throw new Error(
+        "You are trying to render a Stencil component in an environment that doesn't support the DOM. Make sure to populate the [`window`](https://developer.mozilla.org/en-US/docs/Web/API/Window/window) object before rendering a component."
+      );
+    }
+    elm = newVNode2.$elm$ = win.document.createElementNS(
       isSvgMode ? SVG_NS : HTML_NS,
       !useNativeShadowDom && BUILD.slotRelocation && newVNode2.$flags$ & 2 /* isSlotFallback */ ? "slot-fb" : newVNode2.$tag$
     ) ;
@@ -1000,11 +1284,15 @@ var createElm = (oldParentVNode, newParentVNode, childIndex) => {
       elm["s-cr"] = contentRef;
       elm["s-sn"] = newVNode2.$name$ || "";
       elm["s-rf"] = (_a = newVNode2.$attrs$) == null ? void 0 : _a.ref;
+      patchSlotNode(elm);
       oldVNode = oldParentVNode && oldParentVNode.$children$ && oldParentVNode.$children$[childIndex];
       if (oldVNode && oldVNode.$tag$ === newVNode2.$tag$ && oldParentVNode.$elm$) {
         {
           putBackInOriginalLocation(oldParentVNode.$elm$, false);
         }
+      }
+      {
+        addRemoveSlotScopedClass(contentRef, elm, newParentVNode.$elm$, oldParentVNode == null ? void 0 : oldParentVNode.$elm$);
       }
     }
   }
@@ -1013,14 +1301,6 @@ var createElm = (oldParentVNode, newParentVNode, childIndex) => {
 var putBackInOriginalLocation = (parentElm, recursive) => {
   plt.$flags$ |= 1 /* isTmpDisconnected */;
   const oldSlotChildNodes = Array.from(parentElm.__childNodes || parentElm.childNodes);
-  if (parentElm["s-sr"] && BUILD.experimentalSlotFixes) {
-    let node = parentElm;
-    while (node = node.nextSibling) {
-      if (node && node["s-sn"] === parentElm["s-sn"] && node["s-sh"] === hostTagName) {
-        oldSlotChildNodes.push(node);
-      }
-    }
-  }
   for (let i2 = oldSlotChildNodes.length - 1; i2 >= 0; i2--) {
     const childNode = oldSlotChildNodes[i2];
     if (childNode["s-hn"] !== hostTagName && childNode["s-ol"]) {
@@ -1034,7 +1314,7 @@ var putBackInOriginalLocation = (parentElm, recursive) => {
       putBackInOriginalLocation(childNode, recursive);
     }
   }
-  plt.$flags$ &= ~1 /* isTmpDisconnected */;
+  plt.$flags$ &= -2 /* isTmpDisconnected */;
 };
 var addVnodes = (parentElm, before, parentVNode, vnodes, startIdx, endIdx) => {
   let containerElm = parentElm["s-cr"] && parentElm["s-cr"].parentNode || parentElm;
@@ -1190,9 +1470,7 @@ var patch = (oldVNode, newVNode2, isInitialRender = false) => {
       isSvgMode = tag === "svg" ? true : tag === "foreignObject" ? false : isSvgMode;
     }
     {
-      if (tag === "slot" && !useNativeShadowDom) ; else {
-        updateElement(oldVNode, newVNode2, isSvgMode);
-      }
+      updateElement(oldVNode, newVNode2, isSvgMode, isInitialRender);
     }
     if (oldChildren !== null && newChildren !== null) {
       updateChildren(elm, oldChildren, newVNode2, newChildren, isInitialRender);
@@ -1206,6 +1484,8 @@ var patch = (oldVNode, newVNode2, isInitialRender = false) => {
       !isInitialRender && BUILD.updatable && oldChildren !== null
     ) {
       removeVnodes(oldChildren, 0, oldChildren.length - 1);
+    } else if (isInitialRender && BUILD.updatable && oldChildren !== null && newChildren === null) {
+      newVNode2.$children$ = oldChildren;
     }
     if (isSvgMode && tag === "svg") {
       isSvgMode = false;
@@ -1228,7 +1508,7 @@ var markSlotContentForRelocation = (elm) => {
       const slotName = childNode["s-sn"];
       for (j = hostContentNodes.length - 1; j >= 0; j--) {
         node = hostContentNodes[j];
-        if (!node["s-cn"] && !node["s-nr"] && node["s-hn"] !== childNode["s-hn"] && (!BUILD.experimentalSlotFixes  )) {
+        if (!node["s-cn"] && !node["s-nr"] && node["s-hn"] !== childNode["s-hn"] && (true)) {
           if (isNodeLocatedInSlot(node, slotName)) {
             let relocateNodeData = relocateNodes.find((r) => r.$nodeToRelocate$ === node);
             checkSlotFallbackVisibility = true;
@@ -1271,11 +1551,33 @@ var insertBefore = (parent, newNode, reference) => {
     return parent == null ? void 0 : parent.insertBefore(newNode, reference);
   }
 };
+function addRemoveSlotScopedClass(reference, slotNode, newParent, oldParent) {
+  var _a, _b;
+  let scopeId2;
+  if (reference && typeof slotNode["s-sn"] === "string" && !!slotNode["s-sr"] && reference.parentNode && reference.parentNode["s-sc"] && (scopeId2 = slotNode["s-si"] || reference.parentNode["s-sc"])) {
+    const scopeName = slotNode["s-sn"];
+    const hostName = slotNode["s-hn"];
+    (_a = newParent.classList) == null ? void 0 : _a.add(scopeId2 + "-s");
+    if (oldParent && ((_b = oldParent.classList) == null ? void 0 : _b.contains(scopeId2 + "-s"))) {
+      let child = (oldParent.__childNodes || oldParent.childNodes)[0];
+      let found = false;
+      while (child) {
+        if (child["s-sn"] !== scopeName && child["s-hn"] === hostName && !!child["s-sr"]) {
+          found = true;
+          break;
+        }
+        child = child.nextSibling;
+      }
+      if (!found) oldParent.classList.remove(scopeId2 + "-s");
+    }
+  }
+}
 var renderVdom = (hostRef, renderFnResults, isInitialLoad = false) => {
   var _c, _d;
   const hostElm = hostRef.$hostElement$;
   const oldVNode = hostRef.$vnode$ || newVNode(null, null);
-  const rootVnode = isHost(renderFnResults) ? renderFnResults : h(null, null, renderFnResults);
+  const isHostElement = isHost(renderFnResults);
+  const rootVnode = isHostElement ? renderFnResults : h(null, null, renderFnResults);
   hostTagName = hostElm.tagName;
   if (isInitialLoad && rootVnode.$attrs$) {
     for (const key of Object.keys(rootVnode.$attrs$)) {
@@ -1288,7 +1590,7 @@ var renderVdom = (hostRef, renderFnResults, isInitialLoad = false) => {
   rootVnode.$flags$ |= 4 /* isHost */;
   hostRef.$vnode$ = rootVnode;
   rootVnode.$elm$ = oldVNode.$elm$ = hostElm;
-  useNativeShadowDom = supportsShadow ;
+  useNativeShadowDom = supportsShadow;
   {
     contentRef = hostElm["s-cr"];
     checkSlotFallbackVisibility = false;
@@ -1300,7 +1602,7 @@ var renderVdom = (hostRef, renderFnResults, isInitialLoad = false) => {
       markSlotContentForRelocation(rootVnode.$elm$);
       for (const relocateData of relocateNodes) {
         const nodeToRelocate = relocateData.$nodeToRelocate$;
-        if (!nodeToRelocate["s-ol"]) {
+        if (!nodeToRelocate["s-ol"] && win.document) {
           const orgLocationNode = originalLocationDebugNode(nodeToRelocate) ;
           orgLocationNode["s-nr"] = nodeToRelocate;
           insertBefore(nodeToRelocate.parentNode, nodeToRelocate["s-ol"] = orgLocationNode, nodeToRelocate);
@@ -1325,7 +1627,7 @@ var renderVdom = (hostRef, renderFnResults, isInitialLoad = false) => {
               }
             }
           }
-          nodeToRelocate && typeof slotRefNode["s-rf"] === "function" && slotRefNode["s-rf"](nodeToRelocate);
+          nodeToRelocate && typeof slotRefNode["s-rf"] === "function" && slotRefNode["s-rf"](slotRefNode);
         } else {
           if (nodeToRelocate.nodeType === 1 /* ElementNode */) {
             if (isInitialLoad) {
@@ -1339,17 +1641,23 @@ var renderVdom = (hostRef, renderFnResults, isInitialLoad = false) => {
     if (checkSlotFallbackVisibility) {
       updateFallbackSlotVisibility(rootVnode.$elm$);
     }
-    plt.$flags$ &= ~1 /* isTmpDisconnected */;
+    plt.$flags$ &= -2 /* isTmpDisconnected */;
     relocateNodes.length = 0;
   }
   contentRef = void 0;
 };
-var slotReferenceDebugNode = (slotVNode) => doc.createComment(
-  `<slot${slotVNode.$name$ ? ' name="' + slotVNode.$name$ + '"' : ""}> (host=${hostTagName.toLowerCase()})`
-);
-var originalLocationDebugNode = (nodeToRelocate) => doc.createComment(
-  `org-location for ` + (nodeToRelocate.localName ? `<${nodeToRelocate.localName}> (host=${nodeToRelocate["s-hn"]})` : `[${nodeToRelocate.textContent}]`)
-);
+var slotReferenceDebugNode = (slotVNode) => {
+  var _a;
+  return (_a = win.document) == null ? void 0 : _a.createComment(
+    `<slot${slotVNode.$name$ ? ' name="' + slotVNode.$name$ + '"' : ""}> (host=${hostTagName.toLowerCase()})`
+  );
+};
+var originalLocationDebugNode = (nodeToRelocate) => {
+  var _a;
+  return (_a = win.document) == null ? void 0 : _a.createComment(
+    `org-location for ` + (nodeToRelocate.localName ? `<${nodeToRelocate.localName}> (host=${nodeToRelocate["s-hn"]})` : `[${nodeToRelocate.textContent}]`)
+  );
+};
 
 // src/runtime/update-component.ts
 var attachToAncestor = (hostRef, ancestorComponent) => {
@@ -1374,6 +1682,12 @@ var scheduleUpdate = (hostRef, isInitialLoad) => {
   }
   attachToAncestor(hostRef, hostRef.$ancestorComponent$);
   const dispatch = () => dispatchHooks(hostRef, isInitialLoad);
+  if (isInitialLoad) {
+    queueMicrotask(() => {
+      dispatch();
+    });
+    return;
+  }
   return writeTask(dispatch) ;
 };
 var dispatchHooks = (hostRef, isInitialLoad) => {
@@ -1386,6 +1700,17 @@ var dispatchHooks = (hostRef, isInitialLoad) => {
     );
   }
   let maybePromise;
+  if (isInitialLoad) {
+    {
+      if (hostRef.$fetchedCbList$.length) {
+        hostRef.$fetchedCbList$.forEach((cb) => cb(elm));
+      }
+    }
+    maybePromise = safeCall(instance, "componentWillLoad", void 0, elm);
+  } else {
+    maybePromise = safeCall(instance, "componentWillUpdate", void 0, elm);
+  }
+  maybePromise = enqueue(maybePromise, () => safeCall(instance, "componentWillRender", void 0, elm));
   endSchedule();
   return enqueue(maybePromise, () => updateComponent(hostRef, instance, isInitialLoad));
 };
@@ -1439,7 +1764,7 @@ var callRender = (hostRef, instance, elm, isInitialLoad) => {
   try {
     instance = instance.render() ;
     {
-      hostRef.$flags$ &= ~16 /* isQueuedForUpdate */;
+      hostRef.$flags$ &= -17 /* isQueuedForUpdate */;
     }
     {
       hostRef.$flags$ |= 2 /* hasRendered */;
@@ -1462,14 +1787,13 @@ var postUpdateComponent = (hostRef) => {
   const endPostUpdate = createTime("postUpdate", tagName);
   const instance = hostRef.$lazyInstance$ ;
   const ancestorComponent = hostRef.$ancestorComponent$;
+  safeCall(instance, "componentDidRender", void 0, elm);
   if (!(hostRef.$flags$ & 64 /* hasLoadedComponent */)) {
     hostRef.$flags$ |= 64 /* hasLoadedComponent */;
     {
       addHydratedFlag(elm);
     }
-    {
-      safeCall(instance, "componentDidLoad", void 0, elm);
-    }
+    safeCall(instance, "componentDidLoad", void 0, elm);
     endPostUpdate();
     {
       hostRef.$onReadyResolve$(elm);
@@ -1478,6 +1802,7 @@ var postUpdateComponent = (hostRef) => {
       }
     }
   } else {
+    safeCall(instance, "componentDidUpdate", void 0, elm);
     endPostUpdate();
   }
   {
@@ -1488,14 +1813,20 @@ var postUpdateComponent = (hostRef) => {
     if (hostRef.$flags$ & 512 /* needsRerender */) {
       nextTick(() => scheduleUpdate(hostRef, false));
     }
-    hostRef.$flags$ &= ~(4 /* isWaitingForChildren */ | 512 /* needsRerender */);
+    hostRef.$flags$ &= -517;
   }
 };
 var appDidLoad = (who) => {
-  {
-    addHydratedFlag(doc.documentElement);
+  var _a;
+  if (BUILD.asyncQueue) {
+    plt.$flags$ |= 2 /* appLoaded */;
   }
   nextTick(() => emitEvent(win, "appload", { detail: { namespace: NAMESPACE } }));
+  {
+    if ((_a = plt.$orgLocNodes$) == null ? void 0 : _a.size) {
+      plt.$orgLocNodes$.clear();
+    }
+  }
 };
 var safeCall = (instance, method, arg, elm) => {
   if (instance && instance[method]) {
@@ -1529,15 +1860,20 @@ var getValue = (ref, propName) => getHostRef(ref).$instanceValues$.get(propName)
 var setValue = (ref, propName, newVal, cmpMeta) => {
   const hostRef = getHostRef(ref);
   if (!hostRef) {
+    return;
+  }
+  if (!hostRef) {
     throw new Error(
-      `Couldn't find host element for "${cmpMeta.$tagName$}" as it is unknown to this Stencil runtime. This usually happens when integrating a 3rd party Stencil component with another Stencil component or application. Please reach out to the maintainers of the 3rd party Stencil component or report this on the Stencil Discord server (https://chat.stenciljs.com) or comment on this similar [GitHub issue](https://github.com/ionic-team/stencil/issues/5457).`
+      `Couldn't find host element for "${cmpMeta.$tagName$}" as it is unknown to this Stencil runtime. This usually happens when integrating a 3rd party Stencil component with another Stencil component or application. Please reach out to the maintainers of the 3rd party Stencil component or report this on the Stencil Discord server (https://chat.stenciljs.com) or comment on this similar [GitHub issue](https://github.com/stenciljs/core/issues/5457).`
     );
   }
   const elm = hostRef.$hostElement$ ;
   const oldVal = hostRef.$instanceValues$.get(propName);
   const flags = hostRef.$flags$;
   const instance = hostRef.$lazyInstance$ ;
-  newVal = parsePropertyValue(newVal, cmpMeta.$members$[propName][0]);
+  newVal = parsePropertyValue(
+    newVal,
+    cmpMeta.$members$[propName][0]);
   const areBothNaN = Number.isNaN(oldVal) && Number.isNaN(newVal);
   const didValueChange = newVal !== oldVal && !areBothNaN;
   if ((!(flags & 8 /* isConstructingInstance */) || oldVal === void 0) && didValueChange) {
@@ -1556,6 +1892,11 @@ var setValue = (ref, propName, newVal, cmpMeta) => {
         }
       }
       if ((flags & (2 /* hasRendered */ | 16 /* isQueuedForUpdate */)) === 2 /* hasRendered */) {
+        if (instance.componentShouldUpdate) {
+          if (instance.componentShouldUpdate(newVal, oldVal, propName) === false) {
+            return;
+          }
+        }
         scheduleUpdate(hostRef, false);
       }
     }
@@ -1564,19 +1905,27 @@ var setValue = (ref, propName, newVal, cmpMeta) => {
 
 // src/runtime/proxy-component.ts
 var proxyComponent = (Cstr, cmpMeta, flags) => {
-  var _a, _b;
+  var _a;
   const prototype = Cstr.prototype;
-  if (cmpMeta.$members$ || (cmpMeta.$watchers$ || Cstr.watchers)) {
-    if (Cstr.watchers && !cmpMeta.$watchers$) {
-      cmpMeta.$watchers$ = Cstr.watchers;
+  {
+    {
+      if (Cstr.watchers && !cmpMeta.$watchers$) {
+        cmpMeta.$watchers$ = Cstr.watchers;
+      }
+      if (Cstr.deserializers && !cmpMeta.$deserializers$) {
+        cmpMeta.$deserializers$ = Cstr.deserializers;
+      }
+      if (Cstr.serializers && !cmpMeta.$serializers$) {
+        cmpMeta.$serializers$ = Cstr.serializers;
+      }
     }
     const members = Object.entries((_a = cmpMeta.$members$) != null ? _a : {});
     members.map(([memberName, [memberFlags]]) => {
-      if ((memberFlags & 31 /* Prop */ || (flags & 2 /* proxyState */) && memberFlags & 32 /* State */)) {
+      if ((memberFlags & 31 /* Prop */ || memberFlags & 32 /* State */)) {
         const { get: origGetter, set: origSetter } = Object.getOwnPropertyDescriptor(prototype, memberName) || {};
         if (origGetter) cmpMeta.$members$[memberName][0] |= 2048 /* Getter */;
         if (origSetter) cmpMeta.$members$[memberName][0] |= 4096 /* Setter */;
-        if (flags & 1 /* isElementConstructor */ || !origGetter) {
+        if (!origGetter) {
           Object.defineProperty(prototype, memberName, {
             get() {
               {
@@ -1596,92 +1945,33 @@ var proxyComponent = (Cstr, cmpMeta, flags) => {
         Object.defineProperty(prototype, memberName, {
           set(newValue) {
             const ref = getHostRef(this);
+            if (!ref) {
+              return;
+            }
             if (origSetter) {
               const currentValue = memberFlags & 32 /* State */ ? this[memberName] : ref.$hostElement$[memberName];
               if (typeof currentValue === "undefined" && ref.$instanceValues$.get(memberName)) {
                 newValue = ref.$instanceValues$.get(memberName);
-              } else if (!ref.$instanceValues$.get(memberName) && currentValue) {
-                ref.$instanceValues$.set(memberName, currentValue);
               }
-              origSetter.apply(this, [parsePropertyValue(newValue, memberFlags)]);
+              origSetter.apply(this, [
+                parsePropertyValue(
+                  newValue,
+                  memberFlags)
+              ]);
               newValue = memberFlags & 32 /* State */ ? this[memberName] : ref.$hostElement$[memberName];
               setValue(this, memberName, newValue, cmpMeta);
               return;
             }
             {
-              if ((flags & 1 /* isElementConstructor */) === 0 || (cmpMeta.$members$[memberName][0] & 4096 /* Setter */) === 0) {
+              {
                 setValue(this, memberName, newValue, cmpMeta);
-                if (flags & 1 /* isElementConstructor */ && !ref.$lazyInstance$) {
-                  ref.$onReadyPromise$.then(() => {
-                    if (cmpMeta.$members$[memberName][0] & 4096 /* Setter */ && ref.$lazyInstance$[memberName] !== ref.$instanceValues$.get(memberName)) {
-                      ref.$lazyInstance$[memberName] = newValue;
-                    }
-                  });
-                }
                 return;
-              }
-              const setterSetVal = () => {
-                const currentValue = ref.$lazyInstance$[memberName];
-                if (!ref.$instanceValues$.get(memberName) && currentValue) {
-                  ref.$instanceValues$.set(memberName, currentValue);
-                }
-                ref.$lazyInstance$[memberName] = parsePropertyValue(newValue, memberFlags);
-                setValue(this, memberName, ref.$lazyInstance$[memberName], cmpMeta);
-              };
-              if (ref.$lazyInstance$) {
-                setterSetVal();
-              } else {
-                ref.$onReadyPromise$.then(() => setterSetVal());
               }
             }
           }
         });
       }
     });
-    if ((flags & 1 /* isElementConstructor */)) {
-      const attrNameToPropName = /* @__PURE__ */ new Map();
-      prototype.attributeChangedCallback = function(attrName, oldValue, newValue) {
-        plt.jmp(() => {
-          var _a2;
-          const propName = attrNameToPropName.get(attrName);
-          if (this.hasOwnProperty(propName) && BUILD.lazyLoad) {
-            newValue = this[propName];
-            delete this[propName];
-          } else if (prototype.hasOwnProperty(propName) && typeof this[propName] === "number" && // cast type to number to avoid TS compiler issues
-          this[propName] == newValue) {
-            return;
-          } else if (propName == null) {
-            const hostRef = getHostRef(this);
-            const flags2 = hostRef == null ? void 0 : hostRef.$flags$;
-            if (flags2 && !(flags2 & 8 /* isConstructingInstance */) && flags2 & 128 /* isWatchReady */ && newValue !== oldValue) {
-              const instance = hostRef.$lazyInstance$ ;
-              const entry = (_a2 = cmpMeta.$watchers$) == null ? void 0 : _a2[attrName];
-              entry == null ? void 0 : entry.forEach((callbackName) => {
-                if (instance[callbackName] != null) {
-                  instance[callbackName].call(instance, newValue, oldValue, attrName);
-                }
-              });
-            }
-            return;
-          }
-          const propDesc = Object.getOwnPropertyDescriptor(prototype, propName);
-          newValue = newValue === null && typeof this[propName] === "boolean" ? false : newValue;
-          if (newValue !== this[propName] && (!propDesc.get || !!propDesc.set)) {
-            this[propName] = newValue;
-          }
-        });
-      };
-      Cstr.observedAttributes = Array.from(
-        /* @__PURE__ */ new Set([
-          ...Object.keys((_b = cmpMeta.$watchers$) != null ? _b : {}),
-          ...members.filter(([_, m]) => m[0] & 15 /* HasAttribute */).map(([propName, m]) => {
-            const attrName = m[1] || propName;
-            attrNameToPropName.set(attrName, propName);
-            return attrName;
-          })
-        ])
-      );
-    }
   }
   return Cstr;
 };
@@ -1691,7 +1981,8 @@ var initializeComponent = async (elm, hostRef, cmpMeta, hmrVersionId) => {
   let Cstr;
   if ((hostRef.$flags$ & 32 /* hasInitializedComponent */) === 0) {
     hostRef.$flags$ |= 32 /* hasInitializedComponent */;
-    {
+    const bundleId = cmpMeta.$lazyBundleId$;
+    if (bundleId) {
       const CstrImport = loadModule(cmpMeta);
       if (CstrImport && "then" in CstrImport) {
         const endLoad = uniqueTime();
@@ -1706,8 +1997,10 @@ var initializeComponent = async (elm, hostRef, cmpMeta, hmrVersionId) => {
       if (!Cstr.isProxied) {
         {
           cmpMeta.$watchers$ = Cstr.watchers;
+          cmpMeta.$serializers$ = Cstr.serializers;
+          cmpMeta.$deserializers$ = Cstr.deserializers;
         }
-        proxyComponent(Cstr, cmpMeta, 2 /* proxyState */);
+        proxyComponent(Cstr, cmpMeta);
         Cstr.isProxied = true;
       }
       const endNewInstance = createTime("createInstance", cmpMeta.$tagName$);
@@ -1720,13 +2013,17 @@ var initializeComponent = async (elm, hostRef, cmpMeta, hmrVersionId) => {
         consoleError(e, elm);
       }
       {
-        hostRef.$flags$ &= ~8 /* isConstructingInstance */;
+        hostRef.$flags$ &= -9 /* isConstructingInstance */;
       }
       {
         hostRef.$flags$ |= 128 /* isWatchReady */;
       }
       endNewInstance();
       fireConnectedCallback(hostRef.$lazyInstance$, elm);
+    } else {
+      Cstr = elm.constructor;
+      const cmpTag = elm.localName;
+      customElements.whenDefined(cmpTag).then(() => hostRef.$flags$ |= 128 /* isWatchReady */);
     }
   }
   const ancestorComponent = hostRef.$ancestorComponent$;
@@ -1747,6 +2044,9 @@ var fireConnectedCallback = (instance, elm) => {
 var connectedCallback = (elm) => {
   if ((plt.$flags$ & 1 /* isTmpDisconnected */) === 0) {
     const hostRef = getHostRef(elm);
+    if (!hostRef) {
+      return;
+    }
     const cmpMeta = hostRef.$cmpMeta$;
     const endConnected = createTime("connectedCallback", cmpMeta.$tagName$);
     if (!(hostRef.$flags$ & 1 /* hasConnected */)) {
@@ -1772,7 +2072,9 @@ var connectedCallback = (elm) => {
           }
         }
       }
-      {
+      if (BUILD.initializeNextTick) {
+        nextTick(() => initializeComponent(elm, hostRef, cmpMeta));
+      } else {
         initializeComponent(elm, hostRef, cmpMeta);
       }
     } else {
@@ -1786,7 +2088,10 @@ var connectedCallback = (elm) => {
   }
 };
 var setContentReference = (elm) => {
-  const contentRefElm = elm["s-cr"] = doc.createComment(
+  if (!win.document) {
+    return;
+  }
+  const contentRefElm = elm["s-cr"] = win.document.createComment(
     ""
   );
   contentRefElm["s-cn"] = true;
@@ -1797,12 +2102,12 @@ var setContentReference = (elm) => {
 var Fragment = (_, children) => children;
 
 // src/runtime/vdom/vdom-annotations.ts
-var insertVdomAnnotations = (doc2, staticComponents) => {
-  if (doc2 != null) {
-    const docData = STENCIL_DOC_DATA in doc2 ? doc2[STENCIL_DOC_DATA] : { ...DEFAULT_DOC_DATA };
+var insertVdomAnnotations = (doc, staticComponents) => {
+  if (doc != null) {
+    const docData = STENCIL_DOC_DATA in doc ? doc[STENCIL_DOC_DATA] : { ...DEFAULT_DOC_DATA };
     docData.staticComponents = new Set(staticComponents);
     const orgLocationNodes = [];
-    parseVNodeAnnotations(doc2, doc2.body, docData, orgLocationNodes);
+    parseVNodeAnnotations(doc, doc.body, docData, orgLocationNodes);
     orgLocationNodes.forEach((orgLocationNode) => {
       var _a;
       if (orgLocationNode != null && orgLocationNode["s-nr"]) {
@@ -1828,11 +2133,11 @@ var insertVdomAnnotations = (doc2, staticComponents) => {
                 return;
               }
             }
-            const commentBeforeTextNode = doc2.createComment(childId);
+            const commentBeforeTextNode = doc.createComment(childId);
             commentBeforeTextNode.nodeValue = `${TEXT_NODE_ID}.${childId}`;
             insertBefore(nodeRef.parentNode, commentBeforeTextNode, nodeRef);
           } else if (nodeRef.nodeType === 8 /* CommentNode */) {
-            const commentBeforeTextNode = doc2.createComment(childId);
+            const commentBeforeTextNode = doc.createComment(childId);
             commentBeforeTextNode.nodeValue = `${COMMENT_NODE_ID}.${childId}`;
             nodeRef.parentNode.insertBefore(commentBeforeTextNode, nodeRef);
           }
@@ -1851,7 +2156,7 @@ var insertVdomAnnotations = (doc2, staticComponents) => {
     });
   }
 };
-var parseVNodeAnnotations = (doc2, node, docData, orgLocationNodes) => {
+var parseVNodeAnnotations = (doc, node, docData, orgLocationNodes) => {
   var _a;
   if (node == null) {
     return;
@@ -1867,13 +2172,13 @@ var parseVNodeAnnotations = (doc2, node, docData, orgLocationNodes) => {
         const cmpData = {
           nodeIds: 0
         };
-        insertVNodeAnnotations(doc2, childNode, hostRef.$vnode$, docData, cmpData);
+        insertVNodeAnnotations(doc, childNode, hostRef.$vnode$, docData, cmpData);
       }
-      parseVNodeAnnotations(doc2, childNode, docData, orgLocationNodes);
+      parseVNodeAnnotations(doc, childNode, docData, orgLocationNodes);
     });
   }
 };
-var insertVNodeAnnotations = (doc2, hostElm, vnode, docData, cmpData) => {
+var insertVNodeAnnotations = (doc, hostElm, vnode, docData, cmpData) => {
   if (vnode != null) {
     const hostId = ++docData.hostIds;
     hostElm.setAttribute(HYDRATE_ID, hostId);
@@ -1883,7 +2188,7 @@ var insertVNodeAnnotations = (doc2, hostElm, vnode, docData, cmpData) => {
     if (vnode.$children$ != null) {
       const depth = 0;
       vnode.$children$.forEach((vnodeChild, index) => {
-        insertChildVNodeAnnotations(doc2, vnodeChild, cmpData, hostId, depth, index);
+        insertChildVNodeAnnotations(doc, vnodeChild, cmpData, hostId, depth, index);
       });
     }
     if (hostElm && vnode && vnode.$elm$ && !hostElm.hasAttribute(HYDRATE_CHILD_ID)) {
@@ -1904,7 +2209,7 @@ var insertVNodeAnnotations = (doc2, hostElm, vnode, docData, cmpData) => {
     }
   }
 };
-var insertChildVNodeAnnotations = (doc2, vnodeChild, cmpData, hostId, depth, index) => {
+var insertChildVNodeAnnotations = (doc, vnodeChild, cmpData, hostId, depth, index) => {
   const childElm = vnodeChild.$elm$;
   if (childElm == null) {
     return;
@@ -1923,7 +2228,7 @@ var insertChildVNodeAnnotations = (doc2, vnodeChild, cmpData, hostId, depth, ind
     const nodeName = parentNode == null ? void 0 : parentNode.nodeName;
     if (nodeName !== "STYLE" && nodeName !== "SCRIPT") {
       const textNodeId = `${TEXT_NODE_ID}.${childId}`;
-      const commentBeforeTextNode = doc2.createComment(textNodeId);
+      const commentBeforeTextNode = doc.createComment(textNodeId);
       insertBefore(parentNode, commentBeforeTextNode, childElm);
     }
   } else if (childElm.nodeType === 8 /* CommentNode */) {
@@ -1936,7 +2241,7 @@ var insertChildVNodeAnnotations = (doc2, vnodeChild, cmpData, hostId, depth, ind
   if (vnodeChild.$children$ != null) {
     const childDepth = depth + 1;
     vnodeChild.$children$.forEach((vnode, index2) => {
-      insertChildVNodeAnnotations(doc2, vnode, cmpData, hostId, childDepth, index2);
+      insertChildVNodeAnnotations(doc, vnode, cmpData, hostId, childDepth, index2);
     });
   }
 };
@@ -1956,41 +2261,44 @@ var hAsync = (nodeName, vnodeData, ...children) => {
   }
   return h(nodeName, vnodeData);
 };
+
+// src/hydrate/platform/proxy-host-element.ts
 function proxyHostElement(elm, cstr) {
   const cmpMeta = cstr.cmpMeta;
+  cmpMeta.$watchers$ = cmpMeta.$watchers$ || cstr.watchers;
+  cmpMeta.$deserializers$ = cmpMeta.$deserializers$ || cstr.deserializers;
+  cmpMeta.$serializers$ = cmpMeta.$serializers$ || cstr.serializers;
   if (typeof elm.componentOnReady !== "function") {
     elm.componentOnReady = componentOnReady;
   }
   if (typeof elm.forceUpdate !== "function") {
     elm.forceUpdate = forceUpdate2;
   }
-  if (!elm.shadowRoot && !!(cmpMeta.$flags$ & 1 /* shadowDomEncapsulation */)) {
-    {
-      elm.attachShadow({ mode: "open" });
-    }
+  if (!elm.shadowRoot && !!(cmpMeta.$flags$ & 1 /* shadowDomEncapsulation */) && !(cmpMeta.$flags$ & 128 /* shadowNeedsScopedCss */)) {
+    createShadowRoot.call(elm, cmpMeta);
   }
   if (cmpMeta.$members$ != null) {
     const hostRef = getHostRef(elm);
     const members = Object.entries(cmpMeta.$members$);
     members.forEach(([memberName, [memberFlags, metaAttributeName]]) => {
-      var _a;
+      var _a, _b;
       if (memberFlags & 31 /* Prop */) {
         const attributeName = metaAttributeName || memberName;
-        let attrValue = elm.getAttribute(attributeName);
-        if ((attrValue == null ? void 0 : attrValue.startsWith("{")) && attrValue.endsWith("}") || (attrValue == null ? void 0 : attrValue.startsWith("[")) && attrValue.endsWith("]")) {
-          try {
-            attrValue = JSON.parse(attrValue);
-          } catch (e) {
+        const attrValue = elm.getAttribute(attributeName);
+        const propValue = elm[memberName];
+        let attrPropVal;
+        const { get: origGetter, set: origSetter } = Object.getOwnPropertyDescriptor(cstr.prototype, memberName) || {};
+        if (attrValue != null) {
+          if ((_a = cmpMeta.$deserializers$) == null ? void 0 : _a[memberName]) {
+            for (const methodName of cmpMeta.$deserializers$[memberName]) {
+              attrPropVal = cstr.prototype[methodName](attrValue, memberName);
+            }
+          } else {
+            attrPropVal = parsePropertyValue(attrValue, memberFlags);
           }
         }
-        const { get: origGetter, set: origSetter } = Object.getOwnPropertyDescriptor(cstr.prototype, memberName) || {};
-        let attrPropVal;
-        if (attrValue != null) {
-          attrPropVal = parsePropertyValue(attrValue, memberFlags);
-        }
-        const ownValue = elm[memberName];
-        if (ownValue !== void 0) {
-          attrPropVal = ownValue;
+        if (propValue !== void 0) {
+          attrPropVal = propValue;
           delete elm[memberName];
         }
         if (attrPropVal !== void 0) {
@@ -1998,27 +2306,31 @@ function proxyHostElement(elm, cstr) {
             origSetter.apply(elm, [attrPropVal]);
             attrPropVal = origGetter ? origGetter.apply(elm) : attrPropVal;
           }
-          (_a = hostRef == null ? void 0 : hostRef.$instanceValues$) == null ? void 0 : _a.set(memberName, attrPropVal);
+          (_b = hostRef == null ? void 0 : hostRef.$instanceValues$) == null ? void 0 : _b.set(memberName, attrPropVal);
         }
-        Object.defineProperty(elm, memberName, {
+        const getterSetterDescriptor = {
           get: function() {
             return getValue(this, memberName);
           },
-          set(newValue) {
+          set: function(newValue) {
             setValue(this, memberName, newValue, cmpMeta);
           },
           configurable: true,
           enumerable: true
-        });
-        Object.defineProperty(cstr.prototype, memberName, {
-          get: function() {
-            if (origGetter && attrPropVal === void 0 && !getValue(this, memberName)) {
-              setValue(this, memberName, origGetter.apply(this), cmpMeta);
-            }
-            return attrPropVal !== void 0 ? attrPropVal : origGetter ? origGetter.apply(this) : getValue(this, memberName);
-          },
-          configurable: true,
-          enumerable: true
+        };
+        Object.defineProperty(elm, memberName, getterSetterDescriptor);
+        Object.defineProperty(elm, metaAttributeName, getterSetterDescriptor);
+        hostRef.$fetchedCbList$.push(() => {
+          var _a2;
+          if (!((_a2 = hostRef == null ? void 0 : hostRef.$instanceValues$) == null ? void 0 : _a2.has(memberName))) {
+            setValue(
+              elm,
+              memberName,
+              attrPropVal !== void 0 ? attrPropVal : hostRef.$lazyInstance$[memberName],
+              cmpMeta
+            );
+          }
+          Object.defineProperty(hostRef.$lazyInstance$, memberName, getterSetterDescriptor);
         });
       } else if (memberFlags & 64 /* Method */) {
         Object.defineProperty(elm, memberName, {
@@ -2089,10 +2401,17 @@ function hydrateApp(win2, opts, results, afterHydrate, resolve) {
         if (!hostRef) {
           const Cstr = loadModule(
             {
-              $tagName$: elm.nodeName.toLowerCase(),
-              $flags$: null
-            });
+              $tagName$: elm.nodeName.toLowerCase()});
           if (Cstr != null && Cstr.cmpMeta != null) {
+            if (opts.serializeShadowRoot !== false && !!(Cstr.cmpMeta.$flags$ & 1 /* shadowDomEncapsulation */) && tagRequiresScoped(elm.tagName, opts.serializeShadowRoot)) {
+              const cmpMeta = Cstr.cmpMeta;
+              cmpMeta.$flags$ |= 128 /* shadowNeedsScopedCss */;
+              Object.defineProperty(Cstr, "cmpMeta", {
+                get: function() {
+                  return cmpMeta;
+                }
+              });
+            }
             createdElements.add(elm);
             elm.connectedCallback = patchedConnectedCallback2;
             registerHost(elm, Cstr.cmpMeta);
@@ -2135,7 +2454,7 @@ function hydrateApp(win2, opts, results, afterHydrate, resolve) {
       return elm;
     };
     tmrId = globalThis.setTimeout(timeoutExceeded, opts.timeout);
-    plt.$resourcesUrl$ = new URL(opts.resourcesUrl || "./", doc.baseURI).href;
+    plt.$resourcesUrl$ = new URL(opts.resourcesUrl || "./", win2.document.baseURI).href;
     patchChild2(win2.document.body);
     waitLoop2().then(hydratedComplete).catch(hydratedError);
   } catch (e) {
@@ -2146,20 +2465,21 @@ async function hydrateComponent(win2, results, tagName, elm, waitingElements) {
   tagName = tagName.toLowerCase();
   const Cstr = loadModule(
     {
-      $tagName$: tagName,
-      $flags$: null
-    });
+      $tagName$: tagName});
   if (Cstr != null) {
     const cmpMeta = Cstr.cmpMeta;
     if (cmpMeta != null) {
       waitingElements.add(elm);
-      getHostRef(this);
+      const hostRef = getHostRef(this);
+      if (!hostRef) {
+        return;
+      }
       try {
         connectedCallback(elm);
         await elm.componentOnReady();
         results.hydratedCount++;
         const ref = getHostRef(elm);
-        const modeName = !ref.$modeName$ ? "$" : ref.$modeName$;
+        const modeName = !(ref == null ? void 0 : ref.$modeName$) ? "$" : ref == null ? void 0 : ref.$modeName$;
         if (!results.components.some((c) => c.tag === tagName && c.mode === modeName)) {
           results.components.push({
             tag: tagName,
@@ -2284,6 +2604,25 @@ ${indent}${ln}`;
 function waitingOnElementsMsg(waitingElements) {
   return Array.from(waitingElements).map(waitingOnElementMsg);
 }
+function tagRequiresScoped(tagName, opts) {
+  if (typeof opts === "string") {
+    return opts === "scoped";
+  }
+  if (typeof opts === "boolean") {
+    return opts === true ? false : true;
+  }
+  if (typeof opts === "object") {
+    tagName = tagName.toLowerCase();
+    if (Array.isArray(opts["declarative-shadow-dom"]) && opts["declarative-shadow-dom"].includes(tagName)) {
+      return false;
+    } else if ((!Array.isArray(opts.scoped) || !opts.scoped.includes(tagName)) && opts.default === "declarative-shadow-dom") {
+      return false;
+    } else {
+      return true;
+    }
+  }
+  return false;
+}
 var cmpModules = /* @__PURE__ */ new Map();
 var getModule = (tagName) => {
   if (typeof tagName === "string") {
@@ -2322,7 +2661,6 @@ var registerComponents = (Cstrs) => {
   }
 };
 var win = window;
-var doc = win.document;
 var writeTask = (cb) => {
   nextTick(() => {
     try {
@@ -2350,14 +2688,20 @@ var plt = {
   ce: (eventName, opts) => new win.CustomEvent(eventName, opts)
 };
 var supportsShadow = BUILD.shadowDom;
-var hostRefs = /* @__PURE__ */ new WeakMap();
-var getHostRef = (ref) => hostRefs.get(ref);
+var getHostRef = (ref) => {
+  if (ref.__stencil__getHostRef) {
+    return ref.__stencil__getHostRef();
+  }
+  return void 0;
+};
 var registerInstance = (lazyInstance, hostRef) => {
-  const ref = hostRefs.set(hostRef.$lazyInstance$ = lazyInstance, hostRef);
-  {
+  if (!hostRef) return void 0;
+  lazyInstance.__stencil__getHostRef = () => hostRef;
+  hostRef.$lazyInstance$ = lazyInstance;
+  if (hostRef.$cmpMeta$.$flags$ & 512 /* hasModernPropertyDecls */ && (BUILD.state)) {
     reWireGetterSetter(lazyInstance, hostRef);
   }
-  return ref;
+  return hostRef;
 };
 var registerHost = (elm, cmpMeta) => {
   const hostRef = {
@@ -2365,16 +2709,21 @@ var registerHost = (elm, cmpMeta) => {
     $cmpMeta$: cmpMeta,
     $hostElement$: elm,
     $instanceValues$: /* @__PURE__ */ new Map(),
+    $serializerValues$: /* @__PURE__ */ new Map(),
     $renderCount$: 0
   };
+  hostRef.$fetchedCbList$ = [];
   hostRef.$onInstancePromise$ = new Promise((r) => hostRef.$onInstanceResolve$ = r);
   hostRef.$onReadyPromise$ = new Promise((r) => hostRef.$onReadyResolve$ = r);
   elm["s-p"] = [];
   elm["s-rc"] = [];
-  return hostRefs.set(elm, hostRef);
+  elm.__stencil__getHostRef = () => hostRef;
+  return hostRef;
 };
 
-var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
+function getDefaultExportFromCjs (x) {
+	return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, 'default') ? x['default'] : x;
+}
 
 var classnames = {exports: {}};
 
@@ -2384,76 +2733,84 @@ var classnames = {exports: {}};
 	http://jedwatson.github.io/classnames
 */
 
-(function (module) {
-/* global define */
+var hasRequiredClassnames;
 
-(function () {
+function requireClassnames () {
+	if (hasRequiredClassnames) return classnames.exports;
+	hasRequiredClassnames = 1;
+	(function (module) {
+		/* global define */
 
-	var hasOwn = {}.hasOwnProperty;
+		(function () {
 
-	function classNames () {
-		var classes = '';
+			var hasOwn = {}.hasOwnProperty;
 
-		for (var i = 0; i < arguments.length; i++) {
-			var arg = arguments[i];
-			if (arg) {
-				classes = appendClass(classes, parseValue(arg));
+			function classNames () {
+				var classes = '';
+
+				for (var i = 0; i < arguments.length; i++) {
+					var arg = arguments[i];
+					if (arg) {
+						classes = appendClass(classes, parseValue(arg));
+					}
+				}
+
+				return classes;
 			}
-		}
 
-		return classes;
-	}
+			function parseValue (arg) {
+				if (typeof arg === 'string' || typeof arg === 'number') {
+					return arg;
+				}
 
-	function parseValue (arg) {
-		if (typeof arg === 'string' || typeof arg === 'number') {
-			return arg;
-		}
+				if (typeof arg !== 'object') {
+					return '';
+				}
 
-		if (typeof arg !== 'object') {
-			return '';
-		}
+				if (Array.isArray(arg)) {
+					return classNames.apply(null, arg);
+				}
 
-		if (Array.isArray(arg)) {
-			return classNames.apply(null, arg);
-		}
+				if (arg.toString !== Object.prototype.toString && !arg.toString.toString().includes('[native code]')) {
+					return arg.toString();
+				}
 
-		if (arg.toString !== Object.prototype.toString && !arg.toString.toString().includes('[native code]')) {
-			return arg.toString();
-		}
+				var classes = '';
 
-		var classes = '';
+				for (var key in arg) {
+					if (hasOwn.call(arg, key) && arg[key]) {
+						classes = appendClass(classes, key);
+					}
+				}
 
-		for (var key in arg) {
-			if (hasOwn.call(arg, key) && arg[key]) {
-				classes = appendClass(classes, key);
+				return classes;
 			}
-		}
 
-		return classes;
-	}
+			function appendClass (value, newClass) {
+				if (!newClass) {
+					return value;
+				}
+			
+				if (value) {
+					return value + ' ' + newClass;
+				}
+			
+				return value + newClass;
+			}
 
-	function appendClass (value, newClass) {
-		if (!newClass) {
-			return value;
-		}
-	
-		if (value) {
-			return value + ' ' + newClass;
-		}
-	
-		return value + newClass;
-	}
+			if (module.exports) {
+				classNames.default = classNames;
+				module.exports = classNames;
+			} else {
+				window.classNames = classNames;
+			}
+		}()); 
+	} (classnames));
+	return classnames.exports;
+}
 
-	if (module.exports) {
-		classNames.default = classNames;
-		module.exports = classNames;
-	} else {
-		window.classNames = classNames;
-	}
-}());
-}(classnames));
-
-var classNames = classnames.exports;
+var classnamesExports = requireClassnames();
+var classNames = /*@__PURE__*/getDefaultExportFromCjs(classnamesExports);
 
 /**
  * This web component represents a button.
@@ -2464,7 +2821,7 @@ var classNames = classnames.exports;
 class SearchcraftButton {
     constructor(hostRef) {
         registerInstance(this, hostRef);
-        this.buttonClick = createEvent(this, "buttonClick", 7);
+        this.buttonClick = createEvent(this, "buttonClick");
     }
     /**
      * Controls the visual representation of the button.
@@ -2509,7 +2866,7 @@ class SearchcraftButton {
             }), disabled: this.disabled, onClick: this.handleButtonClick, type: this.type }, this.iconOnly ? (this.icon) : (hAsync(Fragment, null, this.iconPosition === 'left' && this.icon, hAsync("span", null, this.label), this.iconPosition === 'right' && this.icon))));
     }
     static get cmpMeta() { return {
-        "$flags$": 0,
+        "$flags$": 768,
         "$tagName$": "searchcraft-button",
         "$members$": {
             "hierarchy": [1],
@@ -2546,7 +2903,7 @@ class SearchcraftErrorMessage {
         return (hAsync("div", { key: 'd42f7abf8dfb2620622b8012d868d32f04b2f354', class: 'searchcraft-error-message' }, hAsync("slot", { key: '75a7811576ea8afe80a7ae739f5cf2d411f976df' }, "Search term is required.")));
     }
     static get cmpMeta() { return {
-        "$flags$": 4,
+        "$flags$": 260,
         "$tagName$": "searchcraft-error-message",
         "$members$": undefined,
         "$listeners$": undefined,
@@ -2939,1133 +3296,1157 @@ function getFormattedDateString(granularity, date) {
     }
 }
 
-var purify = {exports: {}};
+/*! @license DOMPurify 3.3.0 | (c) Cure53 and other contributors | Released under the Apache license 2.0 and Mozilla Public License 2.0 | github.com/cure53/DOMPurify/blob/3.3.0/LICENSE */
 
-/*! @license DOMPurify 3.2.4 | (c) Cure53 and other contributors | Released under the Apache license 2.0 and Mozilla Public License 2.0 | github.com/cure53/DOMPurify/blob/3.2.4/LICENSE */
+const {
+  entries,
+  setPrototypeOf,
+  isFrozen,
+  getPrototypeOf,
+  getOwnPropertyDescriptor
+} = Object;
+let {
+  freeze,
+  seal,
+  create
+} = Object; // eslint-disable-line import/no-mutable-exports
+let {
+  apply,
+  construct
+} = typeof Reflect !== 'undefined' && Reflect;
+if (!freeze) {
+  freeze = function freeze(x) {
+    return x;
+  };
+}
+if (!seal) {
+  seal = function seal(x) {
+    return x;
+  };
+}
+if (!apply) {
+  apply = function apply(func, thisArg) {
+    for (var _len = arguments.length, args = new Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
+      args[_key - 2] = arguments[_key];
+    }
+    return func.apply(thisArg, args);
+  };
+}
+if (!construct) {
+  construct = function construct(Func) {
+    for (var _len2 = arguments.length, args = new Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
+      args[_key2 - 1] = arguments[_key2];
+    }
+    return new Func(...args);
+  };
+}
+const arrayForEach = unapply(Array.prototype.forEach);
+const arrayLastIndexOf = unapply(Array.prototype.lastIndexOf);
+const arrayPop = unapply(Array.prototype.pop);
+const arrayPush = unapply(Array.prototype.push);
+const arraySplice = unapply(Array.prototype.splice);
+const stringToLowerCase = unapply(String.prototype.toLowerCase);
+const stringToString = unapply(String.prototype.toString);
+const stringMatch = unapply(String.prototype.match);
+const stringReplace = unapply(String.prototype.replace);
+const stringIndexOf = unapply(String.prototype.indexOf);
+const stringTrim = unapply(String.prototype.trim);
+const objectHasOwnProperty = unapply(Object.prototype.hasOwnProperty);
+const regExpTest = unapply(RegExp.prototype.test);
+const typeErrorCreate = unconstruct(TypeError);
+/**
+ * Creates a new function that calls the given function with a specified thisArg and arguments.
+ *
+ * @param func - The function to be wrapped and called.
+ * @returns A new function that calls the given function with a specified thisArg and arguments.
+ */
+function unapply(func) {
+  return function (thisArg) {
+    if (thisArg instanceof RegExp) {
+      thisArg.lastIndex = 0;
+    }
+    for (var _len3 = arguments.length, args = new Array(_len3 > 1 ? _len3 - 1 : 0), _key3 = 1; _key3 < _len3; _key3++) {
+      args[_key3 - 1] = arguments[_key3];
+    }
+    return apply(func, thisArg, args);
+  };
+}
+/**
+ * Creates a new function that constructs an instance of the given constructor function with the provided arguments.
+ *
+ * @param func - The constructor function to be wrapped and called.
+ * @returns A new function that constructs an instance of the given constructor function with the provided arguments.
+ */
+function unconstruct(Func) {
+  return function () {
+    for (var _len4 = arguments.length, args = new Array(_len4), _key4 = 0; _key4 < _len4; _key4++) {
+      args[_key4] = arguments[_key4];
+    }
+    return construct(Func, args);
+  };
+}
+/**
+ * Add properties to a lookup table
+ *
+ * @param set - The set to which elements will be added.
+ * @param array - The array containing elements to be added to the set.
+ * @param transformCaseFunc - An optional function to transform the case of each element before adding to the set.
+ * @returns The modified set with added elements.
+ */
+function addToSet(set, array) {
+  let transformCaseFunc = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : stringToLowerCase;
+  if (setPrototypeOf) {
+    // Make 'in' and truthy checks like Boolean(set.constructor)
+    // independent of any properties defined on Object.prototype.
+    // Prevent prototype setters from intercepting set as a this value.
+    setPrototypeOf(set, null);
+  }
+  let l = array.length;
+  while (l--) {
+    let element = array[l];
+    if (typeof element === 'string') {
+      const lcElement = transformCaseFunc(element);
+      if (lcElement !== element) {
+        // Config presets (e.g. tags.js, attrs.js) are immutable.
+        if (!isFrozen(array)) {
+          array[l] = lcElement;
+        }
+        element = lcElement;
+      }
+    }
+    set[element] = true;
+  }
+  return set;
+}
+/**
+ * Clean up an array to harden against CSPP
+ *
+ * @param array - The array to be cleaned.
+ * @returns The cleaned version of the array
+ */
+function cleanArray(array) {
+  for (let index = 0; index < array.length; index++) {
+    const isPropertyExist = objectHasOwnProperty(array, index);
+    if (!isPropertyExist) {
+      array[index] = null;
+    }
+  }
+  return array;
+}
+/**
+ * Shallow clone an object
+ *
+ * @param object - The object to be cloned.
+ * @returns A new object that copies the original.
+ */
+function clone(object) {
+  const newObject = create(null);
+  for (const [property, value] of entries(object)) {
+    const isPropertyExist = objectHasOwnProperty(object, property);
+    if (isPropertyExist) {
+      if (Array.isArray(value)) {
+        newObject[property] = cleanArray(value);
+      } else if (value && typeof value === 'object' && value.constructor === Object) {
+        newObject[property] = clone(value);
+      } else {
+        newObject[property] = value;
+      }
+    }
+  }
+  return newObject;
+}
+/**
+ * This method automatically checks if the prop is function or getter and behaves accordingly.
+ *
+ * @param object - The object to look up the getter function in its prototype chain.
+ * @param prop - The property name for which to find the getter function.
+ * @returns The getter function found in the prototype chain or a fallback function.
+ */
+function lookupGetter(object, prop) {
+  while (object !== null) {
+    const desc = getOwnPropertyDescriptor(object, prop);
+    if (desc) {
+      if (desc.get) {
+        return unapply(desc.get);
+      }
+      if (typeof desc.value === 'function') {
+        return unapply(desc.value);
+      }
+    }
+    object = getPrototypeOf(object);
+  }
+  function fallbackValue() {
+    return null;
+  }
+  return fallbackValue;
+}
 
-(function (module, exports) {
-(function (global, factory) {
-  module.exports = factory() ;
-})(commonjsGlobal, (function () {
+const html$1$1 = freeze(['a', 'abbr', 'acronym', 'address', 'area', 'article', 'aside', 'audio', 'b', 'bdi', 'bdo', 'big', 'blink', 'blockquote', 'body', 'br', 'button', 'canvas', 'caption', 'center', 'cite', 'code', 'col', 'colgroup', 'content', 'data', 'datalist', 'dd', 'decorator', 'del', 'details', 'dfn', 'dialog', 'dir', 'div', 'dl', 'dt', 'element', 'em', 'fieldset', 'figcaption', 'figure', 'font', 'footer', 'form', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'head', 'header', 'hgroup', 'hr', 'html', 'i', 'img', 'input', 'ins', 'kbd', 'label', 'legend', 'li', 'main', 'map', 'mark', 'marquee', 'menu', 'menuitem', 'meter', 'nav', 'nobr', 'ol', 'optgroup', 'option', 'output', 'p', 'picture', 'pre', 'progress', 'q', 'rp', 'rt', 'ruby', 's', 'samp', 'search', 'section', 'select', 'shadow', 'slot', 'small', 'source', 'spacer', 'span', 'strike', 'strong', 'style', 'sub', 'summary', 'sup', 'table', 'tbody', 'td', 'template', 'textarea', 'tfoot', 'th', 'thead', 'time', 'tr', 'track', 'tt', 'u', 'ul', 'var', 'video', 'wbr']);
+const svg$1 = freeze(['svg', 'a', 'altglyph', 'altglyphdef', 'altglyphitem', 'animatecolor', 'animatemotion', 'animatetransform', 'circle', 'clippath', 'defs', 'desc', 'ellipse', 'enterkeyhint', 'exportparts', 'filter', 'font', 'g', 'glyph', 'glyphref', 'hkern', 'image', 'inputmode', 'line', 'lineargradient', 'marker', 'mask', 'metadata', 'mpath', 'part', 'path', 'pattern', 'polygon', 'polyline', 'radialgradient', 'rect', 'stop', 'style', 'switch', 'symbol', 'text', 'textpath', 'title', 'tref', 'tspan', 'view', 'vkern']);
+const svgFilters = freeze(['feBlend', 'feColorMatrix', 'feComponentTransfer', 'feComposite', 'feConvolveMatrix', 'feDiffuseLighting', 'feDisplacementMap', 'feDistantLight', 'feDropShadow', 'feFlood', 'feFuncA', 'feFuncB', 'feFuncG', 'feFuncR', 'feGaussianBlur', 'feImage', 'feMerge', 'feMergeNode', 'feMorphology', 'feOffset', 'fePointLight', 'feSpecularLighting', 'feSpotLight', 'feTile', 'feTurbulence']);
+// List of SVG elements that are disallowed by default.
+// We still need to know them so that we can do namespace
+// checks properly in case one wants to add them to
+// allow-list.
+const svgDisallowed = freeze(['animate', 'color-profile', 'cursor', 'discard', 'font-face', 'font-face-format', 'font-face-name', 'font-face-src', 'font-face-uri', 'foreignobject', 'hatch', 'hatchpath', 'mesh', 'meshgradient', 'meshpatch', 'meshrow', 'missing-glyph', 'script', 'set', 'solidcolor', 'unknown', 'use']);
+const mathMl$1 = freeze(['math', 'menclose', 'merror', 'mfenced', 'mfrac', 'mglyph', 'mi', 'mlabeledtr', 'mmultiscripts', 'mn', 'mo', 'mover', 'mpadded', 'mphantom', 'mroot', 'mrow', 'ms', 'mspace', 'msqrt', 'mstyle', 'msub', 'msup', 'msubsup', 'mtable', 'mtd', 'mtext', 'mtr', 'munder', 'munderover', 'mprescripts']);
+// Similarly to SVG, we want to know all MathML elements,
+// even those that we disallow by default.
+const mathMlDisallowed = freeze(['maction', 'maligngroup', 'malignmark', 'mlongdiv', 'mscarries', 'mscarry', 'msgroup', 'mstack', 'msline', 'msrow', 'semantics', 'annotation', 'annotation-xml', 'mprescripts', 'none']);
+const text = freeze(['#text']);
+
+const html$2 = freeze(['accept', 'action', 'align', 'alt', 'autocapitalize', 'autocomplete', 'autopictureinpicture', 'autoplay', 'background', 'bgcolor', 'border', 'capture', 'cellpadding', 'cellspacing', 'checked', 'cite', 'class', 'clear', 'color', 'cols', 'colspan', 'controls', 'controlslist', 'coords', 'crossorigin', 'datetime', 'decoding', 'default', 'dir', 'disabled', 'disablepictureinpicture', 'disableremoteplayback', 'download', 'draggable', 'enctype', 'enterkeyhint', 'exportparts', 'face', 'for', 'headers', 'height', 'hidden', 'high', 'href', 'hreflang', 'id', 'inert', 'inputmode', 'integrity', 'ismap', 'kind', 'label', 'lang', 'list', 'loading', 'loop', 'low', 'max', 'maxlength', 'media', 'method', 'min', 'minlength', 'multiple', 'muted', 'name', 'nonce', 'noshade', 'novalidate', 'nowrap', 'open', 'optimum', 'part', 'pattern', 'placeholder', 'playsinline', 'popover', 'popovertarget', 'popovertargetaction', 'poster', 'preload', 'pubdate', 'radiogroup', 'readonly', 'rel', 'required', 'rev', 'reversed', 'role', 'rows', 'rowspan', 'spellcheck', 'scope', 'selected', 'shape', 'size', 'sizes', 'slot', 'span', 'srclang', 'start', 'src', 'srcset', 'step', 'style', 'summary', 'tabindex', 'title', 'translate', 'type', 'usemap', 'valign', 'value', 'width', 'wrap', 'xmlns', 'slot']);
+const svg = freeze(['accent-height', 'accumulate', 'additive', 'alignment-baseline', 'amplitude', 'ascent', 'attributename', 'attributetype', 'azimuth', 'basefrequency', 'baseline-shift', 'begin', 'bias', 'by', 'class', 'clip', 'clippathunits', 'clip-path', 'clip-rule', 'color', 'color-interpolation', 'color-interpolation-filters', 'color-profile', 'color-rendering', 'cx', 'cy', 'd', 'dx', 'dy', 'diffuseconstant', 'direction', 'display', 'divisor', 'dur', 'edgemode', 'elevation', 'end', 'exponent', 'fill', 'fill-opacity', 'fill-rule', 'filter', 'filterunits', 'flood-color', 'flood-opacity', 'font-family', 'font-size', 'font-size-adjust', 'font-stretch', 'font-style', 'font-variant', 'font-weight', 'fx', 'fy', 'g1', 'g2', 'glyph-name', 'glyphref', 'gradientunits', 'gradienttransform', 'height', 'href', 'id', 'image-rendering', 'in', 'in2', 'intercept', 'k', 'k1', 'k2', 'k3', 'k4', 'kerning', 'keypoints', 'keysplines', 'keytimes', 'lang', 'lengthadjust', 'letter-spacing', 'kernelmatrix', 'kernelunitlength', 'lighting-color', 'local', 'marker-end', 'marker-mid', 'marker-start', 'markerheight', 'markerunits', 'markerwidth', 'maskcontentunits', 'maskunits', 'max', 'mask', 'mask-type', 'media', 'method', 'mode', 'min', 'name', 'numoctaves', 'offset', 'operator', 'opacity', 'order', 'orient', 'orientation', 'origin', 'overflow', 'paint-order', 'path', 'pathlength', 'patterncontentunits', 'patterntransform', 'patternunits', 'points', 'preservealpha', 'preserveaspectratio', 'primitiveunits', 'r', 'rx', 'ry', 'radius', 'refx', 'refy', 'repeatcount', 'repeatdur', 'restart', 'result', 'rotate', 'scale', 'seed', 'shape-rendering', 'slope', 'specularconstant', 'specularexponent', 'spreadmethod', 'startoffset', 'stddeviation', 'stitchtiles', 'stop-color', 'stop-opacity', 'stroke-dasharray', 'stroke-dashoffset', 'stroke-linecap', 'stroke-linejoin', 'stroke-miterlimit', 'stroke-opacity', 'stroke', 'stroke-width', 'style', 'surfacescale', 'systemlanguage', 'tabindex', 'tablevalues', 'targetx', 'targety', 'transform', 'transform-origin', 'text-anchor', 'text-decoration', 'text-rendering', 'textlength', 'type', 'u1', 'u2', 'unicode', 'values', 'viewbox', 'visibility', 'version', 'vert-adv-y', 'vert-origin-x', 'vert-origin-y', 'width', 'word-spacing', 'wrap', 'writing-mode', 'xchannelselector', 'ychannelselector', 'x', 'x1', 'x2', 'xmlns', 'y', 'y1', 'y2', 'z', 'zoomandpan']);
+const mathMl = freeze(['accent', 'accentunder', 'align', 'bevelled', 'close', 'columnsalign', 'columnlines', 'columnspan', 'denomalign', 'depth', 'dir', 'display', 'displaystyle', 'encoding', 'fence', 'frame', 'height', 'href', 'id', 'largeop', 'length', 'linethickness', 'lspace', 'lquote', 'mathbackground', 'mathcolor', 'mathsize', 'mathvariant', 'maxsize', 'minsize', 'movablelimits', 'notation', 'numalign', 'open', 'rowalign', 'rowlines', 'rowspacing', 'rowspan', 'rspace', 'rquote', 'scriptlevel', 'scriptminsize', 'scriptsizemultiplier', 'selection', 'separator', 'separators', 'stretchy', 'subscriptshift', 'supscriptshift', 'symmetric', 'voffset', 'width', 'xmlns']);
+const xml = freeze(['xlink:href', 'xml:id', 'xlink:title', 'xml:space', 'xmlns:xlink']);
+
+// eslint-disable-next-line unicorn/better-regex
+const MUSTACHE_EXPR = seal(/\{\{[\w\W]*|[\w\W]*\}\}/gm); // Specify template detection regex for SAFE_FOR_TEMPLATES mode
+const ERB_EXPR = seal(/<%[\w\W]*|[\w\W]*%>/gm);
+const TMPLIT_EXPR = seal(/\$\{[\w\W]*/gm); // eslint-disable-line unicorn/better-regex
+const DATA_ATTR = seal(/^data-[\-\w.\u00B7-\uFFFF]+$/); // eslint-disable-line no-useless-escape
+const ARIA_ATTR = seal(/^aria-[\-\w]+$/); // eslint-disable-line no-useless-escape
+const IS_ALLOWED_URI = seal(/^(?:(?:(?:f|ht)tps?|mailto|tel|callto|sms|cid|xmpp|matrix):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i // eslint-disable-line no-useless-escape
+);
+const IS_SCRIPT_OR_DATA = seal(/^(?:\w+script|data):/i);
+const ATTR_WHITESPACE = seal(/[\u0000-\u0020\u00A0\u1680\u180E\u2000-\u2029\u205F\u3000]/g // eslint-disable-line no-control-regex
+);
+const DOCTYPE_NAME = seal(/^html$/i);
+const CUSTOM_ELEMENT = seal(/^[a-z][.\w]*(-[.\w]+)+$/i);
+
+var EXPRESSIONS = /*#__PURE__*/Object.freeze({
+  __proto__: null,
+  ARIA_ATTR: ARIA_ATTR,
+  ATTR_WHITESPACE: ATTR_WHITESPACE,
+  CUSTOM_ELEMENT: CUSTOM_ELEMENT,
+  DATA_ATTR: DATA_ATTR,
+  DOCTYPE_NAME: DOCTYPE_NAME,
+  ERB_EXPR: ERB_EXPR,
+  IS_ALLOWED_URI: IS_ALLOWED_URI,
+  IS_SCRIPT_OR_DATA: IS_SCRIPT_OR_DATA,
+  MUSTACHE_EXPR: MUSTACHE_EXPR,
+  TMPLIT_EXPR: TMPLIT_EXPR
+});
+
+/* eslint-disable @typescript-eslint/indent */
+// https://developer.mozilla.org/en-US/docs/Web/API/Node/nodeType
+const NODE_TYPE = {
+  element: 1,
+  text: 3,
+  // Deprecated
+  progressingInstruction: 7,
+  comment: 8,
+  document: 9};
+const getGlobal = function getGlobal() {
+  return typeof window === 'undefined' ? null : window;
+};
+/**
+ * Creates a no-op policy for internal use only.
+ * Don't export this function outside this module!
+ * @param trustedTypes The policy factory.
+ * @param purifyHostElement The Script element used to load DOMPurify (to determine policy name suffix).
+ * @return The policy created (or null, if Trusted Types
+ * are not supported or creating the policy failed).
+ */
+const _createTrustedTypesPolicy = function _createTrustedTypesPolicy(trustedTypes, purifyHostElement) {
+  if (typeof trustedTypes !== 'object' || typeof trustedTypes.createPolicy !== 'function') {
+    return null;
+  }
+  // Allow the callers to control the unique policy name
+  // by adding a data-tt-policy-suffix to the script element with the DOMPurify.
+  // Policy creation with duplicate names throws in Trusted Types.
+  let suffix = null;
+  const ATTR_NAME = 'data-tt-policy-suffix';
+  if (purifyHostElement && purifyHostElement.hasAttribute(ATTR_NAME)) {
+    suffix = purifyHostElement.getAttribute(ATTR_NAME);
+  }
+  const policyName = 'dompurify' + (suffix ? '#' + suffix : '');
+  try {
+    return trustedTypes.createPolicy(policyName, {
+      createHTML(html) {
+        return html;
+      },
+      createScriptURL(scriptUrl) {
+        return scriptUrl;
+      }
+    });
+  } catch (_) {
+    // Policy creation failed (most likely another DOMPurify script has
+    // already run). Skip creating the policy, as this will only cause errors
+    // if TT are enforced.
+    console.warn('TrustedTypes policy ' + policyName + ' could not be created.');
+    return null;
+  }
+};
+const _createHooksMap = function _createHooksMap() {
+  return {
+    afterSanitizeAttributes: [],
+    afterSanitizeElements: [],
+    afterSanitizeShadowDOM: [],
+    beforeSanitizeAttributes: [],
+    beforeSanitizeElements: [],
+    beforeSanitizeShadowDOM: [],
+    uponSanitizeAttribute: [],
+    uponSanitizeElement: [],
+    uponSanitizeShadowNode: []
+  };
+};
+function createDOMPurify() {
+  let window = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : getGlobal();
+  const DOMPurify = root => createDOMPurify(root);
+  DOMPurify.version = '3.3.0';
+  DOMPurify.removed = [];
+  if (!window || !window.document || window.document.nodeType !== NODE_TYPE.document || !window.Element) {
+    // Not running in a browser, provide a factory function
+    // so that you can pass your own Window
+    DOMPurify.isSupported = false;
+    return DOMPurify;
+  }
+  let {
+    document
+  } = window;
+  const originalDocument = document;
+  const currentScript = originalDocument.currentScript;
   const {
-    entries,
-    setPrototypeOf,
-    isFrozen,
-    getPrototypeOf,
-    getOwnPropertyDescriptor
-  } = Object;
+    DocumentFragment,
+    HTMLTemplateElement,
+    Node,
+    Element,
+    NodeFilter,
+    NamedNodeMap = window.NamedNodeMap || window.MozNamedAttrMap,
+    HTMLFormElement,
+    DOMParser,
+    trustedTypes
+  } = window;
+  const ElementPrototype = Element.prototype;
+  const cloneNode = lookupGetter(ElementPrototype, 'cloneNode');
+  const remove = lookupGetter(ElementPrototype, 'remove');
+  const getNextSibling = lookupGetter(ElementPrototype, 'nextSibling');
+  const getChildNodes = lookupGetter(ElementPrototype, 'childNodes');
+  const getParentNode = lookupGetter(ElementPrototype, 'parentNode');
+  // As per issue #47, the web-components registry is inherited by a
+  // new document created via createHTMLDocument. As per the spec
+  // (http://w3c.github.io/webcomponents/spec/custom/#creating-and-passing-registries)
+  // a new empty registry is used when creating a template contents owner
+  // document, so we use that as our parent document to ensure nothing
+  // is inherited.
+  if (typeof HTMLTemplateElement === 'function') {
+    const template = document.createElement('template');
+    if (template.content && template.content.ownerDocument) {
+      document = template.content.ownerDocument;
+    }
+  }
+  let trustedTypesPolicy;
+  let emptyHTML = '';
+  const {
+    implementation,
+    createNodeIterator,
+    createDocumentFragment,
+    getElementsByTagName
+  } = document;
+  const {
+    importNode
+  } = originalDocument;
+  let hooks = _createHooksMap();
+  /**
+   * Expose whether this browser supports running the full DOMPurify.
+   */
+  DOMPurify.isSupported = typeof entries === 'function' && typeof getParentNode === 'function' && implementation && implementation.createHTMLDocument !== undefined;
+  const {
+    MUSTACHE_EXPR,
+    ERB_EXPR,
+    TMPLIT_EXPR,
+    DATA_ATTR,
+    ARIA_ATTR,
+    IS_SCRIPT_OR_DATA,
+    ATTR_WHITESPACE,
+    CUSTOM_ELEMENT
+  } = EXPRESSIONS;
   let {
-    freeze,
-    seal,
-    create
-  } = Object; // eslint-disable-line import/no-mutable-exports
-  let {
-    apply,
-    construct
-  } = typeof Reflect !== 'undefined' && Reflect;
-  if (!freeze) {
-    freeze = function freeze(x) {
-      return x;
-    };
-  }
-  if (!seal) {
-    seal = function seal(x) {
-      return x;
-    };
-  }
-  if (!apply) {
-    apply = function apply(fun, thisValue, args) {
-      return fun.apply(thisValue, args);
-    };
-  }
-  if (!construct) {
-    construct = function construct(Func, args) {
-      return new Func(...args);
-    };
-  }
-  const arrayForEach = unapply(Array.prototype.forEach);
-  const arrayLastIndexOf = unapply(Array.prototype.lastIndexOf);
-  const arrayPop = unapply(Array.prototype.pop);
-  const arrayPush = unapply(Array.prototype.push);
-  const arraySplice = unapply(Array.prototype.splice);
-  const stringToLowerCase = unapply(String.prototype.toLowerCase);
-  const stringToString = unapply(String.prototype.toString);
-  const stringMatch = unapply(String.prototype.match);
-  const stringReplace = unapply(String.prototype.replace);
-  const stringIndexOf = unapply(String.prototype.indexOf);
-  const stringTrim = unapply(String.prototype.trim);
-  const objectHasOwnProperty = unapply(Object.prototype.hasOwnProperty);
-  const regExpTest = unapply(RegExp.prototype.test);
-  const typeErrorCreate = unconstruct(TypeError);
+    IS_ALLOWED_URI: IS_ALLOWED_URI$1
+  } = EXPRESSIONS;
   /**
-   * Creates a new function that calls the given function with a specified thisArg and arguments.
-   *
-   * @param func - The function to be wrapped and called.
-   * @returns A new function that calls the given function with a specified thisArg and arguments.
+   * We consider the elements and attributes below to be safe. Ideally
+   * don't add any new ones but feel free to remove unwanted ones.
    */
-  function unapply(func) {
-    return function (thisArg) {
-      for (var _len = arguments.length, args = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-        args[_key - 1] = arguments[_key];
-      }
-      return apply(func, thisArg, args);
-    };
-  }
-  /**
-   * Creates a new function that constructs an instance of the given constructor function with the provided arguments.
-   *
-   * @param func - The constructor function to be wrapped and called.
-   * @returns A new function that constructs an instance of the given constructor function with the provided arguments.
+  /* allowed element names */
+  let ALLOWED_TAGS = null;
+  const DEFAULT_ALLOWED_TAGS = addToSet({}, [...html$1$1, ...svg$1, ...svgFilters, ...mathMl$1, ...text]);
+  /* Allowed attribute names */
+  let ALLOWED_ATTR = null;
+  const DEFAULT_ALLOWED_ATTR = addToSet({}, [...html$2, ...svg, ...mathMl, ...xml]);
+  /*
+   * Configure how DOMPurify should handle custom elements and their attributes as well as customized built-in elements.
+   * @property {RegExp|Function|null} tagNameCheck one of [null, regexPattern, predicate]. Default: `null` (disallow any custom elements)
+   * @property {RegExp|Function|null} attributeNameCheck one of [null, regexPattern, predicate]. Default: `null` (disallow any attributes not on the allow list)
+   * @property {boolean} allowCustomizedBuiltInElements allow custom elements derived from built-ins if they pass CUSTOM_ELEMENT_HANDLING.tagNameCheck. Default: `false`.
    */
-  function unconstruct(func) {
-    return function () {
-      for (var _len2 = arguments.length, args = new Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
-        args[_key2] = arguments[_key2];
-      }
-      return construct(func, args);
-    };
-  }
-  /**
-   * Add properties to a lookup table
-   *
-   * @param set - The set to which elements will be added.
-   * @param array - The array containing elements to be added to the set.
-   * @param transformCaseFunc - An optional function to transform the case of each element before adding to the set.
-   * @returns The modified set with added elements.
+  let CUSTOM_ELEMENT_HANDLING = Object.seal(create(null, {
+    tagNameCheck: {
+      writable: true,
+      configurable: false,
+      enumerable: true,
+      value: null
+    },
+    attributeNameCheck: {
+      writable: true,
+      configurable: false,
+      enumerable: true,
+      value: null
+    },
+    allowCustomizedBuiltInElements: {
+      writable: true,
+      configurable: false,
+      enumerable: true,
+      value: false
+    }
+  }));
+  /* Explicitly forbidden tags (overrides ALLOWED_TAGS/ADD_TAGS) */
+  let FORBID_TAGS = null;
+  /* Explicitly forbidden attributes (overrides ALLOWED_ATTR/ADD_ATTR) */
+  let FORBID_ATTR = null;
+  /* Config object to store ADD_TAGS/ADD_ATTR functions (when used as functions) */
+  const EXTRA_ELEMENT_HANDLING = Object.seal(create(null, {
+    tagCheck: {
+      writable: true,
+      configurable: false,
+      enumerable: true,
+      value: null
+    },
+    attributeCheck: {
+      writable: true,
+      configurable: false,
+      enumerable: true,
+      value: null
+    }
+  }));
+  /* Decide if ARIA attributes are okay */
+  let ALLOW_ARIA_ATTR = true;
+  /* Decide if custom data attributes are okay */
+  let ALLOW_DATA_ATTR = true;
+  /* Decide if unknown protocols are okay */
+  let ALLOW_UNKNOWN_PROTOCOLS = false;
+  /* Decide if self-closing tags in attributes are allowed.
+   * Usually removed due to a mXSS issue in jQuery 3.0 */
+  let ALLOW_SELF_CLOSE_IN_ATTR = true;
+  /* Output should be safe for common template engines.
+   * This means, DOMPurify removes data attributes, mustaches and ERB
    */
-  function addToSet(set, array) {
-    let transformCaseFunc = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : stringToLowerCase;
-    if (setPrototypeOf) {
-      // Make 'in' and truthy checks like Boolean(set.constructor)
-      // independent of any properties defined on Object.prototype.
-      // Prevent prototype setters from intercepting set as a this value.
-      setPrototypeOf(set, null);
-    }
-    let l = array.length;
-    while (l--) {
-      let element = array[l];
-      if (typeof element === 'string') {
-        const lcElement = transformCaseFunc(element);
-        if (lcElement !== element) {
-          // Config presets (e.g. tags.js, attrs.js) are immutable.
-          if (!isFrozen(array)) {
-            array[l] = lcElement;
-          }
-          element = lcElement;
-        }
-      }
-      set[element] = true;
-    }
-    return set;
-  }
-  /**
-   * Clean up an array to harden against CSPP
-   *
-   * @param array - The array to be cleaned.
-   * @returns The cleaned version of the array
+  let SAFE_FOR_TEMPLATES = false;
+  /* Output should be safe even for XML used within HTML and alike.
+   * This means, DOMPurify removes comments when containing risky content.
    */
-  function cleanArray(array) {
-    for (let index = 0; index < array.length; index++) {
-      const isPropertyExist = objectHasOwnProperty(array, index);
-      if (!isPropertyExist) {
-        array[index] = null;
-      }
-    }
-    return array;
-  }
-  /**
-   * Shallow clone an object
-   *
-   * @param object - The object to be cloned.
-   * @returns A new object that copies the original.
+  let SAFE_FOR_XML = true;
+  /* Decide if document with <html>... should be returned */
+  let WHOLE_DOCUMENT = false;
+  /* Track whether config is already set on this instance of DOMPurify. */
+  let SET_CONFIG = false;
+  /* Decide if all elements (e.g. style, script) must be children of
+   * document.body. By default, browsers might move them to document.head */
+  let FORCE_BODY = false;
+  /* Decide if a DOM `HTMLBodyElement` should be returned, instead of a html
+   * string (or a TrustedHTML object if Trusted Types are supported).
+   * If `WHOLE_DOCUMENT` is enabled a `HTMLHtmlElement` will be returned instead
    */
-  function clone(object) {
-    const newObject = create(null);
-    for (const [property, value] of entries(object)) {
-      const isPropertyExist = objectHasOwnProperty(object, property);
-      if (isPropertyExist) {
-        if (Array.isArray(value)) {
-          newObject[property] = cleanArray(value);
-        } else if (value && typeof value === 'object' && value.constructor === Object) {
-          newObject[property] = clone(value);
-        } else {
-          newObject[property] = value;
-        }
-      }
-    }
-    return newObject;
-  }
-  /**
-   * This method automatically checks if the prop is function or getter and behaves accordingly.
-   *
-   * @param object - The object to look up the getter function in its prototype chain.
-   * @param prop - The property name for which to find the getter function.
-   * @returns The getter function found in the prototype chain or a fallback function.
+  let RETURN_DOM = false;
+  /* Decide if a DOM `DocumentFragment` should be returned, instead of a html
+   * string  (or a TrustedHTML object if Trusted Types are supported) */
+  let RETURN_DOM_FRAGMENT = false;
+  /* Try to return a Trusted Type object instead of a string, return a string in
+   * case Trusted Types are not supported  */
+  let RETURN_TRUSTED_TYPE = false;
+  /* Output should be free from DOM clobbering attacks?
+   * This sanitizes markups named with colliding, clobberable built-in DOM APIs.
    */
-  function lookupGetter(object, prop) {
-    while (object !== null) {
-      const desc = getOwnPropertyDescriptor(object, prop);
-      if (desc) {
-        if (desc.get) {
-          return unapply(desc.get);
-        }
-        if (typeof desc.value === 'function') {
-          return unapply(desc.value);
-        }
-      }
-      object = getPrototypeOf(object);
-    }
-    function fallbackValue() {
-      return null;
-    }
-    return fallbackValue;
-  }
-
-  const html$1 = freeze(['a', 'abbr', 'acronym', 'address', 'area', 'article', 'aside', 'audio', 'b', 'bdi', 'bdo', 'big', 'blink', 'blockquote', 'body', 'br', 'button', 'canvas', 'caption', 'center', 'cite', 'code', 'col', 'colgroup', 'content', 'data', 'datalist', 'dd', 'decorator', 'del', 'details', 'dfn', 'dialog', 'dir', 'div', 'dl', 'dt', 'element', 'em', 'fieldset', 'figcaption', 'figure', 'font', 'footer', 'form', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'head', 'header', 'hgroup', 'hr', 'html', 'i', 'img', 'input', 'ins', 'kbd', 'label', 'legend', 'li', 'main', 'map', 'mark', 'marquee', 'menu', 'menuitem', 'meter', 'nav', 'nobr', 'ol', 'optgroup', 'option', 'output', 'p', 'picture', 'pre', 'progress', 'q', 'rp', 'rt', 'ruby', 's', 'samp', 'section', 'select', 'shadow', 'small', 'source', 'spacer', 'span', 'strike', 'strong', 'style', 'sub', 'summary', 'sup', 'table', 'tbody', 'td', 'template', 'textarea', 'tfoot', 'th', 'thead', 'time', 'tr', 'track', 'tt', 'u', 'ul', 'var', 'video', 'wbr']);
-  const svg$1 = freeze(['svg', 'a', 'altglyph', 'altglyphdef', 'altglyphitem', 'animatecolor', 'animatemotion', 'animatetransform', 'circle', 'clippath', 'defs', 'desc', 'ellipse', 'filter', 'font', 'g', 'glyph', 'glyphref', 'hkern', 'image', 'line', 'lineargradient', 'marker', 'mask', 'metadata', 'mpath', 'path', 'pattern', 'polygon', 'polyline', 'radialgradient', 'rect', 'stop', 'style', 'switch', 'symbol', 'text', 'textpath', 'title', 'tref', 'tspan', 'view', 'vkern']);
-  const svgFilters = freeze(['feBlend', 'feColorMatrix', 'feComponentTransfer', 'feComposite', 'feConvolveMatrix', 'feDiffuseLighting', 'feDisplacementMap', 'feDistantLight', 'feDropShadow', 'feFlood', 'feFuncA', 'feFuncB', 'feFuncG', 'feFuncR', 'feGaussianBlur', 'feImage', 'feMerge', 'feMergeNode', 'feMorphology', 'feOffset', 'fePointLight', 'feSpecularLighting', 'feSpotLight', 'feTile', 'feTurbulence']);
-  // List of SVG elements that are disallowed by default.
-  // We still need to know them so that we can do namespace
-  // checks properly in case one wants to add them to
-  // allow-list.
-  const svgDisallowed = freeze(['animate', 'color-profile', 'cursor', 'discard', 'font-face', 'font-face-format', 'font-face-name', 'font-face-src', 'font-face-uri', 'foreignobject', 'hatch', 'hatchpath', 'mesh', 'meshgradient', 'meshpatch', 'meshrow', 'missing-glyph', 'script', 'set', 'solidcolor', 'unknown', 'use']);
-  const mathMl$1 = freeze(['math', 'menclose', 'merror', 'mfenced', 'mfrac', 'mglyph', 'mi', 'mlabeledtr', 'mmultiscripts', 'mn', 'mo', 'mover', 'mpadded', 'mphantom', 'mroot', 'mrow', 'ms', 'mspace', 'msqrt', 'mstyle', 'msub', 'msup', 'msubsup', 'mtable', 'mtd', 'mtext', 'mtr', 'munder', 'munderover', 'mprescripts']);
-  // Similarly to SVG, we want to know all MathML elements,
-  // even those that we disallow by default.
-  const mathMlDisallowed = freeze(['maction', 'maligngroup', 'malignmark', 'mlongdiv', 'mscarries', 'mscarry', 'msgroup', 'mstack', 'msline', 'msrow', 'semantics', 'annotation', 'annotation-xml', 'mprescripts', 'none']);
-  const text = freeze(['#text']);
-
-  const html = freeze(['accept', 'action', 'align', 'alt', 'autocapitalize', 'autocomplete', 'autopictureinpicture', 'autoplay', 'background', 'bgcolor', 'border', 'capture', 'cellpadding', 'cellspacing', 'checked', 'cite', 'class', 'clear', 'color', 'cols', 'colspan', 'controls', 'controlslist', 'coords', 'crossorigin', 'datetime', 'decoding', 'default', 'dir', 'disabled', 'disablepictureinpicture', 'disableremoteplayback', 'download', 'draggable', 'enctype', 'enterkeyhint', 'face', 'for', 'headers', 'height', 'hidden', 'high', 'href', 'hreflang', 'id', 'inputmode', 'integrity', 'ismap', 'kind', 'label', 'lang', 'list', 'loading', 'loop', 'low', 'max', 'maxlength', 'media', 'method', 'min', 'minlength', 'multiple', 'muted', 'name', 'nonce', 'noshade', 'novalidate', 'nowrap', 'open', 'optimum', 'pattern', 'placeholder', 'playsinline', 'popover', 'popovertarget', 'popovertargetaction', 'poster', 'preload', 'pubdate', 'radiogroup', 'readonly', 'rel', 'required', 'rev', 'reversed', 'role', 'rows', 'rowspan', 'spellcheck', 'scope', 'selected', 'shape', 'size', 'sizes', 'span', 'srclang', 'start', 'src', 'srcset', 'step', 'style', 'summary', 'tabindex', 'title', 'translate', 'type', 'usemap', 'valign', 'value', 'width', 'wrap', 'xmlns', 'slot']);
-  const svg = freeze(['accent-height', 'accumulate', 'additive', 'alignment-baseline', 'amplitude', 'ascent', 'attributename', 'attributetype', 'azimuth', 'basefrequency', 'baseline-shift', 'begin', 'bias', 'by', 'class', 'clip', 'clippathunits', 'clip-path', 'clip-rule', 'color', 'color-interpolation', 'color-interpolation-filters', 'color-profile', 'color-rendering', 'cx', 'cy', 'd', 'dx', 'dy', 'diffuseconstant', 'direction', 'display', 'divisor', 'dur', 'edgemode', 'elevation', 'end', 'exponent', 'fill', 'fill-opacity', 'fill-rule', 'filter', 'filterunits', 'flood-color', 'flood-opacity', 'font-family', 'font-size', 'font-size-adjust', 'font-stretch', 'font-style', 'font-variant', 'font-weight', 'fx', 'fy', 'g1', 'g2', 'glyph-name', 'glyphref', 'gradientunits', 'gradienttransform', 'height', 'href', 'id', 'image-rendering', 'in', 'in2', 'intercept', 'k', 'k1', 'k2', 'k3', 'k4', 'kerning', 'keypoints', 'keysplines', 'keytimes', 'lang', 'lengthadjust', 'letter-spacing', 'kernelmatrix', 'kernelunitlength', 'lighting-color', 'local', 'marker-end', 'marker-mid', 'marker-start', 'markerheight', 'markerunits', 'markerwidth', 'maskcontentunits', 'maskunits', 'max', 'mask', 'media', 'method', 'mode', 'min', 'name', 'numoctaves', 'offset', 'operator', 'opacity', 'order', 'orient', 'orientation', 'origin', 'overflow', 'paint-order', 'path', 'pathlength', 'patterncontentunits', 'patterntransform', 'patternunits', 'points', 'preservealpha', 'preserveaspectratio', 'primitiveunits', 'r', 'rx', 'ry', 'radius', 'refx', 'refy', 'repeatcount', 'repeatdur', 'restart', 'result', 'rotate', 'scale', 'seed', 'shape-rendering', 'slope', 'specularconstant', 'specularexponent', 'spreadmethod', 'startoffset', 'stddeviation', 'stitchtiles', 'stop-color', 'stop-opacity', 'stroke-dasharray', 'stroke-dashoffset', 'stroke-linecap', 'stroke-linejoin', 'stroke-miterlimit', 'stroke-opacity', 'stroke', 'stroke-width', 'style', 'surfacescale', 'systemlanguage', 'tabindex', 'tablevalues', 'targetx', 'targety', 'transform', 'transform-origin', 'text-anchor', 'text-decoration', 'text-rendering', 'textlength', 'type', 'u1', 'u2', 'unicode', 'values', 'viewbox', 'visibility', 'version', 'vert-adv-y', 'vert-origin-x', 'vert-origin-y', 'width', 'word-spacing', 'wrap', 'writing-mode', 'xchannelselector', 'ychannelselector', 'x', 'x1', 'x2', 'xmlns', 'y', 'y1', 'y2', 'z', 'zoomandpan']);
-  const mathMl = freeze(['accent', 'accentunder', 'align', 'bevelled', 'close', 'columnsalign', 'columnlines', 'columnspan', 'denomalign', 'depth', 'dir', 'display', 'displaystyle', 'encoding', 'fence', 'frame', 'height', 'href', 'id', 'largeop', 'length', 'linethickness', 'lspace', 'lquote', 'mathbackground', 'mathcolor', 'mathsize', 'mathvariant', 'maxsize', 'minsize', 'movablelimits', 'notation', 'numalign', 'open', 'rowalign', 'rowlines', 'rowspacing', 'rowspan', 'rspace', 'rquote', 'scriptlevel', 'scriptminsize', 'scriptsizemultiplier', 'selection', 'separator', 'separators', 'stretchy', 'subscriptshift', 'supscriptshift', 'symmetric', 'voffset', 'width', 'xmlns']);
-  const xml = freeze(['xlink:href', 'xml:id', 'xlink:title', 'xml:space', 'xmlns:xlink']);
-
-  // eslint-disable-next-line unicorn/better-regex
-  const MUSTACHE_EXPR = seal(/\{\{[\w\W]*|[\w\W]*\}\}/gm); // Specify template detection regex for SAFE_FOR_TEMPLATES mode
-  const ERB_EXPR = seal(/<%[\w\W]*|[\w\W]*%>/gm);
-  const TMPLIT_EXPR = seal(/\$\{[\w\W]*/gm); // eslint-disable-line unicorn/better-regex
-  const DATA_ATTR = seal(/^data-[\-\w.\u00B7-\uFFFF]+$/); // eslint-disable-line no-useless-escape
-  const ARIA_ATTR = seal(/^aria-[\-\w]+$/); // eslint-disable-line no-useless-escape
-  const IS_ALLOWED_URI = seal(/^(?:(?:(?:f|ht)tps?|mailto|tel|callto|sms|cid|xmpp):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i // eslint-disable-line no-useless-escape
-  );
-  const IS_SCRIPT_OR_DATA = seal(/^(?:\w+script|data):/i);
-  const ATTR_WHITESPACE = seal(/[\u0000-\u0020\u00A0\u1680\u180E\u2000-\u2029\u205F\u3000]/g // eslint-disable-line no-control-regex
-  );
-  const DOCTYPE_NAME = seal(/^html$/i);
-  const CUSTOM_ELEMENT = seal(/^[a-z][.\w]*(-[.\w]+)+$/i);
-
-  var EXPRESSIONS = /*#__PURE__*/Object.freeze({
-    __proto__: null,
-    ARIA_ATTR: ARIA_ATTR,
-    ATTR_WHITESPACE: ATTR_WHITESPACE,
-    CUSTOM_ELEMENT: CUSTOM_ELEMENT,
-    DATA_ATTR: DATA_ATTR,
-    DOCTYPE_NAME: DOCTYPE_NAME,
-    ERB_EXPR: ERB_EXPR,
-    IS_ALLOWED_URI: IS_ALLOWED_URI,
-    IS_SCRIPT_OR_DATA: IS_SCRIPT_OR_DATA,
-    MUSTACHE_EXPR: MUSTACHE_EXPR,
-    TMPLIT_EXPR: TMPLIT_EXPR
-  });
-
-  /* eslint-disable @typescript-eslint/indent */
-  // https://developer.mozilla.org/en-US/docs/Web/API/Node/nodeType
-  const NODE_TYPE = {
-    element: 1,
-    attribute: 2,
-    text: 3,
-    cdataSection: 4,
-    entityReference: 5,
-    // Deprecated
-    entityNode: 6,
-    // Deprecated
-    progressingInstruction: 7,
-    comment: 8,
-    document: 9,
-    documentType: 10,
-    documentFragment: 11,
-    notation: 12 // Deprecated
-  };
-  const getGlobal = function getGlobal() {
-    return typeof window === 'undefined' ? null : window;
+  let SANITIZE_DOM = true;
+  /* Achieve full DOM Clobbering protection by isolating the namespace of named
+   * properties and JS variables, mitigating attacks that abuse the HTML/DOM spec rules.
+   *
+   * HTML/DOM spec rules that enable DOM Clobbering:
+   *   - Named Access on Window (§7.3.3)
+   *   - DOM Tree Accessors (§3.1.5)
+   *   - Form Element Parent-Child Relations (§4.10.3)
+   *   - Iframe srcdoc / Nested WindowProxies (§4.8.5)
+   *   - HTMLCollection (§4.2.10.2)
+   *
+   * Namespace isolation is implemented by prefixing `id` and `name` attributes
+   * with a constant string, i.e., `user-content-`
+   */
+  let SANITIZE_NAMED_PROPS = false;
+  const SANITIZE_NAMED_PROPS_PREFIX = 'user-content-';
+  /* Keep element content when removing element? */
+  let KEEP_CONTENT = true;
+  /* If a `Node` is passed to sanitize(), then performs sanitization in-place instead
+   * of importing it into a new Document and returning a sanitized copy */
+  let IN_PLACE = false;
+  /* Allow usage of profiles like html, svg and mathMl */
+  let USE_PROFILES = {};
+  /* Tags to ignore content of when KEEP_CONTENT is true */
+  let FORBID_CONTENTS = null;
+  const DEFAULT_FORBID_CONTENTS = addToSet({}, ['annotation-xml', 'audio', 'colgroup', 'desc', 'foreignobject', 'head', 'iframe', 'math', 'mi', 'mn', 'mo', 'ms', 'mtext', 'noembed', 'noframes', 'noscript', 'plaintext', 'script', 'style', 'svg', 'template', 'thead', 'title', 'video', 'xmp']);
+  /* Tags that are safe for data: URIs */
+  let DATA_URI_TAGS = null;
+  const DEFAULT_DATA_URI_TAGS = addToSet({}, ['audio', 'video', 'img', 'source', 'image', 'track']);
+  /* Attributes safe for values like "javascript:" */
+  let URI_SAFE_ATTRIBUTES = null;
+  const DEFAULT_URI_SAFE_ATTRIBUTES = addToSet({}, ['alt', 'class', 'for', 'id', 'label', 'name', 'pattern', 'placeholder', 'role', 'summary', 'title', 'value', 'style', 'xmlns']);
+  const MATHML_NAMESPACE = 'http://www.w3.org/1998/Math/MathML';
+  const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
+  const HTML_NAMESPACE = 'http://www.w3.org/1999/xhtml';
+  /* Document namespace */
+  let NAMESPACE = HTML_NAMESPACE;
+  let IS_EMPTY_INPUT = false;
+  /* Allowed XHTML+XML namespaces */
+  let ALLOWED_NAMESPACES = null;
+  const DEFAULT_ALLOWED_NAMESPACES = addToSet({}, [MATHML_NAMESPACE, SVG_NAMESPACE, HTML_NAMESPACE], stringToString);
+  let MATHML_TEXT_INTEGRATION_POINTS = addToSet({}, ['mi', 'mo', 'mn', 'ms', 'mtext']);
+  let HTML_INTEGRATION_POINTS = addToSet({}, ['annotation-xml']);
+  // Certain elements are allowed in both SVG and HTML
+  // namespace. We need to specify them explicitly
+  // so that they don't get erroneously deleted from
+  // HTML namespace.
+  const COMMON_SVG_AND_HTML_ELEMENTS = addToSet({}, ['title', 'style', 'font', 'a', 'script']);
+  /* Parsing of strict XHTML documents */
+  let PARSER_MEDIA_TYPE = null;
+  const SUPPORTED_PARSER_MEDIA_TYPES = ['application/xhtml+xml', 'text/html'];
+  const DEFAULT_PARSER_MEDIA_TYPE = 'text/html';
+  let transformCaseFunc = null;
+  /* Keep a reference to config to pass to hooks */
+  let CONFIG = null;
+  /* Ideally, do not touch anything below this line */
+  /* ______________________________________________ */
+  const formElement = document.createElement('form');
+  const isRegexOrFunction = function isRegexOrFunction(testValue) {
+    return testValue instanceof RegExp || testValue instanceof Function;
   };
   /**
-   * Creates a no-op policy for internal use only.
-   * Don't export this function outside this module!
-   * @param trustedTypes The policy factory.
-   * @param purifyHostElement The Script element used to load DOMPurify (to determine policy name suffix).
-   * @return The policy created (or null, if Trusted Types
-   * are not supported or creating the policy failed).
+   * _parseConfig
+   *
+   * @param cfg optional config literal
    */
-  const _createTrustedTypesPolicy = function _createTrustedTypesPolicy(trustedTypes, purifyHostElement) {
-    if (typeof trustedTypes !== 'object' || typeof trustedTypes.createPolicy !== 'function') {
-      return null;
+  // eslint-disable-next-line complexity
+  const _parseConfig = function _parseConfig() {
+    let cfg = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+    if (CONFIG && CONFIG === cfg) {
+      return;
     }
-    // Allow the callers to control the unique policy name
-    // by adding a data-tt-policy-suffix to the script element with the DOMPurify.
-    // Policy creation with duplicate names throws in Trusted Types.
-    let suffix = null;
-    const ATTR_NAME = 'data-tt-policy-suffix';
-    if (purifyHostElement && purifyHostElement.hasAttribute(ATTR_NAME)) {
-      suffix = purifyHostElement.getAttribute(ATTR_NAME);
+    /* Shield configuration object from tampering */
+    if (!cfg || typeof cfg !== 'object') {
+      cfg = {};
     }
-    const policyName = 'dompurify' + (suffix ? '#' + suffix : '');
-    try {
-      return trustedTypes.createPolicy(policyName, {
-        createHTML(html) {
-          return html;
-        },
-        createScriptURL(scriptUrl) {
-          return scriptUrl;
-        }
-      });
-    } catch (_) {
-      // Policy creation failed (most likely another DOMPurify script has
-      // already run). Skip creating the policy, as this will only cause errors
-      // if TT are enforced.
-      console.warn('TrustedTypes policy ' + policyName + ' could not be created.');
-      return null;
+    /* Shield configuration object from prototype pollution */
+    cfg = clone(cfg);
+    PARSER_MEDIA_TYPE =
+    // eslint-disable-next-line unicorn/prefer-includes
+    SUPPORTED_PARSER_MEDIA_TYPES.indexOf(cfg.PARSER_MEDIA_TYPE) === -1 ? DEFAULT_PARSER_MEDIA_TYPE : cfg.PARSER_MEDIA_TYPE;
+    // HTML tags and attributes are not case-sensitive, converting to lowercase. Keeping XHTML as is.
+    transformCaseFunc = PARSER_MEDIA_TYPE === 'application/xhtml+xml' ? stringToString : stringToLowerCase;
+    /* Set configuration parameters */
+    ALLOWED_TAGS = objectHasOwnProperty(cfg, 'ALLOWED_TAGS') ? addToSet({}, cfg.ALLOWED_TAGS, transformCaseFunc) : DEFAULT_ALLOWED_TAGS;
+    ALLOWED_ATTR = objectHasOwnProperty(cfg, 'ALLOWED_ATTR') ? addToSet({}, cfg.ALLOWED_ATTR, transformCaseFunc) : DEFAULT_ALLOWED_ATTR;
+    ALLOWED_NAMESPACES = objectHasOwnProperty(cfg, 'ALLOWED_NAMESPACES') ? addToSet({}, cfg.ALLOWED_NAMESPACES, stringToString) : DEFAULT_ALLOWED_NAMESPACES;
+    URI_SAFE_ATTRIBUTES = objectHasOwnProperty(cfg, 'ADD_URI_SAFE_ATTR') ? addToSet(clone(DEFAULT_URI_SAFE_ATTRIBUTES), cfg.ADD_URI_SAFE_ATTR, transformCaseFunc) : DEFAULT_URI_SAFE_ATTRIBUTES;
+    DATA_URI_TAGS = objectHasOwnProperty(cfg, 'ADD_DATA_URI_TAGS') ? addToSet(clone(DEFAULT_DATA_URI_TAGS), cfg.ADD_DATA_URI_TAGS, transformCaseFunc) : DEFAULT_DATA_URI_TAGS;
+    FORBID_CONTENTS = objectHasOwnProperty(cfg, 'FORBID_CONTENTS') ? addToSet({}, cfg.FORBID_CONTENTS, transformCaseFunc) : DEFAULT_FORBID_CONTENTS;
+    FORBID_TAGS = objectHasOwnProperty(cfg, 'FORBID_TAGS') ? addToSet({}, cfg.FORBID_TAGS, transformCaseFunc) : clone({});
+    FORBID_ATTR = objectHasOwnProperty(cfg, 'FORBID_ATTR') ? addToSet({}, cfg.FORBID_ATTR, transformCaseFunc) : clone({});
+    USE_PROFILES = objectHasOwnProperty(cfg, 'USE_PROFILES') ? cfg.USE_PROFILES : false;
+    ALLOW_ARIA_ATTR = cfg.ALLOW_ARIA_ATTR !== false; // Default true
+    ALLOW_DATA_ATTR = cfg.ALLOW_DATA_ATTR !== false; // Default true
+    ALLOW_UNKNOWN_PROTOCOLS = cfg.ALLOW_UNKNOWN_PROTOCOLS || false; // Default false
+    ALLOW_SELF_CLOSE_IN_ATTR = cfg.ALLOW_SELF_CLOSE_IN_ATTR !== false; // Default true
+    SAFE_FOR_TEMPLATES = cfg.SAFE_FOR_TEMPLATES || false; // Default false
+    SAFE_FOR_XML = cfg.SAFE_FOR_XML !== false; // Default true
+    WHOLE_DOCUMENT = cfg.WHOLE_DOCUMENT || false; // Default false
+    RETURN_DOM = cfg.RETURN_DOM || false; // Default false
+    RETURN_DOM_FRAGMENT = cfg.RETURN_DOM_FRAGMENT || false; // Default false
+    RETURN_TRUSTED_TYPE = cfg.RETURN_TRUSTED_TYPE || false; // Default false
+    FORCE_BODY = cfg.FORCE_BODY || false; // Default false
+    SANITIZE_DOM = cfg.SANITIZE_DOM !== false; // Default true
+    SANITIZE_NAMED_PROPS = cfg.SANITIZE_NAMED_PROPS || false; // Default false
+    KEEP_CONTENT = cfg.KEEP_CONTENT !== false; // Default true
+    IN_PLACE = cfg.IN_PLACE || false; // Default false
+    IS_ALLOWED_URI$1 = cfg.ALLOWED_URI_REGEXP || IS_ALLOWED_URI;
+    NAMESPACE = cfg.NAMESPACE || HTML_NAMESPACE;
+    MATHML_TEXT_INTEGRATION_POINTS = cfg.MATHML_TEXT_INTEGRATION_POINTS || MATHML_TEXT_INTEGRATION_POINTS;
+    HTML_INTEGRATION_POINTS = cfg.HTML_INTEGRATION_POINTS || HTML_INTEGRATION_POINTS;
+    CUSTOM_ELEMENT_HANDLING = cfg.CUSTOM_ELEMENT_HANDLING || {};
+    if (cfg.CUSTOM_ELEMENT_HANDLING && isRegexOrFunction(cfg.CUSTOM_ELEMENT_HANDLING.tagNameCheck)) {
+      CUSTOM_ELEMENT_HANDLING.tagNameCheck = cfg.CUSTOM_ELEMENT_HANDLING.tagNameCheck;
     }
-  };
-  const _createHooksMap = function _createHooksMap() {
-    return {
-      afterSanitizeAttributes: [],
-      afterSanitizeElements: [],
-      afterSanitizeShadowDOM: [],
-      beforeSanitizeAttributes: [],
-      beforeSanitizeElements: [],
-      beforeSanitizeShadowDOM: [],
-      uponSanitizeAttribute: [],
-      uponSanitizeElement: [],
-      uponSanitizeShadowNode: []
-    };
-  };
-  function createDOMPurify() {
-    let window = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : getGlobal();
-    const DOMPurify = root => createDOMPurify(root);
-    DOMPurify.version = '3.2.4';
-    DOMPurify.removed = [];
-    if (!window || !window.document || window.document.nodeType !== NODE_TYPE.document || !window.Element) {
-      // Not running in a browser, provide a factory function
-      // so that you can pass your own Window
-      DOMPurify.isSupported = false;
-      return DOMPurify;
+    if (cfg.CUSTOM_ELEMENT_HANDLING && isRegexOrFunction(cfg.CUSTOM_ELEMENT_HANDLING.attributeNameCheck)) {
+      CUSTOM_ELEMENT_HANDLING.attributeNameCheck = cfg.CUSTOM_ELEMENT_HANDLING.attributeNameCheck;
     }
-    let {
-      document
-    } = window;
-    const originalDocument = document;
-    const currentScript = originalDocument.currentScript;
-    const {
-      DocumentFragment,
-      HTMLTemplateElement,
-      Node,
-      Element,
-      NodeFilter,
-      NamedNodeMap = window.NamedNodeMap || window.MozNamedAttrMap,
-      HTMLFormElement,
-      DOMParser,
-      trustedTypes
-    } = window;
-    const ElementPrototype = Element.prototype;
-    const cloneNode = lookupGetter(ElementPrototype, 'cloneNode');
-    const remove = lookupGetter(ElementPrototype, 'remove');
-    const getNextSibling = lookupGetter(ElementPrototype, 'nextSibling');
-    const getChildNodes = lookupGetter(ElementPrototype, 'childNodes');
-    const getParentNode = lookupGetter(ElementPrototype, 'parentNode');
-    // As per issue #47, the web-components registry is inherited by a
-    // new document created via createHTMLDocument. As per the spec
-    // (http://w3c.github.io/webcomponents/spec/custom/#creating-and-passing-registries)
-    // a new empty registry is used when creating a template contents owner
-    // document, so we use that as our parent document to ensure nothing
-    // is inherited.
-    if (typeof HTMLTemplateElement === 'function') {
-      const template = document.createElement('template');
-      if (template.content && template.content.ownerDocument) {
-        document = template.content.ownerDocument;
+    if (cfg.CUSTOM_ELEMENT_HANDLING && typeof cfg.CUSTOM_ELEMENT_HANDLING.allowCustomizedBuiltInElements === 'boolean') {
+      CUSTOM_ELEMENT_HANDLING.allowCustomizedBuiltInElements = cfg.CUSTOM_ELEMENT_HANDLING.allowCustomizedBuiltInElements;
+    }
+    if (SAFE_FOR_TEMPLATES) {
+      ALLOW_DATA_ATTR = false;
+    }
+    if (RETURN_DOM_FRAGMENT) {
+      RETURN_DOM = true;
+    }
+    /* Parse profile info */
+    if (USE_PROFILES) {
+      ALLOWED_TAGS = addToSet({}, text);
+      ALLOWED_ATTR = [];
+      if (USE_PROFILES.html === true) {
+        addToSet(ALLOWED_TAGS, html$1$1);
+        addToSet(ALLOWED_ATTR, html$2);
+      }
+      if (USE_PROFILES.svg === true) {
+        addToSet(ALLOWED_TAGS, svg$1);
+        addToSet(ALLOWED_ATTR, svg);
+        addToSet(ALLOWED_ATTR, xml);
+      }
+      if (USE_PROFILES.svgFilters === true) {
+        addToSet(ALLOWED_TAGS, svgFilters);
+        addToSet(ALLOWED_ATTR, svg);
+        addToSet(ALLOWED_ATTR, xml);
+      }
+      if (USE_PROFILES.mathMl === true) {
+        addToSet(ALLOWED_TAGS, mathMl$1);
+        addToSet(ALLOWED_ATTR, mathMl);
+        addToSet(ALLOWED_ATTR, xml);
       }
     }
-    let trustedTypesPolicy;
-    let emptyHTML = '';
-    const {
-      implementation,
-      createNodeIterator,
-      createDocumentFragment,
-      getElementsByTagName
-    } = document;
-    const {
-      importNode
-    } = originalDocument;
-    let hooks = _createHooksMap();
-    /**
-     * Expose whether this browser supports running the full DOMPurify.
-     */
-    DOMPurify.isSupported = typeof entries === 'function' && typeof getParentNode === 'function' && implementation && implementation.createHTMLDocument !== undefined;
-    const {
-      MUSTACHE_EXPR,
-      ERB_EXPR,
-      TMPLIT_EXPR,
-      DATA_ATTR,
-      ARIA_ATTR,
-      IS_SCRIPT_OR_DATA,
-      ATTR_WHITESPACE,
-      CUSTOM_ELEMENT
-    } = EXPRESSIONS;
-    let {
-      IS_ALLOWED_URI: IS_ALLOWED_URI$1
-    } = EXPRESSIONS;
-    /**
-     * We consider the elements and attributes below to be safe. Ideally
-     * don't add any new ones but feel free to remove unwanted ones.
-     */
-    /* allowed element names */
-    let ALLOWED_TAGS = null;
-    const DEFAULT_ALLOWED_TAGS = addToSet({}, [...html$1, ...svg$1, ...svgFilters, ...mathMl$1, ...text]);
-    /* Allowed attribute names */
-    let ALLOWED_ATTR = null;
-    const DEFAULT_ALLOWED_ATTR = addToSet({}, [...html, ...svg, ...mathMl, ...xml]);
-    /*
-     * Configure how DOMPurify should handle custom elements and their attributes as well as customized built-in elements.
-     * @property {RegExp|Function|null} tagNameCheck one of [null, regexPattern, predicate]. Default: `null` (disallow any custom elements)
-     * @property {RegExp|Function|null} attributeNameCheck one of [null, regexPattern, predicate]. Default: `null` (disallow any attributes not on the allow list)
-     * @property {boolean} allowCustomizedBuiltInElements allow custom elements derived from built-ins if they pass CUSTOM_ELEMENT_HANDLING.tagNameCheck. Default: `false`.
-     */
-    let CUSTOM_ELEMENT_HANDLING = Object.seal(create(null, {
-      tagNameCheck: {
-        writable: true,
-        configurable: false,
-        enumerable: true,
-        value: null
-      },
-      attributeNameCheck: {
-        writable: true,
-        configurable: false,
-        enumerable: true,
-        value: null
-      },
-      allowCustomizedBuiltInElements: {
-        writable: true,
-        configurable: false,
-        enumerable: true,
-        value: false
-      }
-    }));
-    /* Explicitly forbidden tags (overrides ALLOWED_TAGS/ADD_TAGS) */
-    let FORBID_TAGS = null;
-    /* Explicitly forbidden attributes (overrides ALLOWED_ATTR/ADD_ATTR) */
-    let FORBID_ATTR = null;
-    /* Decide if ARIA attributes are okay */
-    let ALLOW_ARIA_ATTR = true;
-    /* Decide if custom data attributes are okay */
-    let ALLOW_DATA_ATTR = true;
-    /* Decide if unknown protocols are okay */
-    let ALLOW_UNKNOWN_PROTOCOLS = false;
-    /* Decide if self-closing tags in attributes are allowed.
-     * Usually removed due to a mXSS issue in jQuery 3.0 */
-    let ALLOW_SELF_CLOSE_IN_ATTR = true;
-    /* Output should be safe for common template engines.
-     * This means, DOMPurify removes data attributes, mustaches and ERB
-     */
-    let SAFE_FOR_TEMPLATES = false;
-    /* Output should be safe even for XML used within HTML and alike.
-     * This means, DOMPurify removes comments when containing risky content.
-     */
-    let SAFE_FOR_XML = true;
-    /* Decide if document with <html>... should be returned */
-    let WHOLE_DOCUMENT = false;
-    /* Track whether config is already set on this instance of DOMPurify. */
-    let SET_CONFIG = false;
-    /* Decide if all elements (e.g. style, script) must be children of
-     * document.body. By default, browsers might move them to document.head */
-    let FORCE_BODY = false;
-    /* Decide if a DOM `HTMLBodyElement` should be returned, instead of a html
-     * string (or a TrustedHTML object if Trusted Types are supported).
-     * If `WHOLE_DOCUMENT` is enabled a `HTMLHtmlElement` will be returned instead
-     */
-    let RETURN_DOM = false;
-    /* Decide if a DOM `DocumentFragment` should be returned, instead of a html
-     * string  (or a TrustedHTML object if Trusted Types are supported) */
-    let RETURN_DOM_FRAGMENT = false;
-    /* Try to return a Trusted Type object instead of a string, return a string in
-     * case Trusted Types are not supported  */
-    let RETURN_TRUSTED_TYPE = false;
-    /* Output should be free from DOM clobbering attacks?
-     * This sanitizes markups named with colliding, clobberable built-in DOM APIs.
-     */
-    let SANITIZE_DOM = true;
-    /* Achieve full DOM Clobbering protection by isolating the namespace of named
-     * properties and JS variables, mitigating attacks that abuse the HTML/DOM spec rules.
-     *
-     * HTML/DOM spec rules that enable DOM Clobbering:
-     *   - Named Access on Window (§7.3.3)
-     *   - DOM Tree Accessors (§3.1.5)
-     *   - Form Element Parent-Child Relations (§4.10.3)
-     *   - Iframe srcdoc / Nested WindowProxies (§4.8.5)
-     *   - HTMLCollection (§4.2.10.2)
-     *
-     * Namespace isolation is implemented by prefixing `id` and `name` attributes
-     * with a constant string, i.e., `user-content-`
-     */
-    let SANITIZE_NAMED_PROPS = false;
-    const SANITIZE_NAMED_PROPS_PREFIX = 'user-content-';
-    /* Keep element content when removing element? */
-    let KEEP_CONTENT = true;
-    /* If a `Node` is passed to sanitize(), then performs sanitization in-place instead
-     * of importing it into a new Document and returning a sanitized copy */
-    let IN_PLACE = false;
-    /* Allow usage of profiles like html, svg and mathMl */
-    let USE_PROFILES = {};
-    /* Tags to ignore content of when KEEP_CONTENT is true */
-    let FORBID_CONTENTS = null;
-    const DEFAULT_FORBID_CONTENTS = addToSet({}, ['annotation-xml', 'audio', 'colgroup', 'desc', 'foreignobject', 'head', 'iframe', 'math', 'mi', 'mn', 'mo', 'ms', 'mtext', 'noembed', 'noframes', 'noscript', 'plaintext', 'script', 'style', 'svg', 'template', 'thead', 'title', 'video', 'xmp']);
-    /* Tags that are safe for data: URIs */
-    let DATA_URI_TAGS = null;
-    const DEFAULT_DATA_URI_TAGS = addToSet({}, ['audio', 'video', 'img', 'source', 'image', 'track']);
-    /* Attributes safe for values like "javascript:" */
-    let URI_SAFE_ATTRIBUTES = null;
-    const DEFAULT_URI_SAFE_ATTRIBUTES = addToSet({}, ['alt', 'class', 'for', 'id', 'label', 'name', 'pattern', 'placeholder', 'role', 'summary', 'title', 'value', 'style', 'xmlns']);
-    const MATHML_NAMESPACE = 'http://www.w3.org/1998/Math/MathML';
-    const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
-    const HTML_NAMESPACE = 'http://www.w3.org/1999/xhtml';
-    /* Document namespace */
-    let NAMESPACE = HTML_NAMESPACE;
-    let IS_EMPTY_INPUT = false;
-    /* Allowed XHTML+XML namespaces */
-    let ALLOWED_NAMESPACES = null;
-    const DEFAULT_ALLOWED_NAMESPACES = addToSet({}, [MATHML_NAMESPACE, SVG_NAMESPACE, HTML_NAMESPACE], stringToString);
-    let MATHML_TEXT_INTEGRATION_POINTS = addToSet({}, ['mi', 'mo', 'mn', 'ms', 'mtext']);
-    let HTML_INTEGRATION_POINTS = addToSet({}, ['annotation-xml']);
-    // Certain elements are allowed in both SVG and HTML
-    // namespace. We need to specify them explicitly
-    // so that they don't get erroneously deleted from
-    // HTML namespace.
-    const COMMON_SVG_AND_HTML_ELEMENTS = addToSet({}, ['title', 'style', 'font', 'a', 'script']);
-    /* Parsing of strict XHTML documents */
-    let PARSER_MEDIA_TYPE = null;
-    const SUPPORTED_PARSER_MEDIA_TYPES = ['application/xhtml+xml', 'text/html'];
-    const DEFAULT_PARSER_MEDIA_TYPE = 'text/html';
-    let transformCaseFunc = null;
-    /* Keep a reference to config to pass to hooks */
-    let CONFIG = null;
-    /* Ideally, do not touch anything below this line */
-    /* ______________________________________________ */
-    const formElement = document.createElement('form');
-    const isRegexOrFunction = function isRegexOrFunction(testValue) {
-      return testValue instanceof RegExp || testValue instanceof Function;
-    };
-    /**
-     * _parseConfig
-     *
-     * @param cfg optional config literal
-     */
-    // eslint-disable-next-line complexity
-    const _parseConfig = function _parseConfig() {
-      let cfg = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-      if (CONFIG && CONFIG === cfg) {
-        return;
-      }
-      /* Shield configuration object from tampering */
-      if (!cfg || typeof cfg !== 'object') {
-        cfg = {};
-      }
-      /* Shield configuration object from prototype pollution */
-      cfg = clone(cfg);
-      PARSER_MEDIA_TYPE =
-      // eslint-disable-next-line unicorn/prefer-includes
-      SUPPORTED_PARSER_MEDIA_TYPES.indexOf(cfg.PARSER_MEDIA_TYPE) === -1 ? DEFAULT_PARSER_MEDIA_TYPE : cfg.PARSER_MEDIA_TYPE;
-      // HTML tags and attributes are not case-sensitive, converting to lowercase. Keeping XHTML as is.
-      transformCaseFunc = PARSER_MEDIA_TYPE === 'application/xhtml+xml' ? stringToString : stringToLowerCase;
-      /* Set configuration parameters */
-      ALLOWED_TAGS = objectHasOwnProperty(cfg, 'ALLOWED_TAGS') ? addToSet({}, cfg.ALLOWED_TAGS, transformCaseFunc) : DEFAULT_ALLOWED_TAGS;
-      ALLOWED_ATTR = objectHasOwnProperty(cfg, 'ALLOWED_ATTR') ? addToSet({}, cfg.ALLOWED_ATTR, transformCaseFunc) : DEFAULT_ALLOWED_ATTR;
-      ALLOWED_NAMESPACES = objectHasOwnProperty(cfg, 'ALLOWED_NAMESPACES') ? addToSet({}, cfg.ALLOWED_NAMESPACES, stringToString) : DEFAULT_ALLOWED_NAMESPACES;
-      URI_SAFE_ATTRIBUTES = objectHasOwnProperty(cfg, 'ADD_URI_SAFE_ATTR') ? addToSet(clone(DEFAULT_URI_SAFE_ATTRIBUTES), cfg.ADD_URI_SAFE_ATTR, transformCaseFunc) : DEFAULT_URI_SAFE_ATTRIBUTES;
-      DATA_URI_TAGS = objectHasOwnProperty(cfg, 'ADD_DATA_URI_TAGS') ? addToSet(clone(DEFAULT_DATA_URI_TAGS), cfg.ADD_DATA_URI_TAGS, transformCaseFunc) : DEFAULT_DATA_URI_TAGS;
-      FORBID_CONTENTS = objectHasOwnProperty(cfg, 'FORBID_CONTENTS') ? addToSet({}, cfg.FORBID_CONTENTS, transformCaseFunc) : DEFAULT_FORBID_CONTENTS;
-      FORBID_TAGS = objectHasOwnProperty(cfg, 'FORBID_TAGS') ? addToSet({}, cfg.FORBID_TAGS, transformCaseFunc) : {};
-      FORBID_ATTR = objectHasOwnProperty(cfg, 'FORBID_ATTR') ? addToSet({}, cfg.FORBID_ATTR, transformCaseFunc) : {};
-      USE_PROFILES = objectHasOwnProperty(cfg, 'USE_PROFILES') ? cfg.USE_PROFILES : false;
-      ALLOW_ARIA_ATTR = cfg.ALLOW_ARIA_ATTR !== false; // Default true
-      ALLOW_DATA_ATTR = cfg.ALLOW_DATA_ATTR !== false; // Default true
-      ALLOW_UNKNOWN_PROTOCOLS = cfg.ALLOW_UNKNOWN_PROTOCOLS || false; // Default false
-      ALLOW_SELF_CLOSE_IN_ATTR = cfg.ALLOW_SELF_CLOSE_IN_ATTR !== false; // Default true
-      SAFE_FOR_TEMPLATES = cfg.SAFE_FOR_TEMPLATES || false; // Default false
-      SAFE_FOR_XML = cfg.SAFE_FOR_XML !== false; // Default true
-      WHOLE_DOCUMENT = cfg.WHOLE_DOCUMENT || false; // Default false
-      RETURN_DOM = cfg.RETURN_DOM || false; // Default false
-      RETURN_DOM_FRAGMENT = cfg.RETURN_DOM_FRAGMENT || false; // Default false
-      RETURN_TRUSTED_TYPE = cfg.RETURN_TRUSTED_TYPE || false; // Default false
-      FORCE_BODY = cfg.FORCE_BODY || false; // Default false
-      SANITIZE_DOM = cfg.SANITIZE_DOM !== false; // Default true
-      SANITIZE_NAMED_PROPS = cfg.SANITIZE_NAMED_PROPS || false; // Default false
-      KEEP_CONTENT = cfg.KEEP_CONTENT !== false; // Default true
-      IN_PLACE = cfg.IN_PLACE || false; // Default false
-      IS_ALLOWED_URI$1 = cfg.ALLOWED_URI_REGEXP || IS_ALLOWED_URI;
-      NAMESPACE = cfg.NAMESPACE || HTML_NAMESPACE;
-      MATHML_TEXT_INTEGRATION_POINTS = cfg.MATHML_TEXT_INTEGRATION_POINTS || MATHML_TEXT_INTEGRATION_POINTS;
-      HTML_INTEGRATION_POINTS = cfg.HTML_INTEGRATION_POINTS || HTML_INTEGRATION_POINTS;
-      CUSTOM_ELEMENT_HANDLING = cfg.CUSTOM_ELEMENT_HANDLING || {};
-      if (cfg.CUSTOM_ELEMENT_HANDLING && isRegexOrFunction(cfg.CUSTOM_ELEMENT_HANDLING.tagNameCheck)) {
-        CUSTOM_ELEMENT_HANDLING.tagNameCheck = cfg.CUSTOM_ELEMENT_HANDLING.tagNameCheck;
-      }
-      if (cfg.CUSTOM_ELEMENT_HANDLING && isRegexOrFunction(cfg.CUSTOM_ELEMENT_HANDLING.attributeNameCheck)) {
-        CUSTOM_ELEMENT_HANDLING.attributeNameCheck = cfg.CUSTOM_ELEMENT_HANDLING.attributeNameCheck;
-      }
-      if (cfg.CUSTOM_ELEMENT_HANDLING && typeof cfg.CUSTOM_ELEMENT_HANDLING.allowCustomizedBuiltInElements === 'boolean') {
-        CUSTOM_ELEMENT_HANDLING.allowCustomizedBuiltInElements = cfg.CUSTOM_ELEMENT_HANDLING.allowCustomizedBuiltInElements;
-      }
-      if (SAFE_FOR_TEMPLATES) {
-        ALLOW_DATA_ATTR = false;
-      }
-      if (RETURN_DOM_FRAGMENT) {
-        RETURN_DOM = true;
-      }
-      /* Parse profile info */
-      if (USE_PROFILES) {
-        ALLOWED_TAGS = addToSet({}, text);
-        ALLOWED_ATTR = [];
-        if (USE_PROFILES.html === true) {
-          addToSet(ALLOWED_TAGS, html$1);
-          addToSet(ALLOWED_ATTR, html);
-        }
-        if (USE_PROFILES.svg === true) {
-          addToSet(ALLOWED_TAGS, svg$1);
-          addToSet(ALLOWED_ATTR, svg);
-          addToSet(ALLOWED_ATTR, xml);
-        }
-        if (USE_PROFILES.svgFilters === true) {
-          addToSet(ALLOWED_TAGS, svgFilters);
-          addToSet(ALLOWED_ATTR, svg);
-          addToSet(ALLOWED_ATTR, xml);
-        }
-        if (USE_PROFILES.mathMl === true) {
-          addToSet(ALLOWED_TAGS, mathMl$1);
-          addToSet(ALLOWED_ATTR, mathMl);
-          addToSet(ALLOWED_ATTR, xml);
-        }
-      }
-      /* Merge configuration parameters */
-      if (cfg.ADD_TAGS) {
+    /* Merge configuration parameters */
+    if (cfg.ADD_TAGS) {
+      if (typeof cfg.ADD_TAGS === 'function') {
+        EXTRA_ELEMENT_HANDLING.tagCheck = cfg.ADD_TAGS;
+      } else {
         if (ALLOWED_TAGS === DEFAULT_ALLOWED_TAGS) {
           ALLOWED_TAGS = clone(ALLOWED_TAGS);
         }
         addToSet(ALLOWED_TAGS, cfg.ADD_TAGS, transformCaseFunc);
       }
-      if (cfg.ADD_ATTR) {
+    }
+    if (cfg.ADD_ATTR) {
+      if (typeof cfg.ADD_ATTR === 'function') {
+        EXTRA_ELEMENT_HANDLING.attributeCheck = cfg.ADD_ATTR;
+      } else {
         if (ALLOWED_ATTR === DEFAULT_ALLOWED_ATTR) {
           ALLOWED_ATTR = clone(ALLOWED_ATTR);
         }
         addToSet(ALLOWED_ATTR, cfg.ADD_ATTR, transformCaseFunc);
       }
-      if (cfg.ADD_URI_SAFE_ATTR) {
-        addToSet(URI_SAFE_ATTRIBUTES, cfg.ADD_URI_SAFE_ATTR, transformCaseFunc);
+    }
+    if (cfg.ADD_URI_SAFE_ATTR) {
+      addToSet(URI_SAFE_ATTRIBUTES, cfg.ADD_URI_SAFE_ATTR, transformCaseFunc);
+    }
+    if (cfg.FORBID_CONTENTS) {
+      if (FORBID_CONTENTS === DEFAULT_FORBID_CONTENTS) {
+        FORBID_CONTENTS = clone(FORBID_CONTENTS);
       }
-      if (cfg.FORBID_CONTENTS) {
-        if (FORBID_CONTENTS === DEFAULT_FORBID_CONTENTS) {
-          FORBID_CONTENTS = clone(FORBID_CONTENTS);
-        }
-        addToSet(FORBID_CONTENTS, cfg.FORBID_CONTENTS, transformCaseFunc);
+      addToSet(FORBID_CONTENTS, cfg.FORBID_CONTENTS, transformCaseFunc);
+    }
+    /* Add #text in case KEEP_CONTENT is set to true */
+    if (KEEP_CONTENT) {
+      ALLOWED_TAGS['#text'] = true;
+    }
+    /* Add html, head and body to ALLOWED_TAGS in case WHOLE_DOCUMENT is true */
+    if (WHOLE_DOCUMENT) {
+      addToSet(ALLOWED_TAGS, ['html', 'head', 'body']);
+    }
+    /* Add tbody to ALLOWED_TAGS in case tables are permitted, see #286, #365 */
+    if (ALLOWED_TAGS.table) {
+      addToSet(ALLOWED_TAGS, ['tbody']);
+      delete FORBID_TAGS.tbody;
+    }
+    if (cfg.TRUSTED_TYPES_POLICY) {
+      if (typeof cfg.TRUSTED_TYPES_POLICY.createHTML !== 'function') {
+        throw typeErrorCreate('TRUSTED_TYPES_POLICY configuration option must provide a "createHTML" hook.');
       }
-      /* Add #text in case KEEP_CONTENT is set to true */
-      if (KEEP_CONTENT) {
-        ALLOWED_TAGS['#text'] = true;
+      if (typeof cfg.TRUSTED_TYPES_POLICY.createScriptURL !== 'function') {
+        throw typeErrorCreate('TRUSTED_TYPES_POLICY configuration option must provide a "createScriptURL" hook.');
       }
-      /* Add html, head and body to ALLOWED_TAGS in case WHOLE_DOCUMENT is true */
-      if (WHOLE_DOCUMENT) {
-        addToSet(ALLOWED_TAGS, ['html', 'head', 'body']);
+      // Overwrite existing TrustedTypes policy.
+      trustedTypesPolicy = cfg.TRUSTED_TYPES_POLICY;
+      // Sign local variables required by `sanitize`.
+      emptyHTML = trustedTypesPolicy.createHTML('');
+    } else {
+      // Uninitialized policy, attempt to initialize the internal dompurify policy.
+      if (trustedTypesPolicy === undefined) {
+        trustedTypesPolicy = _createTrustedTypesPolicy(trustedTypes, currentScript);
       }
-      /* Add tbody to ALLOWED_TAGS in case tables are permitted, see #286, #365 */
-      if (ALLOWED_TAGS.table) {
-        addToSet(ALLOWED_TAGS, ['tbody']);
-        delete FORBID_TAGS.tbody;
-      }
-      if (cfg.TRUSTED_TYPES_POLICY) {
-        if (typeof cfg.TRUSTED_TYPES_POLICY.createHTML !== 'function') {
-          throw typeErrorCreate('TRUSTED_TYPES_POLICY configuration option must provide a "createHTML" hook.');
-        }
-        if (typeof cfg.TRUSTED_TYPES_POLICY.createScriptURL !== 'function') {
-          throw typeErrorCreate('TRUSTED_TYPES_POLICY configuration option must provide a "createScriptURL" hook.');
-        }
-        // Overwrite existing TrustedTypes policy.
-        trustedTypesPolicy = cfg.TRUSTED_TYPES_POLICY;
-        // Sign local variables required by `sanitize`.
+      // If creating the internal policy succeeded sign internal variables.
+      if (trustedTypesPolicy !== null && typeof emptyHTML === 'string') {
         emptyHTML = trustedTypesPolicy.createHTML('');
-      } else {
-        // Uninitialized policy, attempt to initialize the internal dompurify policy.
-        if (trustedTypesPolicy === undefined) {
-          trustedTypesPolicy = _createTrustedTypesPolicy(trustedTypes, currentScript);
-        }
-        // If creating the internal policy succeeded sign internal variables.
-        if (trustedTypesPolicy !== null && typeof emptyHTML === 'string') {
-          emptyHTML = trustedTypesPolicy.createHTML('');
-        }
       }
-      // Prevent further manipulation of configuration.
-      // Not available in IE8, Safari 5, etc.
-      if (freeze) {
-        freeze(cfg);
+    }
+    // Prevent further manipulation of configuration.
+    // Not available in IE8, Safari 5, etc.
+    if (freeze) {
+      freeze(cfg);
+    }
+    CONFIG = cfg;
+  };
+  /* Keep track of all possible SVG and MathML tags
+   * so that we can perform the namespace checks
+   * correctly. */
+  const ALL_SVG_TAGS = addToSet({}, [...svg$1, ...svgFilters, ...svgDisallowed]);
+  const ALL_MATHML_TAGS = addToSet({}, [...mathMl$1, ...mathMlDisallowed]);
+  /**
+   * @param element a DOM element whose namespace is being checked
+   * @returns Return false if the element has a
+   *  namespace that a spec-compliant parser would never
+   *  return. Return true otherwise.
+   */
+  const _checkValidNamespace = function _checkValidNamespace(element) {
+    let parent = getParentNode(element);
+    // In JSDOM, if we're inside shadow DOM, then parentNode
+    // can be null. We just simulate parent in this case.
+    if (!parent || !parent.tagName) {
+      parent = {
+        namespaceURI: NAMESPACE,
+        tagName: 'template'
+      };
+    }
+    const tagName = stringToLowerCase(element.tagName);
+    const parentTagName = stringToLowerCase(parent.tagName);
+    if (!ALLOWED_NAMESPACES[element.namespaceURI]) {
+      return false;
+    }
+    if (element.namespaceURI === SVG_NAMESPACE) {
+      // The only way to switch from HTML namespace to SVG
+      // is via <svg>. If it happens via any other tag, then
+      // it should be killed.
+      if (parent.namespaceURI === HTML_NAMESPACE) {
+        return tagName === 'svg';
       }
-      CONFIG = cfg;
-    };
-    /* Keep track of all possible SVG and MathML tags
-     * so that we can perform the namespace checks
-     * correctly. */
-    const ALL_SVG_TAGS = addToSet({}, [...svg$1, ...svgFilters, ...svgDisallowed]);
-    const ALL_MATHML_TAGS = addToSet({}, [...mathMl$1, ...mathMlDisallowed]);
-    /**
-     * @param element a DOM element whose namespace is being checked
-     * @returns Return false if the element has a
-     *  namespace that a spec-compliant parser would never
-     *  return. Return true otherwise.
-     */
-    const _checkValidNamespace = function _checkValidNamespace(element) {
-      let parent = getParentNode(element);
-      // In JSDOM, if we're inside shadow DOM, then parentNode
-      // can be null. We just simulate parent in this case.
-      if (!parent || !parent.tagName) {
-        parent = {
-          namespaceURI: NAMESPACE,
-          tagName: 'template'
-        };
+      // The only way to switch from MathML to SVG is via`
+      // svg if parent is either <annotation-xml> or MathML
+      // text integration points.
+      if (parent.namespaceURI === MATHML_NAMESPACE) {
+        return tagName === 'svg' && (parentTagName === 'annotation-xml' || MATHML_TEXT_INTEGRATION_POINTS[parentTagName]);
       }
-      const tagName = stringToLowerCase(element.tagName);
-      const parentTagName = stringToLowerCase(parent.tagName);
-      if (!ALLOWED_NAMESPACES[element.namespaceURI]) {
+      // We only allow elements that are defined in SVG
+      // spec. All others are disallowed in SVG namespace.
+      return Boolean(ALL_SVG_TAGS[tagName]);
+    }
+    if (element.namespaceURI === MATHML_NAMESPACE) {
+      // The only way to switch from HTML namespace to MathML
+      // is via <math>. If it happens via any other tag, then
+      // it should be killed.
+      if (parent.namespaceURI === HTML_NAMESPACE) {
+        return tagName === 'math';
+      }
+      // The only way to switch from SVG to MathML is via
+      // <math> and HTML integration points
+      if (parent.namespaceURI === SVG_NAMESPACE) {
+        return tagName === 'math' && HTML_INTEGRATION_POINTS[parentTagName];
+      }
+      // We only allow elements that are defined in MathML
+      // spec. All others are disallowed in MathML namespace.
+      return Boolean(ALL_MATHML_TAGS[tagName]);
+    }
+    if (element.namespaceURI === HTML_NAMESPACE) {
+      // The only way to switch from SVG to HTML is via
+      // HTML integration points, and from MathML to HTML
+      // is via MathML text integration points
+      if (parent.namespaceURI === SVG_NAMESPACE && !HTML_INTEGRATION_POINTS[parentTagName]) {
         return false;
       }
-      if (element.namespaceURI === SVG_NAMESPACE) {
-        // The only way to switch from HTML namespace to SVG
-        // is via <svg>. If it happens via any other tag, then
-        // it should be killed.
-        if (parent.namespaceURI === HTML_NAMESPACE) {
-          return tagName === 'svg';
-        }
-        // The only way to switch from MathML to SVG is via`
-        // svg if parent is either <annotation-xml> or MathML
-        // text integration points.
-        if (parent.namespaceURI === MATHML_NAMESPACE) {
-          return tagName === 'svg' && (parentTagName === 'annotation-xml' || MATHML_TEXT_INTEGRATION_POINTS[parentTagName]);
-        }
-        // We only allow elements that are defined in SVG
-        // spec. All others are disallowed in SVG namespace.
-        return Boolean(ALL_SVG_TAGS[tagName]);
+      if (parent.namespaceURI === MATHML_NAMESPACE && !MATHML_TEXT_INTEGRATION_POINTS[parentTagName]) {
+        return false;
       }
-      if (element.namespaceURI === MATHML_NAMESPACE) {
-        // The only way to switch from HTML namespace to MathML
-        // is via <math>. If it happens via any other tag, then
-        // it should be killed.
-        if (parent.namespaceURI === HTML_NAMESPACE) {
-          return tagName === 'math';
-        }
-        // The only way to switch from SVG to MathML is via
-        // <math> and HTML integration points
-        if (parent.namespaceURI === SVG_NAMESPACE) {
-          return tagName === 'math' && HTML_INTEGRATION_POINTS[parentTagName];
-        }
-        // We only allow elements that are defined in MathML
-        // spec. All others are disallowed in MathML namespace.
-        return Boolean(ALL_MATHML_TAGS[tagName]);
-      }
-      if (element.namespaceURI === HTML_NAMESPACE) {
-        // The only way to switch from SVG to HTML is via
-        // HTML integration points, and from MathML to HTML
-        // is via MathML text integration points
-        if (parent.namespaceURI === SVG_NAMESPACE && !HTML_INTEGRATION_POINTS[parentTagName]) {
-          return false;
-        }
-        if (parent.namespaceURI === MATHML_NAMESPACE && !MATHML_TEXT_INTEGRATION_POINTS[parentTagName]) {
-          return false;
-        }
-        // We disallow tags that are specific for MathML
-        // or SVG and should never appear in HTML namespace
-        return !ALL_MATHML_TAGS[tagName] && (COMMON_SVG_AND_HTML_ELEMENTS[tagName] || !ALL_SVG_TAGS[tagName]);
-      }
-      // For XHTML and XML documents that support custom namespaces
-      if (PARSER_MEDIA_TYPE === 'application/xhtml+xml' && ALLOWED_NAMESPACES[element.namespaceURI]) {
-        return true;
-      }
-      // The code should never reach this place (this means
-      // that the element somehow got namespace that is not
-      // HTML, SVG, MathML or allowed via ALLOWED_NAMESPACES).
-      // Return false just in case.
-      return false;
-    };
-    /**
-     * _forceRemove
-     *
-     * @param node a DOM node
-     */
-    const _forceRemove = function _forceRemove(node) {
+      // We disallow tags that are specific for MathML
+      // or SVG and should never appear in HTML namespace
+      return !ALL_MATHML_TAGS[tagName] && (COMMON_SVG_AND_HTML_ELEMENTS[tagName] || !ALL_SVG_TAGS[tagName]);
+    }
+    // For XHTML and XML documents that support custom namespaces
+    if (PARSER_MEDIA_TYPE === 'application/xhtml+xml' && ALLOWED_NAMESPACES[element.namespaceURI]) {
+      return true;
+    }
+    // The code should never reach this place (this means
+    // that the element somehow got namespace that is not
+    // HTML, SVG, MathML or allowed via ALLOWED_NAMESPACES).
+    // Return false just in case.
+    return false;
+  };
+  /**
+   * _forceRemove
+   *
+   * @param node a DOM node
+   */
+  const _forceRemove = function _forceRemove(node) {
+    arrayPush(DOMPurify.removed, {
+      element: node
+    });
+    try {
+      // eslint-disable-next-line unicorn/prefer-dom-node-remove
+      getParentNode(node).removeChild(node);
+    } catch (_) {
+      remove(node);
+    }
+  };
+  /**
+   * _removeAttribute
+   *
+   * @param name an Attribute name
+   * @param element a DOM node
+   */
+  const _removeAttribute = function _removeAttribute(name, element) {
+    try {
       arrayPush(DOMPurify.removed, {
-        element: node
+        attribute: element.getAttributeNode(name),
+        from: element
       });
-      try {
-        // eslint-disable-next-line unicorn/prefer-dom-node-remove
-        getParentNode(node).removeChild(node);
-      } catch (_) {
-        remove(node);
-      }
-    };
-    /**
-     * _removeAttribute
-     *
-     * @param name an Attribute name
-     * @param element a DOM node
-     */
-    const _removeAttribute = function _removeAttribute(name, element) {
-      try {
-        arrayPush(DOMPurify.removed, {
-          attribute: element.getAttributeNode(name),
-          from: element
-        });
-      } catch (_) {
-        arrayPush(DOMPurify.removed, {
-          attribute: null,
-          from: element
-        });
-      }
-      element.removeAttribute(name);
-      // We void attribute values for unremovable "is" attributes
-      if (name === 'is') {
-        if (RETURN_DOM || RETURN_DOM_FRAGMENT) {
-          try {
-            _forceRemove(element);
-          } catch (_) {}
-        } else {
-          try {
-            element.setAttribute(name, '');
-          } catch (_) {}
-        }
-      }
-    };
-    /**
-     * _initDocument
-     *
-     * @param dirty - a string of dirty markup
-     * @return a DOM, filled with the dirty markup
-     */
-    const _initDocument = function _initDocument(dirty) {
-      /* Create a HTML document */
-      let doc = null;
-      let leadingWhitespace = null;
-      if (FORCE_BODY) {
-        dirty = '<remove></remove>' + dirty;
-      } else {
-        /* If FORCE_BODY isn't used, leading whitespace needs to be preserved manually */
-        const matches = stringMatch(dirty, /^[\r\n\t ]+/);
-        leadingWhitespace = matches && matches[0];
-      }
-      if (PARSER_MEDIA_TYPE === 'application/xhtml+xml' && NAMESPACE === HTML_NAMESPACE) {
-        // Root of XHTML doc must contain xmlns declaration (see https://www.w3.org/TR/xhtml1/normative.html#strict)
-        dirty = '<html xmlns="http://www.w3.org/1999/xhtml"><head></head><body>' + dirty + '</body></html>';
-      }
-      const dirtyPayload = trustedTypesPolicy ? trustedTypesPolicy.createHTML(dirty) : dirty;
-      /*
-       * Use the DOMParser API by default, fallback later if needs be
-       * DOMParser not work for svg when has multiple root element.
-       */
-      if (NAMESPACE === HTML_NAMESPACE) {
-        try {
-          doc = new DOMParser().parseFromString(dirtyPayload, PARSER_MEDIA_TYPE);
-        } catch (_) {}
-      }
-      /* Use createHTMLDocument in case DOMParser is not available */
-      if (!doc || !doc.documentElement) {
-        doc = implementation.createDocument(NAMESPACE, 'template', null);
-        try {
-          doc.documentElement.innerHTML = IS_EMPTY_INPUT ? emptyHTML : dirtyPayload;
-        } catch (_) {
-          // Syntax error if dirtyPayload is invalid xml
-        }
-      }
-      const body = doc.body || doc.documentElement;
-      if (dirty && leadingWhitespace) {
-        body.insertBefore(document.createTextNode(leadingWhitespace), body.childNodes[0] || null);
-      }
-      /* Work on whole document or just its body */
-      if (NAMESPACE === HTML_NAMESPACE) {
-        return getElementsByTagName.call(doc, WHOLE_DOCUMENT ? 'html' : 'body')[0];
-      }
-      return WHOLE_DOCUMENT ? doc.documentElement : body;
-    };
-    /**
-     * Creates a NodeIterator object that you can use to traverse filtered lists of nodes or elements in a document.
-     *
-     * @param root The root element or node to start traversing on.
-     * @return The created NodeIterator
-     */
-    const _createNodeIterator = function _createNodeIterator(root) {
-      return createNodeIterator.call(root.ownerDocument || root, root,
-      // eslint-disable-next-line no-bitwise
-      NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_COMMENT | NodeFilter.SHOW_TEXT | NodeFilter.SHOW_PROCESSING_INSTRUCTION | NodeFilter.SHOW_CDATA_SECTION, null);
-    };
-    /**
-     * _isClobbered
-     *
-     * @param element element to check for clobbering attacks
-     * @return true if clobbered, false if safe
-     */
-    const _isClobbered = function _isClobbered(element) {
-      return element instanceof HTMLFormElement && (typeof element.nodeName !== 'string' || typeof element.textContent !== 'string' || typeof element.removeChild !== 'function' || !(element.attributes instanceof NamedNodeMap) || typeof element.removeAttribute !== 'function' || typeof element.setAttribute !== 'function' || typeof element.namespaceURI !== 'string' || typeof element.insertBefore !== 'function' || typeof element.hasChildNodes !== 'function');
-    };
-    /**
-     * Checks whether the given object is a DOM node.
-     *
-     * @param value object to check whether it's a DOM node
-     * @return true is object is a DOM node
-     */
-    const _isNode = function _isNode(value) {
-      return typeof Node === 'function' && value instanceof Node;
-    };
-    function _executeHooks(hooks, currentNode, data) {
-      arrayForEach(hooks, hook => {
-        hook.call(DOMPurify, currentNode, data, CONFIG);
+    } catch (_) {
+      arrayPush(DOMPurify.removed, {
+        attribute: null,
+        from: element
       });
     }
-    /**
-     * _sanitizeElements
-     *
-     * @protect nodeName
-     * @protect textContent
-     * @protect removeChild
-     * @param currentNode to check for permission to exist
-     * @return true if node was killed, false if left alive
+    element.removeAttribute(name);
+    // We void attribute values for unremovable "is" attributes
+    if (name === 'is') {
+      if (RETURN_DOM || RETURN_DOM_FRAGMENT) {
+        try {
+          _forceRemove(element);
+        } catch (_) {}
+      } else {
+        try {
+          element.setAttribute(name, '');
+        } catch (_) {}
+      }
+    }
+  };
+  /**
+   * _initDocument
+   *
+   * @param dirty - a string of dirty markup
+   * @return a DOM, filled with the dirty markup
+   */
+  const _initDocument = function _initDocument(dirty) {
+    /* Create a HTML document */
+    let doc = null;
+    let leadingWhitespace = null;
+    if (FORCE_BODY) {
+      dirty = '<remove></remove>' + dirty;
+    } else {
+      /* If FORCE_BODY isn't used, leading whitespace needs to be preserved manually */
+      const matches = stringMatch(dirty, /^[\r\n\t ]+/);
+      leadingWhitespace = matches && matches[0];
+    }
+    if (PARSER_MEDIA_TYPE === 'application/xhtml+xml' && NAMESPACE === HTML_NAMESPACE) {
+      // Root of XHTML doc must contain xmlns declaration (see https://www.w3.org/TR/xhtml1/normative.html#strict)
+      dirty = '<html xmlns="http://www.w3.org/1999/xhtml"><head></head><body>' + dirty + '</body></html>';
+    }
+    const dirtyPayload = trustedTypesPolicy ? trustedTypesPolicy.createHTML(dirty) : dirty;
+    /*
+     * Use the DOMParser API by default, fallback later if needs be
+     * DOMParser not work for svg when has multiple root element.
      */
-    const _sanitizeElements = function _sanitizeElements(currentNode) {
-      let content = null;
-      /* Execute a hook if present */
-      _executeHooks(hooks.beforeSanitizeElements, currentNode, null);
-      /* Check if element is clobbered or can clobber */
-      if (_isClobbered(currentNode)) {
-        _forceRemove(currentNode);
-        return true;
+    if (NAMESPACE === HTML_NAMESPACE) {
+      try {
+        doc = new DOMParser().parseFromString(dirtyPayload, PARSER_MEDIA_TYPE);
+      } catch (_) {}
+    }
+    /* Use createHTMLDocument in case DOMParser is not available */
+    if (!doc || !doc.documentElement) {
+      doc = implementation.createDocument(NAMESPACE, 'template', null);
+      try {
+        doc.documentElement.innerHTML = IS_EMPTY_INPUT ? emptyHTML : dirtyPayload;
+      } catch (_) {
+        // Syntax error if dirtyPayload is invalid xml
       }
-      /* Now let's check the element's type and name */
-      const tagName = transformCaseFunc(currentNode.nodeName);
-      /* Execute a hook if present */
-      _executeHooks(hooks.uponSanitizeElement, currentNode, {
-        tagName,
-        allowedTags: ALLOWED_TAGS
-      });
-      /* Detect mXSS attempts abusing namespace confusion */
-      if (currentNode.hasChildNodes() && !_isNode(currentNode.firstElementChild) && regExpTest(/<[/\w]/g, currentNode.innerHTML) && regExpTest(/<[/\w]/g, currentNode.textContent)) {
-        _forceRemove(currentNode);
-        return true;
-      }
-      /* Remove any occurrence of processing instructions */
-      if (currentNode.nodeType === NODE_TYPE.progressingInstruction) {
-        _forceRemove(currentNode);
-        return true;
-      }
-      /* Remove any kind of possibly harmful comments */
-      if (SAFE_FOR_XML && currentNode.nodeType === NODE_TYPE.comment && regExpTest(/<[/\w]/g, currentNode.data)) {
-        _forceRemove(currentNode);
-        return true;
-      }
-      /* Remove element if anything forbids its presence */
-      if (!ALLOWED_TAGS[tagName] || FORBID_TAGS[tagName]) {
-        /* Check if we have a custom element to handle */
-        if (!FORBID_TAGS[tagName] && _isBasicCustomElement(tagName)) {
-          if (CUSTOM_ELEMENT_HANDLING.tagNameCheck instanceof RegExp && regExpTest(CUSTOM_ELEMENT_HANDLING.tagNameCheck, tagName)) {
-            return false;
-          }
-          if (CUSTOM_ELEMENT_HANDLING.tagNameCheck instanceof Function && CUSTOM_ELEMENT_HANDLING.tagNameCheck(tagName)) {
-            return false;
-          }
-        }
-        /* Keep content except for bad-listed elements */
-        if (KEEP_CONTENT && !FORBID_CONTENTS[tagName]) {
-          const parentNode = getParentNode(currentNode) || currentNode.parentNode;
-          const childNodes = getChildNodes(currentNode) || currentNode.childNodes;
-          if (childNodes && parentNode) {
-            const childCount = childNodes.length;
-            for (let i = childCount - 1; i >= 0; --i) {
-              const childClone = cloneNode(childNodes[i], true);
-              childClone.__removalCount = (currentNode.__removalCount || 0) + 1;
-              parentNode.insertBefore(childClone, getNextSibling(currentNode));
-            }
-          }
-        }
-        _forceRemove(currentNode);
-        return true;
-      }
-      /* Check whether element has a valid namespace */
-      if (currentNode instanceof Element && !_checkValidNamespace(currentNode)) {
-        _forceRemove(currentNode);
-        return true;
-      }
-      /* Make sure that older browsers don't get fallback-tag mXSS */
-      if ((tagName === 'noscript' || tagName === 'noembed' || tagName === 'noframes') && regExpTest(/<\/no(script|embed|frames)/i, currentNode.innerHTML)) {
-        _forceRemove(currentNode);
-        return true;
-      }
-      /* Sanitize element content to be template-safe */
-      if (SAFE_FOR_TEMPLATES && currentNode.nodeType === NODE_TYPE.text) {
-        /* Get the element's text content */
-        content = currentNode.textContent;
-        arrayForEach([MUSTACHE_EXPR, ERB_EXPR, TMPLIT_EXPR], expr => {
-          content = stringReplace(content, expr, ' ');
-        });
-        if (currentNode.textContent !== content) {
-          arrayPush(DOMPurify.removed, {
-            element: currentNode.cloneNode()
-          });
-          currentNode.textContent = content;
-        }
-      }
-      /* Execute a hook if present */
-      _executeHooks(hooks.afterSanitizeElements, currentNode, null);
-      return false;
-    };
-    /**
-     * _isValidAttribute
-     *
-     * @param lcTag Lowercase tag name of containing element.
-     * @param lcName Lowercase attribute name.
-     * @param value Attribute value.
-     * @return Returns true if `value` is valid, otherwise false.
-     */
-    // eslint-disable-next-line complexity
-    const _isValidAttribute = function _isValidAttribute(lcTag, lcName, value) {
-      /* Make sure attribute cannot clobber */
-      if (SANITIZE_DOM && (lcName === 'id' || lcName === 'name') && (value in document || value in formElement)) {
-        return false;
-      }
-      /* Allow valid data-* attributes: At least one character after "-"
-          (https://html.spec.whatwg.org/multipage/dom.html#embedding-custom-non-visible-data-with-the-data-*-attributes)
-          XML-compatible (https://html.spec.whatwg.org/multipage/infrastructure.html#xml-compatible and http://www.w3.org/TR/xml/#d0e804)
-          We don't need to check the value; it's always URI safe. */
-      if (ALLOW_DATA_ATTR && !FORBID_ATTR[lcName] && regExpTest(DATA_ATTR, lcName)) ; else if (ALLOW_ARIA_ATTR && regExpTest(ARIA_ATTR, lcName)) ; else if (!ALLOWED_ATTR[lcName] || FORBID_ATTR[lcName]) {
-        if (
-        // First condition does a very basic check if a) it's basically a valid custom element tagname AND
-        // b) if the tagName passes whatever the user has configured for CUSTOM_ELEMENT_HANDLING.tagNameCheck
-        // and c) if the attribute name passes whatever the user has configured for CUSTOM_ELEMENT_HANDLING.attributeNameCheck
-        _isBasicCustomElement(lcTag) && (CUSTOM_ELEMENT_HANDLING.tagNameCheck instanceof RegExp && regExpTest(CUSTOM_ELEMENT_HANDLING.tagNameCheck, lcTag) || CUSTOM_ELEMENT_HANDLING.tagNameCheck instanceof Function && CUSTOM_ELEMENT_HANDLING.tagNameCheck(lcTag)) && (CUSTOM_ELEMENT_HANDLING.attributeNameCheck instanceof RegExp && regExpTest(CUSTOM_ELEMENT_HANDLING.attributeNameCheck, lcName) || CUSTOM_ELEMENT_HANDLING.attributeNameCheck instanceof Function && CUSTOM_ELEMENT_HANDLING.attributeNameCheck(lcName)) ||
-        // Alternative, second condition checks if it's an `is`-attribute, AND
-        // the value passes whatever the user has configured for CUSTOM_ELEMENT_HANDLING.tagNameCheck
-        lcName === 'is' && CUSTOM_ELEMENT_HANDLING.allowCustomizedBuiltInElements && (CUSTOM_ELEMENT_HANDLING.tagNameCheck instanceof RegExp && regExpTest(CUSTOM_ELEMENT_HANDLING.tagNameCheck, value) || CUSTOM_ELEMENT_HANDLING.tagNameCheck instanceof Function && CUSTOM_ELEMENT_HANDLING.tagNameCheck(value))) ; else {
+    }
+    const body = doc.body || doc.documentElement;
+    if (dirty && leadingWhitespace) {
+      body.insertBefore(document.createTextNode(leadingWhitespace), body.childNodes[0] || null);
+    }
+    /* Work on whole document or just its body */
+    if (NAMESPACE === HTML_NAMESPACE) {
+      return getElementsByTagName.call(doc, WHOLE_DOCUMENT ? 'html' : 'body')[0];
+    }
+    return WHOLE_DOCUMENT ? doc.documentElement : body;
+  };
+  /**
+   * Creates a NodeIterator object that you can use to traverse filtered lists of nodes or elements in a document.
+   *
+   * @param root The root element or node to start traversing on.
+   * @return The created NodeIterator
+   */
+  const _createNodeIterator = function _createNodeIterator(root) {
+    return createNodeIterator.call(root.ownerDocument || root, root,
+    // eslint-disable-next-line no-bitwise
+    NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_COMMENT | NodeFilter.SHOW_TEXT | NodeFilter.SHOW_PROCESSING_INSTRUCTION | NodeFilter.SHOW_CDATA_SECTION, null);
+  };
+  /**
+   * _isClobbered
+   *
+   * @param element element to check for clobbering attacks
+   * @return true if clobbered, false if safe
+   */
+  const _isClobbered = function _isClobbered(element) {
+    return element instanceof HTMLFormElement && (typeof element.nodeName !== 'string' || typeof element.textContent !== 'string' || typeof element.removeChild !== 'function' || !(element.attributes instanceof NamedNodeMap) || typeof element.removeAttribute !== 'function' || typeof element.setAttribute !== 'function' || typeof element.namespaceURI !== 'string' || typeof element.insertBefore !== 'function' || typeof element.hasChildNodes !== 'function');
+  };
+  /**
+   * Checks whether the given object is a DOM node.
+   *
+   * @param value object to check whether it's a DOM node
+   * @return true is object is a DOM node
+   */
+  const _isNode = function _isNode(value) {
+    return typeof Node === 'function' && value instanceof Node;
+  };
+  function _executeHooks(hooks, currentNode, data) {
+    arrayForEach(hooks, hook => {
+      hook.call(DOMPurify, currentNode, data, CONFIG);
+    });
+  }
+  /**
+   * _sanitizeElements
+   *
+   * @protect nodeName
+   * @protect textContent
+   * @protect removeChild
+   * @param currentNode to check for permission to exist
+   * @return true if node was killed, false if left alive
+   */
+  const _sanitizeElements = function _sanitizeElements(currentNode) {
+    let content = null;
+    /* Execute a hook if present */
+    _executeHooks(hooks.beforeSanitizeElements, currentNode, null);
+    /* Check if element is clobbered or can clobber */
+    if (_isClobbered(currentNode)) {
+      _forceRemove(currentNode);
+      return true;
+    }
+    /* Now let's check the element's type and name */
+    const tagName = transformCaseFunc(currentNode.nodeName);
+    /* Execute a hook if present */
+    _executeHooks(hooks.uponSanitizeElement, currentNode, {
+      tagName,
+      allowedTags: ALLOWED_TAGS
+    });
+    /* Detect mXSS attempts abusing namespace confusion */
+    if (SAFE_FOR_XML && currentNode.hasChildNodes() && !_isNode(currentNode.firstElementChild) && regExpTest(/<[/\w!]/g, currentNode.innerHTML) && regExpTest(/<[/\w!]/g, currentNode.textContent)) {
+      _forceRemove(currentNode);
+      return true;
+    }
+    /* Remove any occurrence of processing instructions */
+    if (currentNode.nodeType === NODE_TYPE.progressingInstruction) {
+      _forceRemove(currentNode);
+      return true;
+    }
+    /* Remove any kind of possibly harmful comments */
+    if (SAFE_FOR_XML && currentNode.nodeType === NODE_TYPE.comment && regExpTest(/<[/\w]/g, currentNode.data)) {
+      _forceRemove(currentNode);
+      return true;
+    }
+    /* Remove element if anything forbids its presence */
+    if (!(EXTRA_ELEMENT_HANDLING.tagCheck instanceof Function && EXTRA_ELEMENT_HANDLING.tagCheck(tagName)) && (!ALLOWED_TAGS[tagName] || FORBID_TAGS[tagName])) {
+      /* Check if we have a custom element to handle */
+      if (!FORBID_TAGS[tagName] && _isBasicCustomElement(tagName)) {
+        if (CUSTOM_ELEMENT_HANDLING.tagNameCheck instanceof RegExp && regExpTest(CUSTOM_ELEMENT_HANDLING.tagNameCheck, tagName)) {
           return false;
         }
-        /* Check value is safe. First, is attr inert? If so, is safe */
-      } else if (URI_SAFE_ATTRIBUTES[lcName]) ; else if (regExpTest(IS_ALLOWED_URI$1, stringReplace(value, ATTR_WHITESPACE, ''))) ; else if ((lcName === 'src' || lcName === 'xlink:href' || lcName === 'href') && lcTag !== 'script' && stringIndexOf(value, 'data:') === 0 && DATA_URI_TAGS[lcTag]) ; else if (ALLOW_UNKNOWN_PROTOCOLS && !regExpTest(IS_SCRIPT_OR_DATA, stringReplace(value, ATTR_WHITESPACE, ''))) ; else if (value) {
-        return false;
-      } else ;
-      return true;
-    };
-    /**
-     * _isBasicCustomElement
-     * checks if at least one dash is included in tagName, and it's not the first char
-     * for more sophisticated checking see https://github.com/sindresorhus/validate-element-name
-     *
-     * @param tagName name of the tag of the node to sanitize
-     * @returns Returns true if the tag name meets the basic criteria for a custom element, otherwise false.
-     */
-    const _isBasicCustomElement = function _isBasicCustomElement(tagName) {
-      return tagName !== 'annotation-xml' && stringMatch(tagName, CUSTOM_ELEMENT);
-    };
-    /**
-     * _sanitizeAttributes
-     *
-     * @protect attributes
-     * @protect nodeName
-     * @protect removeAttribute
-     * @protect setAttribute
-     *
-     * @param currentNode to sanitize
-     */
-    const _sanitizeAttributes = function _sanitizeAttributes(currentNode) {
-      /* Execute a hook if present */
-      _executeHooks(hooks.beforeSanitizeAttributes, currentNode, null);
-      const {
-        attributes
-      } = currentNode;
-      /* Check if we have attributes; if not we might have a text node */
-      if (!attributes || _isClobbered(currentNode)) {
-        return;
+        if (CUSTOM_ELEMENT_HANDLING.tagNameCheck instanceof Function && CUSTOM_ELEMENT_HANDLING.tagNameCheck(tagName)) {
+          return false;
+        }
       }
-      const hookEvent = {
-        attrName: '',
-        attrValue: '',
-        keepAttr: true,
-        allowedAttributes: ALLOWED_ATTR,
-        forceKeepAttr: undefined
-      };
-      let l = attributes.length;
-      /* Go backwards over all attributes; safely remove bad ones */
-      while (l--) {
-        const attr = attributes[l];
-        const {
-          name,
-          namespaceURI,
-          value: attrValue
-        } = attr;
-        const lcName = transformCaseFunc(name);
-        let value = name === 'value' ? attrValue : stringTrim(attrValue);
-        /* Execute a hook if present */
-        hookEvent.attrName = lcName;
-        hookEvent.attrValue = value;
-        hookEvent.keepAttr = true;
-        hookEvent.forceKeepAttr = undefined; // Allows developers to see this is a property they can set
-        _executeHooks(hooks.uponSanitizeAttribute, currentNode, hookEvent);
-        value = hookEvent.attrValue;
-        /* Full DOM Clobbering protection via namespace isolation,
-         * Prefix id and name attributes with `user-content-`
-         */
-        if (SANITIZE_NAMED_PROPS && (lcName === 'id' || lcName === 'name')) {
-          // Remove the attribute with this value
-          _removeAttribute(name, currentNode);
-          // Prefix the value and later re-create the attribute with the sanitized value
-          value = SANITIZE_NAMED_PROPS_PREFIX + value;
-        }
-        /* Work around a security issue with comments inside attributes */
-        if (SAFE_FOR_XML && regExpTest(/((--!?|])>)|<\/(style|title)/i, value)) {
-          _removeAttribute(name, currentNode);
-          continue;
-        }
-        /* Did the hooks approve of the attribute? */
-        if (hookEvent.forceKeepAttr) {
-          continue;
-        }
-        /* Remove attribute */
-        _removeAttribute(name, currentNode);
-        /* Did the hooks approve of the attribute? */
-        if (!hookEvent.keepAttr) {
-          continue;
-        }
-        /* Work around a security issue in jQuery 3.0 */
-        if (!ALLOW_SELF_CLOSE_IN_ATTR && regExpTest(/\/>/i, value)) {
-          _removeAttribute(name, currentNode);
-          continue;
-        }
-        /* Sanitize attribute content to be template-safe */
-        if (SAFE_FOR_TEMPLATES) {
-          arrayForEach([MUSTACHE_EXPR, ERB_EXPR, TMPLIT_EXPR], expr => {
-            value = stringReplace(value, expr, ' ');
-          });
-        }
-        /* Is `value` valid for this attribute? */
-        const lcTag = transformCaseFunc(currentNode.nodeName);
-        if (!_isValidAttribute(lcTag, lcName, value)) {
-          continue;
-        }
-        /* Handle attributes that require Trusted Types */
-        if (trustedTypesPolicy && typeof trustedTypes === 'object' && typeof trustedTypes.getAttributeType === 'function') {
-          if (namespaceURI) ; else {
-            switch (trustedTypes.getAttributeType(lcTag, lcName)) {
-              case 'TrustedHTML':
-                {
-                  value = trustedTypesPolicy.createHTML(value);
-                  break;
-                }
-              case 'TrustedScriptURL':
-                {
-                  value = trustedTypesPolicy.createScriptURL(value);
-                  break;
-                }
-            }
+      /* Keep content except for bad-listed elements */
+      if (KEEP_CONTENT && !FORBID_CONTENTS[tagName]) {
+        const parentNode = getParentNode(currentNode) || currentNode.parentNode;
+        const childNodes = getChildNodes(currentNode) || currentNode.childNodes;
+        if (childNodes && parentNode) {
+          const childCount = childNodes.length;
+          for (let i = childCount - 1; i >= 0; --i) {
+            const childClone = cloneNode(childNodes[i], true);
+            childClone.__removalCount = (currentNode.__removalCount || 0) + 1;
+            parentNode.insertBefore(childClone, getNextSibling(currentNode));
           }
         }
-        /* Handle invalid data-* attribute set by try-catching it */
+      }
+      _forceRemove(currentNode);
+      return true;
+    }
+    /* Check whether element has a valid namespace */
+    if (currentNode instanceof Element && !_checkValidNamespace(currentNode)) {
+      _forceRemove(currentNode);
+      return true;
+    }
+    /* Make sure that older browsers don't get fallback-tag mXSS */
+    if ((tagName === 'noscript' || tagName === 'noembed' || tagName === 'noframes') && regExpTest(/<\/no(script|embed|frames)/i, currentNode.innerHTML)) {
+      _forceRemove(currentNode);
+      return true;
+    }
+    /* Sanitize element content to be template-safe */
+    if (SAFE_FOR_TEMPLATES && currentNode.nodeType === NODE_TYPE.text) {
+      /* Get the element's text content */
+      content = currentNode.textContent;
+      arrayForEach([MUSTACHE_EXPR, ERB_EXPR, TMPLIT_EXPR], expr => {
+        content = stringReplace(content, expr, ' ');
+      });
+      if (currentNode.textContent !== content) {
+        arrayPush(DOMPurify.removed, {
+          element: currentNode.cloneNode()
+        });
+        currentNode.textContent = content;
+      }
+    }
+    /* Execute a hook if present */
+    _executeHooks(hooks.afterSanitizeElements, currentNode, null);
+    return false;
+  };
+  /**
+   * _isValidAttribute
+   *
+   * @param lcTag Lowercase tag name of containing element.
+   * @param lcName Lowercase attribute name.
+   * @param value Attribute value.
+   * @return Returns true if `value` is valid, otherwise false.
+   */
+  // eslint-disable-next-line complexity
+  const _isValidAttribute = function _isValidAttribute(lcTag, lcName, value) {
+    /* Make sure attribute cannot clobber */
+    if (SANITIZE_DOM && (lcName === 'id' || lcName === 'name') && (value in document || value in formElement)) {
+      return false;
+    }
+    /* Allow valid data-* attributes: At least one character after "-"
+        (https://html.spec.whatwg.org/multipage/dom.html#embedding-custom-non-visible-data-with-the-data-*-attributes)
+        XML-compatible (https://html.spec.whatwg.org/multipage/infrastructure.html#xml-compatible and http://www.w3.org/TR/xml/#d0e804)
+        We don't need to check the value; it's always URI safe. */
+    if (ALLOW_DATA_ATTR && !FORBID_ATTR[lcName] && regExpTest(DATA_ATTR, lcName)) ; else if (ALLOW_ARIA_ATTR && regExpTest(ARIA_ATTR, lcName)) ; else if (EXTRA_ELEMENT_HANDLING.attributeCheck instanceof Function && EXTRA_ELEMENT_HANDLING.attributeCheck(lcName, lcTag)) ; else if (!ALLOWED_ATTR[lcName] || FORBID_ATTR[lcName]) {
+      if (
+      // First condition does a very basic check if a) it's basically a valid custom element tagname AND
+      // b) if the tagName passes whatever the user has configured for CUSTOM_ELEMENT_HANDLING.tagNameCheck
+      // and c) if the attribute name passes whatever the user has configured for CUSTOM_ELEMENT_HANDLING.attributeNameCheck
+      _isBasicCustomElement(lcTag) && (CUSTOM_ELEMENT_HANDLING.tagNameCheck instanceof RegExp && regExpTest(CUSTOM_ELEMENT_HANDLING.tagNameCheck, lcTag) || CUSTOM_ELEMENT_HANDLING.tagNameCheck instanceof Function && CUSTOM_ELEMENT_HANDLING.tagNameCheck(lcTag)) && (CUSTOM_ELEMENT_HANDLING.attributeNameCheck instanceof RegExp && regExpTest(CUSTOM_ELEMENT_HANDLING.attributeNameCheck, lcName) || CUSTOM_ELEMENT_HANDLING.attributeNameCheck instanceof Function && CUSTOM_ELEMENT_HANDLING.attributeNameCheck(lcName, lcTag)) ||
+      // Alternative, second condition checks if it's an `is`-attribute, AND
+      // the value passes whatever the user has configured for CUSTOM_ELEMENT_HANDLING.tagNameCheck
+      lcName === 'is' && CUSTOM_ELEMENT_HANDLING.allowCustomizedBuiltInElements && (CUSTOM_ELEMENT_HANDLING.tagNameCheck instanceof RegExp && regExpTest(CUSTOM_ELEMENT_HANDLING.tagNameCheck, value) || CUSTOM_ELEMENT_HANDLING.tagNameCheck instanceof Function && CUSTOM_ELEMENT_HANDLING.tagNameCheck(value))) ; else {
+        return false;
+      }
+      /* Check value is safe. First, is attr inert? If so, is safe */
+    } else if (URI_SAFE_ATTRIBUTES[lcName]) ; else if (regExpTest(IS_ALLOWED_URI$1, stringReplace(value, ATTR_WHITESPACE, ''))) ; else if ((lcName === 'src' || lcName === 'xlink:href' || lcName === 'href') && lcTag !== 'script' && stringIndexOf(value, 'data:') === 0 && DATA_URI_TAGS[lcTag]) ; else if (ALLOW_UNKNOWN_PROTOCOLS && !regExpTest(IS_SCRIPT_OR_DATA, stringReplace(value, ATTR_WHITESPACE, ''))) ; else if (value) {
+      return false;
+    } else ;
+    return true;
+  };
+  /**
+   * _isBasicCustomElement
+   * checks if at least one dash is included in tagName, and it's not the first char
+   * for more sophisticated checking see https://github.com/sindresorhus/validate-element-name
+   *
+   * @param tagName name of the tag of the node to sanitize
+   * @returns Returns true if the tag name meets the basic criteria for a custom element, otherwise false.
+   */
+  const _isBasicCustomElement = function _isBasicCustomElement(tagName) {
+    return tagName !== 'annotation-xml' && stringMatch(tagName, CUSTOM_ELEMENT);
+  };
+  /**
+   * _sanitizeAttributes
+   *
+   * @protect attributes
+   * @protect nodeName
+   * @protect removeAttribute
+   * @protect setAttribute
+   *
+   * @param currentNode to sanitize
+   */
+  const _sanitizeAttributes = function _sanitizeAttributes(currentNode) {
+    /* Execute a hook if present */
+    _executeHooks(hooks.beforeSanitizeAttributes, currentNode, null);
+    const {
+      attributes
+    } = currentNode;
+    /* Check if we have attributes; if not we might have a text node */
+    if (!attributes || _isClobbered(currentNode)) {
+      return;
+    }
+    const hookEvent = {
+      attrName: '',
+      attrValue: '',
+      keepAttr: true,
+      allowedAttributes: ALLOWED_ATTR,
+      forceKeepAttr: undefined
+    };
+    let l = attributes.length;
+    /* Go backwards over all attributes; safely remove bad ones */
+    while (l--) {
+      const attr = attributes[l];
+      const {
+        name,
+        namespaceURI,
+        value: attrValue
+      } = attr;
+      const lcName = transformCaseFunc(name);
+      const initValue = attrValue;
+      let value = name === 'value' ? initValue : stringTrim(initValue);
+      /* Execute a hook if present */
+      hookEvent.attrName = lcName;
+      hookEvent.attrValue = value;
+      hookEvent.keepAttr = true;
+      hookEvent.forceKeepAttr = undefined; // Allows developers to see this is a property they can set
+      _executeHooks(hooks.uponSanitizeAttribute, currentNode, hookEvent);
+      value = hookEvent.attrValue;
+      /* Full DOM Clobbering protection via namespace isolation,
+       * Prefix id and name attributes with `user-content-`
+       */
+      if (SANITIZE_NAMED_PROPS && (lcName === 'id' || lcName === 'name')) {
+        // Remove the attribute with this value
+        _removeAttribute(name, currentNode);
+        // Prefix the value and later re-create the attribute with the sanitized value
+        value = SANITIZE_NAMED_PROPS_PREFIX + value;
+      }
+      /* Work around a security issue with comments inside attributes */
+      if (SAFE_FOR_XML && regExpTest(/((--!?|])>)|<\/(style|title|textarea)/i, value)) {
+        _removeAttribute(name, currentNode);
+        continue;
+      }
+      /* Make sure we cannot easily use animated hrefs, even if animations are allowed */
+      if (lcName === 'attributename' && stringMatch(value, 'href')) {
+        _removeAttribute(name, currentNode);
+        continue;
+      }
+      /* Did the hooks approve of the attribute? */
+      if (hookEvent.forceKeepAttr) {
+        continue;
+      }
+      /* Did the hooks approve of the attribute? */
+      if (!hookEvent.keepAttr) {
+        _removeAttribute(name, currentNode);
+        continue;
+      }
+      /* Work around a security issue in jQuery 3.0 */
+      if (!ALLOW_SELF_CLOSE_IN_ATTR && regExpTest(/\/>/i, value)) {
+        _removeAttribute(name, currentNode);
+        continue;
+      }
+      /* Sanitize attribute content to be template-safe */
+      if (SAFE_FOR_TEMPLATES) {
+        arrayForEach([MUSTACHE_EXPR, ERB_EXPR, TMPLIT_EXPR], expr => {
+          value = stringReplace(value, expr, ' ');
+        });
+      }
+      /* Is `value` valid for this attribute? */
+      const lcTag = transformCaseFunc(currentNode.nodeName);
+      if (!_isValidAttribute(lcTag, lcName, value)) {
+        _removeAttribute(name, currentNode);
+        continue;
+      }
+      /* Handle attributes that require Trusted Types */
+      if (trustedTypesPolicy && typeof trustedTypes === 'object' && typeof trustedTypes.getAttributeType === 'function') {
+        if (namespaceURI) ; else {
+          switch (trustedTypes.getAttributeType(lcTag, lcName)) {
+            case 'TrustedHTML':
+              {
+                value = trustedTypesPolicy.createHTML(value);
+                break;
+              }
+            case 'TrustedScriptURL':
+              {
+                value = trustedTypesPolicy.createScriptURL(value);
+                break;
+              }
+          }
+        }
+      }
+      /* Handle invalid data-* attribute set by try-catching it */
+      if (value !== initValue) {
         try {
           if (namespaceURI) {
             currentNode.setAttributeNS(namespaceURI, name, value);
@@ -4078,225 +4459,220 @@ var purify = {exports: {}};
           } else {
             arrayPop(DOMPurify.removed);
           }
-        } catch (_) {}
-      }
-      /* Execute a hook if present */
-      _executeHooks(hooks.afterSanitizeAttributes, currentNode, null);
-    };
-    /**
-     * _sanitizeShadowDOM
-     *
-     * @param fragment to iterate over recursively
-     */
-    const _sanitizeShadowDOM = function _sanitizeShadowDOM(fragment) {
-      let shadowNode = null;
-      const shadowIterator = _createNodeIterator(fragment);
-      /* Execute a hook if present */
-      _executeHooks(hooks.beforeSanitizeShadowDOM, fragment, null);
-      while (shadowNode = shadowIterator.nextNode()) {
-        /* Execute a hook if present */
-        _executeHooks(hooks.uponSanitizeShadowNode, shadowNode, null);
-        /* Sanitize tags and elements */
-        _sanitizeElements(shadowNode);
-        /* Check attributes next */
-        _sanitizeAttributes(shadowNode);
-        /* Deep shadow DOM detected */
-        if (shadowNode.content instanceof DocumentFragment) {
-          _sanitizeShadowDOM(shadowNode.content);
+        } catch (_) {
+          _removeAttribute(name, currentNode);
         }
       }
+    }
+    /* Execute a hook if present */
+    _executeHooks(hooks.afterSanitizeAttributes, currentNode, null);
+  };
+  /**
+   * _sanitizeShadowDOM
+   *
+   * @param fragment to iterate over recursively
+   */
+  const _sanitizeShadowDOM = function _sanitizeShadowDOM(fragment) {
+    let shadowNode = null;
+    const shadowIterator = _createNodeIterator(fragment);
+    /* Execute a hook if present */
+    _executeHooks(hooks.beforeSanitizeShadowDOM, fragment, null);
+    while (shadowNode = shadowIterator.nextNode()) {
       /* Execute a hook if present */
-      _executeHooks(hooks.afterSanitizeShadowDOM, fragment, null);
-    };
-    // eslint-disable-next-line complexity
-    DOMPurify.sanitize = function (dirty) {
-      let cfg = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-      let body = null;
-      let importedNode = null;
-      let currentNode = null;
-      let returnNode = null;
-      /* Make sure we have a string to sanitize.
-        DO NOT return early, as this will return the wrong type if
-        the user has requested a DOM object rather than a string */
-      IS_EMPTY_INPUT = !dirty;
-      if (IS_EMPTY_INPUT) {
-        dirty = '<!-->';
+      _executeHooks(hooks.uponSanitizeShadowNode, shadowNode, null);
+      /* Sanitize tags and elements */
+      _sanitizeElements(shadowNode);
+      /* Check attributes next */
+      _sanitizeAttributes(shadowNode);
+      /* Deep shadow DOM detected */
+      if (shadowNode.content instanceof DocumentFragment) {
+        _sanitizeShadowDOM(shadowNode.content);
       }
-      /* Stringify, in case dirty is an object */
-      if (typeof dirty !== 'string' && !_isNode(dirty)) {
-        if (typeof dirty.toString === 'function') {
-          dirty = dirty.toString();
-          if (typeof dirty !== 'string') {
-            throw typeErrorCreate('dirty is not a string, aborting');
-          }
-        } else {
-          throw typeErrorCreate('toString is not a function');
-        }
-      }
-      /* Return dirty HTML if DOMPurify cannot run */
-      if (!DOMPurify.isSupported) {
-        return dirty;
-      }
-      /* Assign config vars */
-      if (!SET_CONFIG) {
-        _parseConfig(cfg);
-      }
-      /* Clean up removed elements */
-      DOMPurify.removed = [];
-      /* Check if dirty is correctly typed for IN_PLACE */
-      if (typeof dirty === 'string') {
-        IN_PLACE = false;
-      }
-      if (IN_PLACE) {
-        /* Do some early pre-sanitization to avoid unsafe root nodes */
-        if (dirty.nodeName) {
-          const tagName = transformCaseFunc(dirty.nodeName);
-          if (!ALLOWED_TAGS[tagName] || FORBID_TAGS[tagName]) {
-            throw typeErrorCreate('root node is forbidden and cannot be sanitized in-place');
-          }
-        }
-      } else if (dirty instanceof Node) {
-        /* If dirty is a DOM element, append to an empty document to avoid
-           elements being stripped by the parser */
-        body = _initDocument('<!---->');
-        importedNode = body.ownerDocument.importNode(dirty, true);
-        if (importedNode.nodeType === NODE_TYPE.element && importedNode.nodeName === 'BODY') {
-          /* Node is already a body, use as is */
-          body = importedNode;
-        } else if (importedNode.nodeName === 'HTML') {
-          body = importedNode;
-        } else {
-          // eslint-disable-next-line unicorn/prefer-dom-node-append
-          body.appendChild(importedNode);
+    }
+    /* Execute a hook if present */
+    _executeHooks(hooks.afterSanitizeShadowDOM, fragment, null);
+  };
+  // eslint-disable-next-line complexity
+  DOMPurify.sanitize = function (dirty) {
+    let cfg = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+    let body = null;
+    let importedNode = null;
+    let currentNode = null;
+    let returnNode = null;
+    /* Make sure we have a string to sanitize.
+      DO NOT return early, as this will return the wrong type if
+      the user has requested a DOM object rather than a string */
+    IS_EMPTY_INPUT = !dirty;
+    if (IS_EMPTY_INPUT) {
+      dirty = '<!-->';
+    }
+    /* Stringify, in case dirty is an object */
+    if (typeof dirty !== 'string' && !_isNode(dirty)) {
+      if (typeof dirty.toString === 'function') {
+        dirty = dirty.toString();
+        if (typeof dirty !== 'string') {
+          throw typeErrorCreate('dirty is not a string, aborting');
         }
       } else {
-        /* Exit directly if we have nothing to do */
-        if (!RETURN_DOM && !SAFE_FOR_TEMPLATES && !WHOLE_DOCUMENT &&
-        // eslint-disable-next-line unicorn/prefer-includes
-        dirty.indexOf('<') === -1) {
-          return trustedTypesPolicy && RETURN_TRUSTED_TYPE ? trustedTypesPolicy.createHTML(dirty) : dirty;
-        }
-        /* Initialize the document to work on */
-        body = _initDocument(dirty);
-        /* Check we have a DOM node from the data */
-        if (!body) {
-          return RETURN_DOM ? null : RETURN_TRUSTED_TYPE ? emptyHTML : '';
-        }
+        throw typeErrorCreate('toString is not a function');
       }
-      /* Remove first element node (ours) if FORCE_BODY is set */
-      if (body && FORCE_BODY) {
-        _forceRemove(body.firstChild);
-      }
-      /* Get node iterator */
-      const nodeIterator = _createNodeIterator(IN_PLACE ? dirty : body);
-      /* Now start iterating over the created document */
-      while (currentNode = nodeIterator.nextNode()) {
-        /* Sanitize tags and elements */
-        _sanitizeElements(currentNode);
-        /* Check attributes next */
-        _sanitizeAttributes(currentNode);
-        /* Shadow DOM detected, sanitize it */
-        if (currentNode.content instanceof DocumentFragment) {
-          _sanitizeShadowDOM(currentNode.content);
-        }
-      }
-      /* If we sanitized `dirty` in-place, return it. */
-      if (IN_PLACE) {
-        return dirty;
-      }
-      /* Return sanitized string or DOM */
-      if (RETURN_DOM) {
-        if (RETURN_DOM_FRAGMENT) {
-          returnNode = createDocumentFragment.call(body.ownerDocument);
-          while (body.firstChild) {
-            // eslint-disable-next-line unicorn/prefer-dom-node-append
-            returnNode.appendChild(body.firstChild);
-          }
-        } else {
-          returnNode = body;
-        }
-        if (ALLOWED_ATTR.shadowroot || ALLOWED_ATTR.shadowrootmode) {
-          /*
-            AdoptNode() is not used because internal state is not reset
-            (e.g. the past names map of a HTMLFormElement), this is safe
-            in theory but we would rather not risk another attack vector.
-            The state that is cloned by importNode() is explicitly defined
-            by the specs.
-          */
-          returnNode = importNode.call(originalDocument, returnNode, true);
-        }
-        return returnNode;
-      }
-      let serializedHTML = WHOLE_DOCUMENT ? body.outerHTML : body.innerHTML;
-      /* Serialize doctype if allowed */
-      if (WHOLE_DOCUMENT && ALLOWED_TAGS['!doctype'] && body.ownerDocument && body.ownerDocument.doctype && body.ownerDocument.doctype.name && regExpTest(DOCTYPE_NAME, body.ownerDocument.doctype.name)) {
-        serializedHTML = '<!DOCTYPE ' + body.ownerDocument.doctype.name + '>\n' + serializedHTML;
-      }
-      /* Sanitize final string template-safe */
-      if (SAFE_FOR_TEMPLATES) {
-        arrayForEach([MUSTACHE_EXPR, ERB_EXPR, TMPLIT_EXPR], expr => {
-          serializedHTML = stringReplace(serializedHTML, expr, ' ');
-        });
-      }
-      return trustedTypesPolicy && RETURN_TRUSTED_TYPE ? trustedTypesPolicy.createHTML(serializedHTML) : serializedHTML;
-    };
-    DOMPurify.setConfig = function () {
-      let cfg = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+    }
+    /* Return dirty HTML if DOMPurify cannot run */
+    if (!DOMPurify.isSupported) {
+      return dirty;
+    }
+    /* Assign config vars */
+    if (!SET_CONFIG) {
       _parseConfig(cfg);
-      SET_CONFIG = true;
-    };
-    DOMPurify.clearConfig = function () {
-      CONFIG = null;
-      SET_CONFIG = false;
-    };
-    DOMPurify.isValidAttribute = function (tag, attr, value) {
-      /* Initialize shared config vars if necessary. */
-      if (!CONFIG) {
-        _parseConfig({});
+    }
+    /* Clean up removed elements */
+    DOMPurify.removed = [];
+    /* Check if dirty is correctly typed for IN_PLACE */
+    if (typeof dirty === 'string') {
+      IN_PLACE = false;
+    }
+    if (IN_PLACE) {
+      /* Do some early pre-sanitization to avoid unsafe root nodes */
+      if (dirty.nodeName) {
+        const tagName = transformCaseFunc(dirty.nodeName);
+        if (!ALLOWED_TAGS[tagName] || FORBID_TAGS[tagName]) {
+          throw typeErrorCreate('root node is forbidden and cannot be sanitized in-place');
+        }
       }
-      const lcTag = transformCaseFunc(tag);
-      const lcName = transformCaseFunc(attr);
-      return _isValidAttribute(lcTag, lcName, value);
-    };
-    DOMPurify.addHook = function (entryPoint, hookFunction) {
-      if (typeof hookFunction !== 'function') {
-        return;
+    } else if (dirty instanceof Node) {
+      /* If dirty is a DOM element, append to an empty document to avoid
+         elements being stripped by the parser */
+      body = _initDocument('<!---->');
+      importedNode = body.ownerDocument.importNode(dirty, true);
+      if (importedNode.nodeType === NODE_TYPE.element && importedNode.nodeName === 'BODY') {
+        /* Node is already a body, use as is */
+        body = importedNode;
+      } else if (importedNode.nodeName === 'HTML') {
+        body = importedNode;
+      } else {
+        // eslint-disable-next-line unicorn/prefer-dom-node-append
+        body.appendChild(importedNode);
       }
-      arrayPush(hooks[entryPoint], hookFunction);
-    };
-    DOMPurify.removeHook = function (entryPoint, hookFunction) {
-      if (hookFunction !== undefined) {
-        const index = arrayLastIndexOf(hooks[entryPoint], hookFunction);
-        return index === -1 ? undefined : arraySplice(hooks[entryPoint], index, 1)[0];
+    } else {
+      /* Exit directly if we have nothing to do */
+      if (!RETURN_DOM && !SAFE_FOR_TEMPLATES && !WHOLE_DOCUMENT &&
+      // eslint-disable-next-line unicorn/prefer-includes
+      dirty.indexOf('<') === -1) {
+        return trustedTypesPolicy && RETURN_TRUSTED_TYPE ? trustedTypesPolicy.createHTML(dirty) : dirty;
       }
-      return arrayPop(hooks[entryPoint]);
-    };
-    DOMPurify.removeHooks = function (entryPoint) {
-      hooks[entryPoint] = [];
-    };
-    DOMPurify.removeAllHooks = function () {
-      hooks = _createHooksMap();
-    };
-    return DOMPurify;
-  }
-  var purify = createDOMPurify();
-
-  return purify;
-
-}));
-
-}(purify));
-
-var DOMPurify = purify.exports;
+      /* Initialize the document to work on */
+      body = _initDocument(dirty);
+      /* Check we have a DOM node from the data */
+      if (!body) {
+        return RETURN_DOM ? null : RETURN_TRUSTED_TYPE ? emptyHTML : '';
+      }
+    }
+    /* Remove first element node (ours) if FORCE_BODY is set */
+    if (body && FORCE_BODY) {
+      _forceRemove(body.firstChild);
+    }
+    /* Get node iterator */
+    const nodeIterator = _createNodeIterator(IN_PLACE ? dirty : body);
+    /* Now start iterating over the created document */
+    while (currentNode = nodeIterator.nextNode()) {
+      /* Sanitize tags and elements */
+      _sanitizeElements(currentNode);
+      /* Check attributes next */
+      _sanitizeAttributes(currentNode);
+      /* Shadow DOM detected, sanitize it */
+      if (currentNode.content instanceof DocumentFragment) {
+        _sanitizeShadowDOM(currentNode.content);
+      }
+    }
+    /* If we sanitized `dirty` in-place, return it. */
+    if (IN_PLACE) {
+      return dirty;
+    }
+    /* Return sanitized string or DOM */
+    if (RETURN_DOM) {
+      if (RETURN_DOM_FRAGMENT) {
+        returnNode = createDocumentFragment.call(body.ownerDocument);
+        while (body.firstChild) {
+          // eslint-disable-next-line unicorn/prefer-dom-node-append
+          returnNode.appendChild(body.firstChild);
+        }
+      } else {
+        returnNode = body;
+      }
+      if (ALLOWED_ATTR.shadowroot || ALLOWED_ATTR.shadowrootmode) {
+        /*
+          AdoptNode() is not used because internal state is not reset
+          (e.g. the past names map of a HTMLFormElement), this is safe
+          in theory but we would rather not risk another attack vector.
+          The state that is cloned by importNode() is explicitly defined
+          by the specs.
+        */
+        returnNode = importNode.call(originalDocument, returnNode, true);
+      }
+      return returnNode;
+    }
+    let serializedHTML = WHOLE_DOCUMENT ? body.outerHTML : body.innerHTML;
+    /* Serialize doctype if allowed */
+    if (WHOLE_DOCUMENT && ALLOWED_TAGS['!doctype'] && body.ownerDocument && body.ownerDocument.doctype && body.ownerDocument.doctype.name && regExpTest(DOCTYPE_NAME, body.ownerDocument.doctype.name)) {
+      serializedHTML = '<!DOCTYPE ' + body.ownerDocument.doctype.name + '>\n' + serializedHTML;
+    }
+    /* Sanitize final string template-safe */
+    if (SAFE_FOR_TEMPLATES) {
+      arrayForEach([MUSTACHE_EXPR, ERB_EXPR, TMPLIT_EXPR], expr => {
+        serializedHTML = stringReplace(serializedHTML, expr, ' ');
+      });
+    }
+    return trustedTypesPolicy && RETURN_TRUSTED_TYPE ? trustedTypesPolicy.createHTML(serializedHTML) : serializedHTML;
+  };
+  DOMPurify.setConfig = function () {
+    let cfg = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+    _parseConfig(cfg);
+    SET_CONFIG = true;
+  };
+  DOMPurify.clearConfig = function () {
+    CONFIG = null;
+    SET_CONFIG = false;
+  };
+  DOMPurify.isValidAttribute = function (tag, attr, value) {
+    /* Initialize shared config vars if necessary. */
+    if (!CONFIG) {
+      _parseConfig({});
+    }
+    const lcTag = transformCaseFunc(tag);
+    const lcName = transformCaseFunc(attr);
+    return _isValidAttribute(lcTag, lcName, value);
+  };
+  DOMPurify.addHook = function (entryPoint, hookFunction) {
+    if (typeof hookFunction !== 'function') {
+      return;
+    }
+    arrayPush(hooks[entryPoint], hookFunction);
+  };
+  DOMPurify.removeHook = function (entryPoint, hookFunction) {
+    if (hookFunction !== undefined) {
+      const index = arrayLastIndexOf(hooks[entryPoint], hookFunction);
+      return index === -1 ? undefined : arraySplice(hooks[entryPoint], index, 1)[0];
+    }
+    return arrayPop(hooks[entryPoint]);
+  };
+  DOMPurify.removeHooks = function (entryPoint) {
+    hooks[entryPoint] = [];
+  };
+  DOMPurify.removeAllHooks = function () {
+    hooks = _createHooksMap();
+  };
+  return DOMPurify;
+}
+var purify = createDOMPurify();
 
 /**
  * This allows you to parse a template string with a function.
  */
-const html = (strings, ...values) => {
+const html$1 = (strings, ...values) => {
     let result = strings[0];
     for (let i = 0; i < values.length; i++) {
         result +=
-            DOMPurify.sanitize(values[i] ? String(values[i]) : '') + strings[i + 1];
+            purify.sanitize(values[i] ? String(values[i]) : '') + strings[i + 1];
     }
     return result || '';
 };
@@ -4325,7 +4701,7 @@ const html = (strings, ...values) => {
 class SearchcraftFacetList {
     constructor(hostRef) {
         registerInstance(this, hostRef);
-        this.facetSelectionUpdated = createEvent(this, "facetSelectionUpdated", 7);
+        this.facetSelectionUpdated = createEvent(this, "facetSelectionUpdated");
     }
     /**
      * The id of the Searchcraft instance that this component should use.
@@ -4524,11 +4900,13 @@ class SearchcraftFacetList {
                 const filterQueries = queryArray.filter((q) => q.occur === 'must');
                 const currentFilters = JSON.stringify(filterQueries);
                 // Determine the action type based on what changed
-                if (this.lastFacetValues !== undefined && this.lastFacetValues !== currentFilters) {
+                if (this.lastFacetValues !== undefined &&
+                    this.lastFacetValues !== currentFilters) {
                     // Filters have changed (not initial load)
                     actionType = 'FACET_UPDATE';
                 }
-                else if (state.searchTerm.trim() === '' && this.lastSearchTerm === '') {
+                else if (state.searchTerm.trim() === '' &&
+                    this.lastSearchTerm === '') {
                     // Initial load or no changes with empty search term
                     actionType = 'NEW_SEARCH_TERM';
                 }
@@ -4636,7 +5014,7 @@ class SearchcraftFacetList {
         return (hAsync("div", { class: 'searchcraft-facet-list' }, this.renderFacet('@@root', this.renderedFacetTree)));
     }
     static get cmpMeta() { return {
-        "$flags$": 0,
+        "$flags$": 768,
         "$tagName$": "searchcraft-facet-list",
         "$members$": {
             "searchcraftId": [1, "searchcraft-id"],
@@ -4979,7 +5357,7 @@ class SearchcraftFilterPanel {
         })));
     }
     static get cmpMeta() { return {
-        "$flags$": 0,
+        "$flags$": 768,
         "$tagName$": "searchcraft-filter-panel",
         "$members$": {
             "searchcraftId": [1, "searchcraft-id"],
@@ -5027,9 +5405,9 @@ class SearchcraftFilterPanel {
 class SearchcraftInputForm {
     constructor(hostRef) {
         registerInstance(this, hostRef);
-        this.inputFocus = createEvent(this, "inputFocus", 7);
-        this.inputBlur = createEvent(this, "inputBlur", 7);
-        this.inputInit = createEvent(this, "inputInit", 7);
+        this.inputFocus = createEvent(this, "inputFocus");
+        this.inputBlur = createEvent(this, "inputBlur");
+        this.inputInit = createEvent(this, "inputInit");
     }
     /**
      * The id of the Searchcraft instance that this component should use.
@@ -5179,7 +5557,7 @@ class SearchcraftInputForm {
         "value": ["onValueChange"]
     }; }
     static get cmpMeta() { return {
-        "$flags$": 0,
+        "$flags$": 768,
         "$tagName$": "searchcraft-input-form",
         "$members$": {
             "searchcraftId": [1, "searchcraft-id"],
@@ -5210,7 +5588,7 @@ class SearchcraftInputForm {
  *
  * @internal
  */
-class SearchcraftInputLabel$1 {
+let SearchcraftInputLabel$1 = class SearchcraftInputLabel {
     constructor(hostRef) {
         registerInstance(this, hostRef);
     }
@@ -5223,7 +5601,7 @@ class SearchcraftInputLabel$1 {
         return (hAsync("label", { key: '1008f9beb320aaa94026604b283eb65a96023265', class: classNames('searchcraft-input-label', this.inputLabelClassName), htmlFor: 'searchcraft-input-id' }, this.label));
     }
     static get cmpMeta() { return {
-        "$flags$": 0,
+        "$flags$": 768,
         "$tagName$": "searchcraft-input-label",
         "$members$": {
             "inputLabelClassName": [1, "input-label-class-name"],
@@ -5233,7 +5611,7 @@ class SearchcraftInputLabel$1 {
         "$lazyBundleId$": "-",
         "$attrsToReflect$": []
     }; }
-}
+};
 
 /**
  * Renders a loading spinner/loading state for use in things like the summary box.
@@ -5249,7 +5627,7 @@ class SearchcraftInputLabel {
         return (hAsync("div", { key: '5bda164202246eeb2e56bb6a25bede9931898e7a', class: 'searchcraft-loading' }, hAsync("div", { key: 'e33a5abc6686f9983c718a2532aa2d46902d98a2', class: 'searchcraft-loading-bars' }, hAsync("div", { key: '85ff7af527b8f419c9bfd6e84331dd68772e6fdd', class: 'searchcraft-loading-bar-1' }), hAsync("div", { key: '1485d17e9262dbec6d2e5976a63149878137821c', class: 'searchcraft-loading-bar-2' }), hAsync("div", { key: 'd2939b9f7bc0599df7d96db91802ebfcbf232f3e', class: 'searchcraft-loading-bar-3' }), hAsync("div", { key: '7a73bd5baf25ec789c3170e066d1333b905bfe7b', class: 'searchcraft-loading-bar-4' }), hAsync("div", { key: 'b644b618766727773b21d288945c21b6ef0be958', class: 'searchcraft-loading-bar-5' }), hAsync("div", { key: '4f5123a786fc40891ca54edc538dd56f683b26ce', class: 'searchcraft-loading-bar-6' })), hAsync("p", { key: '967c1a6fb41231c8d713b78facca98e7f5a80709', class: 'searchcraft-loading-label' }, this.label)));
     }
     static get cmpMeta() { return {
-        "$flags$": 0,
+        "$flags$": 768,
         "$tagName$": "searchcraft-loading",
         "$members$": {
             "label": [1]
@@ -5381,7 +5759,8 @@ class SearchcraftPagination {
         const isInitialQuery = typeof this.searchClientRequestProperties === 'string' &&
             this.searchTerm.trim() === '';
         // early return if there isn't a searchTerm (unless it's initialQuery) or there is 1 or fewer pages of results
-        if ((!this.searchTerm && !isInitialQuery) || this.searchResultsPagesCount <= 1) {
+        if ((!this.searchTerm && !isInitialQuery) ||
+            this.searchResultsPagesCount <= 1) {
             return;
         }
         return (hAsync("div", { class: 'searchcraft-pagination' }, hAsync("div", { class: 'searchcraft-pagination-control' }, hAsync("searchcraft-button", { disabled: this.searchResultsPage === 1, hierarchy: 'tertiary', onButtonClick: () => this.handleGoToPage(Math.max(1, this.searchResultsPage - 1)), label: 'Previous', iconPosition: 'left', icon: hAsync("svg", { class: 'searchcraft-button-icon', width: '20', height: '20', viewBox: '0 0 20 20', fill: 'none', xmlns: 'http://www.w3.org/2000/svg' }, hAsync("title", null, "Previous page icon"), hAsync("path", { d: 'M12.5 15L7.5 10L12.5 5', stroke: 'currentColor', "stroke-width": '1.5', "stroke-linecap": 'round', "stroke-linejoin": 'round' })), iconOnly: true })), hAsync("ul", { class: 'searchcraft-pagination-list' }, this.renderOddPaginationItem(1), this.renderEvenPaginationItem(2), this.renderMiddlePaginationItem(), this.renderEvenPaginationItem(this.searchResultsPagesCount > 4
@@ -5391,7 +5770,7 @@ class SearchcraftPagination {
             }, label: 'Next', iconPosition: 'right', icon: hAsync("svg", { class: 'searchcraft-button-icon', width: '20', height: '20', viewBox: '0 0 20 20', fill: 'none', xmlns: 'http://www.w3.org/2000/svg' }, hAsync("title", null, "Next page icon"), hAsync("path", { d: 'M7.5 15L12.5 10L7.5 5', stroke: 'currentColor', "stroke-width": '1.5', "stroke-linecap": 'round', "stroke-linejoin": 'round' })), iconOnly: true }))));
     }
     static get cmpMeta() { return {
-        "$flags$": 0,
+        "$flags$": 768,
         "$tagName$": "searchcraft-pagination",
         "$members$": {
             "searchcraftId": [1, "searchcraft-id"],
@@ -5562,7 +5941,7 @@ class SearchcraftPopoverButton {
     }
     render() {
         return (hAsync("button", { key: '4f11d81bb189a929372d9e398a0913b3b626e42c', class: `searchcraft-popover-button ${this.type ? ` searchcraft-popover-button-${this.type}` : ''}`, innerHTML: typeof this.template !== 'undefined'
-                ? this.template({ isPopoverVisible: this.isPopoverVisible }, { html })
+                ? this.template({ isPopoverVisible: this.isPopoverVisible }, { html: html$1 })
                 : undefined, onClick: this.handleOnClick.bind(this), type: 'button' }, typeof this.template !== 'undefined'
             ? undefined
             : this.type
@@ -5570,7 +5949,7 @@ class SearchcraftPopoverButton {
                 : 'Open Popover'));
     }
     static get cmpMeta() { return {
-        "$flags$": 4,
+        "$flags$": 772,
         "$tagName$": "searchcraft-popover-button",
         "$members$": {
             "template": [16],
@@ -5623,7 +6002,7 @@ class SearchcraftPopoverFooter {
             : ' '), hAsync("a", { key: '8cd1bd1ad4e3a91e7221c5d38650b10a66dc884e', class: 'searchcraft-popover-footer-link', href: 'https://searchcraft.io/', target: '_blank', rel: 'noreferrer' }, hAsync("svg", { key: '4ebaa80bc3ee8cc2643368d84158cc46ac141376', class: 'searchcraft-popover-footer-link-image', width: '169', height: '16', viewBox: '0 0 169 16', fill: 'none', xmlns: 'http://www.w3.org/2000/svg' }, hAsync("title", { key: '804857d081cf5cbd8e63af05c3479a96872d136d' }, "Powered by Searchcraft"), hAsync("path", { key: '43d4a2b110134036b8823e508f535c293fb2df0c', d: 'M5.07288 0.608C7.60088 0.608 8.84888 2.064 8.84888 4.112C8.84888 6.16 7.60088 7.616 5.07288 7.616H1.68088V12H0.336875V0.608H5.07288ZM5.07288 6.4C6.67288 6.4 7.45688 5.552 7.45688 4.112C7.45688 2.672 6.67288 1.824 5.07288 1.824H1.68088V6.4H5.07288ZM13.31 12.192C10.99 12.192 9.31 10.512 9.31 7.872C9.31 5.232 10.99 3.552 13.31 3.552C15.63 3.552 17.31 5.232 17.31 7.872C17.31 10.512 15.63 12.192 13.31 12.192ZM13.31 11.04C14.91 11.04 15.966 9.872 15.966 7.872C15.966 5.872 14.91 4.704 13.31 4.704C11.71 4.704 10.654 5.872 10.654 7.872C10.654 9.872 11.71 11.04 13.31 11.04ZM28.3826 3.744H29.7586L27.0066 12H25.6626L24.4466 8.176C24.1586 7.264 23.8706 6.304 23.6146 5.376C23.3426 6.304 23.0546 7.264 22.7666 8.176L21.5666 12H20.2226L17.4706 3.744H18.8466L20.0146 7.472C20.3346 8.48 20.6226 9.472 20.9106 10.48C21.1826 9.472 21.4706 8.48 21.7906 7.472L22.9426 3.744H24.2866L25.4386 7.472C25.7426 8.464 26.0466 9.456 26.3346 10.448C26.6066 9.456 26.9106 8.464 27.2146 7.472L28.3826 3.744ZM37.5194 7.872V8.32H31.2474C31.3754 10.176 32.3514 11.024 33.7914 11.024C34.9594 11.024 35.6954 10.416 35.9834 9.488H37.3114C36.9114 11.04 35.7274 12.192 33.7594 12.192C31.5034 12.192 29.9194 10.544 29.9194 7.872C29.9194 5.28 31.4394 3.552 33.7274 3.552C36.1914 3.552 37.5194 5.504 37.5194 7.872ZM33.7274 4.72C32.4314 4.72 31.4874 5.536 31.2794 7.168H36.1434C36.0154 5.808 35.1994 4.72 33.7274 4.72ZM42.9101 3.616C43.0381 3.616 43.1661 3.616 43.3421 3.632V4.864H43.0221C41.3741 4.864 40.3181 5.696 40.3181 7.296V12H39.0381V3.744H40.2541V5.2C40.7181 4.336 41.5661 3.616 42.9101 3.616ZM51.2538 7.872V8.32H44.9818C45.1098 10.176 46.0858 11.024 47.5258 11.024C48.6938 11.024 49.4298 10.416 49.7178 9.488H51.0458C50.6458 11.04 49.4618 12.192 47.4938 12.192C45.2378 12.192 43.6538 10.544 43.6538 7.872C43.6538 5.28 45.1738 3.552 47.4618 3.552C49.9258 3.552 51.2538 5.504 51.2538 7.872ZM47.4618 4.72C46.1658 4.72 45.2218 5.536 45.0138 7.168H49.8778C49.7498 5.808 48.9338 4.72 47.4618 4.72ZM58.9805 0.608H60.2605V12H59.0445V10.72C58.4205 11.664 57.4445 12.192 56.2125 12.192C53.8925 12.192 52.3725 10.512 52.3725 7.872C52.3725 5.232 53.8925 3.552 56.2125 3.552C57.4125 3.552 58.3565 4.048 58.9805 4.928V0.608ZM56.3725 11.04C57.9725 11.04 59.0285 9.872 59.0285 7.872C59.0285 5.872 57.9725 4.704 56.3725 4.704C54.7725 4.704 53.7165 5.936 53.7165 7.936C53.7165 9.936 54.7725 11.04 56.3725 11.04ZM69.2736 3.552C71.5936 3.552 73.1136 5.232 73.1136 7.872C73.1136 10.512 71.5936 12.192 69.2736 12.192C68.0416 12.192 67.0656 11.664 66.4416 10.72V12H65.2256V0.608H66.5056V4.928C67.1296 4.048 68.0736 3.552 69.2736 3.552ZM69.1136 11.04C70.7136 11.04 71.7696 9.808 71.7696 7.808C71.7696 5.808 70.7136 4.704 69.1136 4.704C67.5136 4.704 66.4576 5.872 66.4576 7.872C66.4576 9.872 67.5136 11.04 69.1136 11.04ZM79.3795 3.744H80.7715L77.2835 13.296C76.7555 14.752 75.9075 15.184 74.5955 15.184C74.3395 15.184 74.0995 15.168 73.8275 15.136V14.064H74.5795C75.3955 14.064 75.8275 13.696 76.0835 13.04C76.1795 12.8 76.2755 12.528 76.3715 12.272L73.2675 3.744H74.6755L75.8435 7.184C76.2595 8.384 76.6435 9.568 77.0275 10.752C77.3955 9.568 77.7955 8.368 78.2115 7.168L79.3795 3.744ZM89.1546 12.256C86.1146 12.256 84.2906 10.864 84.2746 8.24H86.4026C86.4346 10.032 87.6346 10.512 89.2186 10.512C90.7066 10.512 91.5226 9.936 91.5226 8.864C91.5226 7.968 90.9306 7.568 89.1866 7.216L88.2266 7.024C86.0186 6.608 84.5626 5.632 84.5626 3.568C84.5626 1.68 86.0506 0.351999 88.7866 0.351999C91.9866 0.351999 93.3466 1.856 93.4266 4H91.3306C91.2506 2.784 90.6266 2.096 88.8186 2.096C87.4426 2.096 86.7706 2.64 86.7706 3.504C86.7706 4.416 87.2986 4.832 88.9946 5.184L89.9866 5.376C92.6746 5.904 93.7626 6.944 93.7626 8.752C93.7626 11.008 92.0026 12.256 89.1546 12.256ZM102.952 8.016V8.496H96.7758C96.9198 9.968 97.7518 10.624 98.9198 10.624C99.8798 10.624 100.504 10.176 100.808 9.44H102.744C102.328 11.12 100.888 12.192 98.9038 12.192C96.4718 12.192 94.7918 10.512 94.7918 7.872C94.7918 5.28 96.4238 3.552 98.8718 3.552C101.4 3.552 102.952 5.392 102.952 8.016ZM98.8558 5.12C97.7838 5.12 96.9838 5.728 96.7918 7.088H100.936C100.776 5.92 100.056 5.12 98.8558 5.12ZM111.599 12H109.583C109.455 11.776 109.391 11.392 109.359 10.992C108.815 11.76 107.919 12.192 106.703 12.192C104.943 12.192 103.727 11.312 103.727 9.712C103.727 8.336 104.559 7.36 106.895 7.136L108.143 7.024C108.911 6.928 109.311 6.688 109.311 6.08C109.311 5.44 108.975 5.056 107.807 5.056C106.655 5.056 106.175 5.36 106.095 6.368H104.111C104.223 4.624 105.247 3.552 107.823 3.552C110.287 3.552 111.263 4.544 111.263 6.032V10.432C111.263 11.024 111.375 11.68 111.599 12ZM107.183 10.752C108.255 10.752 109.311 10.176 109.311 8.736V7.984C109.103 8.176 108.799 8.272 108.367 8.32L107.279 8.448C106.159 8.576 105.791 8.976 105.791 9.632C105.791 10.32 106.255 10.752 107.183 10.752ZM117.216 3.616C117.392 3.616 117.536 3.616 117.712 3.648V5.504H117.2C115.712 5.504 114.816 6.24 114.816 7.808V12H112.8V3.744H114.752V5.216C115.152 4.288 115.936 3.616 117.216 3.616ZM122.137 12.192C119.689 12.192 118.057 10.512 118.057 7.872C118.057 5.232 119.673 3.552 122.137 3.552C124.297 3.552 125.737 4.784 125.977 6.72H123.961C123.769 5.696 123.033 5.232 122.137 5.232C120.937 5.232 120.121 6.064 120.121 7.872C120.121 9.68 120.969 10.512 122.137 10.512C123.049 10.512 123.833 10.016 123.993 8.928H126.009C125.785 10.944 124.249 12.192 122.137 12.192ZM131.641 3.552C133.369 3.552 134.537 4.56 134.537 6.528V12H132.521V6.864C132.521 5.808 131.993 5.296 130.969 5.296C130.089 5.296 129.129 5.904 129.129 7.376V12H127.113V0.608H129.129V4.848C129.673 4.096 130.521 3.552 131.641 3.552ZM139.887 12.192C137.439 12.192 135.807 10.512 135.807 7.872C135.807 5.232 137.423 3.552 139.887 3.552C142.047 3.552 143.487 4.784 143.727 6.72H141.711C141.519 5.696 140.783 5.232 139.887 5.232C138.687 5.232 137.871 6.064 137.871 7.872C137.871 9.68 138.719 10.512 139.887 10.512C140.799 10.512 141.583 10.016 141.743 8.928H143.759C143.535 10.944 141.999 12.192 139.887 12.192ZM149.279 3.616C149.455 3.616 149.599 3.616 149.775 3.648V5.504H149.263C147.775 5.504 146.879 6.24 146.879 7.808V12H144.863V3.744H146.815V5.216C147.215 4.288 147.999 3.616 149.279 3.616ZM157.803 12H155.787C155.659 11.776 155.595 11.392 155.563 10.992C155.019 11.76 154.123 12.192 152.907 12.192C151.147 12.192 149.931 11.312 149.931 9.712C149.931 8.336 150.763 7.36 153.099 7.136L154.347 7.024C155.115 6.928 155.515 6.688 155.515 6.08C155.515 5.44 155.179 5.056 154.011 5.056C152.859 5.056 152.379 5.36 152.299 6.368H150.315C150.427 4.624 151.451 3.552 154.027 3.552C156.491 3.552 157.467 4.544 157.467 6.032V10.432C157.467 11.024 157.579 11.68 157.803 12ZM153.387 10.752C154.459 10.752 155.515 10.176 155.515 8.736V7.984C155.307 8.176 155.003 8.272 154.571 8.32L153.483 8.448C152.363 8.576 151.995 8.976 151.995 9.632C151.995 10.32 152.459 10.752 153.387 10.752ZM162.466 2.16C161.746 2.16 161.426 2.512 161.426 3.152V3.744H163.122V5.28H161.426V12H159.426V5.28H158.146V3.744H159.426V3.12C159.426 1.664 160.146 0.559999 162.13 0.559999C162.45 0.559999 162.882 0.575999 163.17 0.608V2.16H162.466ZM168.636 5.28H167.004V9.744C167.004 10.288 167.276 10.464 167.948 10.464H168.636V12C168.268 12.032 167.9 12.064 167.58 12.064C165.836 12.064 165.004 11.472 165.004 9.952V5.28H163.724V3.744H165.004V1.344H167.004V3.744H168.636V5.28Z', fill: 'currentColor' })))));
     }
     static get cmpMeta() { return {
-        "$flags$": 0,
+        "$flags$": 768,
         "$tagName$": "searchcraft-popover-footer",
         "$members$": {
             "searchcraftId": [1, "searchcraft-id"],
@@ -5919,7 +6298,7 @@ class SearchcraftPopoverForm {
         }
     }
     static get cmpMeta() { return {
-        "$flags$": 0,
+        "$flags$": 768,
         "$tagName$": "searchcraft-popover-form",
         "$members$": {
             "type": [1],
@@ -6006,7 +6385,7 @@ class SearchcraftPopoverListItem {
         return (hAsync("div", { key: 'd1c9c310b8abc9d2370efb802eac1edf4189519d', class: 'searchcraft-popover-list-item' }, hAsync("a", { key: '30eb1a5076c5b4b95ae43147eaee0bb72ce46179', class: 'searchcraft-popover-list-item-link', href: this.href, onClick: this.handleLinkClick.bind(this) }, this.imageSource && (hAsync("div", { key: 'd18ff55823dc2c61f3786f423936af8b009aeeda', class: 'searchcraft-popover-list-item-image-wrapper' }, hAsync("img", { key: '56f4cc1d472f7da05e64fcf52c560a7ad0cdf7a6', alt: this.imageAlt, src: this.imageSource, class: 'searchcraft-popover-list-item-image' }))), hAsync("div", { key: '78a0f0235d5e71d10076b70ccbaf4b58e0d6fea0', class: 'searchcraft-popover-list-item-content' }, this.title && (hAsync("p", { key: '4489047af56e5aa295cb5f036e970dcad053d3b7', class: 'searchcraft-popover-list-item-content-title' }, this.title)), this.subtitle && (hAsync("p", { key: '4d177c227a1dbf1233022d738403c8eb93ba328d', class: 'searchcraft-popover-list-item-content-subtitle' }, this.subtitle))))));
     }
     static get cmpMeta() { return {
-        "$flags$": 0,
+        "$flags$": 768,
         "$tagName$": "searchcraft-popover-list-item",
         "$members$": {
             "item": [16],
@@ -6028,14 +6407,27 @@ class SearchcraftPopoverListItem {
 const urlAlphabet =
   'useandom-26T198340PX75pxJACKVERYMINDBUSHWOLF_GQZbfghjklqvwyzrict';
 
-let nanoid = (size = 21) => {
+const POOL_SIZE_MULTIPLIER = 128;
+let pool, poolOffset;
+function fillPool(bytes) {
+  if (!pool || pool.length < bytes) {
+    pool = Buffer.allocUnsafe(bytes * POOL_SIZE_MULTIPLIER);
+    node_crypto.webcrypto.getRandomValues(pool);
+    poolOffset = 0;
+  } else if (poolOffset + bytes > pool.length) {
+    node_crypto.webcrypto.getRandomValues(pool);
+    poolOffset = 0;
+  }
+  poolOffset += bytes;
+}
+function nanoid(size = 21) {
+  fillPool((size |= 0));
   let id = '';
-  let bytes = crypto.getRandomValues(new Uint8Array((size |= 0)));
-  while (size--) {
-    id += urlAlphabet[bytes[size] & 63];
+  for (let i = poolOffset - size; i < poolOffset; i++) {
+    id += urlAlphabet[pool[i] & 63];
   }
   return id
-};
+}
 
 /**
  * An inline ad meant to be rendered in a list of search results.
@@ -6168,7 +6560,7 @@ class SearchcraftPopoverListItemAd {
         let templateHtml = '<p>Ad Marketplace Ad Placeholder</p>';
         if (this.core?.config?.admAdConfig?.template) {
             templateHtml = this.core?.config?.admAdConfig.template(item.admAd, {
-                html,
+                html: html$1,
             });
         }
         return (hAsync("div", { class: 'searchcraft-ad searchcraft-adm-ad', "data-searchcraft-ad-container-id": this.adContainerId, id: `searchcraft-adm-ad-${this.adContainerId}`, innerHTML: templateHtml }));
@@ -6181,7 +6573,7 @@ class SearchcraftPopoverListItemAd {
             templateHtml = templateRenderFunction({
                 searchTerm: this.searchTerm || '',
                 adContainerId: this.adContainerId,
-            }, { html });
+            }, { html: html$1 });
         }
         return (hAsync("div", { class: 'searchcraft-ad searchcraft-custom-ad', id: containerId, "data-searchcraft-ad-container-id": this.adContainerId, innerHTML: templateHtml }));
     }
@@ -6206,7 +6598,7 @@ class SearchcraftPopoverListItemAd {
         }
     }
     static get cmpMeta() { return {
-        "$flags$": 0,
+        "$flags$": 768,
         "$tagName$": "searchcraft-ad",
         "$members$": {
             "searchcraftId": [1, "searchcraft-id"],
@@ -6344,7 +6736,7 @@ class SearchcraftPopoverListView {
         return this.renderWithNoAds();
     }
     static get cmpMeta() { return {
-        "$flags$": 0,
+        "$flags$": 768,
         "$tagName$": "searchcraft-popover-list-view",
         "$members$": {
             "searchcraftId": [1, "searchcraft-id"],
@@ -6473,11 +6865,11 @@ class SearchcraftResultsInfo {
                 range: [Number(this.range[0]), Number(this.range[1])],
                 count: this.count,
                 responseTime: this.responseTime,
-            }, { html })
+            }, { html: html$1 })
             : `${formatNumberWithCommas(this.count)} results found in ${this.responseTime}ms`));
     }
     static get cmpMeta() { return {
-        "$flags$": 0,
+        "$flags$": 768,
         "$tagName$": "searchcraft-results-info",
         "$members$": {
             "template": [16],
@@ -6535,7 +6927,7 @@ class SearchcraftSearchResult {
         if (this.item) {
             try {
                 this.templateHtml = this.template?.(this.item.document, this.index, {
-                    html,
+                    html: html$1,
                     source_index: this.item.source_index,
                 });
             }
@@ -6579,7 +6971,7 @@ class SearchcraftSearchResult {
         return (hAsync("div", { class: 'searchcraft-search-result', innerHTML: this.templateHtml, onClick: this.handleResultContainerClick, onKeyDown: this.handleKeyDown }));
     }
     static get cmpMeta() { return {
-        "$flags$": 0,
+        "$flags$": 768,
         "$tagName$": "searchcraft-search-result",
         "$members$": {
             "item": [16],
@@ -6793,7 +7185,7 @@ class SearchcraftSearchResults {
         return this.renderWithNoAds();
     }
     static get cmpMeta() { return {
-        "$flags$": 4,
+        "$flags$": 772,
         "$tagName$": "searchcraft-search-results",
         "$members$": {
             "searchcraftId": [1, "searchcraft-id"],
@@ -6898,7 +7290,8 @@ class SearchcraftSearchResultsPerPage {
         const isInitialQuery = typeof this.searchClientRequestProperties === 'string' &&
             this.searchTerm.trim() === '';
         // early return if there isn't a searchTerm (unless it's initialQuery) or there is 1 or fewer pages of results
-        if ((!this.searchTerm && !isInitialQuery) || this.searchResultsPagesCount <= 1) {
+        if ((!this.searchTerm && !isInitialQuery) ||
+            this.searchResultsPagesCount <= 1) {
             return;
         }
         return (hAsync("div", { class: 'searchcraft-search-results-per-page' }, hAsync("div", { class: 'searchcraft-search-results-per-page-select' }, hAsync("label", { class: 'searchcraft-search-results-per-page-select-label', htmlFor: 'searchcraft-search-results-per-page-select-input' }, "Results Per Page"), hAsync("div", { class: 'searchcraft-search-results-per-page-select-input' }, hAsync("searchcraft-select", { inputId: 'searchcraft-search-results-per-page-select-input', name: 'results-per-page', options: [...Array(5)].map((_, index) => {
@@ -6914,7 +7307,7 @@ class SearchcraftSearchResultsPerPage {
             } })))));
     }
     static get cmpMeta() { return {
-        "$flags$": 0,
+        "$flags$": 768,
         "$tagName$": "searchcraft-search-results-per-page",
         "$members$": {
             "increment": [8],
@@ -6953,7 +7346,7 @@ class SearchcraftSearchResultsPerPage {
 class SearchcraftSelect {
     constructor(hostRef) {
         registerInstance(this, hostRef);
-        this.selectChange = createEvent(this, "selectChange", 7);
+        this.selectChange = createEvent(this, "selectChange");
     }
     /**
      * The caption displayed below the select input.
@@ -7004,7 +7397,7 @@ class SearchcraftSelect {
         })), hAsync("svg", { key: '0ec6892b529f2e70027aadea47208582a65a97b7', class: 'searchcraft-select-input-icon', width: '20', height: '20', viewBox: '0 0 20 20', fill: 'none', xmlns: 'http://www.w3.org/2000/svg' }, hAsync("title", { key: 'bced6b62378491d1d1c629b602d7d033d912c761' }, "Select dropdown icon"), hAsync("path", { key: '659f8ebf9129e2e7941da949d29688c41c1472bb', d: 'M5 7.5L10 12.5L15 7.5', stroke: 'currentColor', "stroke-width": '1.5', "stroke-linecap": 'round', "stroke-linejoin": 'round' }))), this.caption && (hAsync("p", { key: '51217d926f68f79b6c3514f5fd769b56549fdce9', class: 'searchcraft-select-caption' }, this.caption))));
     }
     static get cmpMeta() { return {
-        "$flags$": 0,
+        "$flags$": 768,
         "$tagName$": "searchcraft-select",
         "$members$": {
             "caption": [1],
@@ -7069,7 +7462,7 @@ function throttle(callback, delayInMilliseconds) {
 class SearchcraftSlider {
     constructor(hostRef) {
         registerInstance(this, hostRef);
-        this.rangeChanged = createEvent(this, "rangeChanged", 7);
+        this.rangeChanged = createEvent(this, "rangeChanged");
     }
     /**
      * The maximum value allowed.
@@ -7188,7 +7581,7 @@ class SearchcraftSlider {
             } }), hAsync("input", { key: '716316b5ce507c40db5b7bd408f47b3bece88494', class: classNames('searchcraft-slider-input', 'searchcraft-slider-input-min-handle'), max: this.upperBound, min: this.lowerBound, onInput: this.handleStartValueChange.bind(this), step: this.step, style: { zIndex: this.lastFocusedHandle === 'min' ? '2' : '1' }, type: 'range', value: this.startValue }), hAsync("input", { key: 'e2ad0d586136185faccb50d6d7fb113a64ddac42', class: classNames('searchcraft-slider-input', 'searchcraft-slider-input-max-handle'), max: this.upperBound, min: this.lowerBound, onInput: this.handleEndValueChange.bind(this), step: this.step, style: { zIndex: this.lastFocusedHandle === 'max' ? '2' : '1' }, type: 'range', value: this.endValue })), hAsync("div", { key: '7e9ab9fa9563cac6a1dfdd11910e04084ae5348d', class: 'searchcraft-slider-label' }, hAsync("span", { key: '0909279f460c4be84c1088c5981a5f5299e8e2a0', class: 'searchcraft-slider-start-label' }, startLabel), hAsync("span", { key: '4b610a68f97fcbc0aa1eda428dfa1e53b00efe43', class: 'searchcraft-slider-end-label' }, endLabel))));
     }
     static get cmpMeta() { return {
-        "$flags$": 0,
+        "$flags$": 768,
         "$tagName$": "searchcraft-slider",
         "$members$": {
             "max": [2],
@@ -7208,61 +7601,17 @@ class SearchcraftSlider {
     }; }
 }
 
-var marked_umd = {exports: {}};
-
 /**
  * marked v15.0.12 - a markdown parser
  * Copyright (c) 2011-2025, Christopher Jeffrey. (MIT Licensed)
  * https://github.com/markedjs/marked
  */
 
-(function (module, exports) {
 /**
  * DO NOT EDIT THIS FILE
  * The code in this file is generated from files in ./src/
  */
-(function(g,f){{module.exports=f();}}(typeof globalThis < "u" ? globalThis : typeof self < "u" ? self : commonjsGlobal,function(){var exports={};var __exports=exports;var module={exports};
-var __defProp = Object.defineProperty;
-var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
-var __getOwnPropNames = Object.getOwnPropertyNames;
-var __hasOwnProp = Object.prototype.hasOwnProperty;
-var __export = (target, all) => {
-  for (var name in all)
-    __defProp(target, name, { get: all[name], enumerable: true });
-};
-var __copyProps = (to, from, except, desc) => {
-  if (from && typeof from === "object" || typeof from === "function") {
-    for (let key of __getOwnPropNames(from))
-      if (!__hasOwnProp.call(to, key) && key !== except)
-        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
-  }
-  return to;
-};
-var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-// src/marked.ts
-var marked_exports = {};
-__export(marked_exports, {
-  Hooks: () => _Hooks,
-  Lexer: () => _Lexer,
-  Marked: () => Marked,
-  Parser: () => _Parser,
-  Renderer: () => _Renderer,
-  TextRenderer: () => _TextRenderer,
-  Tokenizer: () => _Tokenizer,
-  defaults: () => _defaults,
-  getDefaults: () => _getDefaults,
-  lexer: () => lexer,
-  marked: () => marked,
-  options: () => options,
-  parse: () => parse,
-  parseInline: () => parseInline,
-  parser: () => parser,
-  setOptions: () => setOptions,
-  use: () => use,
-  walkTokens: () => walkTokens
-});
-module.exports = __toCommonJS(marked_exports);
 
 // src/defaults.ts
 function _getDefaults() {
@@ -7570,9 +7919,7 @@ function rtrim(str, c, invert) {
   let suffLen = 0;
   while (suffLen < l) {
     const currChar = str.charAt(l - suffLen - 1);
-    if (currChar === c && !invert) {
-      suffLen++;
-    } else if (currChar !== c && invert) {
+    if (currChar === c && true) {
       suffLen++;
     } else {
       break;
@@ -9412,18 +9759,6 @@ marked.lexer = _Lexer.lex;
 marked.Tokenizer = _Tokenizer;
 marked.Hooks = _Hooks;
 marked.parse = marked;
-var options = marked.options;
-var setOptions = marked.setOptions;
-var use = marked.use;
-var walkTokens = marked.walkTokens;
-var parseInline = marked.parseInline;
-var parse = marked;
-var parser = _Parser.parse;
-var lexer = _Lexer.lex;
-
-if(__exports != exports)module.exports = exports;return module.exports}));
-
-}(marked_umd));
 
 /**
  * This component renders a summary box for RAG search result summaries.
@@ -9496,7 +9831,7 @@ class SearchcraftSummaryBox {
      * Sanitizes and converts markdown to HTML.
      */
     sanitizeMarkdown(markdown) {
-        return DOMPurify.sanitize(marked_umd.exports.marked.parse(markdown));
+        return purify.sanitize(marked.parse(markdown));
     }
     /**
      * Updates the content element directly without triggering a re-render.
@@ -9523,7 +9858,7 @@ class SearchcraftSummaryBox {
         return hAsync("div", { key: '94033d861f93036430eca149b3c017fb6099fb17', class: 'searchcraft-summary-box' }, this.renderContent());
     }
     static get cmpMeta() { return {
-        "$flags$": 0,
+        "$flags$": 768,
         "$tagName$": "searchcraft-summary-box",
         "$members$": {
             "searchcraftId": [1, "searchcraft-id"],
@@ -9576,7 +9911,7 @@ class SearchcraftTheme {
         return hAsync("style", { key: '13c28bb6075d6fcbec33938fd2227d9fb6129bf2' }, styles);
     }
     static get cmpMeta() { return {
-        "$flags$": 0,
+        "$flags$": 256,
         "$tagName$": "searchcraft-theme",
         "$members$": undefined,
         "$listeners$": undefined,
@@ -9593,7 +9928,7 @@ class SearchcraftTheme {
 class SearchcraftToggleButton {
     constructor(hostRef) {
         registerInstance(this, hostRef);
-        this.toggleUpdated = createEvent(this, "toggleUpdated", 7);
+        this.toggleUpdated = createEvent(this, "toggleUpdated");
     }
     /**
      * The label.
@@ -9642,7 +9977,7 @@ class SearchcraftToggleButton {
             }) }, hAsync("div", { key: '2faa2ee1eb5cb78dc39f523415f2be96bc23fed1' }, hAsync("p", { key: '29ea63c281b8f1ae041ba75a149ce1b60e936662', class: 'searchcraft-toggle-button-label' }, this.label), this.subLabel && (hAsync("p", { key: 'e51efaae5ca79eede71852e6dec8eff4575139fe', class: 'searchcraft-toggle-button-sub-label' }, this.subLabel))), hAsync("button", { key: 'd590da981692db162df9b8086ba2444d6a56ef9d', class: 'searchcraft-toggle-button-background', onClick: this.handleToggle, type: 'button' }, hAsync("div", { key: '5be6ee1dd7dc58bd67fff18923569caee37b4936', class: 'searchcraft-toggle-button-handle' }))));
     }
     static get cmpMeta() { return {
-        "$flags$": 0,
+        "$flags$": 768,
         "$tagName$": "searchcraft-toggle-button",
         "$members$": {
             "label": [1],
@@ -9696,19 +10031,9 @@ exports.hydrateApp = hydrateApp;
 // src/app-data/index.ts
 var BUILD = {
   allRenderFn: false,
-  cmpDidLoad: true,
-  cmpDidUnload: false,
-  cmpDidUpdate: true,
-  cmpDidRender: true,
-  cmpWillLoad: true,
-  cmpWillUpdate: true,
-  cmpWillRender: true,
-  connectedCallback: true,
-  disconnectedCallback: true,
   element: true,
   event: true,
   hasRenderFn: true,
-  lifecycle: true,
   hostListener: true,
   hostListenerTargetWindow: true,
   hostListenerTargetDocument: true,
@@ -9742,7 +10067,7 @@ var BUILD = {
   vdomRender: true,
   vdomStyle: true,
   vdomText: true,
-  watchCallback: true,
+  propChangeCallback: true,
   taskQueue: true,
   hotModuleReplacement: false,
   isDebug: false,
@@ -9773,7 +10098,6 @@ var BUILD = {
   propNumber: true,
   propString: true,
   constructableCSS: true,
-  cmpShouldUpdate: true,
   devTools: false,
   shadowDelegatesFocus: true,
   initializeNextTick: false,
@@ -9791,7 +10115,7 @@ var NAMESPACE = (
 );
 
 /*
- Stencil Hydrate Runner v4.25.0 | MIT Licensed | https://stenciljs.com
+ Stencil Hydrate Runner v4.38.3 | MIT Licensed | https://stenciljs.com
  */
 var __defProp = Object.defineProperty;
 var __export = (target, all) => {
@@ -9805,6 +10129,7 @@ var ORG_LOCATION_ID = "o";
 var SLOT_NODE_ID = "s";
 var TEXT_NODE_ID = "t";
 var HYDRATE_ID = "s-id";
+var HYDRATED_STYLE_ID = "sty-id";
 var STENCIL_DOC_DATA = "_stencilDocData";
 var XLINK_NS = "http://www.w3.org/1999/xlink";
 
@@ -9951,82 +10276,6 @@ var MockAttr = class {
   }
 };
 
-// src/mock-doc/class-list.ts
-var MockClassList = class {
-  constructor(elm) {
-    this.elm = elm;
-  }
-  add(...classNames) {
-    const clsNames = getItems(this.elm);
-    let updated = false;
-    classNames.forEach((className) => {
-      className = String(className);
-      validateClass(className);
-      if (clsNames.includes(className) === false) {
-        clsNames.push(className);
-        updated = true;
-      }
-    });
-    if (updated) {
-      this.elm.setAttributeNS(null, "class", clsNames.join(" "));
-    }
-  }
-  remove(...classNames) {
-    const clsNames = getItems(this.elm);
-    let updated = false;
-    classNames.forEach((className) => {
-      className = String(className);
-      validateClass(className);
-      const index = clsNames.indexOf(className);
-      if (index > -1) {
-        clsNames.splice(index, 1);
-        updated = true;
-      }
-    });
-    if (updated) {
-      this.elm.setAttributeNS(null, "class", clsNames.filter((c) => c.length > 0).join(" "));
-    }
-  }
-  contains(className) {
-    className = String(className);
-    return getItems(this.elm).includes(className);
-  }
-  toggle(className) {
-    className = String(className);
-    if (this.contains(className) === true) {
-      this.remove(className);
-    } else {
-      this.add(className);
-    }
-  }
-  get length() {
-    return getItems(this.elm).length;
-  }
-  item(index) {
-    return getItems(this.elm)[index];
-  }
-  toString() {
-    return getItems(this.elm).join(" ");
-  }
-};
-function validateClass(className) {
-  if (className === "") {
-    throw new Error("The token provided must not be empty.");
-  }
-  if (/\s/.test(className)) {
-    throw new Error(
-      `The token provided ('${className}') contains HTML space characters, which are not valid in tokens.`
-    );
-  }
-}
-function getItems(elm) {
-  const className = elm.getAttribute("class");
-  if (typeof className === "string" && className.length > 0) {
-    return className.trim().split(" ").filter((c) => c.length > 0);
-  }
-  return [];
-}
-
 // src/mock-doc/css-style-declaration.ts
 var MockCSSStyleDeclaration = class {
   constructor() {
@@ -10137,19 +10386,19 @@ var MockCustomElementRegistry = class {
         this.__whenDefined.delete(tagName);
       }
     }
-    const doc2 = this.win.document;
-    if (doc2 != null) {
-      const hosts = doc2.querySelectorAll(tagName);
+    const doc = this.win.document;
+    if (doc != null) {
+      const hosts = doc.querySelectorAll(tagName);
       hosts.forEach((host) => {
         if (upgradedElements.has(host) === false) {
-          tempDisableCallbacks.add(doc2);
-          const upgradedCmp = createCustomElement(this, doc2, tagName);
+          tempDisableCallbacks.add(doc);
+          const upgradedCmp = createCustomElement(this, doc, tagName);
           for (let i = 0; i < host.childNodes.length; i++) {
             const childNode = host.childNodes[i];
             childNode.remove();
             upgradedCmp.appendChild(childNode);
           }
-          tempDisableCallbacks.delete(doc2);
+          tempDisableCallbacks.delete(doc);
           if (proxyElements.has(host)) {
             proxyElements.set(host, upgradedCmp);
           }
@@ -10515,8 +10764,21 @@ function triggerEventListener(elm, ev) {
   } else if (elm.parentElement == null && elm.tagName === "HTML") {
     triggerEventListener(elm.ownerDocument, ev);
   } else {
-    triggerEventListener(elm.parentElement, ev);
+    const nextTarget = getNextEventTarget(elm, ev);
+    triggerEventListener(nextTarget, ev);
   }
+}
+function getNextEventTarget(elm, ev) {
+  if (elm.parentElement) {
+    return elm.parentElement;
+  }
+  if (elm.host && ev.composed) {
+    return elm.host;
+  }
+  if (ev.composed && elm.parentNode && elm.parentNode.host) {
+    return elm.parentNode.host;
+  }
+  return null;
 }
 function dispatchEvent(currentTarget, ev) {
   ev.target = currentTarget;
@@ -10573,7 +10835,6 @@ var CODE_POINTS;
   CODE_POINTS2[CODE_POINTS2["SPACE"] = 32] = "SPACE";
   CODE_POINTS2[CODE_POINTS2["EXCLAMATION_MARK"] = 33] = "EXCLAMATION_MARK";
   CODE_POINTS2[CODE_POINTS2["QUOTATION_MARK"] = 34] = "QUOTATION_MARK";
-  CODE_POINTS2[CODE_POINTS2["NUMBER_SIGN"] = 35] = "NUMBER_SIGN";
   CODE_POINTS2[CODE_POINTS2["AMPERSAND"] = 38] = "AMPERSAND";
   CODE_POINTS2[CODE_POINTS2["APOSTROPHE"] = 39] = "APOSTROPHE";
   CODE_POINTS2[CODE_POINTS2["HYPHEN_MINUS"] = 45] = "HYPHEN_MINUS";
@@ -10586,17 +10847,12 @@ var CODE_POINTS;
   CODE_POINTS2[CODE_POINTS2["GREATER_THAN_SIGN"] = 62] = "GREATER_THAN_SIGN";
   CODE_POINTS2[CODE_POINTS2["QUESTION_MARK"] = 63] = "QUESTION_MARK";
   CODE_POINTS2[CODE_POINTS2["LATIN_CAPITAL_A"] = 65] = "LATIN_CAPITAL_A";
-  CODE_POINTS2[CODE_POINTS2["LATIN_CAPITAL_F"] = 70] = "LATIN_CAPITAL_F";
-  CODE_POINTS2[CODE_POINTS2["LATIN_CAPITAL_X"] = 88] = "LATIN_CAPITAL_X";
   CODE_POINTS2[CODE_POINTS2["LATIN_CAPITAL_Z"] = 90] = "LATIN_CAPITAL_Z";
   CODE_POINTS2[CODE_POINTS2["RIGHT_SQUARE_BRACKET"] = 93] = "RIGHT_SQUARE_BRACKET";
   CODE_POINTS2[CODE_POINTS2["GRAVE_ACCENT"] = 96] = "GRAVE_ACCENT";
   CODE_POINTS2[CODE_POINTS2["LATIN_SMALL_A"] = 97] = "LATIN_SMALL_A";
-  CODE_POINTS2[CODE_POINTS2["LATIN_SMALL_F"] = 102] = "LATIN_SMALL_F";
-  CODE_POINTS2[CODE_POINTS2["LATIN_SMALL_X"] = 120] = "LATIN_SMALL_X";
   CODE_POINTS2[CODE_POINTS2["LATIN_SMALL_Z"] = 122] = "LATIN_SMALL_Z";
-  CODE_POINTS2[CODE_POINTS2["REPLACEMENT_CHARACTER"] = 65533] = "REPLACEMENT_CHARACTER";
-})(CODE_POINTS = CODE_POINTS || (CODE_POINTS = {}));
+})(CODE_POINTS || (CODE_POINTS = {}));
 var SEQUENCES = {
   DASH_DASH: "--",
   CDATA_START: "[CDATA[",
@@ -10684,7 +10940,7 @@ var ERR;
   ERR2["misplacedStartTagForHeadElement"] = "misplaced-start-tag-for-head-element";
   ERR2["nestedNoscriptInHead"] = "nested-noscript-in-head";
   ERR2["eofInElementThatCanContainOnlyText"] = "eof-in-element-that-can-contain-only-text";
-})(ERR = ERR || (ERR = {}));
+})(ERR || (ERR = {}));
 
 // node_modules/parse5/dist/tokenizer/preprocessor.js
 var DEFAULT_BUFFER_WATERLINE = 1 << 16;
@@ -10712,22 +10968,24 @@ var Preprocessor = class {
   get offset() {
     return this.droppedBufferSize + this.pos;
   }
-  getError(code) {
+  getError(code, cpOffset) {
     const { line, col, offset } = this;
+    const startCol = col + cpOffset;
+    const startOffset = offset + cpOffset;
     return {
       code,
       startLine: line,
       endLine: line,
-      startCol: col,
-      endCol: col,
-      startOffset: offset,
-      endOffset: offset
+      startCol,
+      endCol: startCol,
+      startOffset,
+      endOffset: startOffset
     };
   }
   _err(code) {
     if (this.handler.onParseError && this.lastErrOffset !== this.offset) {
       this.lastErrOffset = this.offset;
-      this.handler.onParseError(this.getError(code));
+      this.handler.onParseError(this.getError(code, 0));
     }
   }
   _addGap() {
@@ -10870,7 +11128,7 @@ var TokenType;
   TokenType2[TokenType2["DOCTYPE"] = 6] = "DOCTYPE";
   TokenType2[TokenType2["EOF"] = 7] = "EOF";
   TokenType2[TokenType2["HIBERNATION"] = 8] = "HIBERNATION";
-})(TokenType = TokenType || (TokenType = {}));
+})(TokenType || (TokenType = {}));
 function getTokenAttr(token, attrName) {
   for (let i = token.attrs.length - 1; i >= 0; i--) {
     if (token.attrs[i].name === attrName) {
@@ -11239,6 +11497,7 @@ var EntityDecoder = class {
       case EntityDecoderState.NamedEntity: {
         return this.result !== 0 && (this.decodeMode !== DecodingMode.Attribute || this.result === this.treeIndex) ? this.emitNotTerminatedNamedEntity() : 0;
       }
+      // Otherwise, emit a numeric entity if we have one.
       case EntityDecoderState.NumericDecimal: {
         return this.emitNumericEntity(0, 2);
       }
@@ -11315,12 +11574,12 @@ __export(html_exports, {
   ATTRS: () => ATTRS,
   DOCUMENT_MODE: () => DOCUMENT_MODE,
   NS: () => NS,
+  NUMBERED_HEADERS: () => NUMBERED_HEADERS,
   SPECIAL_ELEMENTS: () => SPECIAL_ELEMENTS,
   TAG_ID: () => TAG_ID,
   TAG_NAMES: () => TAG_NAMES,
   getTagID: () => getTagID,
-  hasUnescapedText: () => hasUnescapedText,
-  isNumberedHeader: () => isNumberedHeader
+  hasUnescapedText: () => hasUnescapedText
 });
 var NS;
 (function(NS2) {
@@ -11330,7 +11589,7 @@ var NS;
   NS2["XLINK"] = "http://www.w3.org/1999/xlink";
   NS2["XML"] = "http://www.w3.org/XML/1998/namespace";
   NS2["XMLNS"] = "http://www.w3.org/2000/xmlns/";
-})(NS = NS || (NS = {}));
+})(NS || (NS = {}));
 var ATTRS;
 (function(ATTRS2) {
   ATTRS2["TYPE"] = "type";
@@ -11341,13 +11600,13 @@ var ATTRS;
   ATTRS2["COLOR"] = "color";
   ATTRS2["FACE"] = "face";
   ATTRS2["SIZE"] = "size";
-})(ATTRS = ATTRS || (ATTRS = {}));
+})(ATTRS || (ATTRS = {}));
 var DOCUMENT_MODE;
 (function(DOCUMENT_MODE2) {
   DOCUMENT_MODE2["NO_QUIRKS"] = "no-quirks";
   DOCUMENT_MODE2["QUIRKS"] = "quirks";
   DOCUMENT_MODE2["LIMITED_QUIRKS"] = "limited-quirks";
-})(DOCUMENT_MODE = DOCUMENT_MODE || (DOCUMENT_MODE = {}));
+})(DOCUMENT_MODE || (DOCUMENT_MODE = {}));
 var TAG_NAMES;
 (function(TAG_NAMES2) {
   TAG_NAMES2["A"] = "a";
@@ -11443,6 +11702,7 @@ var TAG_NAMES;
   TAG_NAMES2["RUBY"] = "ruby";
   TAG_NAMES2["S"] = "s";
   TAG_NAMES2["SCRIPT"] = "script";
+  TAG_NAMES2["SEARCH"] = "search";
   TAG_NAMES2["SECTION"] = "section";
   TAG_NAMES2["SELECT"] = "select";
   TAG_NAMES2["SOURCE"] = "source";
@@ -11472,7 +11732,7 @@ var TAG_NAMES;
   TAG_NAMES2["VAR"] = "var";
   TAG_NAMES2["WBR"] = "wbr";
   TAG_NAMES2["XMP"] = "xmp";
-})(TAG_NAMES = TAG_NAMES || (TAG_NAMES = {}));
+})(TAG_NAMES || (TAG_NAMES = {}));
 var TAG_ID;
 (function(TAG_ID2) {
   TAG_ID2[TAG_ID2["UNKNOWN"] = 0] = "UNKNOWN";
@@ -11569,36 +11829,37 @@ var TAG_ID;
   TAG_ID2[TAG_ID2["RUBY"] = 91] = "RUBY";
   TAG_ID2[TAG_ID2["S"] = 92] = "S";
   TAG_ID2[TAG_ID2["SCRIPT"] = 93] = "SCRIPT";
-  TAG_ID2[TAG_ID2["SECTION"] = 94] = "SECTION";
-  TAG_ID2[TAG_ID2["SELECT"] = 95] = "SELECT";
-  TAG_ID2[TAG_ID2["SOURCE"] = 96] = "SOURCE";
-  TAG_ID2[TAG_ID2["SMALL"] = 97] = "SMALL";
-  TAG_ID2[TAG_ID2["SPAN"] = 98] = "SPAN";
-  TAG_ID2[TAG_ID2["STRIKE"] = 99] = "STRIKE";
-  TAG_ID2[TAG_ID2["STRONG"] = 100] = "STRONG";
-  TAG_ID2[TAG_ID2["STYLE"] = 101] = "STYLE";
-  TAG_ID2[TAG_ID2["SUB"] = 102] = "SUB";
-  TAG_ID2[TAG_ID2["SUMMARY"] = 103] = "SUMMARY";
-  TAG_ID2[TAG_ID2["SUP"] = 104] = "SUP";
-  TAG_ID2[TAG_ID2["TABLE"] = 105] = "TABLE";
-  TAG_ID2[TAG_ID2["TBODY"] = 106] = "TBODY";
-  TAG_ID2[TAG_ID2["TEMPLATE"] = 107] = "TEMPLATE";
-  TAG_ID2[TAG_ID2["TEXTAREA"] = 108] = "TEXTAREA";
-  TAG_ID2[TAG_ID2["TFOOT"] = 109] = "TFOOT";
-  TAG_ID2[TAG_ID2["TD"] = 110] = "TD";
-  TAG_ID2[TAG_ID2["TH"] = 111] = "TH";
-  TAG_ID2[TAG_ID2["THEAD"] = 112] = "THEAD";
-  TAG_ID2[TAG_ID2["TITLE"] = 113] = "TITLE";
-  TAG_ID2[TAG_ID2["TR"] = 114] = "TR";
-  TAG_ID2[TAG_ID2["TRACK"] = 115] = "TRACK";
-  TAG_ID2[TAG_ID2["TT"] = 116] = "TT";
-  TAG_ID2[TAG_ID2["U"] = 117] = "U";
-  TAG_ID2[TAG_ID2["UL"] = 118] = "UL";
-  TAG_ID2[TAG_ID2["SVG"] = 119] = "SVG";
-  TAG_ID2[TAG_ID2["VAR"] = 120] = "VAR";
-  TAG_ID2[TAG_ID2["WBR"] = 121] = "WBR";
-  TAG_ID2[TAG_ID2["XMP"] = 122] = "XMP";
-})(TAG_ID = TAG_ID || (TAG_ID = {}));
+  TAG_ID2[TAG_ID2["SEARCH"] = 94] = "SEARCH";
+  TAG_ID2[TAG_ID2["SECTION"] = 95] = "SECTION";
+  TAG_ID2[TAG_ID2["SELECT"] = 96] = "SELECT";
+  TAG_ID2[TAG_ID2["SOURCE"] = 97] = "SOURCE";
+  TAG_ID2[TAG_ID2["SMALL"] = 98] = "SMALL";
+  TAG_ID2[TAG_ID2["SPAN"] = 99] = "SPAN";
+  TAG_ID2[TAG_ID2["STRIKE"] = 100] = "STRIKE";
+  TAG_ID2[TAG_ID2["STRONG"] = 101] = "STRONG";
+  TAG_ID2[TAG_ID2["STYLE"] = 102] = "STYLE";
+  TAG_ID2[TAG_ID2["SUB"] = 103] = "SUB";
+  TAG_ID2[TAG_ID2["SUMMARY"] = 104] = "SUMMARY";
+  TAG_ID2[TAG_ID2["SUP"] = 105] = "SUP";
+  TAG_ID2[TAG_ID2["TABLE"] = 106] = "TABLE";
+  TAG_ID2[TAG_ID2["TBODY"] = 107] = "TBODY";
+  TAG_ID2[TAG_ID2["TEMPLATE"] = 108] = "TEMPLATE";
+  TAG_ID2[TAG_ID2["TEXTAREA"] = 109] = "TEXTAREA";
+  TAG_ID2[TAG_ID2["TFOOT"] = 110] = "TFOOT";
+  TAG_ID2[TAG_ID2["TD"] = 111] = "TD";
+  TAG_ID2[TAG_ID2["TH"] = 112] = "TH";
+  TAG_ID2[TAG_ID2["THEAD"] = 113] = "THEAD";
+  TAG_ID2[TAG_ID2["TITLE"] = 114] = "TITLE";
+  TAG_ID2[TAG_ID2["TR"] = 115] = "TR";
+  TAG_ID2[TAG_ID2["TRACK"] = 116] = "TRACK";
+  TAG_ID2[TAG_ID2["TT"] = 117] = "TT";
+  TAG_ID2[TAG_ID2["U"] = 118] = "U";
+  TAG_ID2[TAG_ID2["UL"] = 119] = "UL";
+  TAG_ID2[TAG_ID2["SVG"] = 120] = "SVG";
+  TAG_ID2[TAG_ID2["VAR"] = 121] = "VAR";
+  TAG_ID2[TAG_ID2["WBR"] = 122] = "WBR";
+  TAG_ID2[TAG_ID2["XMP"] = 123] = "XMP";
+})(TAG_ID || (TAG_ID = {}));
 var TAG_NAME_TO_ID = /* @__PURE__ */ new Map([
   [TAG_NAMES.A, TAG_ID.A],
   [TAG_NAMES.ADDRESS, TAG_ID.ADDRESS],
@@ -11693,6 +11954,7 @@ var TAG_NAME_TO_ID = /* @__PURE__ */ new Map([
   [TAG_NAMES.RUBY, TAG_ID.RUBY],
   [TAG_NAMES.S, TAG_ID.S],
   [TAG_NAMES.SCRIPT, TAG_ID.SCRIPT],
+  [TAG_NAMES.SEARCH, TAG_ID.SEARCH],
   [TAG_NAMES.SECTION, TAG_ID.SECTION],
   [TAG_NAMES.SELECT, TAG_ID.SELECT],
   [TAG_NAMES.SOURCE, TAG_ID.SOURCE],
@@ -11818,9 +12080,7 @@ var SPECIAL_ELEMENTS = {
   [NS.XML]: /* @__PURE__ */ new Set(),
   [NS.XMLNS]: /* @__PURE__ */ new Set()
 };
-function isNumberedHeader(tn) {
-  return tn === $.H1 || tn === $.H2 || tn === $.H3 || tn === $.H4 || tn === $.H5 || tn === $.H6;
-}
+var NUMBERED_HEADERS = /* @__PURE__ */ new Set([$.H1, $.H2, $.H3, $.H4, $.H5, $.H6]);
 var UNESCAPED_TEXT = /* @__PURE__ */ new Set([
   TAG_NAMES.STYLE,
   TAG_NAMES.SCRIPT,
@@ -11835,35 +12095,6 @@ function hasUnescapedText(tn, scriptingEnabled) {
 }
 
 // node_modules/parse5/dist/tokenizer/index.js
-var C1_CONTROLS_REFERENCE_REPLACEMENTS = /* @__PURE__ */ new Map([
-  [128, 8364],
-  [130, 8218],
-  [131, 402],
-  [132, 8222],
-  [133, 8230],
-  [134, 8224],
-  [135, 8225],
-  [136, 710],
-  [137, 8240],
-  [138, 352],
-  [139, 8249],
-  [140, 338],
-  [142, 381],
-  [145, 8216],
-  [146, 8217],
-  [147, 8220],
-  [148, 8221],
-  [149, 8226],
-  [150, 8211],
-  [151, 8212],
-  [152, 732],
-  [153, 8482],
-  [154, 353],
-  [155, 8250],
-  [156, 339],
-  [158, 382],
-  [159, 376]
-]);
 var State;
 (function(State2) {
   State2[State2["DATA"] = 0] = "DATA";
@@ -11938,13 +12169,7 @@ var State;
   State2[State2["CDATA_SECTION_BRACKET"] = 69] = "CDATA_SECTION_BRACKET";
   State2[State2["CDATA_SECTION_END"] = 70] = "CDATA_SECTION_END";
   State2[State2["CHARACTER_REFERENCE"] = 71] = "CHARACTER_REFERENCE";
-  State2[State2["NAMED_CHARACTER_REFERENCE"] = 72] = "NAMED_CHARACTER_REFERENCE";
-  State2[State2["AMBIGUOUS_AMPERSAND"] = 73] = "AMBIGUOUS_AMPERSAND";
-  State2[State2["NUMERIC_CHARACTER_REFERENCE"] = 74] = "NUMERIC_CHARACTER_REFERENCE";
-  State2[State2["HEXADEMICAL_CHARACTER_REFERENCE_START"] = 75] = "HEXADEMICAL_CHARACTER_REFERENCE_START";
-  State2[State2["HEXADEMICAL_CHARACTER_REFERENCE"] = 76] = "HEXADEMICAL_CHARACTER_REFERENCE";
-  State2[State2["DECIMAL_CHARACTER_REFERENCE"] = 77] = "DECIMAL_CHARACTER_REFERENCE";
-  State2[State2["NUMERIC_CHARACTER_REFERENCE_END"] = 78] = "NUMERIC_CHARACTER_REFERENCE_END";
+  State2[State2["AMBIGUOUS_AMPERSAND"] = 72] = "AMBIGUOUS_AMPERSAND";
 })(State || (State = {}));
 var TokenizerMode = {
   DATA: State.DATA,
@@ -11969,26 +12194,28 @@ function isAsciiLetter(cp) {
 function isAsciiAlphaNumeric2(cp) {
   return isAsciiLetter(cp) || isAsciiDigit(cp);
 }
-function isAsciiUpperHexDigit(cp) {
-  return cp >= CODE_POINTS.LATIN_CAPITAL_A && cp <= CODE_POINTS.LATIN_CAPITAL_F;
-}
-function isAsciiLowerHexDigit(cp) {
-  return cp >= CODE_POINTS.LATIN_SMALL_A && cp <= CODE_POINTS.LATIN_SMALL_F;
-}
-function isAsciiHexDigit(cp) {
-  return isAsciiDigit(cp) || isAsciiUpperHexDigit(cp) || isAsciiLowerHexDigit(cp);
-}
 function toAsciiLower(cp) {
   return cp + 32;
 }
 function isWhitespace(cp) {
   return cp === CODE_POINTS.SPACE || cp === CODE_POINTS.LINE_FEED || cp === CODE_POINTS.TABULATION || cp === CODE_POINTS.FORM_FEED;
 }
-function isEntityInAttributeInvalidEnd2(nextCp) {
-  return nextCp === CODE_POINTS.EQUALS_SIGN || isAsciiAlphaNumeric2(nextCp);
-}
 function isScriptDataDoubleEscapeSequenceEnd(cp) {
   return isWhitespace(cp) || cp === CODE_POINTS.SOLIDUS || cp === CODE_POINTS.GREATER_THAN_SIGN;
+}
+function getErrorForNumericCharacterReference(code) {
+  if (code === CODE_POINTS.NULL) {
+    return ERR.nullCharacterReference;
+  } else if (code > 1114111) {
+    return ERR.characterReferenceOutsideUnicodeRange;
+  } else if (isSurrogate(code)) {
+    return ERR.surrogateCharacterReference;
+  } else if (isUndefinedCodePoint(code)) {
+    return ERR.noncharacterCharacterReference;
+  } else if (isControlCodePoint(code) || code === CODE_POINTS.CARRIAGE_RETURN) {
+    return ERR.controlCharacterReference;
+  }
+  return null;
 }
 var Tokenizer = class {
   constructor(options, handler) {
@@ -12001,18 +12228,34 @@ var Tokenizer = class {
     this.active = false;
     this.state = State.DATA;
     this.returnState = State.DATA;
-    this.charRefCode = -1;
+    this.entityStartPos = 0;
     this.consumedAfterSnapshot = -1;
     this.currentCharacterToken = null;
     this.currentToken = null;
     this.currentAttr = { name: "", value: "" };
     this.preprocessor = new Preprocessor(handler);
     this.currentLocation = this.getCurrentLocation(-1);
+    this.entityDecoder = new EntityDecoder(decode_data_html_default, (cp, consumed) => {
+      this.preprocessor.pos = this.entityStartPos + consumed - 1;
+      this._flushCodePointConsumedAsCharacterReference(cp);
+    }, handler.onParseError ? {
+      missingSemicolonAfterCharacterReference: () => {
+        this._err(ERR.missingSemicolonAfterCharacterReference, 1);
+      },
+      absenceOfDigitsInNumericCharacterReference: (consumed) => {
+        this._err(ERR.absenceOfDigitsInNumericCharacterReference, this.entityStartPos - this.preprocessor.pos + consumed);
+      },
+      validateNumericCharacterReference: (code) => {
+        const error = getErrorForNumericCharacterReference(code);
+        if (error)
+          this._err(error, 1);
+      }
+    } : void 0);
   }
   //Errors
-  _err(code) {
+  _err(code, cpOffset = 0) {
     var _a2, _b;
-    (_b = (_a2 = this.handler).onParseError) === null || _b === void 0 ? void 0 : _b.call(_a2, this.preprocessor.getError(code));
+    (_b = (_a2 = this.handler).onParseError) === null || _b === void 0 ? void 0 : _b.call(_a2, this.preprocessor.getError(code, cpOffset));
   }
   // NOTE: `offset` may never run across line boundaries.
   getCurrentLocation(offset) {
@@ -12073,7 +12316,8 @@ var Tokenizer = class {
   //Hibernation
   _ensureHibernation() {
     if (this.preprocessor.endOfChunkHit) {
-      this._unconsume(this.consumedAfterSnapshot);
+      this.preprocessor.retreat(this.consumedAfterSnapshot);
+      this.consumedAfterSnapshot = 0;
       this.active = false;
       return true;
     }
@@ -12083,14 +12327,6 @@ var Tokenizer = class {
   _consume() {
     this.consumedAfterSnapshot++;
     return this.preprocessor.advance();
-  }
-  _unconsume(count) {
-    this.consumedAfterSnapshot -= count;
-    this.preprocessor.retreat(count);
-  }
-  _reconsumeInState(state, cp) {
-    this.state = state;
-    this._callState(cp);
   }
   _advanceBy(count) {
     this.consumedAfterSnapshot += count;
@@ -12257,7 +12493,7 @@ var Tokenizer = class {
     this.active = false;
   }
   //Characters emission
-  //OPTIMIZATION: specification uses only one type of character tokens (one token per character).
+  //OPTIMIZATION: The specification uses only one type of character token (one token per character).
   //This causes a huge memory overhead and a lot of unnecessary parser loops. parse5 uses 3 groups of characters.
   //If we have a sequence of characters that belong to the same group, the parser can process it
   //as a single solid character token.
@@ -12267,13 +12503,13 @@ var Tokenizer = class {
   //3)TokenType.CHARACTER - any character sequence which don't belong to groups 1 and 2 (e.g. 'abcdef1234@@#$%^')
   _appendCharToCurrentCharacterToken(type, ch) {
     if (this.currentCharacterToken) {
-      if (this.currentCharacterToken.type !== type) {
+      if (this.currentCharacterToken.type === type) {
+        this.currentCharacterToken.chars += ch;
+        return;
+      } else {
         this.currentLocation = this.getCurrentLocation(0);
         this._emitCurrentCharacterToken(this.currentLocation);
         this.preprocessor.dropParsedChunk();
-      } else {
-        this.currentCharacterToken.chars += ch;
-        return;
       }
     }
     this._createCharacterToken(type, ch);
@@ -12288,39 +12524,11 @@ var Tokenizer = class {
     this._appendCharToCurrentCharacterToken(TokenType.CHARACTER, ch);
   }
   // Character reference helpers
-  _matchNamedCharacterReference(cp) {
-    let result = null;
-    let excess = 0;
-    let withoutSemicolon = false;
-    for (let i = 0, current = decode_data_html_default[0]; i >= 0; cp = this._consume()) {
-      i = determineBranch(decode_data_html_default, current, i + 1, cp);
-      if (i < 0)
-        break;
-      excess += 1;
-      current = decode_data_html_default[i];
-      const masked = current & BinTrieFlags.VALUE_LENGTH;
-      if (masked) {
-        const valueLength = (masked >> 14) - 1;
-        if (cp !== CODE_POINTS.SEMICOLON && this._isCharacterReferenceInAttribute() && isEntityInAttributeInvalidEnd2(this.preprocessor.peek(1))) {
-          result = [CODE_POINTS.AMPERSAND];
-          i += valueLength;
-        } else {
-          result = valueLength === 0 ? [decode_data_html_default[i] & ~BinTrieFlags.VALUE_LENGTH] : valueLength === 1 ? [decode_data_html_default[++i]] : [decode_data_html_default[++i], decode_data_html_default[++i]];
-          excess = 0;
-          withoutSemicolon = cp !== CODE_POINTS.SEMICOLON;
-        }
-        if (valueLength === 0) {
-          this._consume();
-          break;
-        }
-      }
-    }
-    this._unconsume(excess);
-    if (withoutSemicolon && !this.preprocessor.endOfChunkHit) {
-      this._err(ERR.missingSemicolonAfterCharacterReference);
-    }
-    this._unconsume(1);
-    return result;
+  _startCharacterReference() {
+    this.returnState = this.state;
+    this.state = State.CHARACTER_REFERENCE;
+    this.entityStartPos = this.preprocessor.pos;
+    this.entityDecoder.startEntity(this._isCharacterReferenceInAttribute() ? DecodingMode.Attribute : DecodingMode.Legacy);
   }
   _isCharacterReferenceInAttribute() {
     return this.returnState === State.ATTRIBUTE_VALUE_DOUBLE_QUOTED || this.returnState === State.ATTRIBUTE_VALUE_SINGLE_QUOTED || this.returnState === State.ATTRIBUTE_VALUE_UNQUOTED;
@@ -12620,35 +12828,11 @@ var Tokenizer = class {
         break;
       }
       case State.CHARACTER_REFERENCE: {
-        this._stateCharacterReference(cp);
-        break;
-      }
-      case State.NAMED_CHARACTER_REFERENCE: {
-        this._stateNamedCharacterReference(cp);
+        this._stateCharacterReference();
         break;
       }
       case State.AMBIGUOUS_AMPERSAND: {
         this._stateAmbiguousAmpersand(cp);
-        break;
-      }
-      case State.NUMERIC_CHARACTER_REFERENCE: {
-        this._stateNumericCharacterReference(cp);
-        break;
-      }
-      case State.HEXADEMICAL_CHARACTER_REFERENCE_START: {
-        this._stateHexademicalCharacterReferenceStart(cp);
-        break;
-      }
-      case State.HEXADEMICAL_CHARACTER_REFERENCE: {
-        this._stateHexademicalCharacterReference(cp);
-        break;
-      }
-      case State.DECIMAL_CHARACTER_REFERENCE: {
-        this._stateDecimalCharacterReference(cp);
-        break;
-      }
-      case State.NUMERIC_CHARACTER_REFERENCE_END: {
-        this._stateNumericCharacterReferenceEnd(cp);
         break;
       }
       default: {
@@ -12666,8 +12850,7 @@ var Tokenizer = class {
         break;
       }
       case CODE_POINTS.AMPERSAND: {
-        this.returnState = State.DATA;
-        this.state = State.CHARACTER_REFERENCE;
+        this._startCharacterReference();
         break;
       }
       case CODE_POINTS.NULL: {
@@ -12689,8 +12872,7 @@ var Tokenizer = class {
   _stateRcdata(cp) {
     switch (cp) {
       case CODE_POINTS.AMPERSAND: {
-        this.returnState = State.RCDATA;
-        this.state = State.CHARACTER_REFERENCE;
+        this._startCharacterReference();
         break;
       }
       case CODE_POINTS.LESS_THAN_SIGN: {
@@ -13439,8 +13621,7 @@ var Tokenizer = class {
         break;
       }
       case CODE_POINTS.AMPERSAND: {
-        this.returnState = State.ATTRIBUTE_VALUE_DOUBLE_QUOTED;
-        this.state = State.CHARACTER_REFERENCE;
+        this._startCharacterReference();
         break;
       }
       case CODE_POINTS.NULL: {
@@ -13467,8 +13648,7 @@ var Tokenizer = class {
         break;
       }
       case CODE_POINTS.AMPERSAND: {
-        this.returnState = State.ATTRIBUTE_VALUE_SINGLE_QUOTED;
-        this.state = State.CHARACTER_REFERENCE;
+        this._startCharacterReference();
         break;
       }
       case CODE_POINTS.NULL: {
@@ -13499,8 +13679,7 @@ var Tokenizer = class {
         break;
       }
       case CODE_POINTS.AMPERSAND: {
-        this.returnState = State.ATTRIBUTE_VALUE_UNQUOTED;
-        this.state = State.CHARACTER_REFERENCE;
+        this._startCharacterReference();
         break;
       }
       case CODE_POINTS.GREATER_THAN_SIGN: {
@@ -14495,30 +14674,25 @@ var Tokenizer = class {
   }
   // Character reference state
   //------------------------------------------------------------------
-  _stateCharacterReference(cp) {
-    if (cp === CODE_POINTS.NUMBER_SIGN) {
-      this.state = State.NUMERIC_CHARACTER_REFERENCE;
-    } else if (isAsciiAlphaNumeric2(cp)) {
-      this.state = State.NAMED_CHARACTER_REFERENCE;
-      this._stateNamedCharacterReference(cp);
-    } else {
-      this._flushCodePointConsumedAsCharacterReference(CODE_POINTS.AMPERSAND);
-      this._reconsumeInState(this.returnState, cp);
-    }
-  }
-  // Named character reference state
-  //------------------------------------------------------------------
-  _stateNamedCharacterReference(cp) {
-    const matchResult = this._matchNamedCharacterReference(cp);
-    if (this._ensureHibernation()) {
-    } else if (matchResult) {
-      for (let i = 0; i < matchResult.length; i++) {
-        this._flushCodePointConsumedAsCharacterReference(matchResult[i]);
+  _stateCharacterReference() {
+    let length = this.entityDecoder.write(this.preprocessor.html, this.preprocessor.pos);
+    if (length < 0) {
+      if (this.preprocessor.lastChunkWritten) {
+        length = this.entityDecoder.end();
+      } else {
+        this.active = false;
+        this.preprocessor.pos = this.preprocessor.html.length - 1;
+        this.consumedAfterSnapshot = 0;
+        this.preprocessor.endOfChunkHit = true;
+        return;
       }
-      this.state = this.returnState;
-    } else {
+    }
+    if (length === 0) {
+      this.preprocessor.pos = this.entityStartPos;
       this._flushCodePointConsumedAsCharacterReference(CODE_POINTS.AMPERSAND);
-      this.state = State.AMBIGUOUS_AMPERSAND;
+      this.state = !this._isCharacterReferenceInAttribute() && isAsciiAlphaNumeric2(this.preprocessor.peek(1)) ? State.AMBIGUOUS_AMPERSAND : this.returnState;
+    } else {
+      this.state = this.returnState;
     }
   }
   // Ambiguos ampersand state
@@ -14530,92 +14704,9 @@ var Tokenizer = class {
       if (cp === CODE_POINTS.SEMICOLON) {
         this._err(ERR.unknownNamedCharacterReference);
       }
-      this._reconsumeInState(this.returnState, cp);
-    }
-  }
-  // Numeric character reference state
-  //------------------------------------------------------------------
-  _stateNumericCharacterReference(cp) {
-    this.charRefCode = 0;
-    if (cp === CODE_POINTS.LATIN_SMALL_X || cp === CODE_POINTS.LATIN_CAPITAL_X) {
-      this.state = State.HEXADEMICAL_CHARACTER_REFERENCE_START;
-    } else if (isAsciiDigit(cp)) {
-      this.state = State.DECIMAL_CHARACTER_REFERENCE;
-      this._stateDecimalCharacterReference(cp);
-    } else {
-      this._err(ERR.absenceOfDigitsInNumericCharacterReference);
-      this._flushCodePointConsumedAsCharacterReference(CODE_POINTS.AMPERSAND);
-      this._flushCodePointConsumedAsCharacterReference(CODE_POINTS.NUMBER_SIGN);
-      this._reconsumeInState(this.returnState, cp);
-    }
-  }
-  // Hexademical character reference start state
-  //------------------------------------------------------------------
-  _stateHexademicalCharacterReferenceStart(cp) {
-    if (isAsciiHexDigit(cp)) {
-      this.state = State.HEXADEMICAL_CHARACTER_REFERENCE;
-      this._stateHexademicalCharacterReference(cp);
-    } else {
-      this._err(ERR.absenceOfDigitsInNumericCharacterReference);
-      this._flushCodePointConsumedAsCharacterReference(CODE_POINTS.AMPERSAND);
-      this._flushCodePointConsumedAsCharacterReference(CODE_POINTS.NUMBER_SIGN);
-      this._unconsume(2);
       this.state = this.returnState;
+      this._callState(cp);
     }
-  }
-  // Hexademical character reference state
-  //------------------------------------------------------------------
-  _stateHexademicalCharacterReference(cp) {
-    if (isAsciiUpperHexDigit(cp)) {
-      this.charRefCode = this.charRefCode * 16 + cp - 55;
-    } else if (isAsciiLowerHexDigit(cp)) {
-      this.charRefCode = this.charRefCode * 16 + cp - 87;
-    } else if (isAsciiDigit(cp)) {
-      this.charRefCode = this.charRefCode * 16 + cp - 48;
-    } else if (cp === CODE_POINTS.SEMICOLON) {
-      this.state = State.NUMERIC_CHARACTER_REFERENCE_END;
-    } else {
-      this._err(ERR.missingSemicolonAfterCharacterReference);
-      this.state = State.NUMERIC_CHARACTER_REFERENCE_END;
-      this._stateNumericCharacterReferenceEnd(cp);
-    }
-  }
-  // Decimal character reference state
-  //------------------------------------------------------------------
-  _stateDecimalCharacterReference(cp) {
-    if (isAsciiDigit(cp)) {
-      this.charRefCode = this.charRefCode * 10 + cp - 48;
-    } else if (cp === CODE_POINTS.SEMICOLON) {
-      this.state = State.NUMERIC_CHARACTER_REFERENCE_END;
-    } else {
-      this._err(ERR.missingSemicolonAfterCharacterReference);
-      this.state = State.NUMERIC_CHARACTER_REFERENCE_END;
-      this._stateNumericCharacterReferenceEnd(cp);
-    }
-  }
-  // Numeric character reference end state
-  //------------------------------------------------------------------
-  _stateNumericCharacterReferenceEnd(cp) {
-    if (this.charRefCode === CODE_POINTS.NULL) {
-      this._err(ERR.nullCharacterReference);
-      this.charRefCode = CODE_POINTS.REPLACEMENT_CHARACTER;
-    } else if (this.charRefCode > 1114111) {
-      this._err(ERR.characterReferenceOutsideUnicodeRange);
-      this.charRefCode = CODE_POINTS.REPLACEMENT_CHARACTER;
-    } else if (isSurrogate(this.charRefCode)) {
-      this._err(ERR.surrogateCharacterReference);
-      this.charRefCode = CODE_POINTS.REPLACEMENT_CHARACTER;
-    } else if (isUndefinedCodePoint(this.charRefCode)) {
-      this._err(ERR.noncharacterCharacterReference);
-    } else if (isControlCodePoint(this.charRefCode) || this.charRefCode === CODE_POINTS.CARRIAGE_RETURN) {
-      this._err(ERR.controlCharacterReference);
-      const replacement = C1_CONTROLS_REFERENCE_REPLACEMENTS.get(this.charRefCode);
-      if (replacement !== void 0) {
-        this.charRefCode = replacement;
-      }
-    }
-    this._flushCodePointConsumedAsCharacterReference(this.charRefCode);
-    this._reconsumeInState(this.returnState, cp);
   }
 };
 
@@ -14632,31 +14723,25 @@ var IMPLICIT_END_TAG_REQUIRED_THOROUGHLY = /* @__PURE__ */ new Set([
   TAG_ID.THEAD,
   TAG_ID.TR
 ]);
-var SCOPING_ELEMENT_NS = /* @__PURE__ */ new Map([
-  [TAG_ID.APPLET, NS.HTML],
-  [TAG_ID.CAPTION, NS.HTML],
-  [TAG_ID.HTML, NS.HTML],
-  [TAG_ID.MARQUEE, NS.HTML],
-  [TAG_ID.OBJECT, NS.HTML],
-  [TAG_ID.TABLE, NS.HTML],
-  [TAG_ID.TD, NS.HTML],
-  [TAG_ID.TEMPLATE, NS.HTML],
-  [TAG_ID.TH, NS.HTML],
-  [TAG_ID.ANNOTATION_XML, NS.MATHML],
-  [TAG_ID.MI, NS.MATHML],
-  [TAG_ID.MN, NS.MATHML],
-  [TAG_ID.MO, NS.MATHML],
-  [TAG_ID.MS, NS.MATHML],
-  [TAG_ID.MTEXT, NS.MATHML],
-  [TAG_ID.DESC, NS.SVG],
-  [TAG_ID.FOREIGN_OBJECT, NS.SVG],
-  [TAG_ID.TITLE, NS.SVG]
+var SCOPING_ELEMENTS_HTML = /* @__PURE__ */ new Set([
+  TAG_ID.APPLET,
+  TAG_ID.CAPTION,
+  TAG_ID.HTML,
+  TAG_ID.MARQUEE,
+  TAG_ID.OBJECT,
+  TAG_ID.TABLE,
+  TAG_ID.TD,
+  TAG_ID.TEMPLATE,
+  TAG_ID.TH
 ]);
-var NAMED_HEADERS = [TAG_ID.H1, TAG_ID.H2, TAG_ID.H3, TAG_ID.H4, TAG_ID.H5, TAG_ID.H6];
-var TABLE_ROW_CONTEXT = [TAG_ID.TR, TAG_ID.TEMPLATE, TAG_ID.HTML];
-var TABLE_BODY_CONTEXT = [TAG_ID.TBODY, TAG_ID.TFOOT, TAG_ID.THEAD, TAG_ID.TEMPLATE, TAG_ID.HTML];
-var TABLE_CONTEXT = [TAG_ID.TABLE, TAG_ID.TEMPLATE, TAG_ID.HTML];
-var TABLE_CELLS = [TAG_ID.TD, TAG_ID.TH];
+var SCOPING_ELEMENTS_HTML_LIST = /* @__PURE__ */ new Set([...SCOPING_ELEMENTS_HTML, TAG_ID.OL, TAG_ID.UL]);
+var SCOPING_ELEMENTS_HTML_BUTTON = /* @__PURE__ */ new Set([...SCOPING_ELEMENTS_HTML, TAG_ID.BUTTON]);
+var SCOPING_ELEMENTS_MATHML = /* @__PURE__ */ new Set([TAG_ID.ANNOTATION_XML, TAG_ID.MI, TAG_ID.MN, TAG_ID.MO, TAG_ID.MS, TAG_ID.MTEXT]);
+var SCOPING_ELEMENTS_SVG = /* @__PURE__ */ new Set([TAG_ID.DESC, TAG_ID.FOREIGN_OBJECT, TAG_ID.TITLE]);
+var TABLE_ROW_CONTEXT = /* @__PURE__ */ new Set([TAG_ID.TR, TAG_ID.TEMPLATE, TAG_ID.HTML]);
+var TABLE_BODY_CONTEXT = /* @__PURE__ */ new Set([TAG_ID.TBODY, TAG_ID.TFOOT, TAG_ID.THEAD, TAG_ID.TEMPLATE, TAG_ID.HTML]);
+var TABLE_CONTEXT = /* @__PURE__ */ new Set([TAG_ID.TABLE, TAG_ID.TEMPLATE, TAG_ID.HTML]);
+var TABLE_CELLS = /* @__PURE__ */ new Set([TAG_ID.TD, TAG_ID.TH]);
 var OpenElementStack = class {
   get currentTmplContentOrNode() {
     return this._isInTemplate() ? this.treeAdapter.getTemplateContent(this.current) : this.current;
@@ -14748,7 +14833,7 @@ var OpenElementStack = class {
     this.shortenToLength(idx < 0 ? 0 : idx);
   }
   popUntilNumberedHeaderPopped() {
-    this.popUntilPopped(NAMED_HEADERS, NS.HTML);
+    this.popUntilPopped(NUMBERED_HEADERS, NS.HTML);
   }
   popUntilTableCellPopped() {
     this.popUntilPopped(TABLE_CELLS, NS.HTML);
@@ -14759,7 +14844,7 @@ var OpenElementStack = class {
   }
   _indexOfTagNames(tagNames, namespace) {
     for (let i = this.stackTop; i >= 0; i--) {
-      if (tagNames.includes(this.tagIDs[i]) && this.treeAdapter.getNamespaceURI(this.items[i]) === namespace) {
+      if (tagNames.has(this.tagIDs[i]) && this.treeAdapter.getNamespaceURI(this.items[i]) === namespace) {
         return i;
       }
     }
@@ -14807,102 +14892,117 @@ var OpenElementStack = class {
     return this.stackTop === 0 && this.tagIDs[0] === TAG_ID.HTML;
   }
   //Element in scope
-  hasInScope(tagName) {
+  hasInDynamicScope(tagName, htmlScope) {
     for (let i = this.stackTop; i >= 0; i--) {
       const tn = this.tagIDs[i];
-      const ns = this.treeAdapter.getNamespaceURI(this.items[i]);
-      if (tn === tagName && ns === NS.HTML) {
-        return true;
-      }
-      if (SCOPING_ELEMENT_NS.get(tn) === ns) {
-        return false;
+      switch (this.treeAdapter.getNamespaceURI(this.items[i])) {
+        case NS.HTML: {
+          if (tn === tagName)
+            return true;
+          if (htmlScope.has(tn))
+            return false;
+          break;
+        }
+        case NS.SVG: {
+          if (SCOPING_ELEMENTS_SVG.has(tn))
+            return false;
+          break;
+        }
+        case NS.MATHML: {
+          if (SCOPING_ELEMENTS_MATHML.has(tn))
+            return false;
+          break;
+        }
       }
     }
     return true;
+  }
+  hasInScope(tagName) {
+    return this.hasInDynamicScope(tagName, SCOPING_ELEMENTS_HTML);
+  }
+  hasInListItemScope(tagName) {
+    return this.hasInDynamicScope(tagName, SCOPING_ELEMENTS_HTML_LIST);
+  }
+  hasInButtonScope(tagName) {
+    return this.hasInDynamicScope(tagName, SCOPING_ELEMENTS_HTML_BUTTON);
   }
   hasNumberedHeaderInScope() {
     for (let i = this.stackTop; i >= 0; i--) {
       const tn = this.tagIDs[i];
-      const ns = this.treeAdapter.getNamespaceURI(this.items[i]);
-      if (isNumberedHeader(tn) && ns === NS.HTML) {
-        return true;
-      }
-      if (SCOPING_ELEMENT_NS.get(tn) === ns) {
-        return false;
-      }
-    }
-    return true;
-  }
-  hasInListItemScope(tagName) {
-    for (let i = this.stackTop; i >= 0; i--) {
-      const tn = this.tagIDs[i];
-      const ns = this.treeAdapter.getNamespaceURI(this.items[i]);
-      if (tn === tagName && ns === NS.HTML) {
-        return true;
-      }
-      if ((tn === TAG_ID.UL || tn === TAG_ID.OL) && ns === NS.HTML || SCOPING_ELEMENT_NS.get(tn) === ns) {
-        return false;
-      }
-    }
-    return true;
-  }
-  hasInButtonScope(tagName) {
-    for (let i = this.stackTop; i >= 0; i--) {
-      const tn = this.tagIDs[i];
-      const ns = this.treeAdapter.getNamespaceURI(this.items[i]);
-      if (tn === tagName && ns === NS.HTML) {
-        return true;
-      }
-      if (tn === TAG_ID.BUTTON && ns === NS.HTML || SCOPING_ELEMENT_NS.get(tn) === ns) {
-        return false;
+      switch (this.treeAdapter.getNamespaceURI(this.items[i])) {
+        case NS.HTML: {
+          if (NUMBERED_HEADERS.has(tn))
+            return true;
+          if (SCOPING_ELEMENTS_HTML.has(tn))
+            return false;
+          break;
+        }
+        case NS.SVG: {
+          if (SCOPING_ELEMENTS_SVG.has(tn))
+            return false;
+          break;
+        }
+        case NS.MATHML: {
+          if (SCOPING_ELEMENTS_MATHML.has(tn))
+            return false;
+          break;
+        }
       }
     }
     return true;
   }
   hasInTableScope(tagName) {
     for (let i = this.stackTop; i >= 0; i--) {
-      const tn = this.tagIDs[i];
-      const ns = this.treeAdapter.getNamespaceURI(this.items[i]);
-      if (ns !== NS.HTML) {
+      if (this.treeAdapter.getNamespaceURI(this.items[i]) !== NS.HTML) {
         continue;
       }
-      if (tn === tagName) {
-        return true;
-      }
-      if (tn === TAG_ID.TABLE || tn === TAG_ID.TEMPLATE || tn === TAG_ID.HTML) {
-        return false;
+      switch (this.tagIDs[i]) {
+        case tagName: {
+          return true;
+        }
+        case TAG_ID.TABLE:
+        case TAG_ID.HTML: {
+          return false;
+        }
       }
     }
     return true;
   }
   hasTableBodyContextInTableScope() {
     for (let i = this.stackTop; i >= 0; i--) {
-      const tn = this.tagIDs[i];
-      const ns = this.treeAdapter.getNamespaceURI(this.items[i]);
-      if (ns !== NS.HTML) {
+      if (this.treeAdapter.getNamespaceURI(this.items[i]) !== NS.HTML) {
         continue;
       }
-      if (tn === TAG_ID.TBODY || tn === TAG_ID.THEAD || tn === TAG_ID.TFOOT) {
-        return true;
-      }
-      if (tn === TAG_ID.TABLE || tn === TAG_ID.HTML) {
-        return false;
+      switch (this.tagIDs[i]) {
+        case TAG_ID.TBODY:
+        case TAG_ID.THEAD:
+        case TAG_ID.TFOOT: {
+          return true;
+        }
+        case TAG_ID.TABLE:
+        case TAG_ID.HTML: {
+          return false;
+        }
       }
     }
     return true;
   }
   hasInSelectScope(tagName) {
     for (let i = this.stackTop; i >= 0; i--) {
-      const tn = this.tagIDs[i];
-      const ns = this.treeAdapter.getNamespaceURI(this.items[i]);
-      if (ns !== NS.HTML) {
+      if (this.treeAdapter.getNamespaceURI(this.items[i]) !== NS.HTML) {
         continue;
       }
-      if (tn === tagName) {
-        return true;
-      }
-      if (tn !== TAG_ID.OPTION && tn !== TAG_ID.OPTGROUP) {
-        return false;
+      switch (this.tagIDs[i]) {
+        case tagName: {
+          return true;
+        }
+        case TAG_ID.OPTION:
+        case TAG_ID.OPTGROUP: {
+          break;
+        }
+        default: {
+          return false;
+        }
       }
     }
     return true;
@@ -14931,7 +15031,7 @@ var EntryType;
 (function(EntryType2) {
   EntryType2[EntryType2["Marker"] = 0] = "Marker";
   EntryType2[EntryType2["Element"] = 1] = "Element";
-})(EntryType = EntryType || (EntryType = {}));
+})(EntryType || (EntryType = {}));
 var MARKER = { type: EntryType.Marker };
 var FormattingElementList = class {
   constructor(treeAdapter) {
@@ -15031,13 +15131,6 @@ var FormattingElementList = class {
 };
 
 // node_modules/parse5/dist/tree-adapters/default.js
-function createTextNode(value) {
-  return {
-    nodeName: "#text",
-    value,
-    parentNode: null
-  };
-}
 var defaultTreeAdapter = {
   //Node construction
   createDocument() {
@@ -15067,6 +15160,13 @@ var defaultTreeAdapter = {
     return {
       nodeName: "#comment",
       data,
+      parentNode: null
+    };
+  },
+  createTextNode(value) {
+    return {
+      nodeName: "#text",
+      value,
       parentNode: null
     };
   },
@@ -15124,14 +15224,14 @@ var defaultTreeAdapter = {
         return;
       }
     }
-    defaultTreeAdapter.appendChild(parentNode, createTextNode(text));
+    defaultTreeAdapter.appendChild(parentNode, defaultTreeAdapter.createTextNode(text));
   },
   insertTextBefore(parentNode, text, referenceNode) {
     const prevNode = parentNode.childNodes[parentNode.childNodes.indexOf(referenceNode) - 1];
     if (prevNode && defaultTreeAdapter.isTextNode(prevNode)) {
       prevNode.value += text;
     } else {
-      defaultTreeAdapter.insertBefore(parentNode, createTextNode(text), referenceNode);
+      defaultTreeAdapter.insertBefore(parentNode, defaultTreeAdapter.createTextNode(text), referenceNode);
     }
   },
   adoptAttributes(recipient, attrs) {
@@ -15396,7 +15496,6 @@ var XML_ATTRS_ADJUSTMENT_MAP = /* @__PURE__ */ new Map([
   ["xlink:show", { prefix: "xlink", name: "show", namespace: NS.XLINK }],
   ["xlink:title", { prefix: "xlink", name: "title", namespace: NS.XLINK }],
   ["xlink:type", { prefix: "xlink", name: "type", namespace: NS.XLINK }],
-  ["xml:base", { prefix: "xml", name: "base", namespace: NS.XML }],
   ["xml:lang", { prefix: "xml", name: "lang", namespace: NS.XML }],
   ["xml:space", { prefix: "xml", name: "space", namespace: NS.XML }],
   ["xmlns", { prefix: "", name: "xmlns", namespace: NS.XMLNS }],
@@ -15650,6 +15749,7 @@ var Parser = class {
     return fragment;
   }
   //Errors
+  /** @internal */
   _err(token, code, beforeToken) {
     var _a2;
     if (!this.onParseError)
@@ -15667,12 +15767,14 @@ var Parser = class {
     this.onParseError(err2);
   }
   //Stack events
+  /** @internal */
   onItemPush(node, tid, isTop) {
     var _a2, _b;
     (_b = (_a2 = this.treeAdapter).onItemPush) === null || _b === void 0 ? void 0 : _b.call(_a2, node);
     if (isTop && this.openElements.stackTop > 0)
       this._setContextModes(node, tid);
   }
+  /** @internal */
   onItemPop(node, isTop) {
     var _a2, _b;
     if (this.options.sourceCodeLocationInfo) {
@@ -15696,6 +15798,7 @@ var Parser = class {
     this.currentNotInHTML = !isHTML;
     this.tokenizer.inForeignNode = !isHTML && !this._isIntegrationPoint(tid, current);
   }
+  /** @protected */
   _switchToTextParsing(currentToken, nextTokenizerState) {
     this._insertElement(currentToken, NS.HTML);
     this.tokenizer.state = nextTokenizerState;
@@ -15708,9 +15811,11 @@ var Parser = class {
     this.tokenizer.state = TokenizerMode.PLAINTEXT;
   }
   //Fragment parsing
+  /** @protected */
   _getAdjustedCurrentElement() {
     return this.openElements.stackTop === 0 && this.fragmentContext ? this.fragmentContext : this.openElements.current;
   }
+  /** @protected */
   _findFormInFragmentContext() {
     let node = this.fragmentContext;
     while (node) {
@@ -15752,6 +15857,7 @@ var Parser = class {
     }
   }
   //Tree mutation
+  /** @protected */
   _setDocumentType(token) {
     const name = token.name || "";
     const publicId = token.publicId || "";
@@ -15765,6 +15871,7 @@ var Parser = class {
       }
     }
   }
+  /** @protected */
   _attachElementToTree(element, location2) {
     if (this.options.sourceCodeLocationInfo) {
       const loc = location2 && {
@@ -15780,20 +15887,28 @@ var Parser = class {
       this.treeAdapter.appendChild(parent, element);
     }
   }
+  /**
+   * For self-closing tags. Add an element to the tree, but skip adding it
+   * to the stack.
+   */
+  /** @protected */
   _appendElement(token, namespaceURI) {
     const element = this.treeAdapter.createElement(token.tagName, namespaceURI, token.attrs);
     this._attachElementToTree(element, token.location);
   }
+  /** @protected */
   _insertElement(token, namespaceURI) {
     const element = this.treeAdapter.createElement(token.tagName, namespaceURI, token.attrs);
     this._attachElementToTree(element, token.location);
     this.openElements.push(element, token.tagID);
   }
+  /** @protected */
   _insertFakeElement(tagName, tagID) {
     const element = this.treeAdapter.createElement(tagName, NS.HTML, []);
     this._attachElementToTree(element, null);
     this.openElements.push(element, tagID);
   }
+  /** @protected */
   _insertTemplate(token) {
     const tmpl = this.treeAdapter.createElement(token.tagName, NS.HTML, token.attrs);
     const content = this.treeAdapter.createDocumentFragment();
@@ -15803,6 +15918,7 @@ var Parser = class {
     if (this.options.sourceCodeLocationInfo)
       this.treeAdapter.setNodeSourceCodeLocation(content, null);
   }
+  /** @protected */
   _insertFakeRootElement() {
     const element = this.treeAdapter.createElement(TAG_NAMES.HTML, NS.HTML, []);
     if (this.options.sourceCodeLocationInfo)
@@ -15810,6 +15926,7 @@ var Parser = class {
     this.treeAdapter.appendChild(this.openElements.current, element);
     this.openElements.push(element, TAG_ID.HTML);
   }
+  /** @protected */
   _appendCommentNode(token, parent) {
     const commentNode = this.treeAdapter.createCommentNode(token.data);
     this.treeAdapter.appendChild(parent, commentNode);
@@ -15817,6 +15934,7 @@ var Parser = class {
       this.treeAdapter.setNodeSourceCodeLocation(commentNode, token.location);
     }
   }
+  /** @protected */
   _insertCharacters(token) {
     let parent;
     let beforeElement;
@@ -15844,12 +15962,14 @@ var Parser = class {
       this.treeAdapter.setNodeSourceCodeLocation(textNode, token.location);
     }
   }
+  /** @protected */
   _adoptNodes(donor, recipient) {
     for (let child = this.treeAdapter.getFirstChild(donor); child; child = this.treeAdapter.getFirstChild(donor)) {
       this.treeAdapter.detachNode(child);
       this.treeAdapter.appendChild(recipient, child);
     }
   }
+  /** @protected */
   _setEndLocation(element, closingToken) {
     if (this.treeAdapter.getNodeSourceCodeLocation(element) && closingToken.location) {
       const ctLoc = closingToken.location;
@@ -15893,6 +16013,7 @@ var Parser = class {
       (token.tagID === TAG_ID.MGLYPH || token.tagID === TAG_ID.MALIGNMARK) && !this._isIntegrationPoint(currentTagId, current, NS.HTML)
     );
   }
+  /** @protected */
   _processToken(token) {
     switch (token.type) {
       case TokenType.CHARACTER: {
@@ -15930,12 +16051,14 @@ var Parser = class {
     }
   }
   //Integration points
+  /** @protected */
   _isIntegrationPoint(tid, element, foreignNS) {
     const ns = this.treeAdapter.getNamespaceURI(element);
     const attrs = this.treeAdapter.getAttrList(element);
     return isIntegrationPoint(tid, ns, attrs, foreignNS);
   }
   //Active formatting elements reconstruction
+  /** @protected */
   _reconstructActiveFormattingElements() {
     const listLength = this.activeFormattingElements.entries.length;
     if (listLength) {
@@ -15949,17 +16072,20 @@ var Parser = class {
     }
   }
   //Close elements
+  /** @protected */
   _closeTableCell() {
     this.openElements.generateImpliedEndTags();
     this.openElements.popUntilTableCellPopped();
     this.activeFormattingElements.clearToLastMarker();
     this.insertionMode = InsertionMode.IN_ROW;
   }
+  /** @protected */
   _closePElement() {
     this.openElements.generateImpliedEndTagsWithExclusion(TAG_ID.P);
     this.openElements.popUntilTagNamePopped(TAG_ID.P);
   }
   //Insertion modes
+  /** @protected */
   _resetInsertionMode() {
     for (let i = this.openElements.stackTop; i >= 0; i--) {
       switch (i === 0 && this.fragmentContext ? this.fragmentContextID : this.openElements.tagIDs[i]) {
@@ -16024,6 +16150,7 @@ var Parser = class {
     }
     this.insertionMode = InsertionMode.IN_BODY;
   }
+  /** @protected */
   _resetInsertionModeForSelect(selectIdx) {
     if (selectIdx > 0) {
       for (let i = selectIdx - 1; i > 0; i--) {
@@ -16039,12 +16166,15 @@ var Parser = class {
     this.insertionMode = InsertionMode.IN_SELECT;
   }
   //Foster parenting
+  /** @protected */
   _isElementCausesFosterParenting(tn) {
     return TABLE_STRUCTURE_TAGS.has(tn);
   }
+  /** @protected */
   _shouldFosterParentOnInsertion() {
     return this.fosterParentingEnabled && this._isElementCausesFosterParenting(this.openElements.currentTagId);
   }
+  /** @protected */
   _findFosterParentingLocation() {
     for (let i = this.openElements.stackTop; i >= 0; i--) {
       const openElement = this.openElements.items[i];
@@ -16067,6 +16197,7 @@ var Parser = class {
     }
     return { parent: this.openElements.items[0], beforeElement: null };
   }
+  /** @protected */
   _fosterParentElement(element) {
     const location2 = this._findFosterParentingLocation();
     if (location2.beforeElement) {
@@ -16076,10 +16207,12 @@ var Parser = class {
     }
   }
   //Special elements
+  /** @protected */
   _isSpecialElement(element, id) {
     const ns = this.treeAdapter.getNamespaceURI(element);
     return SPECIAL_ELEMENTS[ns].has(id);
   }
+  /** @internal */
   onCharacter(token) {
     this.skipNextNewLine = false;
     if (this.tokenizer.inForeignNode) {
@@ -16149,6 +16282,7 @@ var Parser = class {
       default:
     }
   }
+  /** @internal */
   onNullCharacter(token) {
     this.skipNextNewLine = false;
     if (this.tokenizer.inForeignNode) {
@@ -16205,6 +16339,7 @@ var Parser = class {
       default:
     }
   }
+  /** @internal */
   onComment(token) {
     this.skipNextNewLine = false;
     if (this.currentNotInHTML) {
@@ -16249,6 +16384,7 @@ var Parser = class {
       default:
     }
   }
+  /** @internal */
   onDoctype(token) {
     this.skipNextNewLine = false;
     switch (this.insertionMode) {
@@ -16270,6 +16406,7 @@ var Parser = class {
       default:
     }
   }
+  /** @internal */
   onStartTag(token) {
     this.skipNextNewLine = false;
     this.currentToken = token;
@@ -16287,6 +16424,7 @@ var Parser = class {
    * for nested calls.
    *
    * @param token The token to process.
+   * @protected
    */
   _processStartTag(token) {
     if (this.shouldProcessStartTagTokenInForeignContent(token)) {
@@ -16295,6 +16433,7 @@ var Parser = class {
       this._startTagOutsideForeignContent(token);
     }
   }
+  /** @protected */
   _startTagOutsideForeignContent(token) {
     switch (this.insertionMode) {
       case InsertionMode.INITIAL: {
@@ -16388,6 +16527,7 @@ var Parser = class {
       default:
     }
   }
+  /** @internal */
   onEndTag(token) {
     this.skipNextNewLine = false;
     this.currentToken = token;
@@ -16397,6 +16537,7 @@ var Parser = class {
       this._endTagOutsideForeignContent(token);
     }
   }
+  /** @protected */
   _endTagOutsideForeignContent(token) {
     switch (this.insertionMode) {
       case InsertionMode.INITIAL: {
@@ -16490,6 +16631,7 @@ var Parser = class {
       default:
     }
   }
+  /** @internal */
   onEof(token) {
     switch (this.insertionMode) {
       case InsertionMode.INITIAL: {
@@ -16551,6 +16693,7 @@ var Parser = class {
       default:
     }
   }
+  /** @internal */
   onWhitespaceCharacter(token) {
     if (this.skipNextNewLine) {
       this.skipNextNewLine = false;
@@ -17082,7 +17225,7 @@ function numberedHeaderStartTagInBody(p, token) {
   if (p.openElements.hasInButtonScope(TAG_ID.P)) {
     p._closePElement();
   }
-  if (isNumberedHeader(p.openElements.currentTagId)) {
+  if (NUMBERED_HEADERS.has(p.openElements.currentTagId)) {
     p.openElements.pop();
   }
   p._insertElement(token, NS.HTML);
@@ -17236,7 +17379,7 @@ function iframeStartTagInBody(p, token) {
   p.framesetOk = false;
   p._switchToTextParsing(token, TokenizerMode.RAWTEXT);
 }
-function noembedStartTagInBody(p, token) {
+function rawTextStartTagInBody(p, token) {
   p._switchToTextParsing(token, TokenizerMode.RAWTEXT);
 }
 function selectStartTagInBody(p, token) {
@@ -17339,6 +17482,7 @@ function startTagInBody(p, token) {
     case TAG_ID.DETAILS:
     case TAG_ID.ADDRESS:
     case TAG_ID.ARTICLE:
+    case TAG_ID.SEARCH:
     case TAG_ID.SECTION:
     case TAG_ID.SUMMARY:
     case TAG_ID.FIELDSET:
@@ -17462,8 +17606,9 @@ function startTagInBody(p, token) {
       optgroupStartTagInBody(p, token);
       break;
     }
-    case TAG_ID.NOEMBED: {
-      noembedStartTagInBody(p, token);
+    case TAG_ID.NOEMBED:
+    case TAG_ID.NOFRAMES: {
+      rawTextStartTagInBody(p, token);
       break;
     }
     case TAG_ID.FRAMESET: {
@@ -17476,7 +17621,7 @@ function startTagInBody(p, token) {
     }
     case TAG_ID.NOSCRIPT: {
       if (p.options.scriptingEnabled) {
-        noembedStartTagInBody(p, token);
+        rawTextStartTagInBody(p, token);
       } else {
         genericStartTagInBody(p, token);
       }
@@ -17642,6 +17787,7 @@ function endTagInBody(p, token) {
     case TAG_ID.ADDRESS:
     case TAG_ID.ARTICLE:
     case TAG_ID.DETAILS:
+    case TAG_ID.SEARCH:
     case TAG_ID.SECTION:
     case TAG_ID.SUMMARY:
     case TAG_ID.LISTING:
@@ -18210,6 +18356,17 @@ function startTagInSelect(p, token) {
       p._insertElement(token, NS.HTML);
       break;
     }
+    case TAG_ID.HR: {
+      if (p.openElements.currentTagId === TAG_ID.OPTION) {
+        p.openElements.pop();
+      }
+      if (p.openElements.currentTagId === TAG_ID.OPTGROUP) {
+        p.openElements.pop();
+      }
+      p._appendElement(token, NS.HTML);
+      token.ackSelfClosing = true;
+      break;
+    }
     case TAG_ID.INPUT:
     case TAG_ID.KEYGEN:
     case TAG_ID.TEXTAREA:
@@ -18286,6 +18443,7 @@ function endTagInSelectInTable(p, token) {
 }
 function startTagInTemplate(p, token) {
   switch (token.tagID) {
+    // First, handle tags that can start without a mode change
     case TAG_ID.BASE:
     case TAG_ID.BASEFONT:
     case TAG_ID.BGSOUND:
@@ -18299,6 +18457,7 @@ function startTagInTemplate(p, token) {
       startTagInHead(p, token);
       break;
     }
+    // Re-process the token in the appropriate mode
     case TAG_ID.CAPTION:
     case TAG_ID.COLGROUP:
     case TAG_ID.TBODY:
@@ -18590,11 +18749,11 @@ function parseFragment(fragmentContext, html, options) {
 // src/mock-doc/parse-util.ts
 var docParser = /* @__PURE__ */ new WeakMap();
 function parseDocumentUtil(ownerDocument, html) {
-  const doc2 = parse(html.trim(), getParser(ownerDocument));
-  doc2.documentElement = doc2.firstElementChild;
-  doc2.head = doc2.documentElement.firstElementChild;
-  doc2.body = doc2.head.nextElementSibling;
-  return doc2;
+  const doc = parse(html.trim(), getParser(ownerDocument));
+  doc.documentElement = doc.firstElementChild;
+  doc.head = doc.documentElement.firstElementChild;
+  doc.body = doc.head.nextElementSibling;
+  return doc;
 }
 function parseFragmentUtil(ownerDocument, html) {
   if (typeof html === "string") {
@@ -18612,9 +18771,9 @@ function getParser(ownerDocument) {
   }
   const treeAdapter = {
     createDocument() {
-      const doc2 = ownerDocument.createElement("#document" /* DOCUMENT_NODE */);
-      doc2["x-mode"] = "no-quirks";
-      return doc2;
+      const doc = ownerDocument.createElement("#document" /* DOCUMENT_NODE */);
+      doc["x-mode"] = "no-quirks";
+      return doc;
     },
     setNodeSourceCodeLocation(node, location2) {
       node.sourceCodeLocation = location2;
@@ -18652,22 +18811,22 @@ function getParser(ownerDocument) {
     getTemplateContent(templateElement) {
       return templateElement.content;
     },
-    setDocumentType(doc2, name, publicId, systemId) {
-      let doctypeNode = doc2.childNodes.find((n) => n.nodeType === 10 /* DOCUMENT_TYPE_NODE */);
+    setDocumentType(doc, name, publicId, systemId) {
+      let doctypeNode = doc.childNodes.find((n) => n.nodeType === 10 /* DOCUMENT_TYPE_NODE */);
       if (doctypeNode == null) {
         doctypeNode = ownerDocument.createDocumentTypeNode();
-        doc2.insertBefore(doctypeNode, doc2.firstChild);
+        doc.insertBefore(doctypeNode, doc.firstChild);
       }
       doctypeNode.nodeValue = "!DOCTYPE";
       doctypeNode["x-name"] = name;
       doctypeNode["x-publicId"] = publicId;
       doctypeNode["x-systemId"] = systemId;
     },
-    setDocumentMode(doc2, mode) {
-      doc2["x-mode"] = mode;
+    setDocumentMode(doc, mode) {
+      doc["x-mode"] = mode;
     },
-    getDocumentMode(doc2) {
-      return doc2["x-mode"];
+    getDocumentMode(doc) {
+      return doc["x-mode"];
     },
     detachNode(node) {
       node.remove();
@@ -18843,9 +19002,9 @@ var jquery_default = (
       nonce: true,
       noModule: true
     };
-    function DOMEval(code, node, doc2) {
-      doc2 = doc2 || document2;
-      var i2, script = doc2.createElement("script");
+    function DOMEval(code, node, doc) {
+      doc = doc || document2;
+      var i2, script = doc.createElement("script");
       script.text = code;
       if (node) {
         for (i2 in preservedScriptAttributes) {
@@ -18854,7 +19013,7 @@ var jquery_default = (
           }
         }
       }
-      doc2.head.appendChild(script).parentNode.removeChild(script);
+      doc.head.appendChild(script).parentNode.removeChild(script);
     }
     const jQuery = {};
     var version = "4.0.0-pre+9352011a7.dirty +selector", rhtmlSuffix = /HTML$/i, jQueryOrig = function(selector, context) {
@@ -18991,8 +19150,8 @@ var jquery_default = (
       },
       // Evaluates a script in a provided context; falls back to the global one
       // if not specified.
-      globalEval: function(code, options, doc2) {
-        DOMEval(code, { nonce: options && options.nonce }, doc2);
+      globalEval: function(code, options, doc) {
+        DOMEval(code, { nonce: options && options.nonce }, doc);
       },
       each: function(obj, callback) {
         var length, i2 = 0;
@@ -19481,11 +19640,11 @@ var jquery_default = (
       });
     }
     function setDocument(node) {
-      var subWindow, doc2 = node ? node.ownerDocument || node : document2;
-      if (doc2 == document$1 || doc2.nodeType !== 9) {
+      var subWindow, doc = node ? node.ownerDocument || node : document2;
+      if (doc == document$1 || doc.nodeType !== 9) {
         return;
       }
-      document$1 = doc2;
+      document$1 = doc;
       documentElement$1 = document$1.documentElement;
       documentIsHTML = !jQuery.isXMLDoc(document$1);
       if (isIE && document2 != document$1 && (subWindow = document$1.defaultView) && subWindow.top !== subWindow) {
@@ -20208,7 +20367,7 @@ function normalizeSerializationOptions(opts = {}) {
     removeAttributeQuotes: typeof opts.removeAttributeQuotes !== "boolean" ? false : opts.removeAttributeQuotes,
     removeBooleanAttributeQuotes: typeof opts.removeBooleanAttributeQuotes !== "boolean" ? false : opts.removeBooleanAttributeQuotes,
     removeHtmlComments: typeof opts.removeHtmlComments !== "boolean" ? false : opts.removeHtmlComments,
-    serializeShadowRoot: typeof opts.serializeShadowRoot !== "boolean" ? true : opts.serializeShadowRoot,
+    serializeShadowRoot: typeof opts.serializeShadowRoot === "undefined" ? "declarative-shadow-dom" : opts.serializeShadowRoot,
     fullDocument: typeof opts.fullDocument !== "boolean" ? true : opts.fullDocument
   };
 }
@@ -20261,6 +20420,11 @@ function* streamToHtml(node, opts, output) {
         const mode = ` shadowrootmode="open"`;
         yield mode;
         output.currentLineWidth += mode.length;
+        if (node.delegatesFocus) {
+          const delegatesFocusAttr = " shadowrootdelegatesfocus";
+          yield delegatesFocusAttr;
+          output.currentLineWidth += delegatesFocusAttr.length;
+        }
       }
       const attrsLength = node.attributes.length;
       const attributes = opts.prettyHtml && attrsLength > 1 ? cloneAttributes(node.attributes, true) : node.attributes;
@@ -20337,7 +20501,7 @@ style="${cssText}">`;
     }
     if (EMPTY_ELEMENTS.has(tagName) === false) {
       const shadowRoot = node.shadowRoot;
-      if (shadowRoot != null && opts.serializeShadowRoot) {
+      if (shadowRoot != null && opts.serializeShadowRoot !== false) {
         output.indent = output.indent + ((_c = opts.indentSpaces) != null ? _c : 0);
         yield* streamToHtml(shadowRoot, opts, output);
         output.indent = output.indent - ((_d = opts.indentSpaces) != null ? _d : 0);
@@ -20627,6 +20791,81 @@ var STRUCTURE_ELEMENTS = /* @__PURE__ */ new Set([
   "style"
 ]);
 
+// src/mock-doc/token-list.ts
+var MockTokenList = class {
+  constructor(elm, attr) {
+    this.elm = elm;
+    this.attr = attr;
+  }
+  add(...tokens) {
+    const items = getItems(this.elm, this.attr);
+    let updated = false;
+    tokens.forEach((token) => {
+      token = String(token);
+      validateToken(token);
+      if (items.includes(token) === false) {
+        items.push(token);
+        updated = true;
+      }
+    });
+    if (updated) {
+      this.elm.setAttributeNS(null, this.attr, items.join(" "));
+    }
+  }
+  remove(...tokens) {
+    const items = getItems(this.elm, this.attr);
+    let updated = false;
+    tokens.forEach((token) => {
+      token = String(token);
+      validateToken(token);
+      const index = items.indexOf(token);
+      if (index > -1) {
+        items.splice(index, 1);
+        updated = true;
+      }
+    });
+    if (updated) {
+      this.elm.setAttributeNS(null, this.attr, items.filter((c) => c.length > 0).join(" "));
+    }
+  }
+  contains(token) {
+    token = String(token);
+    return getItems(this.elm, this.attr).includes(token);
+  }
+  toggle(token) {
+    token = String(token);
+    if (this.contains(token) === true) {
+      this.remove(token);
+    } else {
+      this.add(token);
+    }
+  }
+  get length() {
+    return getItems(this.elm, this.attr).length;
+  }
+  item(index) {
+    return getItems(this.elm, this.attr)[index];
+  }
+  toString() {
+    return getItems(this.elm, this.attr).join(" ");
+  }
+};
+function validateToken(token) {
+  if (token === "") {
+    throw new Error("The token provided must not be empty.");
+  }
+  if (/\s/.test(token)) {
+    throw new Error(`The token provided ('${token}') contains HTML space characters, which are not valid in tokens.`);
+  }
+}
+function getItems(elm, attr) {
+  const value = elm.getAttribute(attr);
+  if (typeof value === "string" && value.length > 0) {
+    return value.trim().split(" ").filter((c) => c.length > 0);
+  }
+  return [];
+}
+
 // src/mock-doc/node.ts
 var MockNode2 = class {
   constructor(ownerDocument, nodeType, nodeName, nodeValue) {
@@ -20779,6 +21018,15 @@ var MockNode2 = class {
   set textContent(value) {
     this._nodeValue = String(value);
   }
+  addEventListener(type, handler) {
+    addEventListener(this, type, handler);
+  }
+  removeEventListener(type, handler) {
+    removeEventListener(this, type, handler);
+  }
+  dispatchEvent(ev) {
+    return dispatchEvent(this, ev);
+  }
 };
 MockNode2.ELEMENT_NODE = 1;
 MockNode2.TEXT_NODE = 3;
@@ -20817,15 +21065,25 @@ var MockElement = class extends MockNode2 {
     addEventListener(this, type, handler);
   }
   attachShadow(_opts) {
+    var _a2;
     const shadowRoot = this.ownerDocument.createDocumentFragment();
+    shadowRoot.delegatesFocus = (_a2 = _opts.delegatesFocus) != null ? _a2 : false;
     this.shadowRoot = shadowRoot;
     return shadowRoot;
   }
   blur() {
-    dispatchEvent(
-      this,
-      new MockFocusEvent("blur", { relatedTarget: null, bubbles: true, cancelable: true, composed: true })
-    );
+    if (isCurrentlyDispatching(this, "blur")) {
+      return;
+    }
+    markAsDispatching(this, "blur");
+    try {
+      dispatchEvent(
+        this,
+        new MockFocusEvent("blur", { relatedTarget: null, bubbles: true, cancelable: true, composed: true })
+      );
+    } finally {
+      unmarkAsDispatching(this, "blur");
+    }
   }
   get localName() {
     if (!this.nodeName) {
@@ -20875,7 +21133,10 @@ var MockElement = class extends MockNode2 {
     this.setAttributeNS(null, "class", value);
   }
   get classList() {
-    return new MockClassList(this);
+    return new MockTokenList(this, "class");
+  }
+  get part() {
+    return new MockTokenList(this, "part");
   }
   click() {
     dispatchEvent(this, new MockEvent("click", { bubbles: true, cancelable: true, composed: true }));
@@ -21567,6 +21828,28 @@ function setTextContent(elm, text) {
   const textNode = new MockTextNode(elm.ownerDocument, text);
   elm.appendChild(textNode);
 }
+var currentlyDispatching = /* @__PURE__ */ new WeakMap();
+function isCurrentlyDispatching(target, eventType) {
+  const dispatchingEvents = currentlyDispatching.get(target);
+  return dispatchingEvents != null && dispatchingEvents.has(eventType);
+}
+function markAsDispatching(target, eventType) {
+  let dispatchingEvents = currentlyDispatching.get(target);
+  if (dispatchingEvents == null) {
+    dispatchingEvents = /* @__PURE__ */ new Set();
+    currentlyDispatching.set(target, dispatchingEvents);
+  }
+  dispatchingEvents.add(eventType);
+}
+function unmarkAsDispatching(target, eventType) {
+  const dispatchingEvents = currentlyDispatching.get(target);
+  if (dispatchingEvents != null) {
+    dispatchingEvents.delete(eventType);
+    if (dispatchingEvents.size === 0) {
+      currentlyDispatching.delete(target);
+    }
+  }
+}
 
 // src/mock-doc/comment-node.ts
 var MockComment = class _MockComment extends MockNode2 {
@@ -21593,6 +21876,12 @@ var MockDocumentFragment = class _MockDocumentFragment extends MockHTMLElement {
   }
   getElementById(id) {
     return getElementById(this, id);
+  }
+  get adoptedStyleSheets() {
+    return [];
+  }
+  set adoptedStyleSheets(_adoptedStyleSheets) {
+    throw new Error("Unimplemented");
   }
   cloneNode(deep) {
     const cloned = new _MockDocumentFragment(null);
@@ -21642,7 +21931,9 @@ var MockCSSStyleSheet = class {
   deleteRule(index) {
     if (index >= 0 && index < this.cssRules.length) {
       this.cssRules.splice(index, 1);
-      updateStyleTextNode(this.ownerNode);
+      if (this.ownerNode) {
+        updateStyleTextNode(this.ownerNode);
+      }
     }
   }
   insertRule(rule, index = 0) {
@@ -21658,8 +21949,22 @@ var MockCSSStyleSheet = class {
     const cssRule = new MockCSSRule(this);
     cssRule.cssText = rule;
     this.cssRules.splice(index, 0, cssRule);
-    updateStyleTextNode(this.ownerNode);
+    if (this.ownerNode) {
+      updateStyleTextNode(this.ownerNode);
+    }
     return index;
+  }
+  replaceSync(cssText) {
+    this.cssRules = [];
+    const rules = cssText.split("}").map((rule) => rule.trim()).filter(Boolean).map((rule) => rule + "}");
+    for (const rule of rules) {
+      const cssRule = new MockCSSRule(this);
+      cssRule.cssText = rule;
+      this.cssRules.push(cssRule);
+    }
+    if (this.ownerNode) {
+      updateStyleTextNode(this.ownerNode);
+    }
   }
 };
 function getStyleElementText(styleElm) {
@@ -22699,9 +23004,11 @@ var WINDOW_PROPS = [
   "NodeList",
   "FocusEvent",
   "KeyboardEvent",
-  "MouseEvent"
+  "MouseEvent",
+  "CSSStyleSheet"
 ];
 var GLOBAL_CONSTRUCTORS = [
+  ["CSSStyleSheet", MockCSSStyleSheet],
   ["CustomEvent", MockCustomEvent],
   ["DocumentFragment", MockDocumentFragment],
   ["DOMParser", MockDOMParser],
@@ -22908,12 +23215,6 @@ var MockResizeObserver = class {
 var MockShadowRoot = class extends MockDocumentFragment {
   get activeElement() {
     return null;
-  }
-  set adoptedStyleSheets(_adoptedStyleSheets) {
-    throw new Error("Unimplemented");
-  }
-  get adoptedStyleSheets() {
-    return [];
   }
   get cloneable() {
     return false;
@@ -23718,7 +24019,7 @@ var MockDocument = class _MockDocument extends MockHTMLElement {
   }
   set location(val) {
     if (this.defaultView != null) {
-      this.defaultView.location = val;
+      this.defaultView.location.href = val;
     }
   }
   get baseURI() {
@@ -23830,10 +24131,10 @@ var MockDocument = class _MockDocument extends MockHTMLElement {
   }
   createElement(tagName) {
     if (tagName === "#document" /* DOCUMENT_NODE */) {
-      const doc2 = new _MockDocument(false);
-      doc2.nodeName = tagName;
-      doc2.parentNode = null;
-      return doc2;
+      const doc = new _MockDocument(false);
+      doc.nodeName = tagName;
+      doc.parentNode = null;
+      return doc;
     }
     return createElement(this, tagName);
   }
@@ -23873,10 +24174,10 @@ var MockDocument = class _MockDocument extends MockHTMLElement {
     title.textContent = value;
   }
 };
-function resetDocument(doc2) {
-  if (doc2 != null) {
-    resetEventListeners(doc2);
-    const documentElement = doc2.documentElement;
+function resetDocument(doc) {
+  if (doc != null) {
+    resetEventListeners(doc);
+    const documentElement = doc.documentElement;
     if (documentElement != null) {
       resetElement(documentElement);
       for (let i = 0, ii = documentElement.childNodes.length; i < ii; i++) {
@@ -23885,25 +24186,25 @@ function resetDocument(doc2) {
         childNode.childNodes.length = 0;
       }
     }
-    for (const key in doc2) {
-      if (doc2.hasOwnProperty(key) && !DOC_KEY_KEEPERS.has(key)) {
-        delete doc2[key];
+    for (const key in doc) {
+      if (doc.hasOwnProperty(key) && !DOC_KEY_KEEPERS.has(key)) {
+        delete doc[key];
       }
     }
     try {
-      doc2.nodeName = "#document" /* DOCUMENT_NODE */;
+      doc.nodeName = "#document" /* DOCUMENT_NODE */;
     } catch (e) {
     }
     try {
-      doc2.nodeType = 9 /* DOCUMENT_NODE */;
+      doc.nodeType = 9 /* DOCUMENT_NODE */;
     } catch (e) {
     }
     try {
-      doc2.cookie = "";
+      doc.cookie = "";
     } catch (e) {
     }
     try {
-      doc2.referrer = "";
+      doc.referrer = "";
     } catch (e) {
     }
   }
@@ -23969,14 +24270,36 @@ var Build = {
   isTesting: BUILD.isTesting ? true : false
 };
 
-// src/client/client-host-ref.ts
-var hostRefs = BUILD.hotModuleReplacement ? window.__STENCIL_HOSTREFS__ || (window.__STENCIL_HOSTREFS__ = /* @__PURE__ */ new WeakMap()) : /* @__PURE__ */ new WeakMap();
+// src/utils/constants.ts
+var PrimitiveType = /* @__PURE__ */ ((PrimitiveType2) => {
+  PrimitiveType2["Undefined"] = "undefined";
+  PrimitiveType2["Null"] = "null";
+  PrimitiveType2["String"] = "string";
+  PrimitiveType2["Number"] = "number";
+  PrimitiveType2["SpecialNumber"] = "number";
+  PrimitiveType2["Boolean"] = "boolean";
+  PrimitiveType2["BigInt"] = "bigint";
+  return PrimitiveType2;
+})(PrimitiveType || {});
+var NonPrimitiveType = /* @__PURE__ */ ((NonPrimitiveType2) => {
+  NonPrimitiveType2["Array"] = "array";
+  NonPrimitiveType2["Date"] = "date";
+  NonPrimitiveType2["Map"] = "map";
+  NonPrimitiveType2["Object"] = "object";
+  NonPrimitiveType2["RegularExpression"] = "regexp";
+  NonPrimitiveType2["Set"] = "set";
+  NonPrimitiveType2["Channel"] = "channel";
+  NonPrimitiveType2["Symbol"] = "symbol";
+  return NonPrimitiveType2;
+})(NonPrimitiveType || {});
+var TYPE_CONSTANT = "type";
+var VALUE_CONSTANT = "value";
+var SERIALIZED_PREFIX = "serialized:";
 var STENCIL_DEV_MODE = BUILD.isTesting ? ["STENCIL:"] : [
   "%cstencil",
   "color: white;background:#4c47ff;font-weight: bold; font-size:10px; padding:2px 6px; border-radius: 5px"
 ];
 var win = typeof window !== "undefined" ? window : {};
-var doc = win.document || { head: {} };
 var H = win.HTMLElement || class {
 };
 var supportsShadow = BUILD.shadowDom;
@@ -23991,6 +24314,232 @@ var supportsConstructableStylesheets = BUILD.constructableCSS ? /* @__PURE__ */ 
 
 // src/utils/helpers.ts
 var isString = (v) => typeof v === "string";
+
+// src/utils/local-value.ts
+var LocalValue = class _LocalValue {
+  constructor(type, value) {
+    if (type === "undefined" /* Undefined */ || type === "null" /* Null */) {
+      this.type = type;
+    } else {
+      this.type = type;
+      this.value = value;
+    }
+  }
+  /**
+   * Creates a new LocalValue object with a string value.
+   *
+   * @param {string} value - The string value to be stored in the LocalValue object.
+   * @returns {LocalValue} - The created LocalValue object.
+   */
+  static createStringValue(value) {
+    return new _LocalValue("string" /* String */, value);
+  }
+  /**
+   * Creates a new LocalValue object with a number value.
+   *
+   * @param {number} value - The number value.
+   * @returns {LocalValue} - The created LocalValue object.
+   */
+  static createNumberValue(value) {
+    return new _LocalValue("number" /* Number */, value);
+  }
+  /**
+   * Creates a new LocalValue object with a special number value.
+   *
+   * @param {number} value - The value of the special number.
+   * @returns {LocalValue} - The created LocalValue object.
+   */
+  static createSpecialNumberValue(value) {
+    if (Number.isNaN(value)) {
+      return new _LocalValue("number" /* SpecialNumber */, "NaN");
+    }
+    if (Object.is(value, -0)) {
+      return new _LocalValue("number" /* SpecialNumber */, "-0");
+    }
+    if (value === Infinity) {
+      return new _LocalValue("number" /* SpecialNumber */, "Infinity");
+    }
+    if (value === -Infinity) {
+      return new _LocalValue("number" /* SpecialNumber */, "-Infinity");
+    }
+    return new _LocalValue("number" /* SpecialNumber */, value);
+  }
+  /**
+   * Creates a new LocalValue object with an undefined value.
+   * @returns {LocalValue} - The created LocalValue object.
+   */
+  static createUndefinedValue() {
+    return new _LocalValue("undefined" /* Undefined */);
+  }
+  /**
+   * Creates a new LocalValue object with a null value.
+   * @returns {LocalValue} - The created LocalValue object.
+   */
+  static createNullValue() {
+    return new _LocalValue("null" /* Null */);
+  }
+  /**
+   * Creates a new LocalValue object with a boolean value.
+   *
+   * @param {boolean} value - The boolean value.
+   * @returns {LocalValue} - The created LocalValue object.
+   */
+  static createBooleanValue(value) {
+    return new _LocalValue("boolean" /* Boolean */, value);
+  }
+  /**
+   * Creates a new LocalValue object with a BigInt value.
+   *
+   * @param {BigInt} value - The BigInt value.
+   * @returns {LocalValue} - The created LocalValue object.
+   */
+  static createBigIntValue(value) {
+    return new _LocalValue("bigint" /* BigInt */, value.toString());
+  }
+  /**
+   * Creates a new LocalValue object with an array.
+   *
+   * @param {Array} value - The array.
+   * @returns {LocalValue} - The created LocalValue object.
+   */
+  static createArrayValue(value) {
+    return new _LocalValue("array" /* Array */, value);
+  }
+  /**
+   * Creates a new LocalValue object with date value.
+   *
+   * @param {string} value - The date.
+   * @returns {LocalValue} - The created LocalValue object.
+   */
+  static createDateValue(value) {
+    return new _LocalValue("date" /* Date */, value);
+  }
+  /**
+   * Creates a new LocalValue object of map value.
+   * @param {Map} map - The map.
+   * @returns {LocalValue} - The created LocalValue object.
+   */
+  static createMapValue(map2) {
+    const value = [];
+    Array.from(map2.entries()).forEach(([key, val]) => {
+      value.push([_LocalValue.getArgument(key), _LocalValue.getArgument(val)]);
+    });
+    return new _LocalValue("map" /* Map */, value);
+  }
+  /**
+   * Creates a new LocalValue object from the passed object.
+   *
+   * @param object the object to create a LocalValue from
+   * @returns {LocalValue} - The created LocalValue object.
+   */
+  static createObjectValue(object) {
+    const value = [];
+    Object.entries(object).forEach(([key, val]) => {
+      value.push([key, _LocalValue.getArgument(val)]);
+    });
+    return new _LocalValue("object" /* Object */, value);
+  }
+  /**
+   * Creates a new LocalValue object of regular expression value.
+   *
+   * @param {string} value - The value of the regular expression.
+   * @returns {LocalValue} - The created LocalValue object.
+   */
+  static createRegularExpressionValue(value) {
+    return new _LocalValue("regexp" /* RegularExpression */, value);
+  }
+  /**
+   * Creates a new LocalValue object with the specified value.
+   * @param {Set} value - The value to be set.
+   * @returns {LocalValue} - The created LocalValue object.
+   */
+  static createSetValue(value) {
+    return new _LocalValue("set" /* Set */, value);
+  }
+  /**
+   * Creates a new LocalValue object with the given channel value
+   *
+   * @param {ChannelValue} value - The channel value.
+   * @returns {LocalValue} - The created LocalValue object.
+   */
+  static createChannelValue(value) {
+    return new _LocalValue("channel" /* Channel */, value);
+  }
+  /**
+   * Creates a new LocalValue object with a Symbol value.
+   *
+   * @param {Symbol} symbol - The Symbol value
+   * @returns {LocalValue} - The created LocalValue object
+   */
+  static createSymbolValue(symbol) {
+    const description = symbol.description || "Symbol()";
+    return new _LocalValue("symbol" /* Symbol */, description);
+  }
+  static getArgument(argument) {
+    const type = typeof argument;
+    switch (type) {
+      case "string" /* String */:
+        return _LocalValue.createStringValue(argument);
+      case "number" /* Number */:
+        if (Number.isNaN(argument) || Object.is(argument, -0) || !Number.isFinite(argument)) {
+          return _LocalValue.createSpecialNumberValue(argument);
+        }
+        return _LocalValue.createNumberValue(argument);
+      case "boolean" /* Boolean */:
+        return _LocalValue.createBooleanValue(argument);
+      case "bigint" /* BigInt */:
+        return _LocalValue.createBigIntValue(argument);
+      case "undefined" /* Undefined */:
+        return _LocalValue.createUndefinedValue();
+      case "symbol" /* Symbol */:
+        return _LocalValue.createSymbolValue(argument);
+      case "object" /* Object */:
+        if (argument === null) {
+          return _LocalValue.createNullValue();
+        }
+        if (argument instanceof Date) {
+          return _LocalValue.createDateValue(argument);
+        }
+        if (argument instanceof Map) {
+          const map2 = [];
+          argument.forEach((value, key) => {
+            const objectKey = typeof key === "string" ? key : _LocalValue.getArgument(key);
+            const objectValue = _LocalValue.getArgument(value);
+            map2.push([objectKey, objectValue]);
+          });
+          return _LocalValue.createMapValue(argument);
+        }
+        if (argument instanceof Set) {
+          const set = [];
+          argument.forEach((value) => {
+            set.push(_LocalValue.getArgument(value));
+          });
+          return _LocalValue.createSetValue(set);
+        }
+        if (argument instanceof Array) {
+          const arr = [];
+          argument.forEach((value) => {
+            arr.push(_LocalValue.getArgument(value));
+          });
+          return _LocalValue.createArrayValue(arr);
+        }
+        if (argument instanceof RegExp) {
+          return _LocalValue.createRegularExpressionValue({
+            pattern: argument.source,
+            flags: argument.flags
+          });
+        }
+        return _LocalValue.createObjectValue(argument);
+    }
+    throw new Error(`Unsupported type: ${type}`);
+  }
+  asMap() {
+    return {
+      [TYPE_CONSTANT]: this.type,
+      ...!(this.type === "null" /* Null */ || this.type === "undefined" /* Undefined */) ? { [VALUE_CONSTANT]: this.value } : {}
+    };
+  }
+};
 
 // src/utils/message-utils.ts
 var catchError = (diagnostics, err2, msg) => {
@@ -24029,6 +24578,106 @@ var shouldIgnoreError = (msg) => {
   return msg === TASK_CANCELED_MSG;
 };
 var TASK_CANCELED_MSG = `task canceled`;
+
+// src/utils/regular-expression.ts
+var escapeRegExpSpecialCharacters = (text) => {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+};
+
+// src/utils/remote-value.ts
+var RemoteValue = class _RemoteValue {
+  /**
+   * Deserializes a LocalValue serialized object back to its original JavaScript representation
+   *
+   * @param serialized The serialized LocalValue object
+   * @returns The original JavaScript value/object
+   */
+  static fromLocalValue(serialized) {
+    const type = serialized[TYPE_CONSTANT];
+    const value = VALUE_CONSTANT in serialized ? serialized[VALUE_CONSTANT] : void 0;
+    switch (type) {
+      case "string" /* String */:
+        return value;
+      case "boolean" /* Boolean */:
+        return value;
+      case "bigint" /* BigInt */:
+        return BigInt(value);
+      case "undefined" /* Undefined */:
+        return void 0;
+      case "null" /* Null */:
+        return null;
+      case "number" /* Number */:
+        if (value === "NaN") return NaN;
+        if (value === "-0") return -0;
+        if (value === "Infinity") return Infinity;
+        if (value === "-Infinity") return -Infinity;
+        return value;
+      case "array" /* Array */:
+        return value.map((item) => _RemoteValue.fromLocalValue(item));
+      case "date" /* Date */:
+        return new Date(value);
+      case "map" /* Map */:
+        const map2 = /* @__PURE__ */ new Map();
+        for (const [key, val] of value) {
+          const deserializedKey = typeof key === "object" && key !== null ? _RemoteValue.fromLocalValue(key) : key;
+          const deserializedValue = _RemoteValue.fromLocalValue(val);
+          map2.set(deserializedKey, deserializedValue);
+        }
+        return map2;
+      case "object" /* Object */:
+        const obj = {};
+        for (const [key, val] of value) {
+          obj[key] = _RemoteValue.fromLocalValue(val);
+        }
+        return obj;
+      case "regexp" /* RegularExpression */:
+        const { pattern, flags } = value;
+        return new RegExp(pattern, flags);
+      case "set" /* Set */:
+        const set = /* @__PURE__ */ new Set();
+        for (const item of value) {
+          set.add(_RemoteValue.fromLocalValue(item));
+        }
+        return set;
+      case "symbol" /* Symbol */:
+        return Symbol(value);
+      default:
+        throw new Error(`Unsupported type: ${type}`);
+    }
+  }
+  /**
+   * Utility method to deserialize multiple LocalValues at once
+   *
+   * @param serializedValues Array of serialized LocalValue objects
+   * @returns Array of deserialized JavaScript values
+   */
+  static fromLocalValueArray(serializedValues) {
+    return serializedValues.map((value) => _RemoteValue.fromLocalValue(value));
+  }
+  /**
+   * Verifies if the given object matches the structure of a serialized LocalValue
+   *
+   * @param obj Object to verify
+   * @returns boolean indicating if the object has LocalValue structure
+   */
+  static isLocalValueObject(obj) {
+    if (typeof obj !== "object" || obj === null) {
+      return false;
+    }
+    if (!obj.hasOwnProperty(TYPE_CONSTANT)) {
+      return false;
+    }
+    const type = obj[TYPE_CONSTANT];
+    const hasTypeProperty = Object.values({ ...PrimitiveType, ...NonPrimitiveType }).includes(type);
+    if (!hasTypeProperty) {
+      return false;
+    }
+    if (type !== "null" /* Null */ && type !== "undefined" /* Undefined */) {
+      return obj.hasOwnProperty(VALUE_CONSTANT);
+    }
+    return true;
+  }
+};
 
 // src/utils/result.ts
 var result_exports = {};
@@ -24079,20 +24728,85 @@ var unwrapErr = (result) => {
   }
 };
 
+// src/utils/serialize.ts
+function serializeProperty(value) {
+  if (["string", "boolean", "undefined"].includes(typeof value) || typeof value === "number" && value !== Infinity && value !== -Infinity && !isNaN(value)) {
+    return value;
+  }
+  const arg = LocalValue.getArgument(value);
+  return SERIALIZED_PREFIX + btoa(JSON.stringify(arg));
+}
+function deserializeProperty(value) {
+  if (typeof value !== "string" || !value.startsWith(SERIALIZED_PREFIX)) {
+    return value;
+  }
+  return RemoteValue.fromLocalValue(JSON.parse(atob(value.slice(SERIALIZED_PREFIX.length))));
+}
+
+// src/utils/util.ts
+var lowerPathParam = (fn) => (p) => fn(p.toLowerCase());
+var isDtsFile = lowerPathParam((p) => p.endsWith(".d.ts") || p.endsWith(".d.mts") || p.endsWith(".d.cts"));
+var isTsFile = lowerPathParam(
+  (p) => !isDtsFile(p) && (p.endsWith(".ts") || p.endsWith(".mts") || p.endsWith(".cts"))
+);
+var isTsxFile = lowerPathParam(
+  (p) => p.endsWith(".tsx") || p.endsWith(".mtsx") || p.endsWith(".ctsx")
+);
+var isJsxFile = lowerPathParam(
+  (p) => p.endsWith(".jsx") || p.endsWith(".mjsx") || p.endsWith(".cjsx")
+);
+var isJsFile = lowerPathParam((p) => p.endsWith(".js") || p.endsWith(".mjs") || p.endsWith(".cjs"));
+
+// src/utils/shadow-css.ts
+/**
+ * @license
+ * Copyright Google Inc. All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.io/license
+ *
+ * This file is a port of shadowCSS from `webcomponents.js` to TypeScript.
+ * https://github.com/webcomponents/webcomponentsjs/blob/4efecd7e0e/src/ShadowCSS/ShadowCSS.js
+ * https://github.com/angular/angular/blob/master/packages/compiler/src/shadow_css.ts
+ */
+var _polyfillHost = "-shadowcsshost";
+var _polyfillSlotted = "-shadowcssslotted";
+var _polyfillHostContext = "-shadowcsscontext";
+var _parenSuffix = ")(?:\\(((?:\\([^)(]*\\)|[^)(]*)+?)\\))?([^,{]*)";
+var _cssColonHostRe = new RegExp("(" + _polyfillHost + _parenSuffix, "gim");
+var _cssColonHostContextRe = new RegExp("(" + _polyfillHostContext + _parenSuffix, "gim");
+var _cssColonSlottedRe = new RegExp("(" + _polyfillSlotted + _parenSuffix, "gim");
+var _polyfillHostNoCombinator = _polyfillHost + "-no-combinator";
+var createSupportsRuleRe = (selector) => {
+  const safeSelector = escapeRegExpSpecialCharacters(selector);
+  return new RegExp(
+    // First capture group: match any context before the selector that's not inside @supports selector()
+    // Using negative lookahead to avoid matching inside @supports selector(...) condition
+    `(^|[^@]|@(?!supports\\s+selector\\s*\\([^{]*?${safeSelector}))(${safeSelector}\\b)`,
+    "g"
+  );
+};
+var _colonSlottedRe = createSupportsRuleRe("::slotted");
+var _colonHostRe = createSupportsRuleRe(":host");
+var _colonHostContextRe = createSupportsRuleRe(":host-context");
+
 // src/runtime/mode.ts
 var setMode = (handler) => modeResolutionChain.push(handler);
 var CAPTURE_EVENT_SUFFIX = "Capture";
 var CAPTURE_EVENT_REGEX = new RegExp(CAPTURE_EVENT_SUFFIX + "$");
+var baseClass = BUILD.lazyLoad ? class {
+} : globalThis.HTMLElement || class {
+};
 
 // src/compiler/html/canonical-link.ts
-var updateCanonicalLink = (doc2, href) => {
+var updateCanonicalLink = (doc, href) => {
   var _a2;
-  let canonicalLinkElm = doc2.head.querySelector('link[rel="canonical"]');
+  let canonicalLinkElm = doc.head.querySelector('link[rel="canonical"]');
   if (typeof href === "string") {
     if (canonicalLinkElm == null) {
-      canonicalLinkElm = doc2.createElement("link");
+      canonicalLinkElm = doc.createElement("link");
       canonicalLinkElm.setAttribute("rel", "canonical");
-      doc2.head.appendChild(canonicalLinkElm);
+      doc.head.appendChild(canonicalLinkElm);
     }
     canonicalLinkElm.setAttribute("href", href);
   } else {
@@ -24106,11 +24820,11 @@ var updateCanonicalLink = (doc2, href) => {
 };
 
 // src/compiler/html/relocate-meta-charset.ts
-var relocateMetaCharset = (doc2) => {
-  const head = doc2.head;
+var relocateMetaCharset = (doc) => {
+  const head = doc.head;
   let charsetElm = head.querySelector("meta[charset]");
   if (charsetElm == null) {
-    charsetElm = doc2.createElement("meta");
+    charsetElm = doc.createElement("meta");
     charsetElm.setAttribute("charset", "utf-8");
   } else {
     charsetElm.remove();
@@ -24385,13 +25099,13 @@ var parseCss = (css, filePath) => {
     const m = match(/^@([-\w]+)?document *([^{]+)/);
     if (!m) return null;
     const vendor = trim(m[1]);
-    const doc2 = trim(m[2]);
+    const doc = trim(m[2]);
     if (!open()) return error(`@document missing '{'`);
     const style = comments().concat(rules());
     if (!close()) return error(`@document missing '}'`);
     return pos({
       type: 3 /* Document */,
-      document: doc2,
+      document: doc,
       vendor,
       rules: style
     });
@@ -24717,11 +25431,11 @@ var serializeCssPage = (opts, node) => {
 };
 var serializeCssDocument = (opts, node) => {
   const documentCss = serializeCssMapVisit(opts, node.rules);
-  const doc2 = "@" + (node.vendor || "") + "document " + node.document;
+  const doc = "@" + (node.vendor || "") + "document " + node.document;
   if (documentCss === "") {
     return "";
   }
-  return doc2 + "{" + documentCss + "}";
+  return doc + "{" + documentCss + "}";
 };
 var serializeCssMapVisit = (opts, nodes) => {
   let rtn = "";
@@ -24819,12 +25533,12 @@ var collectUsedSelectors = (usedSelectors, elm) => {
 };
 
 // src/compiler/html/remove-unused-styles.ts
-var removeUnusedStyles = (doc2, diagnostics) => {
+var removeUnusedStyles = (doc, diagnostics) => {
   try {
-    const styleElms = doc2.head.querySelectorAll(`style[data-styles]`);
+    const styleElms = doc.head.querySelectorAll(`style[data-styles]`);
     const styleLen = styleElms.length;
     if (styleLen > 0) {
-      const usedSelectors = getUsedSelectors(doc2.documentElement);
+      const usedSelectors = getUsedSelectors(doc.documentElement);
       for (let i = 0; i < styleLen; i++) {
         removeUnusedStyleText(usedSelectors, diagnostics, styleElms[i]);
       }
@@ -24957,41 +25671,41 @@ function collectAttributes(node) {
 var SKIP_ATTRS = /* @__PURE__ */ new Set(["s-id", "c-id"]);
 
 // src/hydrate/runner/patch-dom-implementation.ts
-function patchDomImplementation(doc2, opts) {
+function patchDomImplementation(doc, opts) {
   let win2;
-  if (doc2.defaultView != null) {
+  if (doc.defaultView != null) {
     opts.destroyWindow = true;
-    patchWindow(doc2.defaultView);
-    win2 = doc2.defaultView;
+    patchWindow(doc.defaultView);
+    win2 = doc.defaultView;
   } else {
     opts.destroyWindow = true;
     opts.destroyDocument = false;
     win2 = new MockWindow(false);
   }
-  if (win2.document !== doc2) {
-    win2.document = doc2;
+  if (win2.document !== doc) {
+    win2.document = doc;
   }
-  if (doc2.defaultView !== win2) {
-    doc2.defaultView = win2;
+  if (doc.defaultView !== win2) {
+    doc.defaultView = win2;
   }
-  const HTMLElement2 = doc2.documentElement.constructor.prototype;
+  const HTMLElement2 = doc.documentElement.constructor.prototype;
   if (typeof HTMLElement2.getRootNode !== "function") {
-    const elm = doc2.createElement("unknown-element");
+    const elm = doc.createElement("unknown-element");
     const HTMLUnknownElement = elm.constructor.prototype;
     HTMLUnknownElement.getRootNode = getRootNode;
   }
-  if (typeof doc2.createEvent === "function") {
-    const CustomEvent2 = doc2.createEvent("CustomEvent").constructor;
+  if (typeof doc.createEvent === "function") {
+    const CustomEvent2 = doc.createEvent("CustomEvent").constructor;
     if (win2.CustomEvent !== CustomEvent2) {
       win2.CustomEvent = CustomEvent2;
     }
   }
   try {
-    win2.__stencil_baseURI = doc2.baseURI;
+    win2.__stencil_baseURI = doc.baseURI;
   } catch (e) {
-    Object.defineProperty(doc2, "baseURI", {
+    Object.defineProperty(doc, "baseURI", {
       get() {
-        const baseElm = doc2.querySelector("base[href]");
+        const baseElm = doc.querySelector("base[href]");
         if (baseElm) {
           return new URL(baseElm.getAttribute("href"), win2.location.href).href;
         }
@@ -25202,7 +25916,7 @@ var docData = {
   rootLevelIds: 0,
   staticComponents: /* @__PURE__ */ new Set()
 };
-function initializeWindow(win2, doc2, opts, results) {
+function initializeWindow(win2, doc, opts, results) {
   if (typeof opts.url === "string") {
     try {
       win2.location.href = opts.url;
@@ -25217,31 +25931,31 @@ function initializeWindow(win2, doc2, opts, results) {
   }
   if (typeof opts.cookie === "string") {
     try {
-      doc2.cookie = opts.cookie;
+      doc.cookie = opts.cookie;
     } catch (e) {
     }
   }
   if (typeof opts.referrer === "string") {
     try {
-      doc2.referrer = opts.referrer;
+      doc.referrer = opts.referrer;
     } catch (e) {
     }
   }
   if (typeof opts.direction === "string") {
     try {
-      doc2.documentElement.setAttribute("dir", opts.direction);
+      doc.documentElement.setAttribute("dir", opts.direction);
     } catch (e) {
     }
   }
   if (typeof opts.language === "string") {
     try {
-      doc2.documentElement.setAttribute("lang", opts.language);
+      doc.documentElement.setAttribute("lang", opts.language);
     } catch (e) {
     }
   }
   if (typeof opts.buildId === "string") {
     try {
-      doc2.documentElement.setAttribute("data-stencil-build", opts.buildId);
+      doc.documentElement.setAttribute("data-stencil-build", opts.buildId);
     } catch (e) {
     }
   }
@@ -25253,7 +25967,7 @@ function initializeWindow(win2, doc2, opts, results) {
     constrainTimeouts(win2);
   }
   runtimeLogging(win2, opts, results);
-  doc2[STENCIL_DOC_DATA] = docData;
+  doc[STENCIL_DOC_DATA] = docData;
   return win2;
 }
 
@@ -25267,24 +25981,25 @@ function renderToString(html, options, asStream) {
   const opts = normalizeHydrateOptions(options);
   opts.serializeToHtml = true;
   opts.fullDocument = typeof opts.fullDocument === "boolean" ? opts.fullDocument : true;
-  opts.serializeShadowRoot = typeof opts.serializeShadowRoot === "boolean" ? opts.serializeShadowRoot : true;
+  opts.serializeShadowRoot = typeof opts.serializeShadowRoot === "undefined" ? "declarative-shadow-dom" : opts.serializeShadowRoot;
   opts.constrainTimeouts = false;
   return hydrateDocument(html, opts, asStream);
 }
-function hydrateDocument(doc2, options, asStream) {
+function hydrateDocument(doc, options, asStream) {
   const opts = normalizeHydrateOptions(options);
+  opts.serializeShadowRoot = typeof opts.serializeShadowRoot === "undefined" ? "declarative-shadow-dom" : opts.serializeShadowRoot;
   let win2 = null;
   const results = generateHydrateResults(opts);
   if (hasError(results.diagnostics)) {
     return Promise.resolve(results);
   }
-  if (typeof doc2 === "string") {
+  if (typeof doc === "string") {
     try {
       opts.destroyWindow = true;
       opts.destroyDocument = true;
-      win2 = new MockWindow(doc2);
+      win2 = new MockWindow(doc);
       if (!asStream) {
-        return render(win2, opts, results).then(() => results);
+        return render2(win2, opts, results).then(() => results);
       }
       return renderStream(win2, opts, results);
     } catch (e) {
@@ -25296,12 +26011,12 @@ function hydrateDocument(doc2, options, asStream) {
       return Promise.resolve(results);
     }
   }
-  if (isValidDocument(doc2)) {
+  if (isValidDocument(doc)) {
     try {
       opts.destroyDocument = false;
-      win2 = patchDomImplementation(doc2, opts);
+      win2 = patchDomImplementation(doc, opts);
       if (!asStream) {
-        return render(win2, opts, results).then(() => results);
+        return render2(win2, opts, results).then(() => results);
       }
       return renderStream(win2, opts, results);
     } catch (e) {
@@ -25316,7 +26031,7 @@ function hydrateDocument(doc2, options, asStream) {
   renderBuildError(results, `Invalid html or document. Must be either a valid "html" string, or DOM "document".`);
   return Promise.resolve(results);
 }
-async function render(win2, opts, results) {
+async function render2(win2, opts, results) {
   if ("process" in globalThis && typeof process.on === "function" && !process.__stencilErrors) {
     process.__stencilErrors = true;
     process.on("unhandledRejection", (e) => {
@@ -25341,7 +26056,7 @@ async function render(win2, opts, results) {
 }
 function renderStream(win2, opts, results) {
   async function* processRender() {
-    const renderResult = await render(win2, opts, results);
+    const renderResult = await render2(win2, opts, results);
     yield renderResult.html;
   }
   return Readable.from(processRender());
@@ -25356,41 +26071,51 @@ async function afterHydrate(win2, opts, results, resolve) {
     return resolve(finalizeHydrate(win2, win2.document, opts, results));
   }
 }
-function finalizeHydrate(win2, doc2, opts, results) {
+function finalizeHydrate(win2, doc, opts, results) {
   try {
-    inspectElement(results, doc2.documentElement, 0);
+    inspectElement(results, doc.documentElement, 0);
     if (opts.removeUnusedStyles !== false) {
       try {
-        removeUnusedStyles(doc2, results.diagnostics);
+        removeUnusedStyles(doc, results.diagnostics);
       } catch (e) {
         renderCatchError(results, e);
       }
     }
     if (typeof opts.title === "string") {
       try {
-        doc2.title = opts.title;
+        doc.title = opts.title;
       } catch (e) {
         renderCatchError(results, e);
       }
     }
-    results.title = doc2.title;
+    results.title = doc.title;
     if (opts.removeScripts) {
-      removeScripts(doc2.documentElement);
+      removeScripts(doc.documentElement);
+    }
+    const styles2 = doc.querySelectorAll("head style");
+    if (styles2.length > 0) {
+      results.styles.push(
+        ...Array.from(styles2).map((style) => ({
+          href: style.getAttribute("href"),
+          id: style.getAttribute(HYDRATED_STYLE_ID),
+          content: style.textContent
+        }))
+      );
     }
     try {
-      updateCanonicalLink(doc2, opts.canonicalUrl);
+      updateCanonicalLink(doc, opts.canonicalUrl);
     } catch (e) {
       renderCatchError(results, e);
     }
     try {
-      relocateMetaCharset(doc2);
+      relocateMetaCharset(doc);
     } catch (e) {
     }
     if (!hasError(results.diagnostics)) {
       results.httpStatus = 200;
     }
     try {
-      const metaStatus = doc2.head.querySelector('meta[http-equiv="status"]');
+      const metaStatus = doc.head.querySelector('meta[http-equiv="status"]');
       if (metaStatus != null) {
         const metaStatusContent = metaStatus.getAttribute("content");
         if (metaStatusContent && metaStatusContent.length > 0) {
@@ -25400,25 +26125,25 @@ function finalizeHydrate(win2, doc2, opts, results) {
     } catch (e) {
     }
     if (opts.clientHydrateAnnotations) {
-      doc2.documentElement.classList.add("hydrated");
+      doc.documentElement.classList.add("hydrated");
     }
     if (opts.serializeToHtml) {
-      results.html = serializeDocumentToString(doc2, opts);
+      results.html = serializeDocumentToString(doc, opts);
     }
   } catch (e) {
     renderCatchError(results, e);
   }
-  destroyWindow(win2, doc2, opts, results);
+  destroyWindow(win2, doc, opts, results);
   return results;
 }
-function destroyWindow(win2, doc2, opts, results) {
+function destroyWindow(win2, doc, opts, results) {
   if (!opts.destroyWindow) {
     return;
   }
   try {
     if (!opts.destroyDocument) {
       win2.document = null;
-      doc2.defaultView = null;
+      doc.defaultView = null;
     }
     if (win2.close) {
       win2.close();
@@ -25427,8 +26152,8 @@ function destroyWindow(win2, doc2, opts, results) {
     renderCatchError(results, e);
   }
 }
-function serializeDocumentToString(doc2, opts) {
-  return serializeNodeToHtml(doc2, {
+function serializeDocumentToString(doc, opts) {
+  return serializeNodeToHtml(doc, {
     approximateLineWidth: opts.approximateLineWidth,
     outerHtml: false,
     prettyHtml: opts.prettyHtml,
@@ -25440,8 +26165,8 @@ function serializeDocumentToString(doc2, opts) {
     fullDocument: opts.fullDocument
   });
 }
-function isValidDocument(doc2) {
-  return doc2 != null && doc2.nodeType === 9 && doc2.documentElement != null && doc2.documentElement.nodeType === 1 && doc2.body != null && doc2.body.nodeType === 1;
+function isValidDocument(doc) {
+  return doc != null && doc.nodeType === 9 && doc.documentElement != null && doc.documentElement.nodeType === 1 && doc.body != null && doc.body.nodeType === 1;
 }
 function removeScripts(elm) {
   const children = elm.children;
@@ -25454,4 +26179,4 @@ function removeScripts(elm) {
   }
 }
 
-export { createWindowFromHtml, hydrateDocument, renderToString, serializeDocumentToString, streamToString };
+export { createWindowFromHtml, deserializeProperty, hydrateDocument, renderToString, serializeDocumentToString, serializeProperty, streamToString };
