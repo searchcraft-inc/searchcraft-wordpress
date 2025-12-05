@@ -3,7 +3,7 @@ Donate link: https://searchcraft.io/
 Contributors: searchcraft
 Tags:         search, fuzzy search, better search, instant search, search replacement
 Requires at least: 5.3
-Tested up to: 6.8
+Tested up to: 6.9
 Stable tag:   1.1.0
 License:      Apache 2.0
 License URI:  LICENSE.txt
@@ -68,6 +68,15 @@ If you would like to report an issue or suggest an enhancement you may contact t
 Searchcraft Cloud customers may also reach out via our Discord server for assistance or to request a custom feature.
 
 == Changelog ==
+
+= 1.1.1 =
+* New Feature - Custom post type and custom fields support is here! If you have a custom type you can now add it to the same search index as the standard WordPress post type. You can also optionally include custom fields from these types.
+* New Feature - Filter panel items are now re-orderable.
+* New Feature - Search requests now differentiate between signed in and signed out users.
+* New Feature - Filter label colors are now editable via layout GUI.
+* Updates Searchcraft JavaScript SDK to v0.13.1
+* Bugfix - option check for PublishPress authors.
+* WP 6.9 compatibility
 
 = 1.1.0 =
 
