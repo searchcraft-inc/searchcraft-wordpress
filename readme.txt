@@ -76,7 +76,8 @@ Searchcraft Cloud customers may also reach out via our Discord server for assist
 * New Feature - Filter label colors are now editable via layout GUI.
 * Updates Searchcraft JavaScript SDK to v0.13.1
 * Bugfix - option check for PublishPress authors.
-* WP 6.9 compatibility
+* Bugfix - Precision fix for float values ending with zeros (via Searchraft PHP client update).
+* WP 6.9 compatibility.
 
 = 1.1.0 =
 
