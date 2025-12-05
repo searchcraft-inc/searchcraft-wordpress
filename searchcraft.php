@@ -118,6 +118,11 @@ function activate_searchcraft() {
 		update_option( 'searchcraft_include_filter_panel', false );
 	}
 
+	// Set default filter label color if not already set.
+	if ( false === get_option( 'searchcraft_filter_label_color' ) ) {
+		update_option( 'searchcraft_filter_label_color', '#000000' );
+	}
+
 	// Set a transient to show the activation notice.
 	set_transient( 'searchcraft_activation_notice', true, 60 );
 }
