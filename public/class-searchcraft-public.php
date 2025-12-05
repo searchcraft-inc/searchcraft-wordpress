@@ -315,6 +315,13 @@ class Searchcraft_Public {
 		);
 		$js_config['filterTaxonomies'] = $taxonomy_config;
 		$js_config['isWPSearchPage']   = (bool) is_search();
+
+		// Add user identifier for analytics if user is logged in.
+		$user_id = get_current_user_id();
+		if ( is_user_logged_in() && $user_id > 0 ) {
+			$js_config['measureUserIdentifier'] = (string) $user_id;
+		}
+
 		return $js_config;
 	}
 
@@ -387,7 +394,7 @@ class Searchcraft_Public {
 
 		wp_enqueue_script(
 			$this->plugin_name . '-sdk-components',
-			plugin_dir_url( __FILE__ ) . 'sdk/components/index.js?v=0.13.0',
+			plugin_dir_url( __FILE__ ) . 'sdk/components/index.js?v=0.13.1',
 			$script_deps,
 			$this->version,
 			true
@@ -426,14 +433,14 @@ class Searchcraft_Public {
 		// Add CSS for Searchcraft components.
 		wp_enqueue_style(
 			$this->plugin_name . '-sdk-hologram-styles',
-			plugin_dir_url( __FILE__ ) . 'sdk/themes/hologram.css?v=0.13.0',
+			plugin_dir_url( __FILE__ ) . 'sdk/themes/hologram.css?v=0.13.1',
 			$style_deps,
 			$this->version,
 			'all'
 		);
 		wp_enqueue_style(
 			$this->plugin_name . '-sdk-styles',
-			plugin_dir_url( __FILE__ ) . 'css/searchcraft-sdk.css?v=0.13.0',
+			plugin_dir_url( __FILE__ ) . 'css/searchcraft-sdk.css?v=0.13.1',
 			$style_deps,
 			$this->version,
 			'all'
