@@ -11,6 +11,7 @@ export declare class SearchcraftCore {
     searchClient: SearchClient | undefined;
     adClient: AdClient | undefined;
     userId: string;
+    userType: 'authenticated' | 'anonymous';
     private requestTimeout;
     private subscriptionEvents;
     /**

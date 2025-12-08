@@ -10,7 +10,7 @@
  * Plugin Name:       Searchcraft
  * Plugin URI:        https://github.com/searchcraft-inc/searchcraft-wordpress
  * Description:       Bring fast, relevant search to your site. Searchcraft replaces the default search with a customizable, tunable, highly relevant search experience.
- * Version:           1.1.0
+ * Version:           1.1.1
  * Author:            Searchcraft, Inc.
  * Author URI:        https://searchcraft.io/
  * License:           Apache 2.0
@@ -26,7 +26,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 // Define plugin constants.
 if ( ! defined( 'SEARCHCRAFT_VERSION' ) ) {
-	define( 'SEARCHCRAFT_VERSION', '1.1.0' );
+	define( 'SEARCHCRAFT_VERSION', '1.1.1' );
 }
 
 if ( ! defined( 'SEARCHCRAFT_PLUGIN_FILE' ) ) {
@@ -116,6 +116,11 @@ function activate_searchcraft() {
 	// Set default filter panel setting if not already set.
 	if ( false === get_option( 'searchcraft_include_filter_panel' ) ) {
 		update_option( 'searchcraft_include_filter_panel', false );
+	}
+
+	// Set default filter label color if not already set.
+	if ( false === get_option( 'searchcraft_filter_label_color' ) ) {
+		update_option( 'searchcraft_filter_label_color', '#000000' );
 	}
 
 	// Set a transient to show the activation notice.

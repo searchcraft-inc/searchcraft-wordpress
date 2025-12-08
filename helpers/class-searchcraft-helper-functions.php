@@ -90,7 +90,7 @@ class Searchcraft_Helper_Functions {
 	 * @var mixed $value The value to check.
 	 * @return bool True if the value is a valid date, false otherwise.
 	 */
-	private static function searchcraft_is_valid_date_format( $value ) {
+	public static function searchcraft_is_valid_date_format( $value ) {
 		// Check if the value matches the strict YYYYMMDD format.
 		if ( preg_match( '/^\d{8}$/', $value ) ) {
 			// Create a DateTime object from the value and ensure the round trip matches.
@@ -188,14 +188,15 @@ class Searchcraft_Helper_Functions {
 
 		global $wpdb;
 
-		// Get the IDs of the most recent 10 posts of the given post type that are published.
+		// Get the IDs of the most recent 10 posts of the given post type.
+		// Include publish, draft, pending, and private statuses to ensure we find custom fields.
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$post_ids = $wpdb->get_col(
 			$wpdb->prepare(
 				"
                 SELECT ID FROM $wpdb->posts
                 WHERE post_type = %s
-                AND post_status = 'publish'
+                AND post_status IN ('publish', 'draft', 'pending', 'private')
                 ORDER BY post_date DESC
                 LIMIT 10
             ",

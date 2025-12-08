@@ -1,11 +1,13 @@
-import { p as proxyCustomElement, H, h } from './p-5365011f.js';
-import { r as registry } from './p-e30203b1.js';
-import { d as defineCustomElement$2 } from './p-73db9122.js';
+import { p as proxyCustomElement, H, h } from './p-DO5g2x-l.js';
+import { r as registry } from './p-D0j0UFpV.js';
+import { d as defineCustomElement$2 } from './p-Dc7S4y3b.js';
 
 const SearchcraftSearchResultsPerPage$1 = /*@__PURE__*/ proxyCustomElement(class SearchcraftSearchResultsPerPage extends H {
-    constructor() {
+    constructor(registerHost) {
         super();
-        this.__registerHost();
+        if (registerHost !== false) {
+            this.__registerHost();
+        }
     }
     /**
      * The amount the options will increase (e.g. 20 = [20, 40, 60, 80, 100]).
@@ -59,7 +61,8 @@ const SearchcraftSearchResultsPerPage$1 = /*@__PURE__*/ proxyCustomElement(class
         const isInitialQuery = typeof this.searchClientRequestProperties === 'string' &&
             this.searchTerm.trim() === '';
         // early return if there isn't a searchTerm (unless it's initialQuery) or there is 1 or fewer pages of results
-        if ((!this.searchTerm && !isInitialQuery) || this.searchResultsPagesCount <= 1) {
+        if ((!this.searchTerm && !isInitialQuery) ||
+            this.searchResultsPagesCount <= 1) {
             return;
         }
         return (h("div", { class: 'searchcraft-search-results-per-page' }, h("div", { class: 'searchcraft-search-results-per-page-select' }, h("label", { class: 'searchcraft-search-results-per-page-select-label', htmlFor: 'searchcraft-search-results-per-page-select-input' }, "Results Per Page"), h("div", { class: 'searchcraft-search-results-per-page-select-input' }, h("searchcraft-select", { inputId: 'searchcraft-search-results-per-page-select-input', name: 'results-per-page', options: [...Array(5)].map((_, index) => {
@@ -74,7 +77,7 @@ const SearchcraftSearchResultsPerPage$1 = /*@__PURE__*/ proxyCustomElement(class
                 this.setSearchResultsPage(1);
             } })))));
     }
-}, [0, "searchcraft-search-results-per-page", {
+}, [768, "searchcraft-search-results-per-page", {
         "increment": [8],
         "searchcraftId": [1, "searchcraft-id"],
         "searchTerm": [32],
@@ -110,5 +113,6 @@ const SearchcraftSearchResultsPerPage = SearchcraftSearchResultsPerPage$1;
 const defineCustomElement = defineCustomElement$1;
 
 export { SearchcraftSearchResultsPerPage, defineCustomElement };
+//# sourceMappingURL=searchcraft-search-results-per-page.js.map
 
 //# sourceMappingURL=searchcraft-search-results-per-page.js.map

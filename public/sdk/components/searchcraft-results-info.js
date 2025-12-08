@@ -1,12 +1,14 @@
-import { p as proxyCustomElement, H, h } from './p-5365011f.js';
-import { r as registry } from './p-e30203b1.js';
-import { f as formatNumberWithCommas } from './p-d54771ef.js';
-import { h as html } from './p-b4b67072.js';
+import { p as proxyCustomElement, H, h } from './p-DO5g2x-l.js';
+import { r as registry } from './p-D0j0UFpV.js';
+import { f as formatNumberWithCommas } from './p-i8oXh7db.js';
+import { h as html } from './p-_aHgRsRD.js';
 
 const SearchcraftResultsInfo$1 = /*@__PURE__*/ proxyCustomElement(class SearchcraftResultsInfo extends H {
-    constructor() {
+    constructor(registerHost) {
         super();
-        this.__registerHost();
+        if (registerHost !== false) {
+            this.__registerHost();
+        }
     }
     /**
      * A callback function responsible for rendering the results info.
@@ -74,7 +76,7 @@ const SearchcraftResultsInfo$1 = /*@__PURE__*/ proxyCustomElement(class Searchcr
             }, { html })
             : `${formatNumberWithCommas(this.count)} results found in ${this.responseTime}ms`));
     }
-}, [0, "searchcraft-results-info", {
+}, [768, "searchcraft-results-info", {
         "template": [16],
         "searchcraftId": [1, "searchcraft-id"],
         "searchTerm": [32],
@@ -104,5 +106,6 @@ const SearchcraftResultsInfo = SearchcraftResultsInfo$1;
 const defineCustomElement = defineCustomElement$1;
 
 export { SearchcraftResultsInfo, defineCustomElement };
+//# sourceMappingURL=searchcraft-results-info.js.map
 
 //# sourceMappingURL=searchcraft-results-info.js.map

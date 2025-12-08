@@ -1,4 +1,4 @@
-import type { AdClientResponseItem, SearchcraftConfig, SearchcraftResponse, SearchClientRequestProperties } from "../../types/index";
+import type { AdClientResponseItem, SearchClientRequestProperties, SearchcraftConfig, SearchcraftResponse } from "../../types/index";
 export declare class AdClient {
     config: SearchcraftConfig;
     constructor(config: SearchcraftConfig);

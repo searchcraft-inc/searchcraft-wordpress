@@ -1076,3 +1076,55 @@ table.searchcraft-synonyms-table td:nth-child(3) {
 	margin: 10px 0;
 	padding: 10px;
 }
+
+/* ======== Drag and Drop Filter Panel Items ======== */
+.searchcraft-sortable-list {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+
+.searchcraft-filter-item {
+	position: relative;
+	background: #fff;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	padding: 12px 12px 12px 40px;
+	margin-bottom: 8px;
+	cursor: move;
+	transition: all 0.2s ease;
+}
+
+.searchcraft-filter-item:hover {
+	background: #f9f9f9;
+	border-color: #999;
+}
+
+.searchcraft-filter-item.dragging {
+	opacity: 0.5;
+	background: #e0e0e0;
+}
+
+.searchcraft-filter-item.drag-over {
+	border-top: 3px solid #2271b1;
+	padding-top: 10px;
+}
+
+.searchcraft-drag-handle {
+	position: absolute;
+	left: 12px;
+	top: 50%;
+	transform: translateY(-50%);
+	color: #999;
+	cursor: move;
+	font-size: 18px;
+}
+
+.searchcraft-filter-item:hover .searchcraft-drag-handle {
+	color: #2271b1;
+}
+
+.searchcraft-filter-item label {
+	cursor: pointer;
+	user-select: none;
+}

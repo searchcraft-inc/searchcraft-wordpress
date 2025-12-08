@@ -1,13 +1,15 @@
-import { p as proxyCustomElement, H, h } from './p-5365011f.js';
-import { r as registry } from './p-e30203b1.js';
-import { d as defineCustomElement$4 } from './p-87435aac.js';
-import { d as defineCustomElement$3 } from './p-f2585cdf.js';
-import { d as defineCustomElement$2 } from './p-3286bbb3.js';
+import { p as proxyCustomElement, H, h } from './p-DO5g2x-l.js';
+import { r as registry } from './p-D0j0UFpV.js';
+import { d as defineCustomElement$4 } from './p-C1S92_N8.js';
+import { d as defineCustomElement$3 } from './p-DjPZkCLP.js';
+import { d as defineCustomElement$2 } from './p-DotXR-Gz.js';
 
 const SearchcraftSearchResults$1 = /*@__PURE__*/ proxyCustomElement(class SearchcraftSearchResults extends H {
-    constructor() {
+    constructor(registerHost) {
         super();
-        this.__registerHost();
+        if (registerHost !== false) {
+            this.__registerHost();
+        }
     }
     /**
      * The id of the Searchcraft instance that this component should use.
@@ -148,7 +150,7 @@ const SearchcraftSearchResults$1 = /*@__PURE__*/ proxyCustomElement(class Search
         }
         return this.renderWithNoAds();
     }
-}, [4, "searchcraft-search-results", {
+}, [772, "searchcraft-search-results", {
         "searchcraftId": [1, "searchcraft-id"],
         "initialQuery": [1, "initial-query"],
         "template": [16],
@@ -193,5 +195,6 @@ const SearchcraftSearchResults = SearchcraftSearchResults$1;
 const defineCustomElement = defineCustomElement$1;
 
 export { SearchcraftSearchResults, defineCustomElement };
+//# sourceMappingURL=searchcraft-search-results.js.map
 
 //# sourceMappingURL=searchcraft-search-results.js.map

@@ -1,5 +1,5 @@
-import type { SearchDocument, SearchClientResponseItem, PopoverResultMappings } from "../../types/index";
 import type { SearchcraftCore } from "../../classes/index";
+import type { PopoverResultMappings, SearchClientResponseItem, SearchDocument } from "../../types/index";
 /**
  * A single list item rendered in a searchcraft-popover-list-view.
  *
