@@ -4,7 +4,7 @@ Contributors: searchcraft
 Tags:         search, fuzzy search, better search, instant search, search replacement
 Requires at least: 5.3
 Tested up to: 6.9
-Stable tag:   1.1.0
+Stable tag:   1.1.1
 License:      Apache 2.0
 License URI:  LICENSE.txt
 
