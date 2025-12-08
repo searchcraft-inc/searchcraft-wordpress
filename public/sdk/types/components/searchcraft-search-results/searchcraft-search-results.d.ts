@@ -1,6 +1,6 @@
-import type { AdClientResponseItem, SearchClientResponseItem, SearchcraftConfig, SearchResultTemplate, SearchResultTemplateData } from "../../types/index";
-import type { SearchcraftState } from "../../store/index";
+import type { AdClientResponseItem, SearchClientResponseItem, SearchResultTemplate, SearchResultTemplateData, SearchcraftConfig } from "../../types/index";
 import type { SearchcraftCore } from "../../classes/index";
+import type { SearchcraftState } from "../../store/index";
 /**
  * This web component is responsible for displaying the results of a search query. Once a query is submitted, the component formats and presents an ordered list of the results.
  *

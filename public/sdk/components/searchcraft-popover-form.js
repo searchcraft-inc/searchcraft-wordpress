@@ -1,19 +1,21 @@
-import { p as proxyCustomElement, H, h } from './p-5365011f.js';
-import { c as classNames } from './p-5cdc6210.js';
-import { r as registry } from './p-e30203b1.js';
-import { d as defineCustomElement$9 } from './p-87435aac.js';
-import { d as defineCustomElement$8 } from './p-acf23bab.js';
-import { d as defineCustomElement$7 } from './p-f2585cdf.js';
-import { d as defineCustomElement$6 } from './p-870f81fd.js';
-import { d as defineCustomElement$5 } from './p-1adf78b9.js';
-import { d as defineCustomElement$4 } from './p-1d5c5536.js';
-import { d as defineCustomElement$3 } from './p-fc8ccffa.js';
-import { d as defineCustomElement$2 } from './p-b13c7fbb.js';
+import { p as proxyCustomElement, H, h } from './p-DO5g2x-l.js';
+import { r as registry } from './p-D0j0UFpV.js';
+import { c as classNames } from './p-BfTCfPZ1.js';
+import { d as defineCustomElement$9 } from './p-C1S92_N8.js';
+import { d as defineCustomElement$8 } from './p-C681KruS.js';
+import { d as defineCustomElement$7 } from './p-DjPZkCLP.js';
+import { d as defineCustomElement$6 } from './p-C-wcIch1.js';
+import { d as defineCustomElement$5 } from './p-L4PwHqQC.js';
+import { d as defineCustomElement$4 } from './p-C7ZK8CYu.js';
+import { d as defineCustomElement$3 } from './p-Cju73I1E.js';
+import { d as defineCustomElement$2 } from './p-Dr9rPC9v.js';
 
 const SearchcraftPopoverForm$1 = /*@__PURE__*/ proxyCustomElement(class SearchcraftPopoverForm extends H {
-    constructor() {
+    constructor(registerHost) {
         super();
-        this.__registerHost();
+        if (registerHost !== false) {
+            this.__registerHost();
+        }
     }
     /**
      * The type of popover form to render.
@@ -257,7 +259,7 @@ const SearchcraftPopoverForm$1 = /*@__PURE__*/ proxyCustomElement(class Searchcr
                 return this.renderFullscreenPopover();
         }
     }
-}, [0, "searchcraft-popover-form", {
+}, [768, "searchcraft-popover-form", {
         "type": [1],
         "popoverResultMappings": [16],
         "hotkey": [1],
@@ -340,5 +342,6 @@ const SearchcraftPopoverForm = SearchcraftPopoverForm$1;
 const defineCustomElement = defineCustomElement$1;
 
 export { SearchcraftPopoverForm, defineCustomElement };
+//# sourceMappingURL=searchcraft-popover-form.js.map
 
 //# sourceMappingURL=searchcraft-popover-form.js.map

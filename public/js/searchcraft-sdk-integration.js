@@ -50,7 +50,7 @@
     async function loadSearchcraftSDK() {
         try {
             // Get the SDK script element to determine the module URL
-            const sdkScript = document.querySelector('script[src*="sdk/components/index.js?v=0.12.2"]');
+            const sdkScript = document.querySelector('script[src*="sdk/components/index.js?v=0.13.1"]');
             if (!sdkScript) {
                 console.error('Searchcraft: SDK script not found');
                 showConfigurationError('SDK script not found');
@@ -78,6 +78,11 @@
             // Add cortexURL if AI summary is enabled
             if (searchcraft_config.cortexURL && searchcraft_config.enableAiSummary) {
                 config.cortexURL = searchcraft_config.cortexURL;
+            }
+
+            // Add user identifier for analytics if available
+            if (searchcraft_config.measureUserIdentifier && searchcraft_config.measureUserIdentifier !== '0') {
+                config.measureUserIdentifier = searchcraft_config.measureUserIdentifier;
             }
 
             // Set initialQuery based on page type

@@ -1,4 +1,6 @@
-declare type CustomMethodDecorator<T> = (target: Object, propertyKey: string | symbol, descriptor: TypedPropertyDescriptor<T>) => TypedPropertyDescriptor<T> | void;
+type CustomMethodDecorator<T> = (target: object, propertyKey: string | symbol, descriptor: TypedPropertyDescriptor<T>) => TypedPropertyDescriptor<T> | void;
+type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (k: infer I) => void ? I : never;
+type MixinInstance<F> = F extends (base: MixedInCtor) => MixedInCtor<infer I> ? I : never;
 export interface ComponentDecorator {
     (opts?: ComponentOptions): ClassDecorator;
 }
@@ -151,7 +153,13 @@ export interface StateDecorator {
     (): PropertyDecorator;
 }
 export interface WatchDecorator {
-    (propName: string): CustomMethodDecorator<any>;
+    (propName: any): CustomMethodDecorator<(newValue?: any, oldValue?: any, propName?: any, ...args: any[]) => any | void>;
+}
+export interface PropSerializeDecorator {
+    (propName: any): CustomMethodDecorator<(newValue?: any, propName?: string, ...args: any[]) => string | null>;
+}
+export interface AttrDeserializeDecorator {
+    (propName: any): CustomMethodDecorator<(newValue?: any, propName?: string, ...args: any[]) => any>;
 }
 export interface UserBuildConditionals {
     isDev: boolean;
@@ -233,6 +241,14 @@ export declare const State: StateDecorator;
  * https://stenciljs.com/docs/reactive-data#watch-decorator
  */
 export declare const Watch: WatchDecorator;
+/**
+ * Decorator to serialize a property to an attribute string.
+ */
+export declare const PropSerialize: PropSerializeDecorator;
+/**
+ * Decorator to deserialize an attribute string to a property.
+ */
+export declare const AttrDeserialize: AttrDeserializeDecorator;
 export type ResolutionHandler = (elm: HTMLElement) => string | undefined | null;
 export type ErrorHandler = (err: any, element?: HTMLElement) => void;
 /**
@@ -260,6 +276,25 @@ export declare function setPlatformHelpers(helpers: {
  * @returns the base path
  */
 export declare function getAssetPath(path: string): string;
+/**
+ * Method to render a virtual DOM tree to a container element.
+ *
+ * @example
+ * ```tsx
+ * import { render } from '@stencil/core';
+ *
+ * const vnode = (
+ *   <div>
+ *     <h1>Hello, world!</h1>
+ *   </div>
+ * );
+ * render(vnode, document.body);
+ * ```
+ *
+ * @param vnode - The virtual DOM tree to render
+ * @param container - The container element to render the virtual DOM tree to
+ */
+export declare function render(vnode: VNode, container: Element): void;
 /**
  * Used to manually set the base path where assets can be found. For lazy-loaded
  * builds the asset path is automatically set and assets copied to the correct
@@ -330,6 +365,37 @@ export declare function readTask(task: RafCallback): void;
  * Unhandled exception raised while rendering, during event handling, or lifecycles will trigger the custom event handler.
  */
 export declare const setErrorHandler: (handler: ErrorHandler) => void;
+/**
+ * @deprecated - Use `MixedInCtor` instead:
+ * ```ts
+ * import { MixedInCtor } from '@stencil/core';
+ *
+ * const AFactoryFn = <B extends MixedInCtor>(Base: B) => {class A extends Base { propA = A }; return A;}
+ * ```
+ */
+export type MixinFactory = (base: MixedInCtor) => MixedInCtor;
+export type MixedInCtor<T = {}> = new (...args: any[]) => T;
+/**
+ * Compose multiple mixin classes into a single constructor.
+ * The resulting class has the combined instance types of all mixed-in classes.
+ *
+ * Example:
+ * ```ts
+ * import { Mixin, MixedInCtor } from '@stencil/core';
+ *
+ * const AWrap = <B extends MixedInCtor>(Base: B) => {class A extends Base { propA = A }; return A;}
+ * const BWrap = <B extends MixedInCtor>(Base: B) => {class B extends Base { propB = B }; return B;}
+ * const CWrap = <B extends MixedInCtor>(Base: B) => {class C extends Base { propC = C }; return C;}
+ *
+ * class X extends Mixin(AWrap, BWrap, CWrap) {
+ *   render() { return <div>{this.propA} {this.propB} {this.propC}</div>; }
+ * }
+ * ```
+ *
+ * @param mixinFactories mixin factory functions that return a class which extends from the provided class.
+ * @returns a class that is composed from extending each of the provided classes in the order they were provided.
+ */
+export declare function Mixin<const TMixins extends readonly MixinFactory[]>(...mixinFactories: TMixins): abstract new (...args: any[]) => UnionToIntersection<MixinInstance<TMixins[number]>>;
 /**
  * This file gets copied to all distributions of stencil component collections.
  * - no imports
@@ -826,7 +892,8 @@ export declare namespace JSXBase {
     }
     interface DetailsHTMLAttributes<T> extends HTMLAttributes<T> {
         open?: boolean;
-        onToggle?: (event: Event) => void;
+        name?: string;
+        onToggle?: (event: ToggleEvent) => void;
     }
     interface DelHTMLAttributes<T> extends HTMLAttributes<T> {
         cite?: string;
@@ -1532,6 +1599,13 @@ export declare namespace JSXBase {
         z?: number | string;
         zoomAndPan?: string;
     }
+    /** [MDN Reference](https://developer.mozilla.org/docs/Web/API/ToggleEvent) */
+    interface ToggleEvent extends Event {
+        /** [MDN Reference](https://developer.mozilla.org/docs/Web/API/ToggleEvent/newState) */
+        readonly newState: string;
+        /** [MDN Reference](https://developer.mozilla.org/docs/Web/API/ToggleEvent/oldState) */
+        readonly oldState: string;
+    }
     interface DOMAttributes<T> extends JSXAttributes<T> {
         slot?: string;
         part?: string;
@@ -1548,6 +1622,10 @@ export declare namespace JSXBase {
         onCompositionstartCapture?: (event: CompositionEvent) => void;
         onCompositionupdate?: (event: CompositionEvent) => void;
         onCompositionupdateCapture?: (event: CompositionEvent) => void;
+        onBeforeToggle?: (event: ToggleEvent) => void;
+        onBeforeToggleCapture?: (event: ToggleEvent) => void;
+        onToggle?: (event: ToggleEvent) => void;
+        onToggleCapture?: (event: ToggleEvent) => void;
         onFocus?: (event: FocusEvent) => void;
         onFocusCapture?: (event: FocusEvent) => void;
         onFocusin?: (event: FocusEvent) => void;
@@ -1566,10 +1644,6 @@ export declare namespace JSXBase {
         onSubmitCapture?: (event: Event) => void;
         onInvalid?: (event: Event) => void;
         onInvalidCapture?: (event: Event) => void;
-        onBeforeToggle?: (event: Event) => void;
-        onBeforeToggleCapture?: (event: Event) => void;
-        onToggle?: (event: Event) => void;
-        onToggleCapture?: (event: Event) => void;
         onLoad?: (event: Event) => void;
         onLoadCapture?: (event: Event) => void;
         onError?: (event: Event) => void;
@@ -1581,7 +1655,7 @@ export declare namespace JSXBase {
         onKeyUp?: (event: KeyboardEvent) => void;
         onKeyUpCapture?: (event: KeyboardEvent) => void;
         onAuxClick?: (event: MouseEvent) => void;
-        onClick?: (event: MouseEvent) => void;
+        onClick?: (event: PointerEvent) => void;
         onClickCapture?: (event: MouseEvent) => void;
         onContextMenu?: (event: MouseEvent) => void;
         onContextMenuCapture?: (event: MouseEvent) => void;
@@ -1661,6 +1735,8 @@ export declare namespace JSXBase {
         onTransitionRunCapture?: (event: TransitionEvent) => void;
         onTransitionStart?: (event: TransitionEvent) => void;
         onTransitionStartCapture?: (event: TransitionEvent) => void;
+        [key: `aria-${string}`]: string | boolean | undefined;
+        [key: `aria${string}`]: string | boolean | undefined;
     }
 }
 export interface JSXAttributes<T = Element> {

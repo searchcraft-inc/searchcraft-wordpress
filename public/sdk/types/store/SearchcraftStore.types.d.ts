@@ -14,6 +14,7 @@ export interface SearchcraftStateFunctions {
     search: (options?: {
         skipSummary?: boolean;
     }) => Promise<void>;
+    setFilterPanelVisibility: (isVisible: boolean) => void;
     setPopoverVisibility: (isVisible: boolean) => void;
     setSearchResultsCount: (count: number) => void;
     setSearchResultsPage: (page: number) => void;
@@ -36,6 +37,7 @@ export interface SearchcraftStateValues {
     hotkey: string;
     hotkeyModifier: 'ctrl' | 'meta' | 'alt' | 'option';
     facetPathsForIndexFields: Record<string, FacetPathsForIndexField>;
+    isFilterPanelVisible: boolean;
     isPopoverVisible: boolean;
     isSearchInProgress: boolean;
     rangeValueForIndexFields: Record<string, RangeValueForIndexField>;

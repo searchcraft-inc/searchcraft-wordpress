@@ -15,9 +15,13 @@ export namespace Components {
      */
     interface SearchcraftAd {
         "adClientResponseItem"?: AdClientResponseItem;
+        /**
+          * @default 'Custom'
+         */
         "adSource": 'Custom' | 'Nativo' | 'adMarketplace';
         /**
           * Where the ad is being rendered within the search results div. Lifecycle behavior differs for ads being rendered in different positions, so we need to be able to handle all of those cases.
+          * @default 'interstitial'
          */
         "renderPosition": 'interstitial' | 'top' | 'bottom';
         /**
@@ -32,10 +36,12 @@ export namespace Components {
     interface SearchcraftButton {
         /**
           * Whether the button is disabled.
+          * @default false
          */
         "disabled"?: boolean;
         /**
           * Controls the visual representation of the button.
+          * @default 'primary'
          */
         "hierarchy"?: 'primary' | 'tertiary';
         /**
@@ -44,18 +50,22 @@ export namespace Components {
         "icon"?: Element;
         /**
           * Should the button only display an icon.
+          * @default false
          */
         "iconOnly"?: boolean;
         /**
           * The position of the icon.
+          * @default 'left'
          */
         "iconPosition"?: 'left' | 'right';
         /**
           * The label for the button.
+          * @default 'Search'
          */
         "label": string;
         /**
           * The type of the button.
+          * @default 'button'
          */
         "type"?: 'submit' | 'reset' | 'button';
     }
@@ -91,6 +101,7 @@ export namespace Components {
         "exclude"?: string[];
         /**
           * The name of the field where facets are applied.
+          * @default ''
          */
         "fieldName": string;
         /**
@@ -127,8 +138,19 @@ export namespace Components {
     interface SearchcraftFilterPanel {
         /**
           * The items to filter.
+          * @default []
          */
         "items": FilterItem[];
+        /**
+          * Controls whether the filter panel automatically hides/shows based on window size. - 'auto': Automatically hide/show based on window width - 'manual': User controls visibility manually
+          * @default 'auto'
+         */
+        "responsiveBehavior"?: 'auto' | 'manual';
+        /**
+          * The breakpoint (in pixels) below which the filter panel will be hidden. Defaults to 768px (--sc-breakpoint-md).
+          * @default 768
+         */
+        "responsiveBreakpoint"?: number;
         /**
           * The id of the Searchcraft instance that this component should use.
          */
@@ -156,6 +178,7 @@ export namespace Components {
     interface SearchcraftInputForm {
         /**
           * Whether or not to automatically submit the search term when the input changes.
+          * @default true
          */
         "autoSearch"?: boolean;
         /**
@@ -164,6 +187,7 @@ export namespace Components {
         "buttonLabel"?: string;
         /**
           * Where to place the search button.
+          * @default 'none'
          */
         "buttonPlacement"?: 'left' | 'right' | 'none';
         /**
@@ -176,6 +200,7 @@ export namespace Components {
         "placeholderBehavior"?: 'hide-on-focus' | 'hide-on-text-entered';
         /**
           * The input element's placeholder value.
+          * @default 'Enter Search'
          */
         "placeholderValue"?: string;
         /**
@@ -196,8 +221,12 @@ export namespace Components {
     interface SearchcraftInputLabel {
         /**
           * The classname applied to the label element.
+          * @default ''
          */
         "inputLabelClassName"?: string | undefined;
+        /**
+          * @default ''
+         */
         "label": string;
     }
     /**
@@ -320,10 +349,12 @@ export namespace Components {
     interface SearchcraftPopoverForm {
         /**
           * The hotkey that activates the popover.
+          * @default 'k'
          */
         "hotkey"?: string;
         /**
           * The hotkey modifier that activates the popover. Used together with the `hotkey` prop.
+          * @default 'meta'
          */
         "hotkeyModifier"?: 'ctrl' | 'meta' | 'alt' | 'option';
         /**
@@ -332,6 +363,7 @@ export namespace Components {
         "placeholderBehavior"?: 'hide-on-focus' | 'hide-on-text-entered';
         /**
           * The input element's placeholder value.
+          * @default 'Enter Search'
          */
         "placeholderValue"?: string;
         /**
@@ -344,6 +376,7 @@ export namespace Components {
         "searchcraftId"?: string;
         /**
           * The type of popover form to render. - `inline` - Renders inline with the rest of the content on the page. The search results pop over the page content. - `fullscreen` - Renders in fullscreen view. Used together with the `searchcraft-popover-button` component. - `modal` - Renders in a modal view. Used together with the `searchcraft-popover-button` component.
+          * @default 'inline'
          */
         "type"?: 'inline' | 'fullscreen' | 'modal';
     }
@@ -353,6 +386,7 @@ export namespace Components {
     interface SearchcraftPopoverListItem {
         /**
           * The document position relative to the search results (For Measure)
+          * @default 0
          */
         "documentPosition": number;
         "item": SearchClientResponseItem | undefined;
@@ -436,6 +470,7 @@ export namespace Components {
     interface SearchcraftSearchResult {
         /**
           * The position in the document. Used with the "document_clicked" measure event.
+          * @default 0
          */
         "documentPosition": number;
         /**
@@ -529,6 +564,7 @@ export namespace Components {
     interface SearchcraftSearchResultsPerPage {
         /**
           * The amount the options will increase (e.g. 20 = [20, 40, 60, 80, 100]). The base value is defined by the `searchResultsPerPage` option in the configuration.
+          * @default 20
          */
         "increment": string | number;
         /**
@@ -554,6 +590,7 @@ export namespace Components {
         "caption"?: string;
         /**
           * Whether the select input is disabled.
+          * @default false
          */
         "disabled"?: boolean;
         /**
@@ -574,6 +611,7 @@ export namespace Components {
         "name": string;
         /**
           * The options for the select input.
+          * @default []
          */
         "options": SearchcraftSelectOption[] | string;
     }
@@ -583,6 +621,7 @@ export namespace Components {
     interface SearchcraftSlider {
         /**
           * The type of data the sliders are using.
+          * @default 'number'
          */
         "dataType": 'number' | 'date';
         /**
@@ -591,14 +630,17 @@ export namespace Components {
         "dateGranularity"?: 'year' | 'month' | 'day' | 'hour';
         /**
           * The maximum value allowed.
+          * @default 100
          */
         "max": number;
         /**
           * The minimum value allowed.
+          * @default 0
          */
         "min": number;
         /**
           * The step amount for the slider inputs.
+          * @default 1
          */
         "step": number;
     }
@@ -655,6 +697,7 @@ export namespace Components {
     interface SearchcraftToggleButton {
         /**
           * The label.
+          * @default 'Toggle'
          */
         "label": string;
         /**
@@ -1262,9 +1305,13 @@ declare namespace LocalJSX {
      */
     interface SearchcraftAd {
         "adClientResponseItem"?: AdClientResponseItem;
+        /**
+          * @default 'Custom'
+         */
         "adSource"?: 'Custom' | 'Nativo' | 'adMarketplace';
         /**
           * Where the ad is being rendered within the search results div. Lifecycle behavior differs for ads being rendered in different positions, so we need to be able to handle all of those cases.
+          * @default 'interstitial'
          */
         "renderPosition"?: 'interstitial' | 'top' | 'bottom';
         /**
@@ -1279,10 +1326,12 @@ declare namespace LocalJSX {
     interface SearchcraftButton {
         /**
           * Whether the button is disabled.
+          * @default false
          */
         "disabled"?: boolean;
         /**
           * Controls the visual representation of the button.
+          * @default 'primary'
          */
         "hierarchy"?: 'primary' | 'tertiary';
         /**
@@ -1291,14 +1340,17 @@ declare namespace LocalJSX {
         "icon"?: Element;
         /**
           * Should the button only display an icon.
+          * @default false
          */
         "iconOnly"?: boolean;
         /**
           * The position of the icon.
+          * @default 'left'
          */
         "iconPosition"?: 'left' | 'right';
         /**
           * The label for the button.
+          * @default 'Search'
          */
         "label"?: string;
         /**
@@ -1307,6 +1359,7 @@ declare namespace LocalJSX {
         "onButtonClick"?: (event: SearchcraftButtonCustomEvent<void>) => void;
         /**
           * The type of the button.
+          * @default 'button'
          */
         "type"?: 'submit' | 'reset' | 'button';
     }
@@ -1342,6 +1395,7 @@ declare namespace LocalJSX {
         "exclude"?: string[];
         /**
           * The name of the field where facets are applied.
+          * @default ''
          */
         "fieldName"?: string;
         /**
@@ -1382,8 +1436,19 @@ declare namespace LocalJSX {
     interface SearchcraftFilterPanel {
         /**
           * The items to filter.
+          * @default []
          */
         "items"?: FilterItem[];
+        /**
+          * Controls whether the filter panel automatically hides/shows based on window size. - 'auto': Automatically hide/show based on window width - 'manual': User controls visibility manually
+          * @default 'auto'
+         */
+        "responsiveBehavior"?: 'auto' | 'manual';
+        /**
+          * The breakpoint (in pixels) below which the filter panel will be hidden. Defaults to 768px (--sc-breakpoint-md).
+          * @default 768
+         */
+        "responsiveBreakpoint"?: number;
         /**
           * The id of the Searchcraft instance that this component should use.
          */
@@ -1411,6 +1476,7 @@ declare namespace LocalJSX {
     interface SearchcraftInputForm {
         /**
           * Whether or not to automatically submit the search term when the input changes.
+          * @default true
          */
         "autoSearch"?: boolean;
         /**
@@ -1419,6 +1485,7 @@ declare namespace LocalJSX {
         "buttonLabel"?: string;
         /**
           * Where to place the search button.
+          * @default 'none'
          */
         "buttonPlacement"?: 'left' | 'right' | 'none';
         /**
@@ -1443,6 +1510,7 @@ declare namespace LocalJSX {
         "placeholderBehavior"?: 'hide-on-focus' | 'hide-on-text-entered';
         /**
           * The input element's placeholder value.
+          * @default 'Enter Search'
          */
         "placeholderValue"?: string;
         /**
@@ -1463,8 +1531,12 @@ declare namespace LocalJSX {
     interface SearchcraftInputLabel {
         /**
           * The classname applied to the label element.
+          * @default ''
          */
         "inputLabelClassName"?: string | undefined;
+        /**
+          * @default ''
+         */
         "label"?: string;
     }
     /**
@@ -1587,10 +1659,12 @@ declare namespace LocalJSX {
     interface SearchcraftPopoverForm {
         /**
           * The hotkey that activates the popover.
+          * @default 'k'
          */
         "hotkey"?: string;
         /**
           * The hotkey modifier that activates the popover. Used together with the `hotkey` prop.
+          * @default 'meta'
          */
         "hotkeyModifier"?: 'ctrl' | 'meta' | 'alt' | 'option';
         /**
@@ -1599,6 +1673,7 @@ declare namespace LocalJSX {
         "placeholderBehavior"?: 'hide-on-focus' | 'hide-on-text-entered';
         /**
           * The input element's placeholder value.
+          * @default 'Enter Search'
          */
         "placeholderValue"?: string;
         /**
@@ -1611,6 +1686,7 @@ declare namespace LocalJSX {
         "searchcraftId"?: string;
         /**
           * The type of popover form to render. - `inline` - Renders inline with the rest of the content on the page. The search results pop over the page content. - `fullscreen` - Renders in fullscreen view. Used together with the `searchcraft-popover-button` component. - `modal` - Renders in a modal view. Used together with the `searchcraft-popover-button` component.
+          * @default 'inline'
          */
         "type"?: 'inline' | 'fullscreen' | 'modal';
     }
@@ -1620,6 +1696,7 @@ declare namespace LocalJSX {
     interface SearchcraftPopoverListItem {
         /**
           * The document position relative to the search results (For Measure)
+          * @default 0
          */
         "documentPosition"?: number;
         "item"?: SearchClientResponseItem | undefined;
@@ -1703,6 +1780,7 @@ declare namespace LocalJSX {
     interface SearchcraftSearchResult {
         /**
           * The position in the document. Used with the "document_clicked" measure event.
+          * @default 0
          */
         "documentPosition"?: number;
         /**
@@ -1796,6 +1874,7 @@ declare namespace LocalJSX {
     interface SearchcraftSearchResultsPerPage {
         /**
           * The amount the options will increase (e.g. 20 = [20, 40, 60, 80, 100]). The base value is defined by the `searchResultsPerPage` option in the configuration.
+          * @default 20
          */
         "increment"?: string | number;
         /**
@@ -1821,6 +1900,7 @@ declare namespace LocalJSX {
         "caption"?: string;
         /**
           * Whether the select input is disabled.
+          * @default false
          */
         "disabled"?: boolean;
         /**
@@ -1845,6 +1925,7 @@ declare namespace LocalJSX {
         "onSelectChange"?: (event: SearchcraftSelectCustomEvent<string>) => void;
         /**
           * The options for the select input.
+          * @default []
          */
         "options"?: SearchcraftSelectOption[] | string;
     }
@@ -1854,6 +1935,7 @@ declare namespace LocalJSX {
     interface SearchcraftSlider {
         /**
           * The type of data the sliders are using.
+          * @default 'number'
          */
         "dataType"?: 'number' | 'date';
         /**
@@ -1862,10 +1944,12 @@ declare namespace LocalJSX {
         "dateGranularity"?: 'year' | 'month' | 'day' | 'hour';
         /**
           * The maximum value allowed.
+          * @default 100
          */
         "max"?: number;
         /**
           * The minimum value allowed.
+          * @default 0
          */
         "min"?: number;
         /**
@@ -1874,6 +1958,7 @@ declare namespace LocalJSX {
         "onRangeChanged"?: (event: SearchcraftSliderCustomEvent<any>) => void;
         /**
           * The step amount for the slider inputs.
+          * @default 1
          */
         "step"?: number;
     }
@@ -1930,6 +2015,7 @@ declare namespace LocalJSX {
     interface SearchcraftToggleButton {
         /**
           * The label.
+          * @default 'Toggle'
          */
         "label"?: string;
         /**
