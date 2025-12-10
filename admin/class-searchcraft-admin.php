@@ -1743,7 +1743,7 @@ class Searchcraft_Admin {
 
 			// Check if PublishPress Authors is enabled and available.
 			$use_publishpress_authors = (bool) get_option( 'searchcraft_use_publishpress_authors', false );
-			if ( true === $use_publishpress_authors && get_option( 'ppma_activated' ) ) {
+			if ( true === $use_publishpress_authors && defined( 'PP_AUTHORS_VERSION' ) ) {
 				$authors = get_multiple_authors( $post );
 				if ( ! empty( $authors ) && is_array( $authors ) ) {
 					// Use all authors from PublishPress Authors.

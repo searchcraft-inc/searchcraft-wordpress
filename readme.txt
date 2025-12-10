@@ -4,7 +4,7 @@ Contributors: searchcraft
 Tags:         search, fuzzy search, better search, instant search, search replacement
 Requires at least: 5.3
 Tested up to: 6.9
-Stable tag:   1.1.2
+Stable tag:   1.1.3
 License:      Apache 2.0
 License URI:  LICENSE.txt
 
@@ -68,6 +68,9 @@ If you would like to report an issue or suggest an enhancement you may contact t
 Searchcraft Cloud customers may also reach out via our Discord server for assistance or to request a custom feature.
 
 == Changelog ==
+
+= 1.1.3 =
+* Additional bugfixes
 
 = 1.1.2 =
 * Bugfix - option check for PublishPress authors.
