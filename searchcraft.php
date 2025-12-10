@@ -26,7 +26,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 // Define plugin constants.
 if ( ! defined( 'SEARCHCRAFT_VERSION' ) ) {
-	define( 'SEARCHCRAFT_VERSION', '1.1.1' );
+	define( 'SEARCHCRAFT_VERSION', '1.1.2' );
 }
 
 if ( ! defined( 'SEARCHCRAFT_PLUGIN_FILE' ) ) {
