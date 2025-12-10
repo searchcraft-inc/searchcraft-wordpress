@@ -306,7 +306,7 @@ if ( ! is_array( $custom_post_types_with_fields ) ) {
 			</table>
 		<?php endif; ?>
 
-		<?php if ( get_option( 'ppma_activated' ) ) : ?>
+		<?php if ( defined( 'PP_AUTHORS_VERSION' ) ) : ?>
 			<h3>Author Options</h3>
 			<table class="form-table">
 				<tbody>

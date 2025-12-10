@@ -69,6 +69,9 @@ Searchcraft Cloud customers may also reach out via our Discord server for assist
 
 == Changelog ==
 
+= 1.1.2 =
+* Bugfix - option check for PublishPress authors.
+
 = 1.1.1 =
 * New Feature - Custom post type and custom fields support is here! If you have a custom type you can now add it to the same search index as the standard WordPress post type. You can also optionally include custom fields from these types.
 * New Feature - Filter panel items are now re-orderable.
