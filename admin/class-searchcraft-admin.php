@@ -1246,6 +1246,10 @@ class Searchcraft_Admin {
 			update_option( 'searchcraft_popover_element_behavior', $popover_element_behavior );
 		}
 
+		// Handle retain get_search_form setting.
+		$retain_get_search_form = isset( $request['searchcraft_retain_get_search_form'] ) ? true : false;
+		update_option( 'searchcraft_retain_get_search_form', $retain_get_search_form );
+
 		// Display unified success message.
 		add_action(
 			'admin_notices',

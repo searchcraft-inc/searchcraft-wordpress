@@ -79,8 +79,11 @@ class Searchcraft_Public {
 		// Enqueue search header injection script after SDK assets.
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_sdk_settings' ), 2 );
 
-		// Replace search forms.
-		add_filter( 'get_search_form', array( $this, 'replace_search_form' ) );
+		// Replace search forms (unless the user has opted to retain the default behavior).
+		$retain_get_search_form = get_option( 'searchcraft_retain_get_search_form', false );
+		if ( ! $retain_get_search_form ) {
+			add_filter( 'get_search_form', array( $this, 'replace_search_form' ) );
+		}
 
 		// Intercept search results page and load blank template.
 		add_filter( 'template_include', array( $this, 'override_search_template' ) );

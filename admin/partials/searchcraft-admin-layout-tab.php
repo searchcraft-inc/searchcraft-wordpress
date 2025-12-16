@@ -759,6 +759,26 @@ if ( ! is_array( $filter_panel_order ) || empty( $filter_panel_order ) ) {
 										</p>
 									</td>
 								</tr>
+								<tr>
+									<th scope="row">
+										<label for="searchcraft_retain_get_search_form">Retain get_search_form()</label>
+									</th>
+									<td>
+										<label for="searchcraft_retain_get_search_form">
+											<input
+												type="checkbox"
+												name="searchcraft_retain_get_search_form"
+												id="searchcraft_retain_get_search_form"
+												value="1"
+												<?php checked( get_option( 'searchcraft_retain_get_search_form', false ) ); ?>
+											/>
+											Prevent Searchcraft from replacing the default WordPress search form.
+										</label>
+										<p class="description">
+											When enabled, Searchcraft will not override the <code>get_search_form()</code> function. Use this if you want to keep your theme's default search form or have custom search form handling.
+										</p>
+									</td>
+								</tr>
 							</tbody>
 						</table>
 				</div>
