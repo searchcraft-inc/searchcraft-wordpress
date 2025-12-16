@@ -1213,8 +1213,31 @@ class Searchcraft_Admin {
 		$input_container_id = '';
 		if ( isset( $request['searchcraft_search_input_container_id'] ) ) {
 			$input_container_id = sanitize_text_field( wp_unslash( $request['searchcraft_search_input_container_id'] ) );
-			// Remove any invalid characters for HTML IDs.
-			$input_container_id = preg_replace( '/[^a-zA-Z0-9_-]/', '', $input_container_id );
+
+			// Determine search behavior to decide if multiple IDs are allowed.
+			$search_behavior = isset( $request['searchcraft_search_behavior'] )
+				? sanitize_text_field( wp_unslash( $request['searchcraft_search_behavior'] ) )
+				: get_option( 'searchcraft_search_behavior', 'on_page' );
+
+			if ( 'stand_alone' === $search_behavior && strpos( $input_container_id, ',' ) !== false ) {
+				// Multi-ID mode: split, sanitize each, and rejoin.
+				$ids            = array_map( 'trim', explode( ',', $input_container_id ) );
+				$sanitized_ids  = array();
+				foreach ( $ids as $id ) {
+					$clean_id = preg_replace( '/[^a-zA-Z0-9_-]/', '', $id );
+					if ( ! empty( $clean_id ) ) {
+						$sanitized_ids[] = $clean_id;
+					}
+				}
+				$input_container_id = implode( ',', $sanitized_ids );
+			} else {
+				// Single-ID mode: keep only the first ID if multiple were provided.
+				if ( strpos( $input_container_id, ',' ) !== false ) {
+					$ids                = array_map( 'trim', explode( ',', $input_container_id ) );
+					$input_container_id = ! empty( $ids[0] ) ? $ids[0] : '';
+				}
+				$input_container_id = preg_replace( '/[^a-zA-Z0-9_-]/', '', $input_container_id );
+			}
 		}
 		update_option( 'searchcraft_search_input_container_id', $input_container_id );
 
