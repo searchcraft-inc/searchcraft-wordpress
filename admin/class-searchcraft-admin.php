@@ -602,6 +602,10 @@ class Searchcraft_Admin {
 				$use_publishpress_authors = isset( $_POST['searchcraft_use_publishpress_authors'] ) ? '1' : '0'; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in searchcraft_request_handler().
 				update_option( 'searchcraft_use_publishpress_authors', $use_publishpress_authors );
 
+				// Save Molongui Authorship setting.
+				$use_molongui_authorship = isset( $_POST['searchcraft_use_molongui_authorship'] ) ? '1' : '0'; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in searchcraft_request_handler().
+				update_option( 'searchcraft_use_molongui_authorship', $use_molongui_authorship );
+
 				// Get previous custom post types selections for comparison.
 				$previous_custom_post_types = get_option( 'searchcraft_custom_post_types', array() );
 				if ( ! is_array( $previous_custom_post_types ) ) {
@@ -1758,6 +1762,42 @@ class Searchcraft_Admin {
 				}
 			}
 
+			// Check if Molongui Authorship is enabled and available.
+			$use_molongui_authorship = (bool) get_option( 'searchcraft_use_molongui_authorship', false );
+			if ( true === $use_molongui_authorship && defined( 'MOLONGUI_AUTHORSHIP_VERSION' ) ) {
+				// Molongui Authorship stores authors in post meta.
+				$molongui_authors = get_post_meta( $post->ID, '_molongui_author', false );
+				if ( ! empty( $molongui_authors ) && is_array( $molongui_authors ) ) {
+					// Use all authors from Molongui Authorship.
+					$author_ids   = array();
+					$author_names = array();
+					foreach ( $molongui_authors as $author_id ) {
+						// Molongui stores author IDs in format "user-{id}" or "guest-{id}".
+						$author_parts = explode( '-', $author_id );
+						if ( count( $author_parts ) === 2 ) {
+							$author_type = $author_parts[0];
+							$author_num  = $author_parts[1];
+
+							if ( 'user' === $author_type ) {
+								// Regular WordPress user - use the numeric user ID.
+								$author_name = get_the_author_meta( 'display_name', $author_num );
+								if ( ! empty( $author_name ) ) {
+									$author_ids[]   = (string) $author_num;
+									$author_names[] = $author_name;
+								}
+							} elseif ( 'guest' === $author_type ) {
+								// Guest author - use the numeric post ID from custom post type.
+								$guest_author = get_post( $author_num );
+								if ( $guest_author && 'guest_author' === $guest_author->post_type ) {
+									$author_ids[]   = (string) $author_num;
+									$author_names[] = $guest_author->post_title;
+								}
+							}
+						}
+					}
+				}
+			}
+
 			// Get primary category name (the one used in permalinks).
 			$primary_category_name = '';
 			$primary_category      = null;
@@ -2314,4 +2354,5 @@ class Searchcraft_Admin {
 		// Build the RESTful path.
 		return '/' . implode( '/', $path_parts );
 	}
+
 }
