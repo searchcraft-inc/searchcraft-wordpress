@@ -1258,45 +1258,6 @@ class Searchcraft_Admin {
 	}
 
 	/**
-	 * Checks if the current theme has a search form.
-	 *
-	 * @since 1.0.0
-	 * @return bool True if theme has search form, false otherwise.
-	 */
-	public function searchcraft_theme_has_search_form() {
-		// Check if theme supports search form.
-		if ( current_theme_supports( 'html5', 'search-form' ) || current_theme_supports( 'search-form' ) ) {
-			return true;
-		}
-
-		// Check common theme files for search form.
-		$theme_files = array(
-			'searchform.php',
-			'header.php',
-			'sidebar.php',
-			'footer.php',
-			'index.php',
-		);
-
-		$theme_path = get_template_directory();
-		foreach ( $theme_files as $file ) {
-			$file_path = $theme_path . '/' . $file;
-			if ( file_exists( $file_path ) ) {
-				$content = file_get_contents( $file_path );
-				// Check for search form indicators.
-				if ( strpos( $content, 'get_search_form' ) !== false ||
-					strpos( $content, 'search-form' ) !== false ||
-					strpos( $content, 'searchform' ) !== false ||
-					strpos( $content, 'type="search"' ) !== false ) {
-					return true;
-				}
-			}
-		}
-
-		return false;
-	}
-
-	/**
 	 * Get index statistics including document count.
 	 *
 	 * @since 1.0.0
