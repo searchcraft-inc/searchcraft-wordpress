@@ -733,15 +733,35 @@ if ( ! is_array( $filter_panel_order ) || empty( $filter_panel_order ) ) {
 								</tr>
 								<tr class="searchcraft-full-only">
 									<th scope="row">
-										<label for="searchcraft_search_input_container_id">Search Box Container Element ID</label>
+										<label for="searchcraft_search_input_container_id_input">Search Box Container Element ID</label>
 									</th>
 									<td>
 										<?php
 										$input_container_id = get_option( 'searchcraft_search_input_container_id', '' );
+										$container_ids = array_filter( array_map( 'trim', explode( ',', $input_container_id ) ) );
+										$search_behavior = get_option( 'searchcraft_search_behavior', 'on_page' );
+										$single_mode_class = ( 'stand_alone' !== $search_behavior ) ? ' single-mode' : '';
 										?>
-										<input type="text" name="searchcraft_search_input_container_id" id="searchcraft_search_input_container_id" value="<?php echo esc_attr( $input_container_id ); ?>" class="regular-text" placeholder="my-search-input-container" />
+										<div class="searchcraft-container-id-wrapper<?php echo esc_attr( $single_mode_class ); ?>">
+											<div class="searchcraft-container-id-input-area">
+												<div class="searchcraft-container-id-tags">
+													<?php foreach ( $container_ids as $id ) : ?>
+														<span class="searchcraft-tag">
+															<span class="searchcraft-tag-text"><?php echo esc_html( $id ); ?></span>
+															<button type="button" class="searchcraft-tag-remove" aria-label="Remove <?php echo esc_attr( $id ); ?>">×</button>
+														</span>
+													<?php endforeach; ?>
+												</div>
+												<input type="text" id="searchcraft_search_input_container_id_input" class="searchcraft-container-id-input" placeholder="Type element ID and press Enter or comma..." autocomplete="off" />
+											</div>
+											<input type="text" name="searchcraft_search_input_container_id" id="searchcraft_search_input_container_id" value="<?php echo esc_attr( $input_container_id ); ?>" placeholder="Enter element ID" />
+										</div>
 										<p class="description">
-											If specified, the search box input form will load as the first element inside of the HTML element that matches this <a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/id" target="_blank">ID</a>. Note: this element must be present on every page you want the search input to appear on. Leave empty to use the default auto-detection behavior.
+											<?php if ( 'stand_alone' === $search_behavior ) : ?>
+												If specified, the search box input form will load as the first element inside of the HTML element that matches this <a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/id" target="_blank">ID</a>. <strong>Multiple IDs supported:</strong> When "Submit to Search Page" is selected, you can add multiple element IDs to display the search input in multiple locations. Leave empty to use the default auto-detection behavior.
+											<?php else : ?>
+												If specified, the search box input form will load as the first element inside of the HTML element that matches this <a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/id" target="_blank">ID</a>. Note: this element must be present on every page you want the search input to appear on. Leave empty to use the default auto-detection behavior.
+											<?php endif; ?>
 										</p>
 									</td>
 								</tr>
@@ -756,6 +776,26 @@ if ( ! is_array( $filter_panel_order ) || empty( $filter_panel_order ) ) {
 										<input type="text" name="searchcraft_results_container_id" id="searchcraft_results_container_id" value="<?php echo esc_attr( $results_container_id ); ?>" class="regular-text" placeholder="my-results-container" />
 										<p class="description">
 											If specified, the search results will load as the first element inside of the HTML element that matches this <a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/id" target="_blank">ID</a>. Leave empty to use the default behavior.
+										</p>
+									</td>
+								</tr>
+								<tr>
+									<th scope="row">
+										<label for="searchcraft_retain_get_search_form">Retain get_search_form()</label>
+									</th>
+									<td>
+										<label for="searchcraft_retain_get_search_form">
+											<input
+												type="checkbox"
+												name="searchcraft_retain_get_search_form"
+												id="searchcraft_retain_get_search_form"
+												value="1"
+												<?php checked( get_option( 'searchcraft_retain_get_search_form', false ) ); ?>
+											/>
+											Prevent Searchcraft from replacing the default WordPress search form.
+										</label>
+										<p class="description">
+											When enabled, Searchcraft will not override the <code>get_search_form()</code> function. Use this if you want to keep your theme's default search form or have custom search form handling.
 										</p>
 									</td>
 								</tr>

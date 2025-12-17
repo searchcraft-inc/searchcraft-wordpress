@@ -1,7 +1,7 @@
-import { p as proxyCustomElement, H, h } from './p-DO5g2x-l.js';
-import { r as registry } from './p-D0j0UFpV.js';
-import { f as formatNumberWithCommas } from './p-i8oXh7db.js';
-import { h as html } from './p-_aHgRsRD.js';
+import { p as proxyCustomElement, H, h, t as transformTag } from './index2.js?v=0.13.2';
+import { r as registry } from './CoreInstanceRegistry.js?v=0.13.2';
+import { f as formatNumberWithCommas } from './units.js?v=0.13.2';
+import { h as html } from './html.js?v=0.13.2';
 
 const SearchcraftResultsInfo$1 = /*@__PURE__*/ proxyCustomElement(class SearchcraftResultsInfo extends H {
     constructor(registerHost) {
@@ -95,8 +95,8 @@ function defineCustomElement$1() {
     const components = ["searchcraft-results-info"];
     components.forEach(tagName => { switch (tagName) {
         case "searchcraft-results-info":
-            if (!customElements.get(tagName)) {
-                customElements.define(tagName, SearchcraftResultsInfo$1);
+            if (!customElements.get(transformTag(tagName))) {
+                customElements.define(transformTag(tagName), SearchcraftResultsInfo$1);
             }
             break;
     } });

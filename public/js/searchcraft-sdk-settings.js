@@ -223,22 +223,46 @@
      * Inject search header after the first header element or into a specific container
      *
      * @param {string} headerContent - The HTML content for the search header
-     * @param {string} inputContainerId - Optional container ID to inject the header into
+     * @param {string} inputContainerId - Optional container ID(s) to inject the header into (comma-separated for multiple)
      */
     function injectSearchHeader(headerContent, inputContainerId) {
-        const searchHeaderDiv = document.createElement('div');
-        searchHeaderDiv.innerHTML = headerContent;
-
         // If inputContainerId is provided and not empty, inject as first element in that container
         if (inputContainerId && inputContainerId.trim() !== '') {
-            const targetContainer = document.getElementById(inputContainerId);
-            if (targetContainer) {
-                targetContainer.insertBefore(searchHeaderDiv, targetContainer.firstChild);
-                return;
+            // Check if multiple IDs are provided (comma-separated)
+            if (inputContainerId.includes(',')) {
+                const containerIds = inputContainerId.split(',').map(id => id.trim()).filter(id => id !== '');
+                let injectedCount = 0;
+
+                // Inject into each container
+                containerIds.forEach(containerId => {
+                    const targetContainer = document.getElementById(containerId);
+                    if (targetContainer) {
+                        const searchHeaderDiv = document.createElement('div');
+                        searchHeaderDiv.innerHTML = headerContent;
+                        targetContainer.insertBefore(searchHeaderDiv, targetContainer.firstChild);
+                        injectedCount++;
+                    }
+                });
+
+                // If at least one injection was successful, return
+                if (injectedCount > 0) {
+                    return;
+                }
+            } else {
+                // Single ID
+                const targetContainer = document.getElementById(inputContainerId);
+                if (targetContainer) {
+                    const searchHeaderDiv = document.createElement('div');
+                    searchHeaderDiv.innerHTML = headerContent;
+                    targetContainer.insertBefore(searchHeaderDiv, targetContainer.firstChild);
+                    return;
+                }
             }
         }
 
         // Default behavior: inject after the first header element
+        const searchHeaderDiv = document.createElement('div');
+        searchHeaderDiv.innerHTML = headerContent;
         const firstHeader = document.querySelector('header') || document.querySelector('[id="header"]');
 
         if (firstHeader) {

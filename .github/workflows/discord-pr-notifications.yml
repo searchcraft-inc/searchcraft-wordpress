@@ -57,11 +57,13 @@ jobs:
 
       - name: Format commit info and get PR data
         id: commit-info
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title || github.event.issue.title }}
+          PR_BODY: ${{ github.event.pull_request.body || github.event.review.body || github.event.comment.body }}
         run: |
           # Determine PR data source based on event type
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             pr_number="${{ github.event.pull_request.number }}"
-            pr_title="${{ github.event.pull_request.title }}"
             pr_url="${{ github.event.pull_request.html_url }}"
             pr_author="${{ github.event.pull_request.user.login }}"
             pr_author_url="${{ github.event.pull_request.user.html_url }}"
@@ -71,11 +73,9 @@ jobs:
             pr_deletions="${{ github.event.pull_request.deletions }}"
             pr_changed_files="${{ github.event.pull_request.changed_files }}"
             pr_commits="${{ github.event.pull_request.commits }}"
-            pr_body="${{ github.event.pull_request.body }}"
             pr_updated_at="${{ github.event.pull_request.updated_at }}"
           elif [ "${{ github.event_name }}" = "issue_comment" ]; then
             pr_number="${{ github.event.issue.number }}"
-            pr_title="${{ github.event.issue.title }}"
             pr_url="${{ github.event.issue.html_url }}"
             pr_author="${{ github.event.issue.user.login }}"
             pr_author_url="${{ github.event.issue.user.html_url }}"
@@ -86,12 +86,10 @@ jobs:
             pr_deletions="N/A"
             pr_changed_files="N/A"
             pr_commits="N/A"
-            pr_body="${{ github.event.comment.body }}"
             pr_updated_at="${{ github.event.comment.updated_at }}"
           else
             # For review events
             pr_number="${{ github.event.pull_request.number }}"
-            pr_title="${{ github.event.pull_request.title }}"
             pr_url="${{ github.event.pull_request.html_url }}"
             pr_author="${{ github.event.pull_request.user.login }}"
             pr_author_url="${{ github.event.pull_request.user.html_url }}"
@@ -102,10 +100,8 @@ jobs:
             pr_changed_files="${{ github.event.pull_request.changed_files }}"
             pr_commits="${{ github.event.pull_request.commits }}"
             if [ "${{ github.event_name }}" = "pull_request_review" ]; then
-              pr_body="${{ github.event.review.body }}"
               pr_updated_at="${{ github.event.review.submitted_at }}"
             else
-              pr_body="${{ github.event.comment.body }}"
               pr_updated_at="${{ github.event.comment.updated_at }}"
             fi
           fi
@@ -123,7 +119,7 @@ jobs:
           echo "pr_number=${pr_number}" >> $GITHUB_OUTPUT
           {
             echo "pr_title<<EOF"
-            echo "${pr_title}"
+            echo "$PR_TITLE"
             echo "EOF"
           } >> $GITHUB_OUTPUT
           echo "pr_url=${pr_url}" >> $GITHUB_OUTPUT
@@ -137,7 +133,7 @@ jobs:
           echo "commit_text=${commit_text}" >> $GITHUB_OUTPUT
           {
             echo "pr_body<<EOF"
-            echo "${pr_body}"
+            echo "$PR_BODY"
             echo "EOF"
           } >> $GITHUB_OUTPUT
           echo "pr_updated_at=${pr_updated_at}" >> $GITHUB_OUTPUT
@@ -145,6 +141,7 @@ jobs:
       - name: Send Discord notification
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          PR_BODY_CONTENT: ${{ steps.commit-info.outputs.pr_body }}
         run: |
           # Check if webhook URL is set
           if [ -z "$DISCORD_WEBHOOK" ]; then
@@ -152,35 +149,42 @@ jobs:
             exit 0
           fi
 
-          # Prepare the Discord embed payload
-          cat << EOF > discord_payload.json
-          {
-            "embeds": [
-              {
-                "title": "${{ steps.notification-type.outputs.type }}",
-                "description": "**[${{ steps.commit-info.outputs.pr_title }}](${{ steps.commit-info.outputs.pr_url }})**",
-                "color": ${{ steps.notification-type.outputs.color }},
-                "fields": [
-                  {
-                    "name": "Repository",
-                    "value": "[${{ github.repository }}](https://github.com/${{ github.repository }})",
-                    "inline": true
-                  },
-                  {
-                    "name": "Author",
-                    "value": "[${{ steps.commit-info.outputs.pr_author }}](${{ steps.commit-info.outputs.pr_author_url }})",
-                    "inline": true
+          # Prepare the Discord embed payload using jq to safely handle special characters
+          jq -n \
+            --arg title "${{ steps.notification-type.outputs.type }}" \
+            --arg pr_title "${{ steps.commit-info.outputs.pr_title }}" \
+            --arg pr_url "${{ steps.commit-info.outputs.pr_url }}" \
+            --argjson color "${{ steps.notification-type.outputs.color }}" \
+            --arg repo "${{ github.repository }}" \
+            --arg author "${{ steps.commit-info.outputs.pr_author }}" \
+            --arg author_url "${{ steps.commit-info.outputs.pr_author_url }}" \
+            --arg timestamp "${{ steps.commit-info.outputs.pr_updated_at }}" \
+            '{
+              "embeds": [
+                {
+                  "title": $title,
+                  "description": ("**[" + $pr_title + "](" + $pr_url + ")**"),
+                  "color": $color,
+                  "fields": [
+                    {
+                      "name": "Repository",
+                      "value": ("[" + $repo + "](https://github.com/" + $repo + ")"),
+                      "inline": true
+                    },
+                    {
+                      "name": "Author",
+                      "value": ("[" + $author + "](" + $author_url + ")"),
+                      "inline": true
+                    }
+                  ],
+                  "timestamp": $timestamp,
+                  "footer": {
+                    "text": "GitHub",
+                    "icon_url": "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
                   }
-                ],
-                "timestamp": "${{ steps.commit-info.outputs.pr_updated_at }}",
-                "footer": {
-                  "text": "GitHub",
-                  "icon_url": "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
                 }
-              }
-            ]
-          }
-          EOF
+              ]
+            }' > discord_payload.json
 
           # Add event-specific fields
           if [ "${{ github.event_name }}" = "pull_request" ]; then
@@ -217,10 +221,9 @@ jobs:
           fi
 
           # Add description field based on event type
-          body_content="${{ steps.commit-info.outputs.pr_body }}"
-          if [ -n "$body_content" ] && [ "$body_content" != "null" ]; then
+          if [ -n "$PR_BODY_CONTENT" ] && [ "$PR_BODY_CONTENT" != "null" ]; then
             # Truncate description to 300 characters to avoid Discord limits
-            description=$(echo "$body_content" | head -c 300)
+            description=$(echo "$PR_BODY_CONTENT" | head -c 300)
             if [ ${#description} -eq 300 ]; then
               description="${description}..."
             fi

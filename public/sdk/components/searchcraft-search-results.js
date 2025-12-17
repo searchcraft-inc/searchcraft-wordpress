@@ -1,8 +1,8 @@
-import { p as proxyCustomElement, H, h } from './p-DO5g2x-l.js';
-import { r as registry } from './p-D0j0UFpV.js';
-import { d as defineCustomElement$4 } from './p-C1S92_N8.js';
-import { d as defineCustomElement$3 } from './p-DjPZkCLP.js';
-import { d as defineCustomElement$2 } from './p-DotXR-Gz.js';
+import { p as proxyCustomElement, H, h, t as transformTag } from './index2.js?v=0.13.2';
+import { r as registry } from './CoreInstanceRegistry.js?v=0.13.2';
+import { d as defineCustomElement$4 } from './searchcraft-ad2.js?v=0.13.2';
+import { d as defineCustomElement$3 } from './searchcraft-error-message2.js?v=0.13.2';
+import { d as defineCustomElement$2 } from './searchcraft-search-result2.js?v=0.13.2';
 
 const SearchcraftSearchResults$1 = /*@__PURE__*/ proxyCustomElement(class SearchcraftSearchResults extends H {
     constructor(registerHost) {
@@ -169,22 +169,22 @@ function defineCustomElement$1() {
     const components = ["searchcraft-search-results", "searchcraft-ad", "searchcraft-error-message", "searchcraft-search-result"];
     components.forEach(tagName => { switch (tagName) {
         case "searchcraft-search-results":
-            if (!customElements.get(tagName)) {
-                customElements.define(tagName, SearchcraftSearchResults$1);
+            if (!customElements.get(transformTag(tagName))) {
+                customElements.define(transformTag(tagName), SearchcraftSearchResults$1);
             }
             break;
         case "searchcraft-ad":
-            if (!customElements.get(tagName)) {
+            if (!customElements.get(transformTag(tagName))) {
                 defineCustomElement$4();
             }
             break;
         case "searchcraft-error-message":
-            if (!customElements.get(tagName)) {
+            if (!customElements.get(transformTag(tagName))) {
                 defineCustomElement$3();
             }
             break;
         case "searchcraft-search-result":
-            if (!customElements.get(tagName)) {
+            if (!customElements.get(transformTag(tagName))) {
                 defineCustomElement$2();
             }
             break;

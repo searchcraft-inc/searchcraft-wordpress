@@ -49,8 +49,8 @@
      */
     async function loadSearchcraftSDK() {
         try {
-            // Get the SDK script element to determine the module URL
-            const sdkScript = document.querySelector('script[src*="sdk/components/index.js?v=0.13.1"]');
+            // Get the SDK script element to determine the module URL (version-agnostic)
+            const sdkScript = document.querySelector('script[src*="sdk/components/index.js"]');
             if (!sdkScript) {
                 console.error('Searchcraft: SDK script not found');
                 showConfigurationError('SDK script not found');

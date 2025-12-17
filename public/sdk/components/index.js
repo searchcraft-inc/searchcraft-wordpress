@@ -1,29 +1,29 @@
-export { g as getAssetPath, r as render, s as setAssetPath, a as setNonce, b as setPlatformOptions } from './p-DO5g2x-l.js';
-import { n as nanoid } from './p-C1S92_N8.js';
-import { D as DEFAULT_CORE_INSTANCE_ID, r as registry } from './p-D0j0UFpV.js';
-export { SearchcraftAd, defineCustomElement as defineCustomElementSearchcraftAd } from './searchcraft-ad.js';
-export { SearchcraftButton, defineCustomElement as defineCustomElementSearchcraftButton } from './searchcraft-button.js';
-export { SearchcraftErrorMessage, defineCustomElement as defineCustomElementSearchcraftErrorMessage } from './searchcraft-error-message.js';
-export { SearchcraftFacetList, defineCustomElement as defineCustomElementSearchcraftFacetList } from './searchcraft-facet-list.js';
-export { SearchcraftFilterPanel, defineCustomElement as defineCustomElementSearchcraftFilterPanel } from './searchcraft-filter-panel.js';
-export { SearchcraftInputForm, defineCustomElement as defineCustomElementSearchcraftInputForm } from './searchcraft-input-form.js';
-export { SearchcraftInputLabel, defineCustomElement as defineCustomElementSearchcraftInputLabel } from './searchcraft-input-label.js';
-export { SearchcraftLoading, defineCustomElement as defineCustomElementSearchcraftLoading } from './searchcraft-loading.js';
-export { SearchcraftPagination, defineCustomElement as defineCustomElementSearchcraftPagination } from './searchcraft-pagination.js';
-export { SearchcraftPopoverButton, defineCustomElement as defineCustomElementSearchcraftPopoverButton } from './searchcraft-popover-button.js';
-export { SearchcraftPopoverFooter, defineCustomElement as defineCustomElementSearchcraftPopoverFooter } from './searchcraft-popover-footer.js';
-export { SearchcraftPopoverForm, defineCustomElement as defineCustomElementSearchcraftPopoverForm } from './searchcraft-popover-form.js';
-export { SearchcraftPopoverListItem, defineCustomElement as defineCustomElementSearchcraftPopoverListItem } from './searchcraft-popover-list-item.js';
-export { SearchcraftPopoverListView, defineCustomElement as defineCustomElementSearchcraftPopoverListView } from './searchcraft-popover-list-view.js';
-export { SearchcraftResultsInfo, defineCustomElement as defineCustomElementSearchcraftResultsInfo } from './searchcraft-results-info.js';
-export { SearchcraftSearchResult, defineCustomElement as defineCustomElementSearchcraftSearchResult } from './searchcraft-search-result.js';
-export { SearchcraftSearchResults, defineCustomElement as defineCustomElementSearchcraftSearchResults } from './searchcraft-search-results.js';
-export { SearchcraftSearchResultsPerPage, defineCustomElement as defineCustomElementSearchcraftSearchResultsPerPage } from './searchcraft-search-results-per-page.js';
-export { SearchcraftSelect, defineCustomElement as defineCustomElementSearchcraftSelect } from './searchcraft-select.js';
-export { SearchcraftSlider, defineCustomElement as defineCustomElementSearchcraftSlider } from './searchcraft-slider.js';
-export { SearchcraftSummaryBox, defineCustomElement as defineCustomElementSearchcraftSummaryBox } from './searchcraft-summary-box.js';
-export { SearchcraftTheme, defineCustomElement as defineCustomElementSearchcraftTheme } from './searchcraft-theme.js';
-export { SearchcraftToggleButton, defineCustomElement as defineCustomElementSearchcraftToggleButton } from './searchcraft-toggle-button.js';
+export { g as getAssetPath, r as render, s as setAssetPath, a as setNonce, b as setPlatformOptions } from './index2.js?v=0.13.2';
+import { n as nanoid } from './searchcraft-ad2.js?v=0.13.2';
+import { D as DEFAULT_CORE_INSTANCE_ID, r as registry } from './CoreInstanceRegistry.js?v=0.13.2';
+export { SearchcraftAd, defineCustomElement as defineCustomElementSearchcraftAd } from './searchcraft-ad.js?v=0.13.2';
+export { SearchcraftButton, defineCustomElement as defineCustomElementSearchcraftButton } from './searchcraft-button.js?v=0.13.2';
+export { SearchcraftErrorMessage, defineCustomElement as defineCustomElementSearchcraftErrorMessage } from './searchcraft-error-message.js?v=0.13.2';
+export { SearchcraftFacetList, defineCustomElement as defineCustomElementSearchcraftFacetList } from './searchcraft-facet-list.js?v=0.13.2';
+export { SearchcraftFilterPanel, defineCustomElement as defineCustomElementSearchcraftFilterPanel } from './searchcraft-filter-panel.js?v=0.13.2';
+export { SearchcraftInputForm, defineCustomElement as defineCustomElementSearchcraftInputForm } from './searchcraft-input-form.js?v=0.13.2';
+export { SearchcraftInputLabel, defineCustomElement as defineCustomElementSearchcraftInputLabel } from './searchcraft-input-label.js?v=0.13.2';
+export { SearchcraftLoading, defineCustomElement as defineCustomElementSearchcraftLoading } from './searchcraft-loading.js?v=0.13.2';
+export { SearchcraftPagination, defineCustomElement as defineCustomElementSearchcraftPagination } from './searchcraft-pagination.js?v=0.13.2';
+export { SearchcraftPopoverButton, defineCustomElement as defineCustomElementSearchcraftPopoverButton } from './searchcraft-popover-button.js?v=0.13.2';
+export { SearchcraftPopoverFooter, defineCustomElement as defineCustomElementSearchcraftPopoverFooter } from './searchcraft-popover-footer.js?v=0.13.2';
+export { SearchcraftPopoverForm, defineCustomElement as defineCustomElementSearchcraftPopoverForm } from './searchcraft-popover-form.js?v=0.13.2';
+export { SearchcraftPopoverListItem, defineCustomElement as defineCustomElementSearchcraftPopoverListItem } from './searchcraft-popover-list-item.js?v=0.13.2';
+export { SearchcraftPopoverListView, defineCustomElement as defineCustomElementSearchcraftPopoverListView } from './searchcraft-popover-list-view.js?v=0.13.2';
+export { SearchcraftResultsInfo, defineCustomElement as defineCustomElementSearchcraftResultsInfo } from './searchcraft-results-info.js?v=0.13.2';
+export { SearchcraftSearchResult, defineCustomElement as defineCustomElementSearchcraftSearchResult } from './searchcraft-search-result.js?v=0.13.2';
+export { SearchcraftSearchResults, defineCustomElement as defineCustomElementSearchcraftSearchResults } from './searchcraft-search-results.js?v=0.13.2';
+export { SearchcraftSearchResultsPerPage, defineCustomElement as defineCustomElementSearchcraftSearchResultsPerPage } from './searchcraft-search-results-per-page.js?v=0.13.2';
+export { SearchcraftSelect, defineCustomElement as defineCustomElementSearchcraftSelect } from './searchcraft-select.js?v=0.13.2';
+export { SearchcraftSlider, defineCustomElement as defineCustomElementSearchcraftSlider } from './searchcraft-slider.js?v=0.13.2';
+export { SearchcraftSummaryBox, defineCustomElement as defineCustomElementSearchcraftSummaryBox } from './searchcraft-summary-box.js?v=0.13.2';
+export { SearchcraftTheme, defineCustomElement as defineCustomElementSearchcraftTheme } from './searchcraft-theme.js?v=0.13.2';
+export { SearchcraftToggleButton, defineCustomElement as defineCustomElementSearchcraftToggleButton } from './searchcraft-toggle-button.js?v=0.13.2';
 
 var LogLevel;
 (function (LogLevel) {
@@ -1128,7 +1128,7 @@ class SearchcraftCore {
 }
 
 const name = "@searchcraft/javascript-sdk";
-const version = "0.13.1";
+const version = "0.13.2";
 
 /**
  * @fileoverview entry point for your component library
@@ -1155,4 +1155,4 @@ export { Searchcraft, SearchcraftCore };
 //# sourceMappingURL=index.js.map
 
 //# sourceMappingURL=index.js.map
-export { defineCustomElements } from './defineCustomElements.js';
+export { defineCustomElements } from './defineCustomElements.js?v=0.13.2';

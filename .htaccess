@@ -1,0 +1,12 @@
+<IfModule mod_headers.c>
+    # SDK entry point must always revalidate due to internal imports
+    <FilesMatch "sdk/components/index\.js$">
+        Header set Cache-Control "no-cache, must-revalidate"
+    </FilesMatch>
+
+    # All other JS and CSS files can cache for 10 min but must revalidate
+    <FilesMatch "\.(js|css)$">
+        Header set Cache-Control "public, max-age=600, must-revalidate"
+    </FilesMatch>
+</IfModule>
+
