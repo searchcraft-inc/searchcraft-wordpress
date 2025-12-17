@@ -152,35 +152,42 @@ jobs:
             exit 0
           fi
 
-          # Prepare the Discord embed payload
-          cat << EOF > discord_payload.json
-          {
-            "embeds": [
-              {
-                "title": "${{ steps.notification-type.outputs.type }}",
-                "description": "**[${{ steps.commit-info.outputs.pr_title }}](${{ steps.commit-info.outputs.pr_url }})**",
-                "color": ${{ steps.notification-type.outputs.color }},
-                "fields": [
-                  {
-                    "name": "Repository",
-                    "value": "[${{ github.repository }}](https://github.com/${{ github.repository }})",
-                    "inline": true
-                  },
-                  {
-                    "name": "Author",
-                    "value": "[${{ steps.commit-info.outputs.pr_author }}](${{ steps.commit-info.outputs.pr_author_url }})",
-                    "inline": true
+          # Prepare the Discord embed payload using jq to safely handle special characters
+          jq -n \
+            --arg title "${{ steps.notification-type.outputs.type }}" \
+            --arg pr_title "${{ steps.commit-info.outputs.pr_title }}" \
+            --arg pr_url "${{ steps.commit-info.outputs.pr_url }}" \
+            --argjson color "${{ steps.notification-type.outputs.color }}" \
+            --arg repo "${{ github.repository }}" \
+            --arg author "${{ steps.commit-info.outputs.pr_author }}" \
+            --arg author_url "${{ steps.commit-info.outputs.pr_author_url }}" \
+            --arg timestamp "${{ steps.commit-info.outputs.pr_updated_at }}" \
+            '{
+              "embeds": [
+                {
+                  "title": $title,
+                  "description": ("**[" + $pr_title + "](" + $pr_url + ")**"),
+                  "color": $color,
+                  "fields": [
+                    {
+                      "name": "Repository",
+                      "value": ("[" + $repo + "](https://github.com/" + $repo + ")"),
+                      "inline": true
+                    },
+                    {
+                      "name": "Author",
+                      "value": ("[" + $author + "](" + $author_url + ")"),
+                      "inline": true
+                    }
+                  ],
+                  "timestamp": $timestamp,
+                  "footer": {
+                    "text": "GitHub",
+                    "icon_url": "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
                   }
-                ],
-                "timestamp": "${{ steps.commit-info.outputs.pr_updated_at }}",
-                "footer": {
-                  "text": "GitHub",
-                  "icon_url": "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
                 }
-              }
-            ]
-          }
-          EOF
+              ]
+            }' > discord_payload.json
 
           # Add event-specific fields
           if [ "${{ github.event_name }}" = "pull_request" ]; then
