@@ -1,8 +1,8 @@
-import { p as proxyCustomElement, H, h } from './p-DO5g2x-l.js';
-import { r as registry } from './p-D0j0UFpV.js';
-import { d as defineCustomElement$4 } from './p-BV4HUriZ.js';
-import { d as defineCustomElement$3 } from './p-BbSxfaD7.js';
-import { d as defineCustomElement$2 } from './p-D5p2scT9.js';
+import { p as proxyCustomElement, H, h, t as transformTag } from './index2.js?v=0.13.2';
+import { r as registry } from './CoreInstanceRegistry.js?v=0.13.2';
+import { d as defineCustomElement$4 } from './searchcraft-facet-list2.js?v=0.13.2';
+import { d as defineCustomElement$3 } from './searchcraft-slider2.js?v=0.13.2';
+import { d as defineCustomElement$2 } from './searchcraft-toggle-button2.js?v=0.13.2';
 
 const SearchcraftFilterPanel$1 = /*@__PURE__*/ proxyCustomElement(class SearchcraftFilterPanel extends H {
     constructor(registerHost) {
@@ -310,22 +310,22 @@ function defineCustomElement$1() {
     const components = ["searchcraft-filter-panel", "searchcraft-facet-list", "searchcraft-slider", "searchcraft-toggle-button"];
     components.forEach(tagName => { switch (tagName) {
         case "searchcraft-filter-panel":
-            if (!customElements.get(tagName)) {
-                customElements.define(tagName, SearchcraftFilterPanel$1);
+            if (!customElements.get(transformTag(tagName))) {
+                customElements.define(transformTag(tagName), SearchcraftFilterPanel$1);
             }
             break;
         case "searchcraft-facet-list":
-            if (!customElements.get(tagName)) {
+            if (!customElements.get(transformTag(tagName))) {
                 defineCustomElement$4();
             }
             break;
         case "searchcraft-slider":
-            if (!customElements.get(tagName)) {
+            if (!customElements.get(transformTag(tagName))) {
                 defineCustomElement$3();
             }
             break;
         case "searchcraft-toggle-button":
-            if (!customElements.get(tagName)) {
+            if (!customElements.get(transformTag(tagName))) {
                 defineCustomElement$2();
             }
             break;

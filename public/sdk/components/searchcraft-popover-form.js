@@ -1,14 +1,14 @@
-import { p as proxyCustomElement, H, h } from './p-DO5g2x-l.js';
-import { r as registry } from './p-D0j0UFpV.js';
-import { c as classNames } from './p-BfTCfPZ1.js';
-import { d as defineCustomElement$9 } from './p-C1S92_N8.js';
-import { d as defineCustomElement$8 } from './p-C681KruS.js';
-import { d as defineCustomElement$7 } from './p-DjPZkCLP.js';
-import { d as defineCustomElement$6 } from './p-C-wcIch1.js';
-import { d as defineCustomElement$5 } from './p-L4PwHqQC.js';
-import { d as defineCustomElement$4 } from './p-C7ZK8CYu.js';
-import { d as defineCustomElement$3 } from './p-Cju73I1E.js';
-import { d as defineCustomElement$2 } from './p-Dr9rPC9v.js';
+import { p as proxyCustomElement, H, h, t as transformTag } from './index2.js?v=0.13.2';
+import { r as registry } from './CoreInstanceRegistry.js?v=0.13.2';
+import { c as classNames } from './index3.js?v=0.13.2';
+import { d as defineCustomElement$9 } from './searchcraft-ad2.js?v=0.13.2';
+import { d as defineCustomElement$8 } from './searchcraft-button2.js?v=0.13.2';
+import { d as defineCustomElement$7 } from './searchcraft-error-message2.js?v=0.13.2';
+import { d as defineCustomElement$6 } from './searchcraft-input-form2.js?v=0.13.2';
+import { d as defineCustomElement$5 } from './searchcraft-input-label2.js?v=0.13.2';
+import { d as defineCustomElement$4 } from './searchcraft-popover-footer2.js?v=0.13.2';
+import { d as defineCustomElement$3 } from './searchcraft-popover-list-item2.js?v=0.13.2';
+import { d as defineCustomElement$2 } from './searchcraft-popover-list-view2.js?v=0.13.2';
 
 const SearchcraftPopoverForm$1 = /*@__PURE__*/ proxyCustomElement(class SearchcraftPopoverForm extends H {
     constructor(registerHost) {
@@ -286,52 +286,52 @@ function defineCustomElement$1() {
     const components = ["searchcraft-popover-form", "searchcraft-ad", "searchcraft-button", "searchcraft-error-message", "searchcraft-input-form", "searchcraft-input-label", "searchcraft-popover-footer", "searchcraft-popover-form", "searchcraft-popover-list-item", "searchcraft-popover-list-view"];
     components.forEach(tagName => { switch (tagName) {
         case "searchcraft-popover-form":
-            if (!customElements.get(tagName)) {
-                customElements.define(tagName, SearchcraftPopoverForm$1);
+            if (!customElements.get(transformTag(tagName))) {
+                customElements.define(transformTag(tagName), SearchcraftPopoverForm$1);
             }
             break;
         case "searchcraft-ad":
-            if (!customElements.get(tagName)) {
+            if (!customElements.get(transformTag(tagName))) {
                 defineCustomElement$9();
             }
             break;
         case "searchcraft-button":
-            if (!customElements.get(tagName)) {
+            if (!customElements.get(transformTag(tagName))) {
                 defineCustomElement$8();
             }
             break;
         case "searchcraft-error-message":
-            if (!customElements.get(tagName)) {
+            if (!customElements.get(transformTag(tagName))) {
                 defineCustomElement$7();
             }
             break;
         case "searchcraft-input-form":
-            if (!customElements.get(tagName)) {
+            if (!customElements.get(transformTag(tagName))) {
                 defineCustomElement$6();
             }
             break;
         case "searchcraft-input-label":
-            if (!customElements.get(tagName)) {
+            if (!customElements.get(transformTag(tagName))) {
                 defineCustomElement$5();
             }
             break;
         case "searchcraft-popover-footer":
-            if (!customElements.get(tagName)) {
+            if (!customElements.get(transformTag(tagName))) {
                 defineCustomElement$4();
             }
             break;
         case "searchcraft-popover-form":
-            if (!customElements.get(tagName)) {
+            if (!customElements.get(transformTag(tagName))) {
                 defineCustomElement$1();
             }
             break;
         case "searchcraft-popover-list-item":
-            if (!customElements.get(tagName)) {
+            if (!customElements.get(transformTag(tagName))) {
                 defineCustomElement$3();
             }
             break;
         case "searchcraft-popover-list-view":
-            if (!customElements.get(tagName)) {
+            if (!customElements.get(transformTag(tagName))) {
                 defineCustomElement$2();
             }
             break;

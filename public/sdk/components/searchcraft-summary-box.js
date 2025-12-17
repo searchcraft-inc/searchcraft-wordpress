@@ -1,7 +1,7 @@
-import { p as proxyCustomElement, H, h } from './p-DO5g2x-l.js';
-import { r as registry } from './p-D0j0UFpV.js';
-import { p as purify } from './p-BlYgaV0q.js';
-import { d as defineCustomElement$2 } from './p-B_415D4A.js';
+import { p as proxyCustomElement, H, h, t as transformTag } from './index2.js?v=0.13.2';
+import { r as registry } from './CoreInstanceRegistry.js?v=0.13.2';
+import { p as purify } from './purify.es.js?v=0.13.2';
+import { d as defineCustomElement$2 } from './searchcraft-loading2.js?v=0.13.2';
 
 /**
  * marked v15.0.12 - a markdown parser
@@ -2243,12 +2243,12 @@ function defineCustomElement$1() {
     const components = ["searchcraft-summary-box", "searchcraft-loading"];
     components.forEach(tagName => { switch (tagName) {
         case "searchcraft-summary-box":
-            if (!customElements.get(tagName)) {
-                customElements.define(tagName, SearchcraftSummaryBox$1);
+            if (!customElements.get(transformTag(tagName))) {
+                customElements.define(transformTag(tagName), SearchcraftSummaryBox$1);
             }
             break;
         case "searchcraft-loading":
-            if (!customElements.get(tagName)) {
+            if (!customElements.get(transformTag(tagName))) {
                 defineCustomElement$2();
             }
             break;
