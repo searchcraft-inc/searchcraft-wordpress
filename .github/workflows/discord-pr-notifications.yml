@@ -141,6 +141,7 @@ jobs:
       - name: Send Discord notification
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          PR_BODY_CONTENT: ${{ steps.commit-info.outputs.pr_body }}
         run: |
           # Check if webhook URL is set
           if [ -z "$DISCORD_WEBHOOK" ]; then
@@ -220,10 +221,9 @@ jobs:
           fi
 
           # Add description field based on event type
-          body_content="${{ steps.commit-info.outputs.pr_body }}"
-          if [ -n "$body_content" ] && [ "$body_content" != "null" ]; then
+          if [ -n "$PR_BODY_CONTENT" ] && [ "$PR_BODY_CONTENT" != "null" ]; then
             # Truncate description to 300 characters to avoid Discord limits
-            description=$(echo "$body_content" | head -c 300)
+            description=$(echo "$PR_BODY_CONTENT" | head -c 300)
             if [ ${#description} -eq 300 ]; then
               description="${description}..."
             fi
