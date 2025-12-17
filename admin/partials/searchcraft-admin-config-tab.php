@@ -295,7 +295,7 @@ if ( ! is_array( $custom_post_types_with_fields ) ) {
 								<?php endforeach; ?>
 							</fieldset>
 							<p class="description">
-								Select which custom post types should be included in the search index. If a custom post type has custom fields, you can optionally include those fields in the search.
+								Select which custom post types should be included in the search index. If a custom post type has custom fields, you can optionally include those fields in the search. Standard posts and pages will always be included unless manually excluded on the individual item level.
 							</p>
 							<p class="description">
 								<strong>Note:</strong> To display custom fields in a search result you will need to create a <a href="https://docs.searchcraft.io/sdks/javascript/working-with-templates/" target="_blank">custom template</a>.
@@ -306,33 +306,60 @@ if ( ! is_array( $custom_post_types_with_fields ) ) {
 			</table>
 		<?php endif; ?>
 
-		<?php if ( defined( 'PP_AUTHORS_VERSION' ) ) : ?>
+		<?php if ( defined( 'PP_AUTHORS_VERSION' ) || defined( 'MOLONGUI_AUTHORSHIP_VERSION' ) ) : ?>
 			<h3>Author Options</h3>
 			<table class="form-table">
 				<tbody>
-					<tr>
-						<th scope="row">
-							<label for="searchcraft_use_publishpress_authors">PublishPress Authors</label>
-						</th>
-						<td>
-							<?php
-							$use_publishpress_authors = get_option( 'searchcraft_use_publishpress_authors', '1' );
-							?>
-							<label>
-								<input
-									type="checkbox"
-									id="searchcraft_use_publishpress_authors"
-									name="searchcraft_use_publishpress_authors"
-									value="1"
-									<?php checked( $use_publishpress_authors, '1' ); ?>
-								/>
-								Use PublishPress Authors
-							</label>
-							<p class="description">
-								When enabled, the plugin will use PublishPress Authors for post author information instead of the default WordPress author.
-							</p>
-						</td>
-					</tr>
+					<?php if ( defined( 'PP_AUTHORS_VERSION' ) ) : ?>
+						<tr>
+							<th scope="row">
+								<label for="searchcraft_use_publishpress_authors">PublishPress Authors</label>
+							</th>
+							<td>
+								<?php
+								$use_publishpress_authors = get_option( 'searchcraft_use_publishpress_authors', '1' );
+								?>
+								<label>
+									<input
+										type="checkbox"
+										id="searchcraft_use_publishpress_authors"
+										name="searchcraft_use_publishpress_authors"
+										value="1"
+										<?php checked( $use_publishpress_authors, '1' ); ?>
+									/>
+									Use PublishPress Authors
+								</label>
+								<p class="description">
+									When enabled, the plugin will use PublishPress Authors for post author information instead of the default WordPress author.
+								</p>
+							</td>
+						</tr>
+					<?php endif; ?>
+					<?php if ( defined( 'MOLONGUI_AUTHORSHIP_VERSION' ) ) : ?>
+						<tr>
+							<th scope="row">
+								<label for="searchcraft_use_molongui_authorship">Molongui Authorship</label>
+							</th>
+							<td>
+								<?php
+								$use_molongui_authorship = get_option( 'searchcraft_use_molongui_authorship', '1' );
+								?>
+								<label>
+									<input
+										type="checkbox"
+										id="searchcraft_use_molongui_authorship"
+										name="searchcraft_use_molongui_authorship"
+										value="1"
+										<?php checked( $use_molongui_authorship, '1' ); ?>
+									/>
+									Use Molongui Authorship
+								</label>
+								<p class="description">
+									When enabled, the plugin will use Molongui Authorship for post author information instead of the default WordPress author.
+								</p>
+							</td>
+						</tr>
+					<?php endif; ?>
 				</tbody>
 			</table>
 		<?php endif; ?>

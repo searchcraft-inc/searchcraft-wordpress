@@ -1,4 +1,4 @@
-import { S as SearchcraftErrorMessage$1, d as defineCustomElement$1 } from './p-DjPZkCLP.js';
+import { S as SearchcraftErrorMessage$1, d as defineCustomElement$1 } from './searchcraft-error-message2.js?v=0.13.2';
 
 const SearchcraftErrorMessage = SearchcraftErrorMessage$1;
 const defineCustomElement = defineCustomElement$1;

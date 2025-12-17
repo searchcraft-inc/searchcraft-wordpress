@@ -145,6 +145,210 @@ function toggleFilterPanelOptions() {
 }
 
 /**
+ * Helper function to escape HTML
+ */
+function escapeHtml(text) {
+	const div = document.createElement('div');
+	div.textContent = text;
+	return div.innerHTML;
+}
+
+/**
+ * Update search input container description and UI mode based on search behavior
+ */
+function updateSearchInputContainerDescription() {
+	const standAloneRadio = document.querySelector('input[name="searchcraft_search_behavior"][value="stand_alone"]');
+	const inputContainerDescription = document.querySelector('.searchcraft-container-id-wrapper + .description');
+	const containerWrapper = document.querySelector('.searchcraft-container-id-wrapper');
+
+	if (!standAloneRadio || !inputContainerDescription || !containerWrapper) {
+		return;
+	}
+
+	const isStandAlone = standAloneRadio.checked;
+	const tagsContainer = containerWrapper.querySelector('.searchcraft-container-id-tags');
+	const mainInput = containerWrapper.querySelector('#searchcraft_search_input_container_id');
+
+	if (isStandAlone) {
+		// Switch to multi-ID tag mode
+		containerWrapper.classList.remove('single-mode');
+		inputContainerDescription.innerHTML = 'If specified, the search box input form will load as the first element inside of the HTML element that matches this <a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/id" target="_blank">ID</a>. <strong>Multiple IDs supported:</strong> When "Submit to Search Page" is selected, you can add multiple element IDs to display the search input in multiple locations. Leave empty to use the default auto-detection behavior.';
+
+		// Populate tags from the text input value
+		if (tagsContainer && mainInput && mainInput.value.trim()) {
+			tagsContainer.innerHTML = '';
+
+			const ids = mainInput.value.split(',').map(id => id.trim()).filter(id => id !== '');
+			ids.forEach(id => {
+				const tag = document.createElement('span');
+				tag.className = 'searchcraft-tag';
+				tag.innerHTML = `
+					<span class="searchcraft-tag-text">${escapeHtml(id)}</span>
+					<button type="button" class="searchcraft-tag-remove" aria-label="Remove ${escapeHtml(id)}">×</button>
+				`;
+
+				// Attach remove handler to the new tag
+				const removeButton = tag.querySelector('.searchcraft-tag-remove');
+				removeButton.addEventListener('click', function() {
+					tag.remove();
+					updateMainInputFromTags();
+				});
+
+				tagsContainer.appendChild(tag);
+			});
+
+			mainInput.value = ids.join(',');
+		}
+	} else {
+		// Switch to single-ID text input mode
+		containerWrapper.classList.add('single-mode');
+		inputContainerDescription.innerHTML = 'If specified, the search box input form will load as the first element inside of the HTML element that matches this <a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/id" target="_blank">ID</a>. Note: this element must be present on every page you want the search input to appear on. Leave empty to use the default auto-detection behavior.';
+
+		// Sync only the first tag value to the text input
+		if (tagsContainer && mainInput) {
+			const firstTag = tagsContainer.querySelector('.searchcraft-tag-text');
+			mainInput.value = firstTag ? firstTag.textContent.trim() : '';
+		}
+	}
+}
+
+/**
+ * Update main input value from tags
+ */
+function updateMainInputFromTags() {
+	const wrapper = document.querySelector('.searchcraft-container-id-wrapper');
+	if (!wrapper) return;
+
+	const tagsContainer = wrapper.querySelector('.searchcraft-container-id-tags');
+	const mainInput = wrapper.querySelector('#searchcraft_search_input_container_id');
+
+	if (tagsContainer && mainInput) {
+		const tags = Array.from(tagsContainer.querySelectorAll('.searchcraft-tag-text'))
+			.map(tag => tag.textContent.trim())
+			.filter(text => text !== '');
+		mainInput.value = tags.join(',');
+	}
+}
+
+/**
+ * Initialize container ID tag UI
+ */
+function initContainerIdTagUI() {
+	const wrapper = document.querySelector('.searchcraft-container-id-wrapper');
+	if (!wrapper) {
+		return;
+	}
+
+	const inputArea = wrapper.querySelector('.searchcraft-container-id-input-area');
+	const tagsContainer = wrapper.querySelector('.searchcraft-container-id-tags');
+	const input = wrapper.querySelector('.searchcraft-container-id-input');
+	const mainInput = wrapper.querySelector('#searchcraft_search_input_container_id');
+
+	if (!inputArea || !tagsContainer || !input || !mainInput) {
+		return;
+	}
+
+	// Validate element ID format
+	function isValidElementId(id) {
+		// HTML ID must start with a letter and can contain letters, digits, hyphens, and underscores
+		return /^[a-zA-Z][a-zA-Z0-9_-]*$/.test(id);
+	}
+
+	// Add a new tag
+	function addTag(text) {
+		text = text.trim();
+
+		if (!text) {
+			return false;
+		}
+
+		// Validate element ID
+		if (!isValidElementId(text)) {
+			input.style.borderColor = '#d63638';
+			setTimeout(function() {
+				input.style.borderColor = '';
+			}, 1000);
+			return false;
+		}
+
+		// Check for duplicates
+		const existingTags = Array.from(tagsContainer.querySelectorAll('.searchcraft-tag-text'))
+			.map(tag => tag.textContent.trim());
+
+		if (existingTags.includes(text)) {
+			return false;
+		}
+
+		// Create tag element
+		const tag = document.createElement('span');
+		tag.className = 'searchcraft-tag';
+		tag.innerHTML = `
+			<span class="searchcraft-tag-text">${escapeHtml(text)}</span>
+			<button type="button" class="searchcraft-tag-remove" aria-label="Remove ${escapeHtml(text)}">×</button>
+		`;
+
+		// Attach remove handler
+		const removeButton = tag.querySelector('.searchcraft-tag-remove');
+		removeButton.addEventListener('click', function() {
+			tag.remove();
+			updateMainInputFromTags();
+			input.focus();
+		});
+
+		tagsContainer.appendChild(tag);
+		updateMainInputFromTags();
+		return true;
+	}
+
+	// Handle keyboard input
+	input.addEventListener('keydown', function(e) {
+		const value = input.value.trim();
+
+		if (e.key === 'Enter' || e.key === ',') {
+			e.preventDefault();
+			if (addTag(value)) {
+				input.value = '';
+			}
+		} else if (e.key === 'Backspace' && value === '') {
+			// Backspace on empty input removes last tag
+			const tags = tagsContainer.querySelectorAll('.searchcraft-tag');
+			if (tags.length > 0) {
+				tags[tags.length - 1].remove();
+				updateMainInputFromTags();
+			}
+		}
+	});
+
+	// Handle paste with comma-separated values
+	input.addEventListener('paste', function(e) {
+		e.preventDefault();
+		const pastedText = (e.clipboardData || window.clipboardData).getData('text');
+		const ids = pastedText.split(/[,\s]+/).filter(id => id.trim() !== '');
+
+		ids.forEach(function(id) {
+			addTag(id);
+		});
+
+		input.value = '';
+	});
+
+	// Click on input area to focus the input field
+	inputArea.addEventListener('click', function(e) {
+		if (e.target === inputArea || e.target === tagsContainer) {
+			input.focus();
+		}
+	});
+
+	// Attach remove handlers to existing tags (from server-rendered HTML)
+	tagsContainer.querySelectorAll('.searchcraft-tag-remove').forEach(function(button) {
+		button.addEventListener('click', function() {
+			button.closest('.searchcraft-tag').remove();
+			updateMainInputFromTags();
+		});
+	});
+}
+
+/**
  * Toggle facets options visibility
  */
 function toggleFacetsOptions() {
@@ -388,6 +592,24 @@ document.addEventListener('DOMContentLoaded', function() {
 
 			// Add event listener
 			filterPanelCheckbox.addEventListener('change', toggleFilterPanelOptions);
+		}
+
+		// Search behavior toggle for input container description
+		const onPageRadio = document.querySelector('input[name="searchcraft_search_behavior"][value="on_page"]');
+		const standAloneRadio = document.querySelector('input[name="searchcraft_search_behavior"][value="stand_alone"]');
+
+		// Initialize container ID tag UI
+		initContainerIdTagUI();
+
+		// Initial state
+		updateSearchInputContainerDescription();
+
+		// Add event listeners
+		if (onPageRadio) {
+			onPageRadio.addEventListener('change', updateSearchInputContainerDescription);
+		}
+		if (standAloneRadio) {
+			standAloneRadio.addEventListener('change', updateSearchInputContainerDescription);
 		}
 
 		// Facets options toggle

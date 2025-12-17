@@ -602,6 +602,10 @@ class Searchcraft_Admin {
 				$use_publishpress_authors = isset( $_POST['searchcraft_use_publishpress_authors'] ) ? '1' : '0'; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in searchcraft_request_handler().
 				update_option( 'searchcraft_use_publishpress_authors', $use_publishpress_authors );
 
+				// Save Molongui Authorship setting.
+				$use_molongui_authorship = isset( $_POST['searchcraft_use_molongui_authorship'] ) ? '1' : '0'; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in searchcraft_request_handler().
+				update_option( 'searchcraft_use_molongui_authorship', $use_molongui_authorship );
+
 				// Get previous custom post types selections for comparison.
 				$previous_custom_post_types = get_option( 'searchcraft_custom_post_types', array() );
 				if ( ! is_array( $previous_custom_post_types ) ) {
@@ -1209,8 +1213,31 @@ class Searchcraft_Admin {
 		$input_container_id = '';
 		if ( isset( $request['searchcraft_search_input_container_id'] ) ) {
 			$input_container_id = sanitize_text_field( wp_unslash( $request['searchcraft_search_input_container_id'] ) );
-			// Remove any invalid characters for HTML IDs.
-			$input_container_id = preg_replace( '/[^a-zA-Z0-9_-]/', '', $input_container_id );
+
+			// Determine search behavior to decide if multiple IDs are allowed.
+			$search_behavior = isset( $request['searchcraft_search_behavior'] )
+				? sanitize_text_field( wp_unslash( $request['searchcraft_search_behavior'] ) )
+				: get_option( 'searchcraft_search_behavior', 'on_page' );
+
+			if ( 'stand_alone' === $search_behavior && strpos( $input_container_id, ',' ) !== false ) {
+				// Multi-ID mode: split, sanitize each, and rejoin.
+				$ids            = array_map( 'trim', explode( ',', $input_container_id ) );
+				$sanitized_ids  = array();
+				foreach ( $ids as $id ) {
+					$clean_id = preg_replace( '/[^a-zA-Z0-9_-]/', '', $id );
+					if ( ! empty( $clean_id ) ) {
+						$sanitized_ids[] = $clean_id;
+					}
+				}
+				$input_container_id = implode( ',', $sanitized_ids );
+			} else {
+				// Single-ID mode: keep only the first ID if multiple were provided.
+				if ( strpos( $input_container_id, ',' ) !== false ) {
+					$ids                = array_map( 'trim', explode( ',', $input_container_id ) );
+					$input_container_id = ! empty( $ids[0] ) ? $ids[0] : '';
+				}
+				$input_container_id = preg_replace( '/[^a-zA-Z0-9_-]/', '', $input_container_id );
+			}
 		}
 		update_option( 'searchcraft_search_input_container_id', $input_container_id );
 
@@ -1242,6 +1269,10 @@ class Searchcraft_Admin {
 			update_option( 'searchcraft_popover_element_behavior', $popover_element_behavior );
 		}
 
+		// Handle retain get_search_form setting.
+		$retain_get_search_form = isset( $request['searchcraft_retain_get_search_form'] ) ? true : false;
+		update_option( 'searchcraft_retain_get_search_form', $retain_get_search_form );
+
 		// Display unified success message.
 		add_action(
 			'admin_notices',
@@ -1251,45 +1282,6 @@ class Searchcraft_Admin {
 				echo '</div>';
 			}
 		);
-	}
-
-	/**
-	 * Checks if the current theme has a search form.
-	 *
-	 * @since 1.0.0
-	 * @return bool True if theme has search form, false otherwise.
-	 */
-	public function searchcraft_theme_has_search_form() {
-		// Check if theme supports search form.
-		if ( current_theme_supports( 'html5', 'search-form' ) || current_theme_supports( 'search-form' ) ) {
-			return true;
-		}
-
-		// Check common theme files for search form.
-		$theme_files = array(
-			'searchform.php',
-			'header.php',
-			'sidebar.php',
-			'footer.php',
-			'index.php',
-		);
-
-		$theme_path = get_template_directory();
-		foreach ( $theme_files as $file ) {
-			$file_path = $theme_path . '/' . $file;
-			if ( file_exists( $file_path ) ) {
-				$content = file_get_contents( $file_path );
-				// Check for search form indicators.
-				if ( strpos( $content, 'get_search_form' ) !== false ||
-					strpos( $content, 'search-form' ) !== false ||
-					strpos( $content, 'searchform' ) !== false ||
-					strpos( $content, 'type="search"' ) !== false ) {
-					return true;
-				}
-			}
-		}
-
-		return false;
 	}
 
 	/**
@@ -1753,6 +1745,42 @@ class Searchcraft_Admin {
 						if ( isset( $author->term_id ) && isset( $author->display_name ) ) {
 							$author_ids[]   = (string) $author->term_id;
 							$author_names[] = $author->display_name;
+						}
+					}
+				}
+			}
+
+			// Check if Molongui Authorship is enabled and available.
+			$use_molongui_authorship = (bool) get_option( 'searchcraft_use_molongui_authorship', false );
+			if ( true === $use_molongui_authorship && defined( 'MOLONGUI_AUTHORSHIP_VERSION' ) ) {
+				// Molongui Authorship stores authors in post meta.
+				$molongui_authors = get_post_meta( $post->ID, '_molongui_author', false );
+				if ( ! empty( $molongui_authors ) && is_array( $molongui_authors ) ) {
+					// Use all authors from Molongui Authorship.
+					$author_ids   = array();
+					$author_names = array();
+					foreach ( $molongui_authors as $author_id ) {
+						// Molongui stores author IDs in format "user-{id}" or "guest-{id}".
+						$author_parts = explode( '-', $author_id );
+						if ( count( $author_parts ) === 2 ) {
+							$author_type = $author_parts[0];
+							$author_num  = $author_parts[1];
+
+							if ( 'user' === $author_type ) {
+								// Regular WordPress user - use the numeric user ID.
+								$author_name = get_the_author_meta( 'display_name', $author_num );
+								if ( ! empty( $author_name ) ) {
+									$author_ids[]   = (string) $author_num;
+									$author_names[] = $author_name;
+								}
+							} elseif ( 'guest' === $author_type ) {
+								// Guest author - use the numeric post ID from custom post type.
+								$guest_author = get_post( $author_num );
+								if ( $guest_author && 'guest_author' === $guest_author->post_type ) {
+									$author_ids[]   = (string) $author_num;
+									$author_names[] = $guest_author->post_title;
+								}
+							}
 						}
 					}
 				}
@@ -2314,4 +2342,5 @@ class Searchcraft_Admin {
 		// Build the RESTful path.
 		return '/' . implode( '/', $path_parts );
 	}
+
 }

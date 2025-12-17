@@ -4,7 +4,7 @@ Contributors: searchcraft
 Tags:         search, fuzzy search, better search, instant search, search replacement
 Requires at least: 5.3
 Tested up to: 6.9
-Stable tag:   1.1.3
+Stable tag:   1.2.0
 License:      Apache 2.0
 License URI:  LICENSE.txt
 
@@ -68,6 +68,13 @@ If you would like to report an issue or suggest an enhancement you may contact t
 Searchcraft Cloud customers may also reach out via our Discord server for assistance or to request a custom feature.
 
 == Changelog ==
+
+= 1.2.0 =
+* New Feature - Add support for Molongui Authorship authors
+* New Feature - Add support to add search input to multiple elements on a page when "send to search page" option is used
+* New Feature - Add option to retain stock get_search_form under advanced options
+* Improvement - Added cache control headers to reduce browser caching issues after plugin updates
+* Updates Searchcraft JavaScript SDK to v0.13.2
 
 = 1.1.3 =
 * Additional bugfixes
