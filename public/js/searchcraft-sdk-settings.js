@@ -86,10 +86,9 @@
             const filterPanel = document.querySelector('searchcraft-filter-panel');
             if (filterPanel) {
                 const today = new Date();
-                const pastDate = new Date('2000-01-01');
                 const currentYear = today.getFullYear();
                 const oldestYear = parseInt(searchcraft_config.oldestPostYear);
-                pastDate.setFullYear(oldestYear);
+                const pastDate = new Date(`${oldestYear}-01-01T00:00:00.00Z`);
 
                 // Define all available filter items
                 const availableFilterItems = {

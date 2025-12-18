@@ -2189,6 +2189,7 @@ class Searchcraft_Admin {
 		// If this is an update to an already published post, remove the existing document first.
 		if ( $update && $post_before && 'publish' === $post_before->post_status ) {
 			$this->searchcraft_remove_single_document( $post );
+			usleep( 30000 );
 		}
 
 		// If the post is excluded from indexing, don't add it back to the index.
