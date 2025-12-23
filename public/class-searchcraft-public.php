@@ -255,22 +255,31 @@ class Searchcraft_Public {
 		$js_config['filterPanelOrder'] = $filter_panel_order;
 
 		// Post type filter settings.
-		$enable_post_type_filter    = (bool) get_option( 'searchcraft_enable_post_type_filter', false );
+		$enable_post_type_filter     = (bool) get_option( 'searchcraft_enable_post_type_filter', false );
+		$selected_builtin_post_types = get_option( 'searchcraft_builtin_post_types', array( 'post', 'page' ) );
+		if ( ! is_array( $selected_builtin_post_types ) ) {
+			$selected_builtin_post_types = array( 'post', 'page' );
+		}
 		$selected_custom_post_types = get_option( 'searchcraft_custom_post_types', array() );
 
-		// If custom post types are enabled and post type filter is enabled, add post types to config.
-		if ( ! empty( $selected_custom_post_types ) && $enable_post_type_filter ) {
-			// Build array of all post types (built-in + custom).
-			$post_types_config = array(
-				array(
+		// If post type filter is enabled and there are multiple post types, add post types to config.
+		$all_enabled_post_types = array_merge( $selected_builtin_post_types, $selected_custom_post_types );
+		if ( $enable_post_type_filter && count( $all_enabled_post_types ) > 1 ) {
+			$post_types_config = array();
+
+			// Add built-in post types if enabled.
+			if ( in_array( 'post', $selected_builtin_post_types, true ) ) {
+				$post_types_config[] = array(
 					'name'  => '/post',
 					'label' => 'Posts',
-				),
-				array(
+				);
+			}
+			if ( in_array( 'page', $selected_builtin_post_types, true ) ) {
+				$post_types_config[] = array(
 					'name'  => '/page',
 					'label' => 'Pages',
-				),
-			);
+				);
+			}
 
 			// Add custom post types with their labels.
 			foreach ( $selected_custom_post_types as $post_type_name ) {

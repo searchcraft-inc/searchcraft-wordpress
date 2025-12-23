@@ -606,6 +606,20 @@ class Searchcraft_Admin {
 				$use_molongui_authorship = isset( $_POST['searchcraft_use_molongui_authorship'] ) ? '1' : '0'; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in searchcraft_request_handler().
 				update_option( 'searchcraft_use_molongui_authorship', $use_molongui_authorship );
 
+				// Get previous built-in post types selections for comparison.
+				$previous_builtin_post_types = get_option( 'searchcraft_builtin_post_types', array( 'post', 'page' ) );
+				if ( ! is_array( $previous_builtin_post_types ) ) {
+					$previous_builtin_post_types = array( 'post', 'page' );
+				}
+
+				// Save built-in post types selections.
+				$builtin_post_types = isset( $_POST['searchcraft_builtin_post_types'] ) && is_array( $_POST['searchcraft_builtin_post_types'] ) // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in searchcraft_request_handler().
+					? array_map( 'sanitize_text_field', wp_unslash( $_POST['searchcraft_builtin_post_types'] ) ) // phpcs:ignore WordPress.Security.NonceVerification.Missing  -- Nonce verified in searchcraft_request_handler().
+					: array();
+
+				// Only allow 'post' and 'page' values.
+				$builtin_post_types = array_intersect( $builtin_post_types, array( 'post', 'page' ) );
+
 				// Get previous custom post types selections for comparison.
 				$previous_custom_post_types = get_option( 'searchcraft_custom_post_types', array() );
 				if ( ! is_array( $previous_custom_post_types ) ) {
@@ -627,23 +641,29 @@ class Searchcraft_Admin {
 					: array();
 
 				// Sort arrays for fair comparison.
+				sort( $previous_builtin_post_types );
+				sort( $builtin_post_types );
 				sort( $previous_custom_post_types );
 				sort( $custom_post_types );
 				sort( $previous_custom_post_types_with_fields );
 				sort( $custom_post_types_with_fields );
+
+				// Check if built-in post types have changed.
+				$builtin_post_types_changed = ( serialize( $previous_builtin_post_types ) !== serialize( $builtin_post_types ) ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.serialize_serialize
 
 				// Check if custom post types or custom fields have changed.
 				$custom_post_types_changed        = ( serialize( $previous_custom_post_types ) !== serialize( $custom_post_types ) ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.serialize_serialize
 				$custom_post_types_fields_changed = ( serialize( $previous_custom_post_types_with_fields ) !== serialize( $custom_post_types_with_fields ) ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.serialize_serialize
 
 				// Update options after comparison.
+				update_option( 'searchcraft_builtin_post_types', $builtin_post_types );
 				update_option( 'searchcraft_custom_post_types', $custom_post_types );
 				update_option( 'searchcraft_custom_post_types_with_fields', $custom_post_types_with_fields );
 
 				// Check if taxonomies have changed and need index update.
 				// We need to update if taxonomies changed, regardless of whether we're adding or removing them.
 				$taxonomies_changed = ( serialize( $previous_taxonomies ) !== serialize( $filter_taxonomies ) ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.serialize_serialize
-				$needs_index_update = $taxonomies_changed || $custom_post_types_changed || $custom_post_types_fields_changed;
+				$needs_index_update = $taxonomies_changed || $builtin_post_types_changed || $custom_post_types_changed || $custom_post_types_fields_changed;
 
 				if ( $success ) {
 					// Clear cached data since configuration has changed.
@@ -681,6 +701,12 @@ class Searchcraft_Admin {
 							} elseif ( $custom_types_update_result['reindexed'] ) {
 								$reindexed = true;
 							}
+						}
+
+						// Reindex if built-in post types changed.
+						if ( $builtin_post_types_changed && ! $reindexed ) {
+							$this->searchcraft_add_all_documents();
+							$reindexed = true;
 						}
 
 						if ( $all_updates_successful ) {
@@ -2078,16 +2104,27 @@ class Searchcraft_Admin {
 		$batches    = ceil( $total_posts / $batch_size );
 		$last_id    = 0;
 
+		// Get selected built-in post types.
+		$selected_builtin_post_types = get_option( 'searchcraft_builtin_post_types', array( 'post', 'page' ) );
+		if ( ! is_array( $selected_builtin_post_types ) ) {
+			$selected_builtin_post_types = array( 'post', 'page' );
+		}
+
 		// Get selected custom post types.
 		$selected_custom_post_types = get_option( 'searchcraft_custom_post_types', array() );
 		if ( ! is_array( $selected_custom_post_types ) ) {
 			$selected_custom_post_types = array();
 		}
 
-		// Build list of post types to index: default types + selected custom types.
-		$post_types_to_index = array( 'post', 'page' );
+		// Build list of post types to index: selected built-in types + selected custom types.
+		$post_types_to_index = $selected_builtin_post_types;
 		if ( ! empty( $selected_custom_post_types ) ) {
 			$post_types_to_index = array_merge( $post_types_to_index, $selected_custom_post_types );
+		}
+
+		// If no post types are selected, return early.
+		if ( empty( $post_types_to_index ) ) {
+			return;
 		}
 
 		// Process posts in batches using cursor-based pagination.
@@ -2180,6 +2217,24 @@ class Searchcraft_Admin {
 		$public_post_types = get_post_types( array( 'public' => true ) );
 
 		if ( ! in_array( $post->post_type, $public_post_types, true ) ) {
+			return;
+		}
+
+		// Check if this post type is enabled for indexing.
+		$selected_builtin_post_types = get_option( 'searchcraft_builtin_post_types', array( 'post', 'page' ) );
+		if ( ! is_array( $selected_builtin_post_types ) ) {
+			$selected_builtin_post_types = array( 'post', 'page' );
+		}
+
+		$selected_custom_post_types = get_option( 'searchcraft_custom_post_types', array() );
+		if ( ! is_array( $selected_custom_post_types ) ) {
+			$selected_custom_post_types = array();
+		}
+
+		$enabled_post_types = array_merge( $selected_builtin_post_types, $selected_custom_post_types );
+
+		// If this post type is not enabled, don't index it.
+		if ( ! in_array( $post->post_type, $enabled_post_types, true ) ) {
 			return;
 		}
 

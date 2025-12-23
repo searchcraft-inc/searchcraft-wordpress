@@ -66,6 +66,12 @@ $custom_post_types_with_fields = get_option( 'searchcraft_custom_post_types_with
 if ( ! is_array( $custom_post_types_with_fields ) ) {
 	$custom_post_types_with_fields = array();
 }
+
+// Get built-in post types selection (default to both enabled).
+$selected_builtin_post_types = get_option( 'searchcraft_builtin_post_types', array( 'post', 'page' ) );
+if ( ! is_array( $selected_builtin_post_types ) ) {
+	$selected_builtin_post_types = array( 'post', 'page' );
+}
 ?>
 <div class="searchcraft-config-section">
 	<h2 class="searchcraft-section-heading">Searchcraft Configuration</h2>
@@ -243,8 +249,49 @@ if ( ! is_array( $custom_post_types_with_fields ) ) {
 			</table>
 		<?php endif; ?>
 
+		<h3>Standard Content Types</h3>
+		<table class="form-table">
+			<tbody>
+				<tr>
+					<th scope="row">
+						<label>Include these content types in search</label>
+					</th>
+					<td>
+						<fieldset>
+							<legend class="screen-reader-text"><span>Select content types to include in search</span></legend>
+							<div style="margin-bottom: 12px;">
+								<label style="display: block; margin-bottom: 4px;">
+									<input
+										type="checkbox"
+										name="searchcraft_builtin_post_types[]"
+										value="post"
+										<?php checked( in_array( 'post', $selected_builtin_post_types, true ) ); ?>
+									/>
+									<strong>Posts</strong>
+								</label>
+							</div>
+							<div style="margin-bottom: 12px;">
+								<label style="display: block; margin-bottom: 4px;">
+									<input
+										type="checkbox"
+										name="searchcraft_builtin_post_types[]"
+										value="page"
+										<?php checked( in_array( 'page', $selected_builtin_post_types, true ) ); ?>
+									/>
+									<strong>Pages</strong>
+								</label>
+							</div>
+						</fieldset>
+						<p class="description">
+							Select which built-in content types should be included in the search index. Uncheck to exclude all posts or pages from search.
+						</p>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+
 		<?php if ( ! empty( $custom_post_types ) ) : ?>
-			<h3>Custom Post Types</h3>
+			<h3>Custom Content Types</h3>
 			<table class="form-table">
 				<tbody>
 					<tr>
@@ -295,7 +342,7 @@ if ( ! is_array( $custom_post_types_with_fields ) ) {
 								<?php endforeach; ?>
 							</fieldset>
 							<p class="description">
-								Select which custom post types should be included in the search index. If a custom post type has custom fields, you can optionally include those fields in the search. Standard posts and pages will always be included unless manually excluded on the individual item level.
+								Select which custom post types should be included in the search index. If a custom post type has custom fields, you can optionally include those fields in the search.
 							</p>
 							<p class="description">
 								<strong>Note:</strong> To display custom fields in a search result you will need to create a <a href="https://docs.searchcraft.io/sdks/javascript/working-with-templates/" target="_blank">custom template</a>.
