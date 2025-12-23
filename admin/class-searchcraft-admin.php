@@ -225,7 +225,7 @@ class Searchcraft_Admin {
 		// Check if we're on a Searchcraft admin page.
 		if ( $screen && strpos( $screen->id, 'searchcraft' ) !== false ) {
 			// Remove the "Thank you for creating with WordPress" text.
-			add_filter( 'admin_footer_text', '__return_false' );
+			add_filter( 'admin_footer_text', '__return_false', 999 );
 
 			// Remove the WordPress version text.
 			add_filter( 'update_footer', '__return_false', 11 );
