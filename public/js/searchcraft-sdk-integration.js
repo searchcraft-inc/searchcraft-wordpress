@@ -108,8 +108,19 @@
                     : (item.post_author_name || '');
 
                 const by = (author_name && postDate && searchcraft_config.displayPostDate) ? 'By ' : '';
+
+                let typeClass = '';
+                if (item.type && typeof item.type === 'string' && item.type.trim()) {
+                    typeClass = ' searchcraft-result-type_' + item.type
+                        .replace(/^\/+/, '')
+                        .replace(/\//g, '_')
+                        .replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`)
+                        .replace(/^_/, '')
+                        .replace(/_+/g, '_');
+                }
+
                 return html`
-                <a class="searchcraft-result-item" href="${item.permalink}">
+                <a class="searchcraft-result-item${typeClass}" href="${item.permalink}">
                     ${searchcraft_config.imageAlignment === 'left' ? image : ''}
                     <div class="searchcraft-result-content">
                         ${(item.primary_category_name && searchcraft_config.displayPrimaryCategory) ? html`<h4 class="searchcraft-result-primary-category">${item.primary_category_name}</h4>` : ''}
