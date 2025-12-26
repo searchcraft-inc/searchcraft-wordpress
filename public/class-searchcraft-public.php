@@ -327,6 +327,7 @@ class Searchcraft_Public {
 		);
 		$js_config['filterTaxonomies'] = $taxonomy_config;
 		$js_config['isWPSearchPage']   = (bool) is_search();
+		$js_config['searchBehavior']   = get_option( 'searchcraft_search_behavior', 'on_page' );
 
 		// Add user identifier for analytics if user is logged in.
 		$user_id = get_current_user_id();
