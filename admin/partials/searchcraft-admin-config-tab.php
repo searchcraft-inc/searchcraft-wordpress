@@ -66,6 +66,18 @@ $custom_post_types_with_fields = get_option( 'searchcraft_custom_post_types_with
 if ( ! is_array( $custom_post_types_with_fields ) ) {
 	$custom_post_types_with_fields = array();
 }
+
+// Get selected custom fields for each post type.
+$selected_custom_fields = get_option( 'searchcraft_selected_custom_fields', array() );
+if ( ! is_array( $selected_custom_fields ) ) {
+	$selected_custom_fields = array();
+}
+
+// Get built-in post types selection (default to both enabled).
+$selected_builtin_post_types = get_option( 'searchcraft_builtin_post_types', array( 'post', 'page' ) );
+if ( ! is_array( $selected_builtin_post_types ) ) {
+	$selected_builtin_post_types = array( 'post', 'page' );
+}
 ?>
 <div class="searchcraft-config-section">
 	<h2 class="searchcraft-section-heading">Searchcraft Configuration</h2>
@@ -243,8 +255,49 @@ if ( ! is_array( $custom_post_types_with_fields ) ) {
 			</table>
 		<?php endif; ?>
 
+		<h3>Standard Content Types</h3>
+		<table class="form-table">
+			<tbody>
+				<tr>
+					<th scope="row">
+						<label>Include these content types in search</label>
+					</th>
+					<td>
+						<fieldset>
+							<legend class="screen-reader-text"><span>Select content types to include in search</span></legend>
+							<div style="margin-bottom: 12px;">
+								<label style="display: block; margin-bottom: 4px;">
+									<input
+										type="checkbox"
+										name="searchcraft_builtin_post_types[]"
+										value="post"
+										<?php checked( in_array( 'post', $selected_builtin_post_types, true ) ); ?>
+									/>
+									<strong>Posts</strong>
+								</label>
+							</div>
+							<div style="margin-bottom: 12px;">
+								<label style="display: block; margin-bottom: 4px;">
+									<input
+										type="checkbox"
+										name="searchcraft_builtin_post_types[]"
+										value="page"
+										<?php checked( in_array( 'page', $selected_builtin_post_types, true ) ); ?>
+									/>
+									<strong>Pages</strong>
+								</label>
+							</div>
+						</fieldset>
+						<p class="description">
+							Select which built-in content types should be included in the search index. Uncheck to exclude all posts or pages from search.
+						</p>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+
 		<?php if ( ! empty( $custom_post_types ) ) : ?>
-			<h3>Custom Post Types</h3>
+			<h3>Custom Content Types</h3>
 			<table class="form-table">
 				<tbody>
 					<tr>
@@ -260,6 +313,9 @@ if ( ! is_array( $custom_post_types_with_fields ) ) {
 									$meta_keys         = Searchcraft_Helper_Functions::searchcraft_get_meta_keys_for_post_type( $post_type_obj->name );
 									$has_custom_fields = ! empty( $meta_keys );
 									$fields_checked    = in_array( $post_type_obj->name, $custom_post_types_with_fields, true );
+									$post_type_selected_fields = isset( $selected_custom_fields[ $post_type_obj->name ] ) ? $selected_custom_fields[ $post_type_obj->name ] : array();
+									$selected_count = count( $post_type_selected_fields );
+									$total_count = count( $meta_keys );
 									?>
 									<div style="margin-bottom: 12px;">
 										<label style="display: block; margin-bottom: 4px;">
@@ -280,22 +336,33 @@ if ( ! is_array( $custom_post_types_with_fields ) ) {
 										</label>
 										<?php if ( $has_custom_fields ) : ?>
 											<div class="searchcraft-custom-fields-option" data-post-type="<?php echo esc_attr( $post_type_obj->name ); ?>" style="padding-left: 2em; margin-top: 4px;<?php echo $is_checked ? '' : 'display:none;'; ?>">
-												<label>
+												<label style="display: block; margin-bottom: 4px;">
 													<input
 														type="checkbox"
 														name="searchcraft_custom_post_types_with_fields[]"
 														value="<?php echo esc_attr( $post_type_obj->name ); ?>"
+														class="searchcraft-enable-custom-fields-checkbox"
+														data-post-type="<?php echo esc_attr( $post_type_obj->name ); ?>"
 														<?php checked( $fields_checked ); ?>
 													/>
 													Include custom fields
 												</label>
+												<div class="searchcraft-custom-fields-selector" data-post-type="<?php echo esc_attr( $post_type_obj->name ); ?>" style="margin-top: 8px;<?php echo $fields_checked ? '' : 'display:none;'; ?>">
+													<button type="button" class="button searchcraft-select-fields-button" data-post-type="<?php echo esc_attr( $post_type_obj->name ); ?>">
+														<?php if ( $selected_count > 0 ) : ?>
+															Select Fields (<?php echo esc_html( $selected_count ); ?> of <?php echo esc_html( $total_count ); ?> selected)
+														<?php else : ?>
+															Select Fields (All <?php echo esc_html( $total_count ); ?> fields)
+														<?php endif; ?>
+													</button>
+												</div>
 											</div>
 										<?php endif; ?>
 									</div>
 								<?php endforeach; ?>
 							</fieldset>
 							<p class="description">
-								Select which custom post types should be included in the search index. If a custom post type has custom fields, you can optionally include those fields in the search. Standard posts and pages will always be included unless manually excluded on the individual item level.
+								Select which custom post types should be included in the search index. If a custom post type has custom fields, you can optionally include those fields in the search.
 							</p>
 							<p class="description">
 								<strong>Note:</strong> To display custom fields in a search result you will need to create a <a href="https://docs.searchcraft.io/sdks/javascript/working-with-templates/" target="_blank">custom template</a>.
@@ -363,6 +430,21 @@ if ( ! is_array( $custom_post_types_with_fields ) ) {
 				</tbody>
 			</table>
 		<?php endif; ?>
+
+		<!-- Hidden inputs to store selected custom fields -->
+		<div id="searchcraft-selected-fields-inputs" style="display: none;">
+			<?php foreach ( $custom_post_types as $post_type_obj ) : ?>
+				<?php
+				$post_type_selected_fields = isset( $selected_custom_fields[ $post_type_obj->name ] ) ? $selected_custom_fields[ $post_type_obj->name ] : array();
+				?>
+				<div class="searchcraft-selected-fields-container" data-post-type="<?php echo esc_attr( $post_type_obj->name ); ?>">
+					<?php foreach ( $post_type_selected_fields as $field_name ) : ?>
+						<input type="hidden" name="searchcraft_selected_custom_fields[<?php echo esc_attr( $post_type_obj->name ); ?>][]" value="<?php echo esc_attr( $field_name ); ?>" />
+					<?php endforeach; ?>
+				</div>
+			<?php endforeach; ?>
+		</div>
+
 		<div class="searchcraft-button-with-spinner searchcraft-config-actions">
 			<?php submit_button( 'Save Configuration', 'primary', 'searchcraft_save_config' ); ?>
 			<span class="searchcraft-spinner" style="display: none;">
@@ -373,4 +455,49 @@ if ( ! is_array( $custom_post_types_with_fields ) ) {
 	</form>
 	</div>
 </div>
+
+<!-- Custom Fields Selection Modal -->
+<div id="searchcraft-custom-fields-modal" class="searchcraft-modal" style="display: none;">
+	<div class="searchcraft-modal-overlay"></div>
+	<div class="searchcraft-modal-content">
+		<div class="searchcraft-modal-header">
+			<h2 id="searchcraft-modal-title">Select Custom Fields</h2>
+			<button type="button" class="searchcraft-modal-close" aria-label="Close">&times;</button>
+		</div>
+		<div class="searchcraft-modal-body">
+			<div class="searchcraft-modal-actions">
+				<button type="button" class="button searchcraft-select-all-fields">Select All</button>
+				<button type="button" class="button searchcraft-deselect-all-fields">Deselect All</button>
+			</div>
+			<div id="searchcraft-custom-fields-list" class="searchcraft-custom-fields-list">
+				<!-- Fields will be populated dynamically -->
+			</div>
+		</div>
+		<div class="searchcraft-modal-footer">
+			<button type="button" class="button button-primary searchcraft-save-field-selection">Save Selection</button>
+			<button type="button" class="button searchcraft-cancel-field-selection">Cancel</button>
+		</div>
+	</div>
+</div>
+
+<!-- Store meta keys data for JavaScript -->
+<script type="text/javascript">
+	var searchcraftMetaKeys = <?php
+		echo wp_json_encode(
+			array_values(
+				array_map(
+					function( $post_type_obj ) {
+						return array(
+							'name'      => $post_type_obj->name,
+							'label'     => $post_type_obj->label,
+							'meta_keys' => Searchcraft_Helper_Functions::searchcraft_get_meta_keys_for_post_type( $post_type_obj->name ),
+						);
+					},
+					$custom_post_types
+				)
+			)
+		);
+		?>;
+</script>
+
 <?php

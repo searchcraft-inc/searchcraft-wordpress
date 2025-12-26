@@ -41,9 +41,14 @@ if ( $is_configured ) {
 	$enable_post_type_filter   = get_option( 'searchcraft_enable_post_type_filter', false );
 }
 
-// Check if custom post types are enabled.
+// Check if there are multiple post types enabled.
+$selected_builtin_post_types = get_option( 'searchcraft_builtin_post_types', array( 'post', 'page' ) );
+if ( ! is_array( $selected_builtin_post_types ) ) {
+	$selected_builtin_post_types = array( 'post', 'page' );
+}
 $selected_custom_post_types = get_option( 'searchcraft_custom_post_types', array() );
-$has_custom_post_types = ! empty( $selected_custom_post_types );
+$all_enabled_post_types     = array_merge( $selected_builtin_post_types, $selected_custom_post_types );
+$has_multiple_post_types    = count( $all_enabled_post_types ) > 1;
 
 // Get filter panel order.
 $filter_panel_order = get_option( 'searchcraft_filter_panel_order', array( 'most_recent', 'exact_match', 'date_range', 'post_type', 'facets' ) );
@@ -552,7 +557,7 @@ if ( ! is_array( $filter_panel_order ) || empty( $filter_panel_order ) ) {
 												'label'       => 'Enable Content Type Filter',
 												'description' => 'Show a content type filter in the filter panel to allow filtering by post type.',
 												'checked'     => $enable_post_type_filter,
-												'always_show' => $has_custom_post_types,
+												'always_show' => $has_multiple_post_types,
 											),
 											'facets'      => array(
 												'id'          => 'searchcraft_enable_facets',
