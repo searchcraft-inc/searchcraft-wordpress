@@ -158,6 +158,19 @@
                 document.dispatchEvent(sdkReadyEvent);
             });
 
+            // Subscribe to query_fetched event to update URL when Submit to Search Page is enabled
+            if (searchcraft_config.searchBehavior === 'stand_alone') {
+                searchcraft.subscribe('query_fetched', (event) => {
+                    const searchTerm = event?.data?.searchTerm;
+                    if (searchTerm && searchTerm !== '*') {
+                        const sanitizedQuery = encodeURIComponent(searchTerm);
+                        const url = new URL(window.location);
+                        url.searchParams.set('s', sanitizedQuery);
+                        window.history.replaceState({}, '', url);
+                    }
+                });
+            }
+
         } catch (error) {
             console.error('Searchcraft: Failed to initialize SDK', error);
             showConfigurationError('Failed to initialize Searchcraft SDK.');
