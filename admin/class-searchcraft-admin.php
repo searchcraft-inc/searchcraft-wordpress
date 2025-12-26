@@ -640,6 +640,24 @@ class Searchcraft_Admin {
 					? array_map( 'sanitize_text_field', wp_unslash( $_POST['searchcraft_custom_post_types_with_fields'] ) ) // phpcs:ignore WordPress.Security.NonceVerification.Missing  -- Nonce verified in searchcraft_request_handler().
 					: array();
 
+				// Save selected custom fields for each post type.
+				$selected_custom_fields = array();
+				if ( isset( $_POST['searchcraft_selected_custom_fields'] ) && is_array( $_POST['searchcraft_selected_custom_fields'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in searchcraft_request_handler().
+					$unslashed_fields = wp_unslash( $_POST['searchcraft_selected_custom_fields'] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.NonceVerification.Missing -- Sanitized in the next step.
+					$selected_custom_fields = array_map(
+						function( $fields ) {
+							return is_array( $fields ) ? array_map( 'sanitize_text_field', $fields ) : array();
+						},
+						$unslashed_fields
+					);
+				}
+
+				// Get previous selected custom fields for comparison.
+				$previous_selected_custom_fields = get_option( 'searchcraft_selected_custom_fields', array() );
+				if ( ! is_array( $previous_selected_custom_fields ) ) {
+					$previous_selected_custom_fields = array();
+				}
+
 				// Sort arrays for fair comparison.
 				sort( $previous_builtin_post_types );
 				sort( $builtin_post_types );
@@ -648,22 +666,32 @@ class Searchcraft_Admin {
 				sort( $previous_custom_post_types_with_fields );
 				sort( $custom_post_types_with_fields );
 
+				// Sort selected custom fields arrays for comparison.
+				foreach ( $selected_custom_fields as $post_type => $fields ) {
+					sort( $selected_custom_fields[ $post_type ] );
+				}
+				foreach ( $previous_selected_custom_fields as $post_type => $fields ) {
+					sort( $previous_selected_custom_fields[ $post_type ] );
+				}
+
 				// Check if built-in post types have changed.
 				$builtin_post_types_changed = ( serialize( $previous_builtin_post_types ) !== serialize( $builtin_post_types ) ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.serialize_serialize
 
 				// Check if custom post types or custom fields have changed.
 				$custom_post_types_changed        = ( serialize( $previous_custom_post_types ) !== serialize( $custom_post_types ) ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.serialize_serialize
 				$custom_post_types_fields_changed = ( serialize( $previous_custom_post_types_with_fields ) !== serialize( $custom_post_types_with_fields ) ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.serialize_serialize
+				$selected_custom_fields_changed   = ( serialize( $previous_selected_custom_fields ) !== serialize( $selected_custom_fields ) ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.serialize_serialize
 
 				// Update options after comparison.
 				update_option( 'searchcraft_builtin_post_types', $builtin_post_types );
 				update_option( 'searchcraft_custom_post_types', $custom_post_types );
 				update_option( 'searchcraft_custom_post_types_with_fields', $custom_post_types_with_fields );
+				update_option( 'searchcraft_selected_custom_fields', $selected_custom_fields );
 
 				// Check if taxonomies have changed and need index update.
 				// We need to update if taxonomies changed, regardless of whether we're adding or removing them.
 				$taxonomies_changed = ( serialize( $previous_taxonomies ) !== serialize( $filter_taxonomies ) ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.serialize_serialize
-				$needs_index_update = $taxonomies_changed || $builtin_post_types_changed || $custom_post_types_changed || $custom_post_types_fields_changed;
+				$needs_index_update = $taxonomies_changed || $builtin_post_types_changed || $custom_post_types_changed || $custom_post_types_fields_changed || $selected_custom_fields_changed;
 
 				if ( $success ) {
 					// Clear cached data since configuration has changed.
@@ -687,8 +715,8 @@ class Searchcraft_Admin {
 							}
 						}
 
-						// Update custom post types schema if custom post types or fields changed.
-						if ( $custom_post_types_changed || $custom_post_types_fields_changed ) {
+						// Update custom post types schema if custom post types, fields, or selected fields changed.
+						if ( $custom_post_types_changed || $custom_post_types_fields_changed || $selected_custom_fields_changed ) {
 							$custom_types_update_result = $this->searchcraft_update_index_schema_for_custom_post_types(
 								$custom_post_types,
 								$custom_post_types_with_fields,
@@ -1556,11 +1584,25 @@ class Searchcraft_Admin {
 			// We'll track these to remove fields that are no longer needed.
 			$all_custom_field_names = array();
 
+			// Get selected custom fields configuration.
+			$selected_custom_fields = get_option( 'searchcraft_selected_custom_fields', array() );
+			if ( ! is_array( $selected_custom_fields ) ) {
+				$selected_custom_fields = array();
+			}
+
 			// Add custom fields for each post type with fields enabled.
 			foreach ( $custom_post_types_with_fields as $post_type ) {
 				$meta_keys = Searchcraft_Helper_Functions::searchcraft_get_meta_keys_for_post_type( $post_type );
 
+				// Get selected fields for this post type (empty array means all fields).
+				$post_type_selected_fields = isset( $selected_custom_fields[ $post_type ] ) ? $selected_custom_fields[ $post_type ] : array();
+
 				foreach ( $meta_keys as $meta_key => $meta_info ) {
+					// If specific fields are selected, only include those.
+					if ( ! empty( $post_type_selected_fields ) && ! in_array( $meta_key, $post_type_selected_fields, true ) ) {
+						continue;
+					}
+
 					$sample_value = $meta_info['sample'] ?? '';
 					$field_type   = Searchcraft_Helper_Functions::searchcraft_detect_field_type( $sample_value );
 
@@ -1878,7 +1920,21 @@ class Searchcraft_Admin {
 				// Get custom field definitions for this post type.
 				$meta_keys = Searchcraft_Helper_Functions::searchcraft_get_meta_keys_for_post_type( $post->post_type );
 
+				// Get selected custom fields configuration.
+				$selected_custom_fields = get_option( 'searchcraft_selected_custom_fields', array() );
+				if ( ! is_array( $selected_custom_fields ) ) {
+					$selected_custom_fields = array();
+				}
+
+				// Get selected fields for this post type (empty array means all fields).
+				$post_type_selected_fields = isset( $selected_custom_fields[ $post->post_type ] ) ? $selected_custom_fields[ $post->post_type ] : array();
+
 				foreach ( $meta_keys as $meta_key => $meta_info ) {
+					// If specific fields are selected, only include those.
+					if ( ! empty( $post_type_selected_fields ) && ! in_array( $meta_key, $post_type_selected_fields, true ) ) {
+						continue;
+					}
+
 					// Get the custom field value for this post.
 					$meta_value = get_post_meta( $post->ID, $meta_key, true );
 
