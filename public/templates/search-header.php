@@ -191,7 +191,6 @@ button.searchcraft-toggle-button-background {
 .searchcraft-results-content {
 	flex: 1;
 	order: 2;
-	padding-top: 30px;
 }
 .searchcraft-result-primary-category {
 	color: <?php echo esc_attr( $searchcraft_brand_color ); ?>;
@@ -216,6 +215,7 @@ button.searchcraft-toggle-button-background {
 	border: 1px solid <?php echo esc_attr( $searchcraft_summary_border_color ); ?>;
 	border-radius: <?php echo esc_attr( $searchcraft_summary_box_border_radius ); ?>px;
 	margin-bottom: 20px;
+	margin-top:30px;
 	padding: 40px;
 	display: none; /* Hide by default to prevent flash */
 }
@@ -270,13 +270,13 @@ button.searchcraft-toggle-button-background {
 }
 
 .searchcraft-results-info-container {
-	margin-top: 16px;
+	margin-top: 8px;
 	align-items: baseline;
 	display: none;
 	flex-direction: row;
 	gap: 4px;
 	padding-bottom: 10px;
-	padding-top: 20px;
+	padding-top: 16px;
 	color: var(--sc-result-info-text-color);
 }
 
@@ -293,8 +293,11 @@ button.searchcraft-toggle-button-background {
 
 	.searchcraft-results-content {
 		order: 2; /* Below filter panel on mobile */
-		padding-top: 0px;
 	}
+	.searchcraft-summary-container {
+		margin-top:0px;
+	}
+
 	body:has(#wpadminbar) .searchcraft-popover-form-modal {
 		margin-top: 44px;
 	}
@@ -376,6 +379,7 @@ searchcraft-summary-box, .searchcraft-summary-box {
 	font-size: 1rem;
 	font-weight: 700;
 	margin-bottom: 10px;
+	line-height: 1rem;
 	padding-bottom: 10px;
 }
 .searchcraft-toggle-button-label, .searchcraft-filter-panel-label {
