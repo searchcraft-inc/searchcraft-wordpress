@@ -284,11 +284,13 @@ button.searchcraft-toggle-button-background {
 @media (max-width: 767px) {
 	.searchcraft-main-content {
 		flex-direction: column;
+		gap: 0px;
 	}
 	#searchcraft-filter-panel-container {
 		flex: none;
 		width: 100%;
 		order: 1; /* Above summary on mobile */
+		padding-top: 0px;
 	}
 
 	.searchcraft-results-content {
