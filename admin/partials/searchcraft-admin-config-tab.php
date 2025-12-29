@@ -226,8 +226,7 @@ if ( ! is_array( $selected_builtin_post_types ) ) {
 								<legend class="screen-reader-text"><span>Select taxonomies to use as filters</span></legend>
 								<?php foreach ( $taxonomies as $taxonomy_obj ) : ?>
 									<?php
-									$is_category = ( 'category' === $taxonomy_obj->name );
-									$is_checked  = in_array( $taxonomy_obj->name, $selected_taxonomies, true ) || $is_category;
+									$is_checked  = in_array( $taxonomy_obj->name, $selected_taxonomies, true );
 									?>
 									<label style="display: block; margin-bottom: 8px;">
 										<input
@@ -235,7 +234,6 @@ if ( ! is_array( $selected_builtin_post_types ) ) {
 											name="searchcraft_filter_taxonomies[]"
 											value="<?php echo esc_attr( $taxonomy_obj->name ); ?>"
 											<?php checked( $is_checked ); ?>
-											<?php disabled( $is_category ); ?>
 										/>
 										<strong><?php echo esc_html( $taxonomy_obj->label ); ?></strong>
 										<?php if ( ! empty( $taxonomy_obj->description ) ) : ?>

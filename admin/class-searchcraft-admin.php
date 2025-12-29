@@ -617,16 +617,6 @@ class Searchcraft_Admin {
 					? array_map( 'sanitize_text_field', wp_unslash( $_POST['searchcraft_filter_taxonomies'] ) ) // phpcs:ignore WordPress.Security.NonceVerification.Missing  -- Nonce verified in searchcraft_request_handler().
 					: array();
 
-				// Always include category in the filter taxonomies.
-				if ( ! in_array( 'category', $filter_taxonomies, true ) ) {
-					$filter_taxonomies[] = 'category';
-				}
-
-				// Normalize previous taxonomies to also include category for fair comparison.
-				if ( ! in_array( 'category', $previous_taxonomies, true ) ) {
-					$previous_taxonomies[] = 'category';
-				}
-
 				// Sort both arrays to ensure order doesn't affect comparison.
 				sort( $previous_taxonomies );
 				sort( $filter_taxonomies );
@@ -1482,12 +1472,10 @@ class Searchcraft_Admin {
 			// Build the desired taxonomy fields based on selected taxonomies.
 			$desired_taxonomy_fields = array();
 			foreach ( $taxonomies as $taxonomy_name ) {
-				// Skip category as it should already be in the base schema.
-				if ( 'category' === $taxonomy_name ) {
-					continue;
-				}
+				// Map 'category' to 'categories' for the index field name.
+				$field_name = ( 'category' === $taxonomy_name ) ? 'categories' : $taxonomy_name;
 
-				$desired_taxonomy_fields[ $taxonomy_name ] = array(
+				$desired_taxonomy_fields[ $field_name ] = array(
 					'indexed'  => true,
 					'multi'    => true,
 					'required' => false,
@@ -1502,8 +1490,9 @@ class Searchcraft_Admin {
 			// Remove taxonomy fields that are no longer selected.
 			foreach ( $current_fields as $field_name => $field_config ) {
 				// Check if this is a taxonomy field that's no longer selected.
-				if ( in_array( $field_name, $all_taxonomies, true ) &&
-					'category' !== $field_name &&
+				// Map 'categories' back to 'category' for comparison.
+				$taxonomy_name = ( 'categories' === $field_name ) ? 'category' : $field_name;
+				if ( in_array( $taxonomy_name, $all_taxonomies, true ) &&
 					! isset( $desired_taxonomy_fields[ $field_name ] ) ) {
 					unset( $updated_fields[ $field_name ] );
 				}
@@ -1783,19 +1772,6 @@ class Searchcraft_Admin {
 			$clean_content = preg_replace( '/\s+/', ' ', $clean_content ); // Collapse multiple spaces into single spaces.
 			$clean_content = trim( $clean_content ); // Remove extra whitespace.
 
-			// Get categories as RESTful paths.
-			$categories      = array();
-			$post_categories = get_the_category( $post->ID );
-			if ( ! empty( $post_categories ) ) {
-				foreach ( $post_categories as $category ) {
-					// Build category path including parent categories.
-					$category_path = $this->searchcraft_get_term_path( $category, 'category' );
-					if ( ! empty( $category_path ) ) {
-						$categories[] = $category_path;
-					}
-				}
-			}
-
 			// Get tags as tag names.
 			$tags      = array();
 			$post_tags = get_the_tags( $post->ID );
@@ -1806,27 +1782,24 @@ class Searchcraft_Admin {
 			}
 
 			// Get selected filter taxonomies.
-			$selected_taxonomies = get_option( 'searchcraft_filter_taxonomies', array( 'category' ) );
+			$selected_taxonomies = get_option( 'searchcraft_filter_taxonomies', array() );
 			if ( ! is_array( $selected_taxonomies ) ) {
-				$selected_taxonomies = array( 'category' );
+				$selected_taxonomies = array();
 			}
 
 			// Build taxonomy data for selected taxonomies as RESTful paths.
 			$taxonomy_data = array();
 			foreach ( $selected_taxonomies as $taxonomy_name ) {
-				// Skip category as it's already handled above.
-				if ( 'category' === $taxonomy_name ) {
-					continue;
-				}
-
 				$terms = get_the_terms( $post->ID, $taxonomy_name );
 				if ( ! empty( $terms ) && ! is_wp_error( $terms ) ) {
-					$taxonomy_data[ $taxonomy_name ] = array();
+					// Map 'category' to 'categories' for the index field name.
+					$field_name = ( 'category' === $taxonomy_name ) ? 'categories' : $taxonomy_name;
+					$taxonomy_data[ $field_name ] = array();
 					foreach ( $terms as $term ) {
 						// Build term path including parent terms.
 						$term_path = $this->searchcraft_get_term_path( $term, $taxonomy_name );
 						if ( ! empty( $term_path ) ) {
-							$taxonomy_data[ $taxonomy_name ][] = $term_path;
+							$taxonomy_data[ $field_name ][] = $term_path;
 						}
 					}
 				}
@@ -1889,29 +1862,31 @@ class Searchcraft_Admin {
 				}
 			}
 
-			// Get primary category name (the one used in permalinks).
+			// Get primary category name (the one used in permalinks) if category taxonomy is selected.
 			$primary_category_name = '';
-			$primary_category      = null;
+			if ( in_array( 'category', $selected_taxonomies, true ) ) {
+				$primary_category = null;
 
-			// Check if Yoast SEO primary category is set.
-			if ( class_exists( 'WPSEO_Primary_Term' ) ) {
-				$wpseo_primary_term = new WPSEO_Primary_Term( 'category', $post->ID );
-				$primary_term_id    = $wpseo_primary_term->get_primary_term();
-				if ( $primary_term_id ) {
-					$primary_category = get_term( $primary_term_id );
+				// Check if Yoast SEO primary category is set.
+				if ( class_exists( 'WPSEO_Primary_Term' ) ) {
+					$wpseo_primary_term = new WPSEO_Primary_Term( 'category', $post->ID );
+					$primary_term_id    = $wpseo_primary_term->get_primary_term();
+					if ( $primary_term_id ) {
+						$primary_category = get_term( $primary_term_id );
+					}
 				}
-			}
 
-			// Fallback to WordPress default (first category by term order).
-			if ( ! $primary_category ) {
-				$categories_wp = get_the_category( $post->ID );
-				if ( ! empty( $categories_wp ) ) {
-					$primary_category = $categories_wp[0];
+				// Fallback to WordPress default (first category by term order).
+				if ( ! $primary_category ) {
+					$categories_wp = get_the_category( $post->ID );
+					if ( ! empty( $categories_wp ) ) {
+						$primary_category = $categories_wp[0];
+					}
 				}
-			}
 
-			if ( $primary_category && ! is_wp_error( $primary_category ) ) {
-				$primary_category_name = $primary_category->name;
+				if ( $primary_category && ! is_wp_error( $primary_category ) ) {
+					$primary_category_name = $primary_category->name;
+				}
 			}
 
 			// Get Yoast SEO keyphrase if available.
@@ -1934,7 +1909,6 @@ class Searchcraft_Admin {
 				'keyphrase'             => $yoast_keyphrase,
 				'permalink'             => get_permalink( $post->ID ),
 				'featured_image_url'    => $featured_image_url,
-				'categories'            => $categories,
 				'tags'                  => $tags,
 			);
 

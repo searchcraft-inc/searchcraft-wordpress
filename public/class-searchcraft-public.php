@@ -233,7 +233,6 @@ class Searchcraft_Public {
 		}
 		$js_config['orientation']            = get_option( 'searchcraft_result_orientation', 'column' );
 		$js_config['displayPostDate']        = (bool) get_option( 'searchcraft_display_post_date', false );
-		$js_config['displayPrimaryCategory'] = (bool) get_option( 'searchcraft_display_primary_category', false );
 		$js_config['imageAlignment']         = get_option( 'searchcraft_image_alignment', 'left' );
 		if ( 'grid' === $js_config['orientation'] ) {
 			$js_config['imageAlignment'] = 'left';
@@ -303,9 +302,9 @@ class Searchcraft_Public {
 		$js_config['resultsPerPage'] = intval( get_option( 'searchcraft_results_per_page', 10 ) );
 
 		// Filter taxonomies.
-		$filter_taxonomies = get_option( 'searchcraft_filter_taxonomies', array( 'category' ) );
+		$filter_taxonomies = get_option( 'searchcraft_filter_taxonomies', array() );
 		if ( ! is_array( $filter_taxonomies ) ) {
-			$filter_taxonomies = array( 'category' );
+			$filter_taxonomies = array();
 		}
 		// Get taxonomy labels for display.
 		$taxonomy_config = array();
@@ -326,6 +325,11 @@ class Searchcraft_Public {
 			}
 		);
 		$js_config['filterTaxonomies'] = $taxonomy_config;
+
+		// Only display primary category if category taxonomy is selected and the setting is enabled.
+		$display_primary_category_setting = (bool) get_option( 'searchcraft_display_primary_category', false );
+		$category_taxonomy_selected       = in_array( 'category', $filter_taxonomies, true );
+		$js_config['displayPrimaryCategory'] = $display_primary_category_setting && $category_taxonomy_selected;
 		$js_config['isWPSearchPage']   = (bool) is_search();
 		$js_config['searchBehavior']   = get_option( 'searchcraft_search_behavior', 'on_page' );
 
