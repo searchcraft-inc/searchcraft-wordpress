@@ -113,6 +113,7 @@ class Searchcraft_Admin {
 		add_action( 'admin_enqueue_scripts', array( $this, 'remove_footer_on_searchcraft_pages' ) );
 		add_action( 'admin_menu', array( $this, 'searchcraft_add_menu_page' ) );
 		add_action( 'admin_init', array( $this, 'searchcraft_request_handler' ) );
+		add_action( 'admin_notices', array( $this, 'display_import_export_notices' ) );
 
 		// Remove non-Searchcraft admin notices on Searchcraft pages.
 		// Use admin_head which runs before admin_notices to safely modify the hooks.
@@ -229,6 +230,34 @@ class Searchcraft_Admin {
 
 			// Remove the WordPress version text.
 			add_filter( 'update_footer', '__return_false', 11 );
+		}
+	}
+
+	/**
+	 * Display import/export notices from transients.
+	 *
+	 * @since 1.0.0
+	 */
+	public function display_import_export_notices() {
+		$notice = get_transient( 'searchcraft_import_notice' );
+		if ( $notice && is_array( $notice ) && isset( $notice['type'] ) && isset( $notice['message'] ) ) {
+			$type    = sanitize_text_field( $notice['type'] );
+			$message = $notice['message'];
+
+			// Map type to WordPress notice class.
+			$class = 'notice-info';
+			if ( 'error' === $type ) {
+				$class = 'notice-error';
+			} elseif ( 'warning' === $type ) {
+				$class = 'notice-warning';
+			} elseif ( 'success' === $type ) {
+				$class = 'notice-success';
+			}
+
+			echo '<div class="notice ' . esc_attr( $class ) . ' is-dismissible"><p>' . wp_kses_post( $message ) . '</p></div>';
+
+			// Delete the transient so it doesn't show again.
+			delete_transient( 'searchcraft_import_notice' );
 		}
 	}
 
@@ -522,6 +551,12 @@ class Searchcraft_Admin {
 					break;
 				case 'layout_settings_config':
 					$this->searchcraft_on_layout_settings_config_request( $_POST ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+					break;
+				case 'export_settings':
+					$this->searchcraft_on_export_settings_request();
+					break;
+				case 'import_settings':
+					$this->searchcraft_on_import_settings_request();
 					break;
 				default:
 					break;
@@ -2453,6 +2488,362 @@ class Searchcraft_Admin {
 
 		// Build the RESTful path.
 		return '/' . implode( '/', $path_parts );
+	}
+
+	/**
+	 * Handle export settings request.
+	 *
+	 * Exports all Searchcraft settings as a JSON file.
+	 *
+	 * @since 1.0.0
+	 */
+	private function searchcraft_on_export_settings_request() {
+		// Get all Searchcraft configuration in encrypted form (raw from database).
+		// Keys are encrypted with WordPress salts and will remain encrypted in the export.
+		$config = get_option( 'searchcraft_config', array() );
+
+		// List of all WordPress options to export.
+		$option_keys = array(
+			'searchcraft_search_experience',
+			'searchcraft_search_placeholder',
+			'searchcraft_search_behavior',
+			'searchcraft_search_input_container_id',
+			'searchcraft_results_container_id',
+			'searchcraft_popover_container_id',
+			'searchcraft_popover_element_behavior',
+			'searchcraft_search_form_location',
+			'searchcraft_brand_color',
+			'searchcraft_summary_background_color',
+			'searchcraft_summary_border_color',
+			'searchcraft_summary_box_border_radius',
+			'searchcraft_summary_text_color',
+			'searchcraft_summary_title_color',
+			'searchcraft_include_filter_panel',
+			'searchcraft_results_per_page',
+			'searchcraft_enable_most_recent_toggle',
+			'searchcraft_enable_exact_match_toggle',
+			'searchcraft_enable_date_range',
+			'searchcraft_enable_facets',
+			'searchcraft_hide_uncategorized',
+			'searchcraft_enable_post_type_filter',
+			'searchcraft_enable_ai_summary',
+			'searchcraft_ai_summary_banner',
+			'searchcraft_display_post_date',
+			'searchcraft_display_primary_category',
+			'searchcraft_image_alignment',
+			'searchcraft_result_orientation',
+			'searchcraft_result_template',
+			'searchcraft_custom_css',
+			'searchcraft_filter_taxonomies',
+			'searchcraft_filter_panel_order',
+			'searchcraft_filter_label_color',
+			'searchcraft_toggle_button_disabled_color',
+			'searchcraft_clear_icon_color',
+			'searchcraft_search_icon_color',
+			'searchcraft_result_info_text_color',
+			'searchcraft_input_border_radius',
+			'searchcraft_input_padding',
+			'searchcraft_input_vertical_padding',
+			'searchcraft_input_width',
+			'searchcraft_retain_get_search_form',
+			'searchcraft_builtin_post_types',
+			'searchcraft_custom_post_types',
+			'searchcraft_custom_post_types_with_fields',
+			'searchcraft_selected_custom_fields',
+			'searchcraft_use_publishpress_authors',
+			'searchcraft_use_molongui_authorship',
+		);
+
+		// Collect all settings.
+		$settings = array(
+			'config'  => $config,
+			'options' => array(),
+		);
+
+		foreach ( $option_keys as $key ) {
+			$value = get_option( $key, null );
+			if ( null !== $value ) {
+				$settings['options'][ $key ] = $value;
+			}
+		}
+
+		// Add metadata.
+		$settings['metadata'] = array(
+			'export_date'    => current_time( 'mysql' ),
+			'site_url'       => get_site_url(),
+			'plugin_version' => SEARCHCRAFT_VERSION,
+		);
+
+		// Generate filename with site URL (without protocol).
+		$site_url = get_site_url();
+		$site_url = preg_replace( '#^https?://#', '', $site_url ); // Remove http:// or https://.
+		$site_url = preg_replace( '#[^a-zA-Z0-9\-\.]#', '-', $site_url ); // Replace invalid chars with dashes.
+		$site_url = trim( $site_url, '-' ); // Remove leading/trailing dashes.
+
+		$filename = 'searchcraft-settings-' . $site_url . '-' . gmdate( 'Y-m-d-His' ) . '.json';
+
+		// Set headers for download.
+		header( 'Content-Type: application/json' );
+		header( 'Content-Disposition: attachment; filename="' . $filename . '"' );
+		header( 'Cache-Control: no-cache, must-revalidate' );
+		header( 'Expires: 0' );
+
+		// Output JSON.
+		echo wp_json_encode( $settings, JSON_PRETTY_PRINT );
+		exit;
+	}
+
+	/**
+	 * Handle import settings request.
+	 *
+	 * Imports Searchcraft settings from an uploaded JSON file.
+	 *
+	 * @since 1.0.0
+	 */
+	private function searchcraft_on_import_settings_request() {
+		// Check if file was uploaded.
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in searchcraft_request_handler().
+		if ( ! isset( $_FILES['searchcraft_import_file'] ) || ! isset( $_FILES['searchcraft_import_file']['error'] ) || UPLOAD_ERR_OK !== $_FILES['searchcraft_import_file']['error'] ) {
+			set_transient(
+				'searchcraft_import_notice',
+				array(
+					'type'    => 'error',
+					'message' => 'No file was uploaded or upload failed.',
+				),
+				30
+			);
+			wp_safe_redirect( admin_url( 'admin.php?page=searchcraft&tab=import-export' ) );
+			exit;
+		}
+
+		// Get uploaded file.
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.NonceVerification.Missing -- Nonce verified in searchcraft_request_handler().
+		$file = $_FILES['searchcraft_import_file'];
+
+		// Verify file type - check both extension and MIME type.
+		$filename  = sanitize_file_name( $file['name'] );
+		$extension = strtolower( pathinfo( $filename, PATHINFO_EXTENSION ) );
+
+		if ( 'json' !== $extension ) {
+			set_transient(
+				'searchcraft_import_notice',
+				array(
+					'type'    => 'error',
+					'message' => 'Invalid file type. Please upload a JSON file.',
+				),
+				30
+			);
+			wp_safe_redirect( admin_url( 'admin.php?page=searchcraft&tab=import-export' ) );
+			exit;
+		}
+
+		// Read file contents.
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+		$json_content = file_get_contents( $file['tmp_name'] );
+		if ( false === $json_content ) {
+			set_transient(
+				'searchcraft_import_notice',
+				array(
+					'type'    => 'error',
+					'message' => 'Could not read the uploaded file.',
+				),
+				30
+			);
+			wp_safe_redirect( admin_url( 'admin.php?page=searchcraft&tab=import-export' ) );
+			exit;
+		}
+
+		// Decode JSON.
+		$settings = json_decode( $json_content, true );
+		if ( null === $settings || ! is_array( $settings ) ) {
+			set_transient(
+				'searchcraft_import_notice',
+				array(
+					'type'    => 'error',
+					'message' => 'Invalid JSON format.',
+				),
+				30
+			);
+			wp_safe_redirect( admin_url( 'admin.php?page=searchcraft&tab=import-export' ) );
+			exit;
+		}
+
+		// Validate structure.
+		if ( ! isset( $settings['config'] ) || ! isset( $settings['options'] ) ) {
+			set_transient(
+				'searchcraft_import_notice',
+				array(
+					'type'    => 'error',
+					'message' => 'Invalid settings file structure.',
+				),
+				30
+			);
+			wp_safe_redirect( admin_url( 'admin.php?page=searchcraft&tab=import-export' ) );
+			exit;
+		}
+
+		// Import configuration.
+		// Keys in the import file are encrypted with the source site's WordPress salts.
+		// We need to store them directly (already encrypted) in this site's database.
+		// They will only work if this site has the same WordPress salts.
+		if ( is_array( $settings['config'] ) && ! empty( $settings['config'] ) ) {
+			// Directly update the option with encrypted keys from the export.
+			update_option( 'searchcraft_config', $settings['config'] );
+
+			// Test if the keys can be decrypted with this site's salts.
+			$test_config   = Searchcraft_Config::get_all();
+			$salt_mismatch = false;
+
+			foreach ( array( 'read_key', 'ingest_key' ) as $sensitive_key ) {
+				if ( isset( $test_config[ $sensitive_key ] ) && ! empty( $test_config[ $sensitive_key ] ) ) {
+					// If the decrypted value still starts with 'sc_encrypted:', decryption failed.
+					if ( 0 === strpos( $test_config[ $sensitive_key ], 'sc_encrypted:' ) ) {
+						$salt_mismatch = true;
+						break;
+					}
+				}
+			}
+
+			if ( $salt_mismatch ) {
+				set_transient(
+					'searchcraft_import_notice',
+					array(
+						'type'    => 'error',
+						'message' => 'Import failed: WordPress salts do not match. The API keys cannot be decrypted on this site. Please ensure this site has the same WordPress salt constants (AUTH_SALT, SECURE_AUTH_SALT, etc.) as the site where the settings were exported.',
+					),
+					30
+				);
+				wp_safe_redirect( admin_url( 'admin.php?page=searchcraft&tab=import-export' ) );
+				exit;
+			}
+		}
+
+		// Track warnings for missing post types or fields.
+		$warnings = array();
+
+		// Import options with validation.
+		if ( is_array( $settings['options'] ) ) {
+			foreach ( $settings['options'] as $key => $value ) {
+				// Verify this is a Searchcraft option.
+				if ( 0 !== strpos( $key, 'searchcraft_' ) ) {
+					continue;
+				}
+
+				// Special handling for custom post types.
+				if ( 'searchcraft_custom_post_types' === $key && is_array( $value ) ) {
+					$valid_post_types = array();
+					foreach ( $value as $post_type ) {
+						if ( post_type_exists( $post_type ) ) {
+							$valid_post_types[] = $post_type;
+						} else {
+							$warnings[] = "Custom post type '<strong>{$post_type}</strong>' does not exist on this site and was skipped.";
+						}
+					}
+					update_option( $key, $valid_post_types );
+					continue;
+				}
+
+				// Special handling for custom post types with fields.
+				if ( 'searchcraft_custom_post_types_with_fields' === $key && is_array( $value ) ) {
+					$valid_post_types_with_fields = array();
+					foreach ( $value as $post_type ) {
+						if ( post_type_exists( $post_type ) ) {
+							$valid_post_types_with_fields[] = $post_type;
+						} else {
+							$warnings[] = "Custom post type '<strong>{$post_type}</strong>' (with fields) does not exist on this site and was skipped.";
+						}
+					}
+					update_option( $key, $valid_post_types_with_fields );
+					continue;
+				}
+
+				// Special handling for selected custom fields.
+				if ( 'searchcraft_selected_custom_fields' === $key && is_array( $value ) ) {
+					$valid_custom_fields = array();
+					foreach ( $value as $post_type => $fields ) {
+						// Only include if the post type exists.
+						if ( post_type_exists( $post_type ) ) {
+							// Validate that the meta keys exist for this post type.
+							$existing_meta_keys = Searchcraft_Helper_Functions::searchcraft_get_meta_keys_for_post_type( $post_type );
+							$valid_fields       = array();
+							$skipped_fields     = array();
+
+							if ( is_array( $fields ) ) {
+								foreach ( $fields as $field ) {
+									// Check if the field exists as a key in the meta keys array.
+									if ( array_key_exists( $field, $existing_meta_keys ) ) {
+										$valid_fields[] = $field;
+									} else {
+										$skipped_fields[] = $field;
+									}
+								}
+							}
+
+							if ( ! empty( $valid_fields ) ) {
+								$valid_custom_fields[ $post_type ] = $valid_fields;
+							}
+
+							if ( ! empty( $skipped_fields ) ) {
+								$post_type_obj   = get_post_type_object( $post_type );
+								$post_type_label = $post_type_obj ? $post_type_obj->label : $post_type;
+								$warnings[]      = "Some custom fields for '<strong>{$post_type_label}</strong>' do not exist on this site: " . implode( ', ', $skipped_fields );
+							}
+						} else {
+							$warnings[] = "Custom post type '<strong>{$post_type}</strong>' does not exist, so its custom fields were skipped.";
+						}
+					}
+					update_option( $key, $valid_custom_fields );
+					continue;
+				}
+
+				// Special handling for filter taxonomies.
+				if ( 'searchcraft_filter_taxonomies' === $key && is_array( $value ) ) {
+					$valid_taxonomies = array();
+					foreach ( $value as $taxonomy ) {
+						if ( taxonomy_exists( $taxonomy ) ) {
+							$valid_taxonomies[] = $taxonomy;
+						} else {
+							$warnings[] = "Taxonomy '<strong>{$taxonomy}</strong>' does not exist on this site and was skipped.";
+						}
+					}
+					update_option( $key, $valid_taxonomies );
+					continue;
+				}
+
+				// Import all other options as-is.
+				update_option( $key, $value );
+			}
+		}
+
+		// Clear cached data.
+		delete_transient( 'searchcraft_index_stats' );
+		delete_transient( 'searchcraft_index' );
+
+		// Store success message with warnings if any.
+		if ( ! empty( $warnings ) ) {
+			$warning_list = '<ul><li>' . implode( '</li><li>', $warnings ) . '</li></ul>';
+			set_transient(
+				'searchcraft_import_notice',
+				array(
+					'type'    => 'warning',
+					'message' => '<strong>Settings imported with warnings:</strong>' . $warning_list,
+				),
+				30
+			);
+		} else {
+			set_transient(
+				'searchcraft_import_notice',
+				array(
+					'type'    => 'success',
+					'message' => 'Settings imported successfully!',
+				),
+				30
+			);
+		}
+
+		// Redirect back to the import/export tab.
+		wp_safe_redirect( admin_url( 'admin.php?page=searchcraft&tab=import-export' ) );
+		exit;
 	}
 
 }
