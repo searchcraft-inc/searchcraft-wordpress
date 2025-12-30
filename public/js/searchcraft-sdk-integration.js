@@ -110,22 +110,26 @@
                 const by = (author_name && postDate && searchcraft_config.displayPostDate) ? 'By ' : '';
 
                 let typeClass = '';
+                let contentType = '';
+                let dataAttribute = '';
                 if (item.type && typeof item.type === 'string' && item.type.trim()) {
-                    typeClass = ' searchcraft-result-type_' + item.type
+                    contentType = item.type
                         .replace(/^\/+/, '')
                         .replace(/\//g, '_')
                         .replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`)
                         .replace(/^_/, '')
                         .replace(/_+/g, '_');
+                    typeClass = ` searchcraft-result-type_${contentType}`;
+                    dataAttribute = `data-sc-type="${contentType}"`;
                 }
 
                 return html`
-                <a class="searchcraft-result-item${typeClass}" href="${item.permalink}">
+                <a class="searchcraft-result-item${typeClass}" href="${item.permalink}" ${dataAttribute}>
                     ${searchcraft_config.imageAlignment === 'left' ? image : ''}
-                    <div class="searchcraft-result-content">
+                    <div class="searchcraft-result-content" ${dataAttribute}>
                         ${(item.primary_category_name && searchcraft_config.displayPrimaryCategory) ? html`<h4 class="searchcraft-result-primary-category">${item.primary_category_name}</h4>` : ''}
-                        <h3 class="searchcraft-result-title">${item.post_title}</h3>
-                        <p class="searchcraft-result-excerpt">${item.post_excerpt}</p>
+                        <h3 class="searchcraft-result-title" ${dataAttribute}>${item.post_title}</h3>
+                        <p class="searchcraft-result-excerpt" ${dataAttribute}>${item.post_excerpt}</p>
                         <div class="searchcraft-result-meta flex">
                             ${(postDate && searchcraft_config.displayPostDate) ? html`<time class="searchcraft-result-date">${postDate}</time> • ` : ''}
                             ${(author_name && searchcraft_config.displayAuthorName) ? html`<span class="searchcraft-result-author-name">${by}${author_name}</span>` : ''}

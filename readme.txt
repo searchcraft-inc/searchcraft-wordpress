@@ -4,7 +4,7 @@ Contributors: searchcraft
 Tags:         search, fuzzy search, better search, instant search, search replacement
 Requires at least: 5.3
 Tested up to: 6.9
-Stable tag:   1.2.2
+Stable tag:   1.3.0
 License:      Apache 2.0
 License URI:  LICENSE.txt
 
@@ -68,6 +68,17 @@ If you would like to report an issue or suggest an enhancement you may contact t
 Searchcraft Cloud customers may also reach out via our Discord server for assistance or to request a custom feature.
 
 == Changelog ==
+
+= 1.3.0 =
+* New Feature - You can now import and export settings to ease migrations between environments.
+* New Feature - Add ability to exclude stock page and post content types. This is useful for sites that only want custom types in search.
+* New Feature - Adds a unique content type class per search result to allow targeting CSS for that type.
+* New Feature - Adds ability to exclude the stock category taxonomy.
+* New Feature - Field selection modal for custom type fields. Now you can select only the fields you need for your index schema.
+* New Feature - Additional search requests on results page now update the query string parameter in the url.
+* New Feature - Ability to show/hide author name on results.
+* New Feature - Additional data attributes added to default result template to allow developer customizations.
+* Improvement - Improves spacing of several elements in desktop and mobile layouts.
 
 = 1.2.2 =
 * Minor bugfixes
