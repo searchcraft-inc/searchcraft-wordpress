@@ -1167,6 +1167,10 @@ class Searchcraft_Admin {
 		$display_primary_category = isset( $request['searchcraft_display_primary_category'] ) ? '1' : '0';
 		update_option( 'searchcraft_display_primary_category', $display_primary_category );
 
+		// Handle display author name setting.
+		$display_author_name = isset( $request['searchcraft_display_author_name'] ) ? '1' : '0';
+		update_option( 'searchcraft_display_author_name', $display_author_name );
+
 		// Handle brand color setting.
 		if ( isset( $request['searchcraft_brand_color'] ) ) {
 			$brand_color = sanitize_text_field( wp_unslash( $request['searchcraft_brand_color'] ) );
@@ -2504,6 +2508,7 @@ class Searchcraft_Admin {
 			'searchcraft_ai_summary_banner',
 			'searchcraft_display_post_date',
 			'searchcraft_display_primary_category',
+			'searchcraft_display_author_name',
 			'searchcraft_image_alignment',
 			'searchcraft_result_orientation',
 			'searchcraft_result_template',

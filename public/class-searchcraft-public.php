@@ -233,6 +233,7 @@ class Searchcraft_Public {
 		}
 		$js_config['orientation']            = get_option( 'searchcraft_result_orientation', 'column' );
 		$js_config['displayPostDate']        = (bool) get_option( 'searchcraft_display_post_date', false );
+		$js_config['displayAuthorName']      = (bool) get_option( 'searchcraft_display_author_name', true );
 		$js_config['imageAlignment']         = get_option( 'searchcraft_image_alignment', 'left' );
 		if ( 'grid' === $js_config['orientation'] ) {
 			$js_config['imageAlignment'] = 'left';
