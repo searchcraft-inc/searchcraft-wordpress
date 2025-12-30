@@ -449,6 +449,26 @@ if ( ! is_array( $filter_panel_order ) || empty( $filter_panel_order ) ) {
 						</tr>
 						<tr>
 							<th scope="row">
+								<label for="searchcraft_display_author_name">Display Author Name</label>
+							</th>
+							<td>
+								<label for="searchcraft_display_author_name">
+									<input
+										type="checkbox"
+										name="searchcraft_display_author_name"
+										id="searchcraft_display_author_name"
+										value="1"
+										<?php checked( get_option( 'searchcraft_display_author_name', true ) ); ?>
+									/>
+									Show the author name in search results.
+								</label>
+								<p class="description">
+									When enabled, the author name will be displayed for each search result. Applies to the default template only.
+								</p>
+							</td>
+						</tr>
+						<tr>
+							<th scope="row">
 								<label for="searchcraft_results_per_page">Results Per Page</label>
 							</th>
 							<td>

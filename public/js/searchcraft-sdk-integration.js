@@ -128,7 +128,7 @@
                         <p class="searchcraft-result-excerpt">${item.post_excerpt}</p>
                         <div class="searchcraft-result-meta flex">
                             ${(postDate && searchcraft_config.displayPostDate) ? html`<time class="searchcraft-result-date">${postDate}</time> • ` : ''}
-                            ${author_name ? html`<span class="searchcraft-result-author-name">${by}${author_name}</span>` : ''}
+                            ${(author_name && searchcraft_config.displayAuthorName) ? html`<span class="searchcraft-result-author-name">${by}${author_name}</span>` : ''}
                         </div>
                     </div>
                     ${searchcraft_config.imageAlignment === 'right' ? image : ''}
