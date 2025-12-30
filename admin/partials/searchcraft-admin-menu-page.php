@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 $is_configured = Searchcraft_Config::is_configured();
-$allowed_tabs  = array( 'overview', 'config', 'layout' );
+$allowed_tabs  = array( 'overview', 'config', 'layout', 'import-export' );
 $requested_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['tab'] ) ) : 'overview'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 $active_tab    = ( in_array( $requested_tab, $allowed_tabs, true ) ? $requested_tab : 'overview' );
 if ( ! $is_configured ) {
@@ -44,6 +44,12 @@ if ( ! $is_configured ) {
 			>
 				<?php esc_html_e( 'Configuration', 'searchcraft' ); ?>
 			</a>
+			<a
+				href="?page=searchcraft&tab=import-export"
+				class="<?php echo esc_attr( classNames( 'nav-tab', array( 'nav-tab-active' => 'import-export' === $active_tab ) ) ); ?>"
+			>
+				<?php esc_html_e( 'Import/Export Settings', 'searchcraft' ); ?>
+			</a>
 		</div>
 		<div>
 			<?php
@@ -53,6 +59,8 @@ if ( ! $is_configured ) {
 				include_once 'searchcraft-admin-config-tab.php';
 			} elseif ( 'layout' === $active_tab ) {
 				include_once 'searchcraft-admin-layout-tab.php';
+			} elseif ( 'import-export' === $active_tab ) {
+				include_once 'searchcraft-admin-import-export-tab.php';
 			}
 
 			/*

@@ -1275,3 +1275,127 @@ table.searchcraft-synonyms-table td:nth-child(3) {
 	box-shadow: 0 0 0 1px #2271b1;
 	outline: none;
 }
+
+/* ======== Custom Fields Modal ======== */
+.searchcraft-modal {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	z-index: 100000;
+}
+
+.searchcraft-modal-overlay {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: rgba(0, 0, 0, 0.7);
+}
+
+.searchcraft-modal-content {
+	position: relative;
+	background: #fff;
+	max-width: 600px;
+	margin: 50px auto;
+	border-radius: 4px;
+	box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+	max-height: calc(100vh - 100px);
+	display: flex;
+	flex-direction: column;
+}
+
+.searchcraft-modal-header {
+	padding: 20px 24px;
+	border-bottom: 1px solid #dcdcde;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.searchcraft-modal-header h2 {
+	margin: 0;
+	font-size: 18px;
+	line-height: 1.4;
+}
+
+.searchcraft-modal-close {
+	background: none;
+	border: none;
+	font-size: 28px;
+	line-height: 1;
+	color: #646970;
+	cursor: pointer;
+	padding: 0;
+	width: 32px;
+	height: 32px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 4px;
+	transition: background-color 0.2s;
+}
+
+.searchcraft-modal-close:hover {
+	background-color: #f0f0f1;
+	color: #2c3338;
+}
+
+.searchcraft-modal-body {
+	padding: 20px 24px;
+	overflow-y: auto;
+	flex: 1;
+}
+
+.searchcraft-modal-actions {
+	margin-bottom: 16px;
+	display: flex;
+	gap: 8px;
+}
+
+.searchcraft-custom-fields-list {
+	border: 1px solid #dcdcde;
+	border-radius: 4px;
+	padding: 12px;
+	max-height: 400px;
+	overflow-y: auto;
+}
+
+.searchcraft-custom-fields-list label {
+	display: block;
+	padding: 8px;
+	margin: 0;
+	border-bottom: 1px solid #f0f0f1;
+	cursor: pointer;
+	transition: background-color 0.2s;
+}
+
+.searchcraft-custom-fields-list label:last-child {
+	border-bottom: none;
+}
+
+.searchcraft-custom-fields-list label:hover {
+	background-color: #f6f7f7;
+}
+
+.searchcraft-custom-fields-list input[type="checkbox"] {
+	margin-right: 8px;
+}
+
+.searchcraft-modal-footer {
+	padding: 16px 24px;
+	border-top: 1px solid #dcdcde;
+	display: flex;
+	gap: 8px;
+	justify-content: flex-end;
+}
+
+.searchcraft-custom-fields-selector {
+	margin-left: 24px;
+}
+
+.searchcraft-select-fields-button {
+	font-size: 13px;
+}

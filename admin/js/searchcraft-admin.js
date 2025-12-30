@@ -12,26 +12,26 @@
 function initColorPickers() {
 	const colorPickers = document.querySelectorAll('.searchcraft-color-picker');
 
-	colorPickers.forEach(function(colorPicker) {
-		const hexInput = document.getElementById(colorPicker.id + '_hex');
+	colorPickers.forEach((colorPicker) => {
+		const hexInput = document.getElementById(`${colorPicker.id}_hex`);
 
 		if (hexInput) {
 			// Sync color picker to hex input
-			colorPicker.addEventListener('input', function() {
-				hexInput.value = this.value.toUpperCase();
+			colorPicker.addEventListener('input', () => {
+				hexInput.value = colorPicker.value.toUpperCase();
 			});
 
 			// Sync hex input to color picker
-			hexInput.addEventListener('input', function() {
-				if (/^#[0-9A-Fa-f]{6}$/.test(this.value)) {
-					colorPicker.value = this.value;
+			hexInput.addEventListener('input', () => {
+				if (/^#[0-9A-Fa-f]{6}$/.test(hexInput.value)) {
+					colorPicker.value = hexInput.value;
 				}
 			});
 
 			// Use hex input value for form submission
 			const form = colorPicker.closest('form');
 			if (form) {
-				form.addEventListener('submit', function() {
+				form.addEventListener('submit', () => {
 					colorPicker.name = '';
 					hexInput.name = colorPicker.id;
 				});
@@ -46,12 +46,12 @@ function initColorPickers() {
 function initPasswordToggle() {
 	const toggleElements = document.querySelectorAll('[data-toggle-password-visibility]');
 
-	toggleElements.forEach(function(element) {
+	toggleElements.forEach((element) => {
 		const input = element.querySelector('input:not([type="hidden"])');
 		const button = element.querySelector('button');
 
 		if (input && button) {
-			button.addEventListener('click', function() {
+			button.addEventListener('click', () => {
 				const isVisible = input.type !== 'password';
 
 				// Toggle aria-label
@@ -78,7 +78,7 @@ function initPasswordToggle() {
 function initButtonWithSpinner() {
 	const buttonContainers = document.querySelectorAll('.searchcraft-button-with-spinner');
 
-	buttonContainers.forEach(function(container) {
+	buttonContainers.forEach((container) => {
 		// Find the form that contains this button container
 		const form = container.closest('form');
 
@@ -92,7 +92,7 @@ function initButtonWithSpinner() {
 
 		if (button && spinner) {
 			// Add submit event listener to the form
-			form.addEventListener('submit', function() {
+			form.addEventListener('submit', () => {
 				// Disable the button and show spinner
 				button.disabled = true;
 				button.style.display = 'none';
@@ -107,24 +107,16 @@ function toggleFormFields() {
 	const fullOnlyRows = document.querySelectorAll('.searchcraft-full-only');
 	const popoverOnlyRows = document.querySelectorAll('.searchcraft-popover-only');
 
-	const isFullSelected = fullRadio && fullRadio.checked;
+	const isFullSelected = fullRadio?.checked ?? false;
 
 	// Show/hide full experience fields
-	fullOnlyRows.forEach(function(row) {
-		if (isFullSelected) {
-			row.classList.remove('hidden');
-		} else {
-			row.classList.add('hidden');
-		}
+	fullOnlyRows.forEach((row) => {
+		row.classList.toggle('hidden', !isFullSelected);
 	});
 
 	// Show/hide popover fields
-	popoverOnlyRows.forEach(function(row) {
-		if (!isFullSelected) {
-			row.classList.remove('hidden');
-		} else {
-			row.classList.add('hidden');
-		}
+	popoverOnlyRows.forEach((row) => {
+		row.classList.toggle('hidden', isFullSelected);
 	});
 }
 
@@ -136,11 +128,7 @@ function toggleFilterPanelOptions() {
 	const filterPanelOptions = document.querySelector('.searchcraft-filter-panel-options');
 
 	if (filterPanelCheckbox && filterPanelOptions) {
-		if (filterPanelCheckbox.checked) {
-			filterPanelOptions.style.display = '';
-		} else {
-			filterPanelOptions.style.display = 'none';
-		}
+		filterPanelOptions.style.display = filterPanelCheckbox.checked ? '' : 'none';
 	}
 }
 
@@ -189,7 +177,7 @@ function updateSearchInputContainerDescription() {
 
 				// Attach remove handler to the new tag
 				const removeButton = tag.querySelector('.searchcraft-tag-remove');
-				removeButton.addEventListener('click', function() {
+				removeButton?.addEventListener('click', () => {
 					tag.remove();
 					updateMainInputFromTags();
 				});
@@ -207,7 +195,7 @@ function updateSearchInputContainerDescription() {
 		// Sync only the first tag value to the text input
 		if (tagsContainer && mainInput) {
 			const firstTag = tagsContainer.querySelector('.searchcraft-tag-text');
-			mainInput.value = firstTag ? firstTag.textContent.trim() : '';
+			mainInput.value = firstTag?.textContent.trim() ?? '';
 		}
 	}
 }
@@ -224,7 +212,7 @@ function updateMainInputFromTags() {
 
 	if (tagsContainer && mainInput) {
 		const tags = Array.from(tagsContainer.querySelectorAll('.searchcraft-tag-text'))
-			.map(tag => tag.textContent.trim())
+			.map(tag => tag.textContent?.trim() ?? '')
 			.filter(text => text !== '');
 		mainInput.value = tags.join(',');
 	}
@@ -265,7 +253,7 @@ function initContainerIdTagUI() {
 		// Validate element ID
 		if (!isValidElementId(text)) {
 			input.style.borderColor = '#d63638';
-			setTimeout(function() {
+			setTimeout(() => {
 				input.style.borderColor = '';
 			}, 1000);
 			return false;
@@ -273,7 +261,7 @@ function initContainerIdTagUI() {
 
 		// Check for duplicates
 		const existingTags = Array.from(tagsContainer.querySelectorAll('.searchcraft-tag-text'))
-			.map(tag => tag.textContent.trim());
+			.map(tag => tag.textContent?.trim() ?? '');
 
 		if (existingTags.includes(text)) {
 			return false;
@@ -289,7 +277,7 @@ function initContainerIdTagUI() {
 
 		// Attach remove handler
 		const removeButton = tag.querySelector('.searchcraft-tag-remove');
-		removeButton.addEventListener('click', function() {
+		removeButton?.addEventListener('click', () => {
 			tag.remove();
 			updateMainInputFromTags();
 			input.focus();
@@ -301,7 +289,7 @@ function initContainerIdTagUI() {
 	}
 
 	// Handle keyboard input
-	input.addEventListener('keydown', function(e) {
+	input.addEventListener('keydown', (e) => {
 		const value = input.value.trim();
 
 		if (e.key === 'Enter' || e.key === ',') {
@@ -320,12 +308,12 @@ function initContainerIdTagUI() {
 	});
 
 	// Handle paste with comma-separated values
-	input.addEventListener('paste', function(e) {
+	input.addEventListener('paste', (e) => {
 		e.preventDefault();
-		const pastedText = (e.clipboardData || window.clipboardData).getData('text');
+		const pastedText = e.clipboardData?.getData('text') ?? '';
 		const ids = pastedText.split(/[,\s]+/).filter(id => id.trim() !== '');
 
-		ids.forEach(function(id) {
+		ids.forEach((id) => {
 			addTag(id);
 		});
 
@@ -333,16 +321,16 @@ function initContainerIdTagUI() {
 	});
 
 	// Click on input area to focus the input field
-	inputArea.addEventListener('click', function(e) {
+	inputArea.addEventListener('click', (e) => {
 		if (e.target === inputArea || e.target === tagsContainer) {
 			input.focus();
 		}
 	});
 
 	// Attach remove handlers to existing tags (from server-rendered HTML)
-	tagsContainer.querySelectorAll('.searchcraft-tag-remove').forEach(function(button) {
-		button.addEventListener('click', function() {
-			button.closest('.searchcraft-tag').remove();
+	tagsContainer.querySelectorAll('.searchcraft-tag-remove').forEach((button) => {
+		button.addEventListener('click', () => {
+			button.closest('.searchcraft-tag')?.remove();
 			updateMainInputFromTags();
 		});
 	});
@@ -356,11 +344,7 @@ function toggleFacetsOptions() {
 	const facetsOptions = document.querySelector('.searchcraft-facets-options');
 
 	if (facetsCheckbox && facetsOptions) {
-		if (facetsCheckbox.checked) {
-			facetsOptions.style.display = '';
-		} else {
-			facetsOptions.style.display = 'none';
-		}
+		facetsOptions.style.display = facetsCheckbox.checked ? '' : 'none';
 	}
 }
 
@@ -374,12 +358,9 @@ function toggleAiSummaryLayout() {
 	if (!aiSummaryCheckbox || !aiSummarySettings) {
 		return;
 	}
-	aiSummarySettings.forEach(function(element) {
-		if (aiSummaryCheckbox.checked) {
-			element.style.display = '';
-		} else {
-			element.style.display = 'none';
-		}
+	const isChecked = aiSummaryCheckbox.checked;
+	aiSummarySettings.forEach((element) => {
+		element.style.display = isChecked ? '' : 'none';
 	});
 }
 
@@ -397,12 +378,8 @@ function toggleResultOrientationOptions() {
 
 	const isColumnSelected = columnRadio.checked;
 
-	columnOrientationOptions.forEach(function(element) {
-		if (isColumnSelected) {
-			element.style.display = '';
-		} else {
-			element.style.display = 'none';
-		}
+	columnOrientationOptions.forEach((element) => {
+		element.style.display = isColumnSelected ? '' : 'none';
 	});
 }
 
@@ -411,7 +388,7 @@ function toggleResultOrientationOptions() {
  */
 function toggleCustomFieldsOption(checkbox) {
 	const postType = checkbox.getAttribute('data-post-type');
-	const customFieldsOption = document.querySelector('.searchcraft-custom-fields-option[data-post-type="' + postType + '"]');
+	const customFieldsOption = document.querySelector(`.searchcraft-custom-fields-option[data-post-type="${postType}"]`);
 
 	if (customFieldsOption) {
 		const customFieldsCheckbox = customFieldsOption.querySelector('input[type="checkbox"]');
@@ -433,13 +410,13 @@ function toggleCustomFieldsOption(checkbox) {
 function initCustomPostTypeCheckboxes() {
 	const customPostTypeCheckboxes = document.querySelectorAll('.searchcraft-custom-post-type-checkbox');
 
-	customPostTypeCheckboxes.forEach(function(checkbox) {
+	customPostTypeCheckboxes.forEach((checkbox) => {
 		// Set initial state
 		toggleCustomFieldsOption(checkbox);
 
 		// Add event listener
-		checkbox.addEventListener('change', function() {
-			toggleCustomFieldsOption(this);
+		checkbox.addEventListener('change', () => {
+			toggleCustomFieldsOption(checkbox);
 		});
 	});
 }
@@ -456,7 +433,7 @@ function initFilterPanelDragDrop() {
 	const items = container.querySelectorAll('.searchcraft-filter-item');
 	let draggedElement = null;
 
-	items.forEach(function(item) {
+	items.forEach((item) => {
 		// Dragstart event
 		item.addEventListener('dragstart', function(e) {
 			draggedElement = this;
@@ -469,7 +446,7 @@ function initFilterPanelDragDrop() {
 		item.addEventListener('dragend', function() {
 			this.classList.remove('dragging');
 			// Remove all drag-over classes
-			items.forEach(function(item) {
+			items.forEach((item) => {
 				item.classList.remove('drag-over');
 			});
 			draggedElement = null;
@@ -479,9 +456,7 @@ function initFilterPanelDragDrop() {
 
 		// Dragover event
 		item.addEventListener('dragover', function(e) {
-			if (e.preventDefault) {
-				e.preventDefault();
-			}
+			e.preventDefault();
 			e.dataTransfer.dropEffect = 'move';
 
 			if (this === draggedElement) {
@@ -489,7 +464,7 @@ function initFilterPanelDragDrop() {
 			}
 
 			// Remove drag-over from all items
-			items.forEach(function(item) {
+			items.forEach((item) => {
 				item.classList.remove('drag-over');
 			});
 
@@ -506,9 +481,7 @@ function initFilterPanelDragDrop() {
 
 		// Drop event
 		item.addEventListener('drop', function(e) {
-			if (e.stopPropagation) {
-				e.stopPropagation();
-			}
+			e.stopPropagation();
 
 			if (draggedElement !== this) {
 				// Get the bounding rectangles
@@ -545,7 +518,7 @@ function updateFilterPanelOrder() {
 	const items = container.querySelectorAll('.searchcraft-filter-item');
 	const order = [];
 
-	items.forEach(function(item) {
+	items.forEach((item) => {
 		const filterKey = item.getAttribute('data-filter-key');
 		if (filterKey) {
 			order.push(filterKey);
@@ -555,7 +528,7 @@ function updateFilterPanelOrder() {
 	hiddenInput.value = order.join(',');
 }
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', () => {
 	// Initialize color pickers
 	initColorPickers();
 
@@ -577,12 +550,8 @@ document.addEventListener('DOMContentLoaded', function() {
 		toggleFormFields();
 
 		// Add event listeners
-		if (fullRadio) {
-			fullRadio.addEventListener('change', toggleFormFields);
-		}
-		if (popoverRadio) {
-			popoverRadio.addEventListener('change', toggleFormFields);
-		}
+		fullRadio?.addEventListener('change', toggleFormFields);
+		popoverRadio?.addEventListener('change', toggleFormFields);
 
 		// Filter panel options toggle
 		const filterPanelCheckbox = document.getElementById('searchcraft_include_filter_panel');
@@ -605,12 +574,8 @@ document.addEventListener('DOMContentLoaded', function() {
 		updateSearchInputContainerDescription();
 
 		// Add event listeners
-		if (onPageRadio) {
-			onPageRadio.addEventListener('change', updateSearchInputContainerDescription);
-		}
-		if (standAloneRadio) {
-			standAloneRadio.addEventListener('change', updateSearchInputContainerDescription);
-		}
+		onPageRadio?.addEventListener('change', updateSearchInputContainerDescription);
+		standAloneRadio?.addEventListener('change', updateSearchInputContainerDescription);
 
 		// Facets options toggle
 		const facetsCheckbox = document.getElementById('searchcraft_enable_facets');
@@ -647,4 +612,183 @@ document.addEventListener('DOMContentLoaded', function() {
 		// Initialize drag and drop for filter panel items
 		initFilterPanelDragDrop();
 	}
+
+	// Initialize custom fields modal (config tab)
+	if (document.querySelector('.searchcraft-config-section')) {
+		initCustomFieldsModal();
+	}
 });
+
+/**
+ * Initialize custom fields modal functionality
+ */
+function initCustomFieldsModal() {
+	const modal = document.getElementById('searchcraft-custom-fields-modal');
+	if (!modal) {
+		return;
+	}
+
+	// Check if searchcraftMetaKeys is defined
+	if (typeof searchcraftMetaKeys === 'undefined') {
+		return;
+	}
+
+	const modalTitle = document.getElementById('searchcraft-modal-title');
+	const fieldsList = document.getElementById('searchcraft-custom-fields-list');
+	const selectAllBtn = modal.querySelector('.searchcraft-select-all-fields');
+	const deselectAllBtn = modal.querySelector('.searchcraft-deselect-all-fields');
+	const saveBtn = modal.querySelector('.searchcraft-save-field-selection');
+	const cancelBtn = modal.querySelector('.searchcraft-cancel-field-selection');
+	const closeBtn = modal.querySelector('.searchcraft-modal-close');
+	const overlay = modal.querySelector('.searchcraft-modal-overlay');
+
+	let currentPostType = null;
+	let currentButton = null;
+
+	// Open modal when "Select Fields" button is clicked
+	document.addEventListener('click', (e) => {
+		if (e.target.classList.contains('searchcraft-select-fields-button')) {
+			e.preventDefault();
+			currentPostType = e.target.getAttribute('data-post-type');
+			currentButton = e.target;
+			openModal(currentPostType);
+		}
+	});
+
+	// Toggle custom fields checkbox visibility
+	document.addEventListener('change', (e) => {
+		if (e.target.classList.contains('searchcraft-enable-custom-fields-checkbox')) {
+			const postType = e.target.getAttribute('data-post-type');
+			const selector = document.querySelector(`.searchcraft-custom-fields-selector[data-post-type="${postType}"]`);
+			if (selector) {
+				selector.style.display = e.target.checked ? '' : 'none';
+			}
+		}
+	});
+
+	function openModal(postType) {
+		// Find post type data
+		const postTypeData = searchcraftMetaKeys.find((pt) => pt.name === postType);
+
+		if (!postTypeData) {
+			return;
+		}
+
+		// Set modal title
+		modalTitle.textContent = `Select Custom Fields for ${postTypeData.label}`;
+
+		// Get currently selected fields
+		const selectedFieldsContainer = document.querySelector(`.searchcraft-selected-fields-container[data-post-type="${postType}"]`);
+		const selectedFields = [];
+		if (selectedFieldsContainer) {
+			const inputs = selectedFieldsContainer.querySelectorAll('input[type="hidden"]');
+			inputs.forEach((input) => {
+				selectedFields.push(input.value);
+			});
+		}
+
+		// Populate fields list
+		fieldsList.innerHTML = '';
+		const metaKeys = Object.keys(postTypeData.meta_keys);
+
+		if (metaKeys.length === 0) {
+			fieldsList.textContent = 'No custom fields found for this post type.';
+			fieldsList.style.padding = '12px';
+			fieldsList.style.margin = '0';
+			fieldsList.style.color = '#646970';
+		} else {
+			// Sort field names alphabetically
+			metaKeys.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+
+			metaKeys.forEach((fieldName) => {
+				const label = document.createElement('label');
+				const checkbox = document.createElement('input');
+				checkbox.type = 'checkbox';
+				checkbox.value = fieldName;
+				checkbox.checked = selectedFields.length === 0 || selectedFields.includes(fieldName);
+
+				label.appendChild(checkbox);
+				label.appendChild(document.createTextNode(` ${fieldName}`));
+				fieldsList.appendChild(label);
+			});
+		}
+
+		// Show modal
+		modal.style.display = 'block';
+		document.body.style.overflow = 'hidden';
+	}
+
+	function closeModal() {
+		modal.style.display = 'none';
+		document.body.style.overflow = '';
+		currentPostType = null;
+		currentButton = null;
+	}
+
+	function saveSelection() {
+		if (!currentPostType) return;
+
+		const checkboxes = fieldsList.querySelectorAll('input[type="checkbox"]');
+		const selectedFields = [];
+
+		checkboxes.forEach((checkbox) => {
+			if (checkbox.checked) {
+				selectedFields.push(checkbox.value);
+			}
+		});
+
+		// Update hidden inputs
+		const selectedFieldsContainer = document.querySelector(`.searchcraft-selected-fields-container[data-post-type="${currentPostType}"]`);
+		if (selectedFieldsContainer) {
+			selectedFieldsContainer.innerHTML = '';
+			selectedFields.forEach((fieldName) => {
+				const input = document.createElement('input');
+				input.type = 'hidden';
+				input.name = `searchcraft_selected_custom_fields[${currentPostType}][]`;
+				input.value = fieldName;
+				selectedFieldsContainer.appendChild(input);
+			});
+		}
+
+		// Update button text
+		if (currentButton) {
+			const postTypeData = searchcraftMetaKeys.find((pt) => pt.name === currentPostType);
+			const totalCount = Object.keys(postTypeData.meta_keys).length;
+
+			if (selectedFields.length === 0 || selectedFields.length === totalCount) {
+				currentButton.textContent = `Select Fields (All ${totalCount} fields)`;
+			} else {
+				currentButton.textContent = `Select Fields (${selectedFields.length} of ${totalCount} selected)`;
+			}
+		}
+
+		closeModal();
+	}
+
+	// Event listeners
+	selectAllBtn?.addEventListener('click', () => {
+		const checkboxes = fieldsList.querySelectorAll('input[type="checkbox"]');
+		checkboxes.forEach((checkbox) => {
+			checkbox.checked = true;
+		});
+	});
+
+	deselectAllBtn?.addEventListener('click', () => {
+		const checkboxes = fieldsList.querySelectorAll('input[type="checkbox"]');
+		checkboxes.forEach((checkbox) => {
+			checkbox.checked = false;
+		});
+	});
+
+	saveBtn?.addEventListener('click', saveSelection);
+	cancelBtn?.addEventListener('click', closeModal);
+	closeBtn?.addEventListener('click', closeModal);
+	overlay?.addEventListener('click', closeModal);
+
+	// Close on Escape key
+	document.addEventListener('keydown', (e) => {
+		if (e.key === 'Escape' && modal.style.display === 'block') {
+			closeModal();
+		}
+	});
+}

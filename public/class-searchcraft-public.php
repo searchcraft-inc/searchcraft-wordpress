@@ -233,7 +233,7 @@ class Searchcraft_Public {
 		}
 		$js_config['orientation']            = get_option( 'searchcraft_result_orientation', 'column' );
 		$js_config['displayPostDate']        = (bool) get_option( 'searchcraft_display_post_date', false );
-		$js_config['displayPrimaryCategory'] = (bool) get_option( 'searchcraft_display_primary_category', false );
+		$js_config['displayAuthorName']      = (bool) get_option( 'searchcraft_display_author_name', true );
 		$js_config['imageAlignment']         = get_option( 'searchcraft_image_alignment', 'left' );
 		if ( 'grid' === $js_config['orientation'] ) {
 			$js_config['imageAlignment'] = 'left';
@@ -255,22 +255,31 @@ class Searchcraft_Public {
 		$js_config['filterPanelOrder'] = $filter_panel_order;
 
 		// Post type filter settings.
-		$enable_post_type_filter    = (bool) get_option( 'searchcraft_enable_post_type_filter', false );
+		$enable_post_type_filter     = (bool) get_option( 'searchcraft_enable_post_type_filter', false );
+		$selected_builtin_post_types = get_option( 'searchcraft_builtin_post_types', array( 'post', 'page' ) );
+		if ( ! is_array( $selected_builtin_post_types ) ) {
+			$selected_builtin_post_types = array( 'post', 'page' );
+		}
 		$selected_custom_post_types = get_option( 'searchcraft_custom_post_types', array() );
 
-		// If custom post types are enabled and post type filter is enabled, add post types to config.
-		if ( ! empty( $selected_custom_post_types ) && $enable_post_type_filter ) {
-			// Build array of all post types (built-in + custom).
-			$post_types_config = array(
-				array(
+		// If post type filter is enabled and there are multiple post types, add post types to config.
+		$all_enabled_post_types = array_merge( $selected_builtin_post_types, $selected_custom_post_types );
+		if ( $enable_post_type_filter && count( $all_enabled_post_types ) > 1 ) {
+			$post_types_config = array();
+
+			// Add built-in post types if enabled.
+			if ( in_array( 'post', $selected_builtin_post_types, true ) ) {
+				$post_types_config[] = array(
 					'name'  => '/post',
 					'label' => 'Posts',
-				),
-				array(
+				);
+			}
+			if ( in_array( 'page', $selected_builtin_post_types, true ) ) {
+				$post_types_config[] = array(
 					'name'  => '/page',
 					'label' => 'Pages',
-				),
-			);
+				);
+			}
 
 			// Add custom post types with their labels.
 			foreach ( $selected_custom_post_types as $post_type_name ) {
@@ -294,9 +303,9 @@ class Searchcraft_Public {
 		$js_config['resultsPerPage'] = intval( get_option( 'searchcraft_results_per_page', 10 ) );
 
 		// Filter taxonomies.
-		$filter_taxonomies = get_option( 'searchcraft_filter_taxonomies', array( 'category' ) );
+		$filter_taxonomies = get_option( 'searchcraft_filter_taxonomies', array() );
 		if ( ! is_array( $filter_taxonomies ) ) {
-			$filter_taxonomies = array( 'category' );
+			$filter_taxonomies = array();
 		}
 		// Get taxonomy labels for display.
 		$taxonomy_config = array();
@@ -317,7 +326,13 @@ class Searchcraft_Public {
 			}
 		);
 		$js_config['filterTaxonomies'] = $taxonomy_config;
+
+		// Only display primary category if category taxonomy is selected and the setting is enabled.
+		$display_primary_category_setting = (bool) get_option( 'searchcraft_display_primary_category', false );
+		$category_taxonomy_selected       = in_array( 'category', $filter_taxonomies, true );
+		$js_config['displayPrimaryCategory'] = $display_primary_category_setting && $category_taxonomy_selected;
 		$js_config['isWPSearchPage']   = (bool) is_search();
+		$js_config['searchBehavior']   = get_option( 'searchcraft_search_behavior', 'on_page' );
 
 		// Add user identifier for analytics if user is logged in.
 		$user_id = get_current_user_id();
