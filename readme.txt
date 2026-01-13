@@ -4,7 +4,7 @@ Contributors: searchcraft
 Tags:         search, fuzzy search, better search, instant search, search replacement
 Requires at least: 5.3
 Tested up to: 6.9
-Stable tag:   1.3.0
+Stable tag:   1.3.1
 License:      Apache 2.0
 License URI:  LICENSE.txt
 
@@ -68,6 +68,10 @@ If you would like to report an issue or suggest an enhancement you may contact t
 Searchcraft Cloud customers may also reach out via our Discord server for assistance or to request a custom feature.
 
 == Changelog ==
+
+= 1.3.1 =
+* Bugfix - Fixes issue where going back from clicking a search result to the results page inserted an encoded space instead of an actual space value into the input.
+* Bugfix - Fixes issue where filter taxonomy was interfering with the default post type checkbox in admin configuration tab.
 
 = 1.3.0 =
 * New Feature - You can now import and export settings to ease migrations between environments.
