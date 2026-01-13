@@ -228,20 +228,23 @@ if ( ! is_array( $selected_builtin_post_types ) ) {
 									<?php
 									$is_checked  = in_array( $taxonomy_obj->name, $selected_taxonomies, true );
 									?>
-									<label style="display: block; margin-bottom: 8px;">
-										<input
-											type="checkbox"
-											name="searchcraft_filter_taxonomies[]"
-											value="<?php echo esc_attr( $taxonomy_obj->name ); ?>"
-											<?php checked( $is_checked ); ?>
-										/>
-										<strong><?php echo esc_html( $taxonomy_obj->label ); ?></strong>
-										<?php if ( ! empty( $taxonomy_obj->description ) ) : ?>
-											- <?php echo esc_html( $taxonomy_obj->description ); ?>
-										<?php else : ?>
-											(<?php echo esc_html( $taxonomy_obj->name ); ?>)
-										<?php endif; ?>
-									</label>
+									<div style="margin-bottom: 8px;">
+										<label style="display: inline-block; font-weight: 600; cursor: pointer;">
+											<input
+												type="checkbox"
+												name="searchcraft_filter_taxonomies[]"
+												value="<?php echo esc_attr( $taxonomy_obj->name ); ?>"
+												style="margin-right: 4px;"
+												<?php checked( $is_checked ); ?>
+											/>
+											<?php echo esc_html( $taxonomy_obj->label ); ?>
+											<?php if ( ! empty( $taxonomy_obj->description ) ) : ?>
+												- <?php echo esc_html( $taxonomy_obj->description ); ?>
+											<?php else : ?>
+												(<?php echo esc_html( $taxonomy_obj->name ); ?>)
+											<?php endif; ?>
+										</label>
+									</div>
 								<?php endforeach; ?>
 							</fieldset>
 							<p class="description">
@@ -263,26 +266,30 @@ if ( ! is_array( $selected_builtin_post_types ) ) {
 					<td>
 						<fieldset>
 							<legend class="screen-reader-text"><span>Select content types to include in search</span></legend>
-							<div style="margin-bottom: 12px;">
-								<label style="display: block; margin-bottom: 4px;">
+							<div style="margin-bottom: 12px; position: relative; z-index: 1;">
+								<label for="searchcraft_builtin_post_type_post" style="display: inline-block; margin-bottom: 4px; font-weight: 600; cursor: pointer;">
 									<input
 										type="checkbox"
+										id="searchcraft_builtin_post_type_post"
 										name="searchcraft_builtin_post_types[]"
 										value="post"
+										style="margin-right: 4px;"
 										<?php checked( in_array( 'post', $selected_builtin_post_types, true ) ); ?>
 									/>
-									<strong>Posts</strong>
+									Posts
 								</label>
 							</div>
-							<div style="margin-bottom: 12px;">
-								<label style="display: block; margin-bottom: 4px;">
+							<div style="margin-bottom: 12px; position: relative; z-index: 1;">
+								<label for="searchcraft_builtin_post_type_page" style="display: inline-block; margin-bottom: 4px; font-weight: 600; cursor: pointer;">
 									<input
 										type="checkbox"
+										id="searchcraft_builtin_post_type_page"
 										name="searchcraft_builtin_post_types[]"
 										value="page"
+										style="margin-right: 4px;"
 										<?php checked( in_array( 'page', $selected_builtin_post_types, true ) ); ?>
 									/>
-									<strong>Pages</strong>
+									Pages
 								</label>
 							</div>
 						</fieldset>
