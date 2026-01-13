@@ -44,6 +44,6 @@ $value_attr                               = '';
 if ( is_search() ) {
 	$search_query = get_search_query( true );
 	if ( ! empty( $search_query ) ) {
-		$value_attr = ' value="' . $search_query . '"';
+		$value_attr = ' value="' . esc_attr( $search_query ) . '"';
 	}
 }

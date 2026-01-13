@@ -178,9 +178,8 @@
                 searchcraft.subscribe('query_fetched', (event) => {
                     const searchTerm = event?.data?.searchTerm;
                     if (searchTerm && searchTerm !== '*') {
-                        const sanitizedQuery = encodeURIComponent(searchTerm);
                         const url = new URL(window.location);
-                        url.searchParams.set('s', sanitizedQuery);
+                        url.searchParams.set('s', searchTerm);
                         window.history.replaceState({}, '', url);
                     }
                 });
