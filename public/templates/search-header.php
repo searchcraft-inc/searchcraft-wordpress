@@ -470,7 +470,7 @@ if ( ! empty( $custom_css ) ) {
 			<div class="searchcraft-full-search-experience">
 				<?php if ( 'stand_alone' === $search_behavior && ! is_search() ) : ?>
 					<div class="searchcraft-input-container searchcraft-input-form-inline-container">
-						<form class="searchcraft-input-form searchcraft-input-form-inline" role="search" method="get" action="<?php echo site_url(); ?>">
+						<form class="searchcraft-input-form searchcraft-input-form-inline" role="search" method="get" action="<?php echo site_url(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped --  site_url is safe ?>">
 							<div class="searchcraft-input-form-grid searchcraft-input-form-grid-button-none searchcraft-input-form-grid-inline" style="gap: 0px 8px;">
 								<div class="searchcraft-input-form-input-wrapper searchcraft-input-form-input-wrapper-inline">
 									<input autocomplete="off" class="searchcraft-input-form-input" placeholder="<?php echo esc_attr( $search_placeholder ); ?>" type="search" name="s">
@@ -486,7 +486,7 @@ if ( ! empty( $custom_css ) ) {
 				</div>
 				<?php else : ?>
 				<div class="searchcraft-input-container">
-						<searchcraft-input-form <?php echo esc_attr( $value_attr ); ?> placeholder-value="<?php echo esc_attr( $search_placeholder ); ?>" auto-search></searchcraft-input-form>
+						<searchcraft-input-form <?php echo $value_attr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped in common-template-values ?> placeholder-value="<?php echo esc_attr( $search_placeholder ); ?>" auto-search></searchcraft-input-form>
 				</div>
 				<?php endif; ?>
 			</div>
