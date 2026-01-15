@@ -2824,5 +2824,4 @@ class Searchcraft_Admin {
 		wp_safe_redirect( admin_url( 'admin.php?page=searchcraft&tab=import-export' ) );
 		exit;
 	}
-
-}
+} // End Searchcraft_Admin
