@@ -1355,12 +1355,43 @@ table.searchcraft-synonyms-table td:nth-child(3) {
 	gap: 8px;
 }
 
+.searchcraft-field-search-wrapper {
+	margin-bottom: 16px;
+}
+
+.searchcraft-field-search {
+	width: 100%;
+	padding: 8px 12px;
+	border: 1px solid #dcdcde;
+	border-radius: 4px;
+	font-size: 14px;
+	line-height: 1.5;
+	transition: border-color 0.2s;
+}
+
+.searchcraft-field-search:focus {
+	border-color: #2271b1;
+	outline: none;
+	box-shadow: 0 0 0 1px #2271b1;
+}
+
 .searchcraft-custom-fields-list {
 	border: 1px solid #dcdcde;
 	border-radius: 4px;
 	padding: 12px;
 	max-height: 400px;
 	overflow-y: auto;
+}
+
+.searchcraft-custom-fields-list label.searchcraft-field-hidden {
+	display: none;
+}
+
+.searchcraft-custom-fields-list .searchcraft-no-results {
+	padding: 20px;
+	text-align: center;
+	color: #646970;
+	font-style: italic;
 }
 
 .searchcraft-custom-fields-list label {

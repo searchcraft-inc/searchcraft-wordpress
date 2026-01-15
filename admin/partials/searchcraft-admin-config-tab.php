@@ -474,6 +474,15 @@ if ( ! is_array( $selected_builtin_post_types ) ) {
 				<button type="button" class="button searchcraft-select-all-fields">Select All</button>
 				<button type="button" class="button searchcraft-deselect-all-fields">Deselect All</button>
 			</div>
+			<div class="searchcraft-field-search-wrapper">
+				<input
+					type="text"
+					id="searchcraft-field-search"
+					class="searchcraft-field-search"
+					placeholder="Search fields by name..."
+					autocomplete="off"
+				/>
+			</div>
 			<div id="searchcraft-custom-fields-list" class="searchcraft-custom-fields-list">
 				<!-- Fields will be populated dynamically -->
 			</div>

@@ -635,6 +635,7 @@ function initCustomFieldsModal() {
 
 	const modalTitle = document.getElementById('searchcraft-modal-title');
 	const fieldsList = document.getElementById('searchcraft-custom-fields-list');
+	const searchInput = document.getElementById('searchcraft-field-search');
 	const selectAllBtn = modal.querySelector('.searchcraft-select-all-fields');
 	const deselectAllBtn = modal.querySelector('.searchcraft-deselect-all-fields');
 	const saveBtn = modal.querySelector('.searchcraft-save-field-selection');
@@ -713,9 +714,21 @@ function initCustomFieldsModal() {
 			});
 		}
 
+		// Clear search input
+		if (searchInput) {
+			searchInput.value = '';
+		}
+
 		// Show modal
 		modal.style.display = 'block';
 		document.body.style.overflow = 'hidden';
+
+		// Focus search input
+		setTimeout(() => {
+			if (searchInput) {
+				searchInput.focus();
+			}
+		}, 100);
 	}
 
 	function closeModal() {
@@ -723,6 +736,37 @@ function initCustomFieldsModal() {
 		document.body.style.overflow = '';
 		currentPostType = null;
 		currentButton = null;
+	}
+
+	function filterFields(searchTerm) {
+		const labels = fieldsList.querySelectorAll('label');
+		const normalizedSearch = searchTerm.toLowerCase().trim();
+		let visibleCount = 0;
+
+		labels.forEach((label) => {
+			const fieldName = label.textContent.trim().toLowerCase();
+			const matches = fieldName.includes(normalizedSearch);
+
+			if (matches) {
+				label.classList.remove('searchcraft-field-hidden');
+				visibleCount++;
+			} else {
+				label.classList.add('searchcraft-field-hidden');
+			}
+		});
+
+		// Show/hide "no results" message
+		let noResultsMsg = fieldsList.querySelector('.searchcraft-no-results');
+		if (visibleCount === 0 && normalizedSearch !== '') {
+			if (!noResultsMsg) {
+				noResultsMsg = document.createElement('div');
+				noResultsMsg.className = 'searchcraft-no-results';
+				noResultsMsg.textContent = 'No fields found matching your search.';
+				fieldsList.appendChild(noResultsMsg);
+			}
+		} else if (noResultsMsg) {
+			noResultsMsg.remove();
+		}
 	}
 
 	function saveSelection() {
@@ -766,17 +810,27 @@ function initCustomFieldsModal() {
 	}
 
 	// Event listeners
+	searchInput?.addEventListener('input', (e) => {
+		filterFields(e.target.value);
+	});
+
 	selectAllBtn?.addEventListener('click', () => {
-		const checkboxes = fieldsList.querySelectorAll('input[type="checkbox"]');
+		const checkboxes = fieldsList.querySelectorAll('input[type="checkbox"]:not(.searchcraft-field-hidden input)');
 		checkboxes.forEach((checkbox) => {
-			checkbox.checked = true;
+			const label = checkbox.closest('label');
+			if (!label || !label.classList.contains('searchcraft-field-hidden')) {
+				checkbox.checked = true;
+			}
 		});
 	});
 
 	deselectAllBtn?.addEventListener('click', () => {
-		const checkboxes = fieldsList.querySelectorAll('input[type="checkbox"]');
+		const checkboxes = fieldsList.querySelectorAll('input[type="checkbox"]:not(.searchcraft-field-hidden input)');
 		checkboxes.forEach((checkbox) => {
-			checkbox.checked = false;
+			const label = checkbox.closest('label');
+			if (!label || !label.classList.contains('searchcraft-field-hidden')) {
+				checkbox.checked = false;
+			}
 		});
 	});
 
