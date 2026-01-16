@@ -677,10 +677,30 @@ class Searchcraft_Admin {
 					);
 				}
 
+				// Save excerpt field overrides for each post type.
+				$excerpt_field_overrides = array();
+				if ( isset( $_POST['searchcraft_excerpt_field_overrides'] ) && is_array( $_POST['searchcraft_excerpt_field_overrides'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in searchcraft_request_handler().
+					$unslashed_overrides = wp_unslash( $_POST['searchcraft_excerpt_field_overrides'] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.NonceVerification.Missing -- Sanitized in the next step.
+					foreach ( $unslashed_overrides as $post_type => $field_name ) {
+						$sanitized_post_type = sanitize_text_field( $post_type );
+						$sanitized_field_name = sanitize_text_field( $field_name );
+						// Only save non-empty values.
+						if ( ! empty( $sanitized_field_name ) ) {
+							$excerpt_field_overrides[ $sanitized_post_type ] = $sanitized_field_name;
+						}
+					}
+				}
+
 				// Get previous selected custom fields for comparison.
 				$previous_selected_custom_fields = get_option( 'searchcraft_selected_custom_fields', array() );
 				if ( ! is_array( $previous_selected_custom_fields ) ) {
 					$previous_selected_custom_fields = array();
+				}
+
+				// Get previous excerpt field overrides for comparison.
+				$previous_excerpt_field_overrides = get_option( 'searchcraft_excerpt_field_overrides', array() );
+				if ( ! is_array( $previous_excerpt_field_overrides ) ) {
+					$previous_excerpt_field_overrides = array();
 				}
 
 				// Sort arrays for fair comparison.
@@ -706,17 +726,19 @@ class Searchcraft_Admin {
 				$custom_post_types_changed        = ( serialize( $previous_custom_post_types ) !== serialize( $custom_post_types ) ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.serialize_serialize
 				$custom_post_types_fields_changed = ( serialize( $previous_custom_post_types_with_fields ) !== serialize( $custom_post_types_with_fields ) ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.serialize_serialize
 				$selected_custom_fields_changed   = ( serialize( $previous_selected_custom_fields ) !== serialize( $selected_custom_fields ) ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.serialize_serialize
+				$excerpt_field_overrides_changed  = ( serialize( $previous_excerpt_field_overrides ) !== serialize( $excerpt_field_overrides ) ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.serialize_serialize
 
 				// Update options after comparison.
 				update_option( 'searchcraft_builtin_post_types', $builtin_post_types );
 				update_option( 'searchcraft_custom_post_types', $custom_post_types );
 				update_option( 'searchcraft_custom_post_types_with_fields', $custom_post_types_with_fields );
 				update_option( 'searchcraft_selected_custom_fields', $selected_custom_fields );
+				update_option( 'searchcraft_excerpt_field_overrides', $excerpt_field_overrides );
 
 				// Check if taxonomies have changed and need index update.
 				// We need to update if taxonomies changed, regardless of whether we're adding or removing them.
 				$taxonomies_changed = ( serialize( $previous_taxonomies ) !== serialize( $filter_taxonomies ) ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.serialize_serialize
-				$needs_index_update = $taxonomies_changed || $builtin_post_types_changed || $custom_post_types_changed || $custom_post_types_fields_changed || $selected_custom_fields_changed;
+				$needs_index_update = $taxonomies_changed || $builtin_post_types_changed || $custom_post_types_changed || $custom_post_types_fields_changed || $selected_custom_fields_changed || $excerpt_field_overrides_changed;
 
 				if ( $success ) {
 					// Clear cached data since configuration has changed.
@@ -725,8 +747,8 @@ class Searchcraft_Admin {
 					// Update index schema if taxonomies or custom post types changed.
 					if ( $needs_index_update ) {
 						$all_updates_successful = true;
-						$reindexed               = false;
-						$error_messages          = array();
+						$reindex                = false;
+						$error_messages         = array();
 
 						// Update taxonomy schema if taxonomies changed.
 						if ( $taxonomies_changed ) {
@@ -736,7 +758,7 @@ class Searchcraft_Admin {
 								$all_updates_successful = false;
 								$error_messages[]        = 'Taxonomy schema update: ' . $index_update_result['error'];
 							} elseif ( $index_update_result['reindexed'] ) {
-								$reindexed = true;
+								$reindex = true;
 							}
 						}
 
@@ -752,19 +774,25 @@ class Searchcraft_Admin {
 								$all_updates_successful = false;
 								$error_messages[]        = 'Custom post types schema update: ' . $custom_types_update_result['error'];
 							} elseif ( $custom_types_update_result['reindexed'] ) {
-								$reindexed = true;
+								$reindex = true;
 							}
 						}
 
 						// Reindex if built-in post types changed.
-						if ( $builtin_post_types_changed && ! $reindexed ) {
+						if ( $builtin_post_types_changed && ! $reindex ) {
 							$this->searchcraft_add_all_documents();
-							$reindexed = true;
+							$reindex = true;
+						}
+
+						// Reindex if excerpt field overrides changed.
+						if ( $excerpt_field_overrides_changed && ! $reindex ) {
+							$this->searchcraft_add_all_documents();
+							$reindex = true;
 						}
 
 						if ( $all_updates_successful ) {
 							$message = 'Configuration saved successfully.';
-							if ( $reindexed ) {
+							if ( $reindex ) {
 								$message .= ' Index schema updated and documents re-indexed.';
 							} else {
 								$message .= ' Index schema updated.';
@@ -1899,12 +1927,28 @@ class Searchcraft_Admin {
 				$yoast_keyphrase = WPSEO_Meta::get_value( 'focuskw', $post->ID );
 			}
 
+			// Check if there's an excerpt field override for this post type.
+			$excerpt_field_overrides = get_option( 'searchcraft_excerpt_field_overrides', array() );
+			if ( ! is_array( $excerpt_field_overrides ) ) {
+				$excerpt_field_overrides = array();
+			}
+
+			$post_excerpt = get_the_excerpt( $post );
+			if ( isset( $excerpt_field_overrides[ $post->post_type ] ) && ! empty( $excerpt_field_overrides[ $post->post_type ] ) ) {
+				$override_field = $excerpt_field_overrides[ $post->post_type ];
+				$custom_excerpt = get_post_meta( $post->ID, $override_field, true );
+				// Only use the custom field if it has a value and is a string.
+				if ( ! empty( $custom_excerpt ) && is_string( $custom_excerpt ) ) {
+					$post_excerpt = $custom_excerpt;
+				}
+			}
+
 			// Create document.
 			$document = array(
 				'id'                    => (string) $post->ID,
 				'type'                  => '/' . $post->post_type,
 				'post_title'            => $post->post_title,
-				'post_excerpt'          => get_the_excerpt( $post ),
+				'post_excerpt'          => $post_excerpt,
 				'post_content'          => $clean_content,
 				'post_author_id'        => $author_ids,
 				'post_author_name'      => $author_names,
@@ -2529,6 +2573,7 @@ class Searchcraft_Admin {
 			'searchcraft_custom_post_types',
 			'searchcraft_custom_post_types_with_fields',
 			'searchcraft_selected_custom_fields',
+			'searchcraft_excerpt_field_overrides',
 			'searchcraft_use_publishpress_authors',
 			'searchcraft_use_molongui_authorship',
 		);
@@ -2772,6 +2817,29 @@ class Searchcraft_Admin {
 						}
 					}
 					update_option( $key, $valid_custom_fields );
+					continue;
+				}
+
+				// Special handling for excerpt field overrides.
+				if ( 'searchcraft_excerpt_field_overrides' === $key && is_array( $value ) ) {
+					$valid_excerpt_overrides = array();
+					foreach ( $value as $post_type => $field_name ) {
+						// Only include if the post type exists.
+						if ( post_type_exists( $post_type ) ) {
+							// Validate that the meta key exists for this post type.
+							$existing_meta_keys = Searchcraft_Helper_Functions::searchcraft_get_meta_keys_for_post_type( $post_type );
+							if ( array_key_exists( $field_name, $existing_meta_keys ) ) {
+								$valid_excerpt_overrides[ $post_type ] = $field_name;
+							} else {
+								$post_type_obj   = get_post_type_object( $post_type );
+								$post_type_label = $post_type_obj ? $post_type_obj->label : $post_type;
+								$warnings[]      = "Excerpt field override '<strong>{$field_name}</strong>' for '<strong>{$post_type_label}</strong>' does not exist on this site and was skipped.";
+							}
+						} else {
+							$warnings[] = "Custom post type '<strong>{$post_type}</strong>' does not exist, so its excerpt field override was skipped.";
+						}
+					}
+					update_option( $key, $valid_excerpt_overrides );
 					continue;
 				}
 

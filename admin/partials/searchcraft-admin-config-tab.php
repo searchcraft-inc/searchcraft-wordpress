@@ -73,6 +73,12 @@ if ( ! is_array( $selected_custom_fields ) ) {
 	$selected_custom_fields = array();
 }
 
+// Get excerpt field overrides for each post type.
+$excerpt_field_overrides = get_option( 'searchcraft_excerpt_field_overrides', array() );
+if ( ! is_array( $excerpt_field_overrides ) ) {
+	$excerpt_field_overrides = array();
+}
+
 // Get built-in post types selection (default to both enabled).
 $selected_builtin_post_types = get_option( 'searchcraft_builtin_post_types', array( 'post', 'page' ) );
 if ( ! is_array( $selected_builtin_post_types ) ) {
@@ -321,6 +327,7 @@ if ( ! is_array( $selected_builtin_post_types ) ) {
 									$post_type_selected_fields = isset( $selected_custom_fields[ $post_type_obj->name ] ) ? $selected_custom_fields[ $post_type_obj->name ] : array();
 									$selected_count = count( $post_type_selected_fields );
 									$total_count = count( $meta_keys );
+									$excerpt_override = isset( $excerpt_field_overrides[ $post_type_obj->name ] ) ? $excerpt_field_overrides[ $post_type_obj->name ] : '';
 									?>
 									<div style="margin-bottom: 12px;">
 										<label style="display: block; margin-bottom: 4px;">
@@ -360,6 +367,54 @@ if ( ! is_array( $selected_builtin_post_types ) ) {
 															Select Fields (All <?php echo esc_html( $total_count ); ?> fields)
 														<?php endif; ?>
 													</button>
+												</div>
+												<div class="searchcraft-excerpt-override-option" style="margin-top: 8px;">
+													<label for="searchcraft_excerpt_override_<?php echo esc_attr( $post_type_obj->name ); ?>" style="display: block; margin-bottom: 4px; font-weight: normal;">
+														Override excerpt field with custom field:
+													</label>
+													<?php
+													// Sort meta keys alphabetically for better UX.
+													$sorted_meta_keys = $meta_keys;
+													ksort( $sorted_meta_keys );
+													?>
+													<div class="searchcraft-excerpt-select-wrapper" data-post-type="<?php echo esc_attr( $post_type_obj->name ); ?>">
+														<input
+															type="text"
+															id="searchcraft_excerpt_override_<?php echo esc_attr( $post_type_obj->name ); ?>"
+															class="searchcraft-excerpt-override-input"
+															value="<?php echo esc_attr( $excerpt_override ); ?>"
+															placeholder="Use default excerpt (or type to search)"
+															autocomplete="off"
+															readonly
+														/>
+														<input
+															type="hidden"
+															name="searchcraft_excerpt_field_overrides[<?php echo esc_attr( $post_type_obj->name ); ?>]"
+															class="searchcraft-excerpt-override-value"
+															value="<?php echo esc_attr( $excerpt_override ); ?>"
+														/>
+														<button type="button" class="searchcraft-excerpt-toggle-btn" aria-label="Toggle dropdown">
+															<span class="dashicons dashicons-arrow-down-alt2"></span>
+														</button>
+														<button type="button" class="searchcraft-excerpt-clear-btn" aria-label="Clear selection" style="display: none;">
+															<span class="dashicons dashicons-no-alt"></span>
+														</button>
+														<div class="searchcraft-excerpt-dropdown" style="display: none;">
+															<div class="searchcraft-excerpt-dropdown-list">
+																<div class="searchcraft-excerpt-option" data-value="">
+																	<em>Use default excerpt</em>
+																</div>
+																<?php foreach ( $sorted_meta_keys as $meta_key => $meta_info ) : ?>
+																	<div class="searchcraft-excerpt-option" data-value="<?php echo esc_attr( $meta_key ); ?>">
+																		<?php echo esc_html( $meta_key ); ?>
+																	</div>
+																<?php endforeach; ?>
+															</div>
+														</div>
+													</div>
+													<p class="description" style="margin-top: 4px;">
+														Type to search or click the dropdown arrow to browse. Leave empty to use the default post excerpt.
+													</p>
 												</div>
 											</div>
 										<?php endif; ?>
