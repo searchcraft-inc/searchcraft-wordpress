@@ -422,6 +422,124 @@ function initCustomPostTypeCheckboxes() {
 }
 
 /**
+ * Initialize excerpt override custom dropdowns
+ */
+function initExcerptOverrideInputs() {
+	const wrappers = document.querySelectorAll('.searchcraft-excerpt-select-wrapper');
+
+	wrappers.forEach((wrapper) => {
+		const input = wrapper.querySelector('.searchcraft-excerpt-override-input');
+		const hiddenInput = wrapper.querySelector('.searchcraft-excerpt-override-value');
+		const toggleBtn = wrapper.querySelector('.searchcraft-excerpt-toggle-btn');
+		const clearBtn = wrapper.querySelector('.searchcraft-excerpt-clear-btn');
+		const dropdown = wrapper.querySelector('.searchcraft-excerpt-dropdown');
+		const options = wrapper.querySelectorAll('.searchcraft-excerpt-option');
+
+		if (!input || !hiddenInput || !toggleBtn || !clearBtn || !dropdown) {
+			return;
+		}
+
+		// Store all options for filtering
+		const allOptions = Array.from(options);
+
+		// Update button visibility based on value
+		function updateButtons() {
+			const hasValue = hiddenInput.value.trim() !== '';
+			toggleBtn.style.display = hasValue ? 'none' : 'flex';
+			clearBtn.style.display = hasValue ? 'flex' : 'none';
+		}
+
+		// Initialize button state
+		updateButtons();
+
+		// Toggle dropdown
+		toggleBtn.addEventListener('click', (e) => {
+			e.stopPropagation();
+			const isOpen = dropdown.style.display === 'block';
+
+			// Close all other dropdowns
+			document.querySelectorAll('.searchcraft-excerpt-dropdown').forEach(d => {
+				d.style.display = 'none';
+			});
+
+			if (!isOpen) {
+				dropdown.style.display = 'block';
+				input.removeAttribute('readonly');
+				input.focus();
+				// Show all options
+				allOptions.forEach(opt => opt.style.display = 'block');
+			}
+		});
+
+		// Clear selection
+		clearBtn.addEventListener('click', (e) => {
+			e.stopPropagation();
+			input.value = '';
+			hiddenInput.value = '';
+			updateButtons();
+			dropdown.style.display = 'none';
+		});
+
+		// Filter options as user types
+		input.addEventListener('input', () => {
+			const searchTerm = input.value.toLowerCase();
+			let hasVisibleOptions = false;
+
+			allOptions.forEach((option) => {
+				const text = option.textContent.toLowerCase();
+				const matches = text.includes(searchTerm);
+				option.style.display = matches ? 'block' : 'none';
+				if (matches) hasVisibleOptions = true;
+			});
+
+			// Show dropdown if typing and has results
+			if (searchTerm && hasVisibleOptions) {
+				dropdown.style.display = 'block';
+			}
+		});
+
+		// Select option
+		allOptions.forEach((option) => {
+			option.addEventListener('click', (e) => {
+				e.stopPropagation();
+				const value = option.getAttribute('data-value');
+				const text = value === '' ? '' : option.textContent.trim();
+
+				input.value = text;
+				hiddenInput.value = value;
+				dropdown.style.display = 'none';
+				input.setAttribute('readonly', 'readonly');
+				updateButtons();
+			});
+		});
+
+		// Close dropdown when clicking outside
+		document.addEventListener('click', (e) => {
+			if (!wrapper.contains(e.target)) {
+				dropdown.style.display = 'none';
+				// Restore value if user was typing but didn't select
+				const currentValue = hiddenInput.value;
+				if (currentValue) {
+					const selectedOption = allOptions.find(opt => opt.getAttribute('data-value') === currentValue);
+					input.value = selectedOption ? selectedOption.textContent.trim() : '';
+				} else {
+					input.value = '';
+				}
+				input.setAttribute('readonly', 'readonly');
+			}
+		});
+
+		// Handle keyboard navigation
+		input.addEventListener('keydown', (e) => {
+			if (e.key === 'Escape') {
+				dropdown.style.display = 'none';
+				input.setAttribute('readonly', 'readonly');
+			}
+		});
+	});
+}
+
+/**
  * Initialize drag and drop for filter panel items
  */
 function initFilterPanelDragDrop() {
@@ -540,6 +658,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
 	// Initialize custom post type checkboxes
 	initCustomPostTypeCheckboxes();
+
+	// Initialize excerpt override inputs with datalist
+	initExcerptOverrideInputs();
 
 	// layout tab functionality
 	if (document.querySelector('.searchcraft-layout')) {
