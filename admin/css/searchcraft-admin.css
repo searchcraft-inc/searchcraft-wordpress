@@ -355,6 +355,99 @@ select.searchcraft-select {
 	max-width: none;
 }
 
+/* Excerpt Override Custom Dropdown */
+.searchcraft-excerpt-select-wrapper {
+	position: relative;
+	display: inline-block;
+	max-width: 300px;
+	width: 100%;
+}
+
+.searchcraft-excerpt-override-input {
+	width: 100%;
+	padding-right: 35px;
+	box-sizing: border-box;
+	cursor: pointer;
+}
+
+.searchcraft-excerpt-override-input:not([readonly]) {
+	cursor: text;
+}
+
+.searchcraft-excerpt-toggle-btn,
+.searchcraft-excerpt-clear-btn {
+	position: absolute;
+	right: 1px;
+	top: 1px;
+	bottom: 1px;
+	width: 32px;
+	height: calc(100% - 2px);
+	border: none;
+	background: var(--scwp-white);
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 0;
+	border-left: 1px solid var(--scwp-gray-10);
+	transition: background-color 0.2s ease;
+}
+
+.searchcraft-excerpt-toggle-btn:hover,
+.searchcraft-excerpt-clear-btn:hover {
+	background: var(--scwp-gray-0);
+}
+
+.searchcraft-excerpt-toggle-btn .dashicons,
+.searchcraft-excerpt-clear-btn .dashicons {
+	width: 18px;
+	height: 18px;
+	font-size: 18px;
+	color: var(--scwp-gray-50);
+}
+
+.searchcraft-excerpt-clear-btn .dashicons {
+	color: var(--scwp-gray-40);
+}
+
+.searchcraft-excerpt-clear-btn:hover .dashicons {
+	color: var(--scwp-red-50);
+}
+
+.searchcraft-excerpt-dropdown {
+	position: absolute;
+	top: 100%;
+	left: 0;
+	right: 0;
+	margin-top: 2px;
+	background: var(--scwp-white);
+	border: 1px solid var(--scwp-gray-10);
+	border-radius: 3px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+	z-index: 1000;
+	max-height: 80vh;
+	overflow-y: auto;
+}
+
+.searchcraft-excerpt-dropdown-list {
+	padding: 4px 0;
+}
+
+.searchcraft-excerpt-option {
+	padding: 8px 12px;
+	cursor: pointer;
+	transition: background-color 0.15s ease;
+}
+
+.searchcraft-excerpt-option:hover {
+	background: var(--scwp-blue-0);
+}
+
+.searchcraft-excerpt-option em {
+	color: var(--scwp-gray-40);
+	font-style: italic;
+}
+
 /* Textarea */
 .searchcraft-textarea-wrapper {
 	position: relative;
@@ -1355,12 +1448,43 @@ table.searchcraft-synonyms-table td:nth-child(3) {
 	gap: 8px;
 }
 
+.searchcraft-field-search-wrapper {
+	margin-bottom: 16px;
+}
+
+.searchcraft-field-search {
+	width: 100%;
+	padding: 8px 12px;
+	border: 1px solid #dcdcde;
+	border-radius: 4px;
+	font-size: 14px;
+	line-height: 1.5;
+	transition: border-color 0.2s;
+}
+
+.searchcraft-field-search:focus {
+	border-color: #2271b1;
+	outline: none;
+	box-shadow: 0 0 0 1px #2271b1;
+}
+
 .searchcraft-custom-fields-list {
 	border: 1px solid #dcdcde;
 	border-radius: 4px;
 	padding: 12px;
 	max-height: 400px;
 	overflow-y: auto;
+}
+
+.searchcraft-custom-fields-list label.searchcraft-field-hidden {
+	display: none;
+}
+
+.searchcraft-custom-fields-list .searchcraft-no-results {
+	padding: 20px;
+	text-align: center;
+	color: #646970;
+	font-style: italic;
 }
 
 .searchcraft-custom-fields-list label {
