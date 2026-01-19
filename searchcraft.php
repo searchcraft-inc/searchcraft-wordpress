@@ -52,11 +52,6 @@ require_once SEARCHCRAFT_PLUGIN_DIR . 'includes/class-searchcraft-config.php';
 // Load the main plugin class.
 require_once SEARCHCRAFT_PLUGIN_DIR . 'includes/class-searchcraft.php';
 
-// Define dynamic constants based on configuration.
-if ( ! defined( 'SEARCHCRAFT_INDEX_ID' ) ) {
-	define( 'SEARCHCRAFT_INDEX_ID', Searchcraft_Config::get_index_id() );
-}
-
 /**
  * Plugin activation hook.
  *
