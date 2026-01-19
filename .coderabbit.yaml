@@ -1,0 +1,6 @@
+language: "en-US"
+
+reviews:
+  auto_review:
+    base_branches: ["development"]
+

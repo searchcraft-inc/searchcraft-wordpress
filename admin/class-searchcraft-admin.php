@@ -1414,8 +1414,6 @@ class Searchcraft_Admin {
 			return null;
 		}
 
-		// Get the current index ID from configuration instead of using the constant
-		// which may be outdated if configuration was just saved.
 		$index_id = Searchcraft_Config::get_index_id();
 		if ( empty( $index_id ) ) {
 			Searchcraft_Helper_Functions::searchcraft_error_log( 'Searchcraft: Index ID is not configured.' );
@@ -2085,9 +2083,15 @@ class Searchcraft_Admin {
 				return;
 			}
 
+			$index_id = Searchcraft_Config::get_index_id();
+			if ( empty( $index_id ) ) {
+				Searchcraft_Helper_Functions::searchcraft_error_log( 'Searchcraft: Index ID is not configured.' );
+				return;
+			}
+
 			try {
-				$ingest_client->documents()->addDocuments( SEARCHCRAFT_INDEX_ID, $documents );
-				$ingest_client->documents()->commitTransaction( SEARCHCRAFT_INDEX_ID );
+				$ingest_client->documents()->addDocuments( $index_id, $documents );
+				$ingest_client->documents()->commitTransaction( $index_id );
 
 				// Clear the index stats cache since document count has changed.
 				delete_transient( 'searchcraft_index_stats' );
@@ -2129,11 +2133,19 @@ class Searchcraft_Admin {
 			return;
 		}
 
+		// Get the current index ID from configuration instead of using the constant
+		// which may be outdated if configuration was just saved.
+		$index_id = Searchcraft_Config::get_index_id();
+		if ( empty( $index_id ) ) {
+			Searchcraft_Helper_Functions::searchcraft_error_log( 'Searchcraft: Index ID is not configured.' );
+			return;
+		}
+
 		$deleted_any = false;
 		foreach ( $fields as $field ) {
 			try {
 				// Attempt to delete documents that match the field condition.
-				$ingest_client->documents()->deleteDocumentsByField( SEARCHCRAFT_INDEX_ID, $field );
+				$ingest_client->documents()->deleteDocumentsByField( $index_id, $field );
 				$deleted_any = true;
 			} catch ( \Exception $e ) {
 				Searchcraft_Helper_Functions::searchcraft_error_log( $e );
@@ -2143,7 +2155,7 @@ class Searchcraft_Admin {
 		// Commit the transaction if any deletions were performed.
 		if ( $deleted_any ) {
 			try {
-				$ingest_client->documents()->commitTransaction( SEARCHCRAFT_INDEX_ID );
+				$ingest_client->documents()->commitTransaction( $index_id );
 
 				// Clear the index stats cache since document count has changed.
 				delete_transient( 'searchcraft_index_stats' );
@@ -2164,12 +2176,20 @@ class Searchcraft_Admin {
 			return;
 		}
 
+		// Get the current index ID from configuration instead of using the constant
+		// which may be outdated if configuration was just saved.
+		$index_id = Searchcraft_Config::get_index_id();
+		if ( empty( $index_id ) ) {
+			Searchcraft_Helper_Functions::searchcraft_error_log( 'Searchcraft: Index ID is not configured.' );
+			return;
+		}
+
 		try {
 			// Attempt to delete all documents in the index.
-			$ingest_client->documents()->deleteAllDocuments( SEARCHCRAFT_INDEX_ID );
+			$ingest_client->documents()->deleteAllDocuments( $index_id );
 
 			// Commit the transaction to make the changes visible.
-			$ingest_client->documents()->commitTransaction( SEARCHCRAFT_INDEX_ID );
+			$ingest_client->documents()->commitTransaction( $index_id );
 
 			// Clear the index stats cache since document count has changed.
 			delete_transient( 'searchcraft_index_stats' );
@@ -2424,16 +2444,24 @@ class Searchcraft_Admin {
 			return;
 		}
 
+		// Get the current index ID from configuration instead of using the constant
+		// which may be outdated if configuration was just saved.
+		$index_id = Searchcraft_Config::get_index_id();
+		if ( empty( $index_id ) ) {
+			Searchcraft_Helper_Functions::searchcraft_error_log( 'Searchcraft: Index ID is not configured.' );
+			return;
+		}
+
 		try {
 			// Remove the document from the Searchcraft index by ID.
 			$criteria = array(
 				'id' => (string) $post->ID,
 			);
 
-			$ingest_client->documents()->deleteDocumentsByField( SEARCHCRAFT_INDEX_ID, $criteria );
+			$ingest_client->documents()->deleteDocumentsByField( $index_id, $criteria );
 
 			// Commit the transaction to make the changes visible.
-			$ingest_client->documents()->commitTransaction( SEARCHCRAFT_INDEX_ID );
+			$ingest_client->documents()->commitTransaction( $index_id );
 
 			// Clear the index stats cache since document count has changed.
 			delete_transient( 'searchcraft_index_stats' );
