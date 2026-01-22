@@ -579,6 +579,40 @@ class Searchcraft_Admin {
 	}
 
 	/**
+	 * Strip HTML tags from text while preserving the text content.
+	 *
+	 * This function removes all HTML tags (including links) but keeps the text inside them.
+	 * For example, '<a href="url">Link Text</a>' becomes 'Link Text'.
+	 *
+	 * @since 1.0.0
+	 * @param string $text The text to clean.
+	 * @return string The cleaned text without HTML tags.
+	 */
+	private function searchcraft_strip_html_preserve_text( $text ) {
+		if ( empty( $text ) || ! is_string( $text ) ) {
+			return $text;
+		}
+
+		// Remove HTML comments.
+		$text = preg_replace( '/<!--.*?-->/s', '', $text );
+
+		// Strip all HTML tags while preserving the text content.
+		$text = wp_strip_all_tags( $text );
+
+		// Remove shortcodes.
+		$text = strip_shortcodes( $text );
+
+		// Normalize whitespace: replace newlines and multiple spaces with single space.
+		$text = preg_replace( '/\r\n|\r|\n/', ' ', $text );
+		$text = preg_replace( '/\s+/', ' ', $text );
+
+		// Trim extra whitespace.
+		$text = trim( $text );
+
+		return $text;
+	}
+
+	/**
 	 * Route and handle incoming $_POST requests.
 	 *
 	 * Ensures requests are secure and dispatches them to the appropriate handler
@@ -1860,20 +1894,14 @@ class Searchcraft_Admin {
 			}
 
 			// Clean the post content by removing HTML tags, comments, shortcodes, and newlines.
-			$clean_content = $post->post_content;
-			$clean_content = preg_replace( '/<!--.*?-->/s', '', $clean_content ); // Remove HTML comments.
-			$clean_content = wp_strip_all_tags( $clean_content ); // Remove all HTML tags.
-			$clean_content = strip_shortcodes( $clean_content ); // Remove all shortcodes.
-			$clean_content = preg_replace( '/\r\n|\r|\n/', ' ', $clean_content ); // Remove newline characters.
-			$clean_content = preg_replace( '/\s+/', ' ', $clean_content ); // Collapse multiple spaces into single spaces.
-			$clean_content = trim( $clean_content ); // Remove extra whitespace.
+			$clean_content = $this->searchcraft_strip_html_preserve_text( $post->post_content );
 
 			// Get tags as tag names.
 			$tags      = array();
 			$post_tags = get_the_tags( $post->ID );
 			if ( ! empty( $post_tags ) ) {
 				foreach ( $post_tags as $tag ) {
-					$tags[] = $tag->name;
+					$tags[] = $this->searchcraft_strip_html_preserve_text( $tag->name );
 				}
 			}
 
@@ -1903,7 +1931,7 @@ class Searchcraft_Admin {
 
 			// Get author ID and name.
 			$author_ids   = array( (string) $post->post_author );
-			$author_names = array( get_the_author_meta( 'display_name', $post->post_author ) );
+			$author_names = array( $this->searchcraft_strip_html_preserve_text( get_the_author_meta( 'display_name', $post->post_author ) ) );
 
 			// Check if PublishPress Authors is enabled and available.
 			$use_publishpress_authors = (bool) get_option( 'searchcraft_use_publishpress_authors', false );
@@ -1916,7 +1944,7 @@ class Searchcraft_Admin {
 					foreach ( $authors as $author ) {
 						if ( isset( $author->term_id ) && isset( $author->display_name ) ) {
 							$author_ids[]   = (string) $author->term_id;
-							$author_names[] = $author->display_name;
+							$author_names[] = $this->searchcraft_strip_html_preserve_text( $author->display_name );
 						}
 					}
 				}
@@ -1943,14 +1971,14 @@ class Searchcraft_Admin {
 								$author_name = get_the_author_meta( 'display_name', $author_num );
 								if ( ! empty( $author_name ) ) {
 									$author_ids[]   = (string) $author_num;
-									$author_names[] = $author_name;
+									$author_names[] = $this->searchcraft_strip_html_preserve_text( $author_name );
 								}
 							} elseif ( 'guest' === $author_type ) {
 								// Guest author - use the numeric post ID from custom post type.
 								$guest_author = get_post( $author_num );
 								if ( $guest_author && 'guest_author' === $guest_author->post_type ) {
 									$author_ids[]   = (string) $author_num;
-									$author_names[] = $guest_author->post_title;
+									$author_names[] = $this->searchcraft_strip_html_preserve_text( $guest_author->post_title );
 								}
 							}
 						}
@@ -2011,14 +2039,14 @@ class Searchcraft_Admin {
 			$document = array(
 				'id'                    => (string) $post->ID,
 				'type'                  => '/' . $post->post_type,
-				'post_title'            => $post->post_title,
-				'post_excerpt'          => $post_excerpt,
+				'post_title'            => $this->searchcraft_strip_html_preserve_text( $post->post_title ),
+				'post_excerpt'          => $this->searchcraft_strip_html_preserve_text( $post_excerpt ),
 				'post_content'          => $clean_content,
 				'post_author_id'        => $author_ids,
 				'post_author_name'      => $author_names,
 				'post_date'             => gmdate( 'c', strtotime( $post->post_date ) ), // Convert to ISO 8601 format.
-				'primary_category_name' => $primary_category_name,
-				'keyphrase'             => $yoast_keyphrase,
+				'primary_category_name' => $this->searchcraft_strip_html_preserve_text( $primary_category_name ),
+				'keyphrase'             => $this->searchcraft_strip_html_preserve_text( $yoast_keyphrase ),
 				'permalink'             => get_permalink( $post->ID ),
 				'featured_image_url'    => $featured_image_url,
 				'tags'                  => $tags,
@@ -2130,8 +2158,8 @@ class Searchcraft_Admin {
 								break;
 
 							default:
-								// For text and other types, keep as string.
-								$document[ $meta_key ] = (string) $meta_value;
+								// For text and other types, strip HTML and keep as string.
+								$document[ $meta_key ] = $this->searchcraft_strip_html_preserve_text( (string) $meta_value );
 								break;
 						}
 					}
