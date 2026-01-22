@@ -88,7 +88,8 @@
                 const today = new Date();
                 const currentYear = today.getFullYear();
                 const oldestYear = parseInt(searchcraft_config.oldestPostYear);
-                const pastDate = new Date(`${oldestYear}-01-01T00:00:00.00Z`);
+                // Create date at noon local time to avoid timezone shifting the year
+                const pastDate = new Date(oldestYear, 0, 1, 12, 0, 0);
 
                 // Define all available filter items
                 const availableFilterItems = {

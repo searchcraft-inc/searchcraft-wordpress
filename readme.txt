@@ -4,7 +4,7 @@ Contributors: searchcraft
 Tags:         search, fuzzy search, better search, instant search, search replacement
 Requires at least: 5.3
 Tested up to: 6.9
-Stable tag:   1.3.3
+Stable tag:   1.3.4
 License:      Apache 2.0
 License URI:  LICENSE.txt
 
@@ -69,8 +69,14 @@ Searchcraft Cloud customers may also reach out via our Discord server for assist
 
 == Changelog ==
 
+= 1.3.4 =
+* Enhancement - Invalid configuration values don't prevent post publishing, they now just throw a notice.
+* Bugfix - Strip out embedded HTML from custom fields sent into search index.
+* Bugfix - Get oldest date of any published content not just posts for date range options.
+* Bugfix - Fix unexpected date shift in query sent on paginated requests.
+
 = 1.3.3 =
-* Bugfix - Fix race conditition on first time initialization.
+* Bugfix - Fix race condition on first time initialization.
 
 = 1.3.2 =
 * New Feature - Adds a search field to filter and locate custom fields in the configuration modal.
