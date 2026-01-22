@@ -114,6 +114,7 @@ class Searchcraft_Admin {
 		add_action( 'admin_menu', array( $this, 'searchcraft_add_menu_page' ) );
 		add_action( 'admin_init', array( $this, 'searchcraft_request_handler' ) );
 		add_action( 'admin_notices', array( $this, 'display_import_export_notices' ) );
+		add_action( 'rest_api_init', array( $this, 'register_error_check_endpoint' ) );
 
 		// Remove non-Searchcraft admin notices on Searchcraft pages.
 		// Use admin_head which runs before admin_notices to safely modify the hooks.
@@ -213,6 +214,18 @@ class Searchcraft_Admin {
 	 */
 	public function enqueue_scripts() {
 		wp_enqueue_script( $this->plugin_name . '-admin-js', plugin_dir_url( __FILE__ ) . 'js/searchcraft-admin.js', array(), $this->plugin_version, false );
+
+		// Enqueue block editor error notices script on post edit screens.
+		$screen = get_current_screen();
+		if ( $screen && $screen->is_block_editor() ) {
+			wp_enqueue_script(
+				$this->plugin_name . '-block-editor-notices',
+				plugin_dir_url( __FILE__ ) . 'js/searchcraft-block-editor-notices.js',
+				array( 'wp-data', 'wp-api-fetch', 'wp-url', 'wp-editor' ),
+				$this->plugin_version,
+				true
+			);
+		}
 	}
 
 	/**
@@ -259,6 +272,59 @@ class Searchcraft_Admin {
 			// Delete the transient so it doesn't show again.
 			delete_transient( 'searchcraft_import_notice' );
 		}
+	}
+
+	/**
+	 * Register REST API endpoint to check for publish errors.
+	 *
+	 * @since 1.0.0
+	 */
+	public function register_error_check_endpoint() {
+		register_rest_route(
+			'searchcraft/v1',
+			'publish-error',
+			array(
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'get_publish_error' ),
+				'permission_callback' => function () {
+					return current_user_can( 'edit_posts' );
+				},
+				'args'                => array(
+					'post_id' => array(
+						'required'          => true,
+						'validate_callback' => function ( $param ) {
+							return is_numeric( $param );
+						},
+					),
+				),
+			)
+		);
+	}
+
+	/**
+	 * REST API callback to get publish error for a post.
+	 *
+	 * @since 1.0.0
+	 * @param WP_REST_Request $request The REST API request.
+	 * @return WP_REST_Response The response.
+	 */
+	public function get_publish_error( $request ) {
+		$post_id       = absint( $request->get_param( 'post_id' ) );
+		$error_message = get_post_meta( $post_id, '_searchcraft_publish_error', true );
+
+		if ( $error_message ) {
+			// Delete the error after retrieving it so it doesn't show again.
+			delete_post_meta( $post_id, '_searchcraft_publish_error' );
+
+			return new WP_REST_Response(
+				array(
+					'error'   => true,
+					'message' => $error_message,
+				)
+			);
+		}
+
+		return new WP_REST_Response( array( 'error' => false ) );
 	}
 
 	/**
@@ -2374,22 +2440,38 @@ class Searchcraft_Admin {
 		// Check if the post is excluded from indexing.
 		$exclude_from_index = get_post_meta( $post->ID, '_searchcraft_exclude_from_index', true );
 
-		// If this is an update to an already published post, remove the existing document first.
-		if ( $update && $post_before && 'publish' === $post_before->post_status ) {
-			$this->searchcraft_remove_single_document( $post );
-			usleep( 30000 );
+		try {
+			// If this is an update to an already published post, remove the existing document first.
+			if ( $update && $post_before && 'publish' === $post_before->post_status ) {
+				$this->searchcraft_remove_single_document( $post );
+				usleep( 40000 );
+			}
+
+			// If the post is excluded from indexing, don't add it back to the index.
+			if ( '1' === $exclude_from_index ) {
+				return;
+			}
+
+			// Add the document to Searchcraft index.
+			$this->searchcraft_add_documents( $post );
+
+			// Clear documents from the transient cache so they're re-fetched on the next request.
+			delete_transient( 'searchcraft_documents' );
+		} catch ( \Exception $e ) {
+			// Store error message in post meta to display as admin notice.
+			$error_message = sprintf(
+				'Post updated. However: Failed to sync post "%s" (ID: %d) with Searchcraft: %s',
+				$post->post_title,
+				$post->ID,
+				$e->getMessage()
+			);
+
+			// Store in post meta so it can be retrieved via REST API.
+			update_post_meta( $post->ID, '_searchcraft_publish_error', $error_message );
+
+			// Log the error for debugging.
+			Searchcraft_Helper_Functions::searchcraft_error_log( 'Searchcraft: ' . $error_message );
 		}
-
-		// If the post is excluded from indexing, don't add it back to the index.
-		if ( '1' === $exclude_from_index ) {
-			return;
-		}
-
-		// Add the document to Searchcraft index.
-		$this->searchcraft_add_documents( $post );
-
-		// Clear documents from the transient cache so they're re-fetched on the next request.
-		delete_transient( 'searchcraft_documents' );
 	}
 
 
@@ -2423,9 +2505,25 @@ class Searchcraft_Admin {
 			return;
 		}
 
-		// Remove the document from Searchcraft index.
-		Searchcraft_Helper_Functions::searchcraft_error_log( "Searchcraft: Attempting to remove document from index (ID: {$post->ID})" );
-		$this->searchcraft_remove_single_document( $post );
+		try {
+			// Remove the document from Searchcraft index.
+			Searchcraft_Helper_Functions::searchcraft_error_log( "Searchcraft: Attempting to remove document from index (ID: {$post->ID})" );
+			$this->searchcraft_remove_single_document( $post );
+		} catch ( \Exception $e ) {
+			// Store error message in post meta to display as admin notice.
+			$error_message = sprintf(
+				'Post updated. However: Failed to remove post "%s" (ID: %d) from Searchcraft: %s',
+				$post->post_title,
+				$post->ID,
+				$e->getMessage()
+			);
+
+			// Store in post meta so it can be retrieved via REST API.
+			update_post_meta( $post->ID, '_searchcraft_publish_error', $error_message );
+
+			// Log the error for debugging.
+			Searchcraft_Helper_Functions::searchcraft_error_log( 'Searchcraft: ' . $error_message );
+		}
 	}
 
 	/**
@@ -2435,21 +2533,24 @@ class Searchcraft_Admin {
 	 *
 	 * @since 1.0.0
 	 * @param WP_Post $post The post object to remove from the index.
+	 * @throws \Exception If the removal fails.
 	 */
 	public function searchcraft_remove_single_document( $post ) {
 		// Get the ingest client.
 		$ingest_client = $this->searchcraft_get_ingest_client();
 		if ( ! $ingest_client ) {
-			Searchcraft_Helper_Functions::searchcraft_error_log( 'Searchcraft: Unable to get ingest client for removing single document.' );
-			return;
+			$error_message = 'Unable to get ingest client for removing single document.';
+			Searchcraft_Helper_Functions::searchcraft_error_log( 'Searchcraft: ' . $error_message );
+			throw new \Exception( $error_message );
 		}
 
 		// Get the current index ID from configuration instead of using the constant
 		// which may be outdated if configuration was just saved.
 		$index_id = Searchcraft_Config::get_index_id();
 		if ( empty( $index_id ) ) {
-			Searchcraft_Helper_Functions::searchcraft_error_log( 'Searchcraft: Index ID is not configured.' );
-			return;
+			$error_message = 'Index ID is not configured.';
+			Searchcraft_Helper_Functions::searchcraft_error_log( 'Searchcraft: ' . $error_message );
+			throw new \Exception( $error_message );
 		}
 
 		try {
@@ -2470,6 +2571,8 @@ class Searchcraft_Admin {
 			Searchcraft_Helper_Functions::searchcraft_error_log( "Searchcraft: Successfully removed document with ID {$post->ID} from index." );
 		} catch ( \Exception $e ) {
 			Searchcraft_Helper_Functions::searchcraft_error_log( "Searchcraft: Failed to remove document with ID {$post->ID}: " . $e->getMessage() );
+			// Re-throw the exception so it can be caught by calling code.
+			throw $e;
 		}
 	}
 
