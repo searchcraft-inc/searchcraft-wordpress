@@ -2,5 +2,86 @@ language: "en-US"
 
 reviews:
   auto_review:
+    enabled: true
     base_branches: ["development"]
+    drafts: false
 
+  profile: "chill"
+  request_changes_workflow: true
+  poem: false
+  collapse_walkthrough: false
+
+  path_instructions:
+    - path: "**/*.php"
+      instructions: |
+        This is a WordPress plugin that integrates with Searchcraft search service.
+        Follow WordPress Coding Standards (WPCS).
+        All PHP files should use WordPress naming conventions (class-*.php for classes).
+        Security: Always sanitize input and escape output.
+        Use WordPress nonces for form submissions.
+        Prefix all functions, classes, and globals with 'searchcraft_' or 'Searchcraft_'.
+        Maintain compatibility with WordPress 5.3+.
+        Test with WordPress 6.9 as the tested-up-to version.
+        Use proper WordPress escaping functions (esc_html, esc_attr, esc_url, etc.).
+        Use WordPress sanitization functions (sanitize_text_field, etc.).
+        Check for nonce verification on form submissions.
+
+    - path: "admin/**/*.php"
+      instructions: |
+        Verify admin capability checks are in place.
+        Ensure nonces are used for all form submissions.
+        Check that settings are properly registered with WordPress Settings API.
+
+    - path: "public/**/*.php"
+      instructions: |
+        Ensure all output is properly escaped.
+        Check for XSS vulnerabilities.
+        Verify data sanitization on user inputs.
+
+    - path: "readme.txt"
+      instructions: |
+        Follow WordPress plugin readme.txt format.
+        Update version numbers consistently.
+        Maintain changelog format.
+
+    - path: "composer.json"
+      instructions: |
+        Verify version constraints are appropriate.
+        Check for security updates in dependencies.
+        Ensure WordPress compatibility.
+
+  tools:
+    # Security scanning
+    semgrep:
+      enabled: true
+
+    # Secrets detection
+    gitleaks:
+      enabled: true
+
+  # Ignore paths
+  path_filters:
+    # Vendor dependencies
+    - "!vendor/**"
+    - "!node_modules/**"
+
+    # Build artifacts. Skip SDK checks, we check it in the other project
+    - "!**/*.min.js"
+    - "!**/*.min.css"
+    - "!public/sdk/**"
+
+    # Language files
+    - "!languages/*.mo"
+    - "!languages/*.po"
+
+    # Assets
+    - "!assets/**/*.png"
+    - "!assets/**/*.jpg"
+    - "!assets/**/*.gif"
+
+    # WordPress specific empty index files for directory protection
+    - "!**/index.php"
+
+# Chat settings
+chat:
+  auto_reply: true
