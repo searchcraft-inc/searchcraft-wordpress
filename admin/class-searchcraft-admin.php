@@ -148,11 +148,10 @@ class Searchcraft_Admin {
 			$oldest_post = wp_cache_get( $cache_key );
 
 			if ( false === $oldest_post ) {
-				// Query to get the oldest post date.
+				// Query to get the oldest post date of any type of content type (pages, posts, custom)
 				$oldest_post = $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
 					"SELECT post_date FROM {$wpdb->posts}
 					 WHERE post_status = 'publish'
-					 AND post_type = 'post'
 					 ORDER BY post_date ASC
 					 LIMIT 1"
 				);
