@@ -4,7 +4,7 @@ Contributors: searchcraft
 Tags:         search, fuzzy search, better search, instant search, search replacement
 Requires at least: 5.3
 Tested up to: 6.9
-Stable tag:   1.3.4
+Stable tag:   1.3.5
 License:      Apache 2.0
 License URI:  LICENSE.txt
 
@@ -68,6 +68,9 @@ If you would like to report an issue or suggest an enhancement you may contact t
 Searchcraft Cloud customers may also reach out via our Discord server for assistance or to request a custom feature.
 
 == Changelog ==
+
+= 1.3.5 =
+* Enhancement - Adds capability for tag based (non-hierarchical) taxonomies to add an additional search field for the values as a multi-value field. This allows search queries to match against these tag names. Works with both stock and custom tag taxonomies.
 
 = 1.3.4 =
 * Enhancement - Invalid configuration values don't prevent post publishing, they now just throw a notice.
