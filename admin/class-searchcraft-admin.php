@@ -1600,10 +1600,14 @@ class Searchcraft_Admin {
 
 			// Build the desired taxonomy fields based on selected taxonomies.
 			$desired_taxonomy_fields = array();
+			$desired_search_fields   = array();
+			$desired_weight_multipliers = array();
+
 			foreach ( $taxonomies as $taxonomy_name ) {
 				// Map 'category' to 'categories' for the index field name.
 				$field_name = ( 'category' === $taxonomy_name ) ? 'categories' : $taxonomy_name;
 
+				// Add the facet field for all taxonomies.
 				$desired_taxonomy_fields[ $field_name ] = array(
 					'indexed'  => true,
 					'multi'    => true,
@@ -1611,6 +1615,25 @@ class Searchcraft_Admin {
 					'stored'   => true,
 					'type'     => 'facet',
 				);
+
+				// Check if this is a non-hierarchical (tag) taxonomy.
+				$taxonomy_obj = get_taxonomy( $taxonomy_name );
+				if ( $taxonomy_obj && ! $taxonomy_obj->hierarchical ) {
+					// Add a searchable text field with term names for tag taxonomies.
+					$values_field_name = $field_name . '_values';
+
+					$desired_taxonomy_fields[ $values_field_name ] = array(
+						'indexed'  => true,
+						'multi'    => true,
+						'required' => false,
+						'stored'   => true,
+						'type'     => 'text',
+					);
+
+					// Add to search_fields and weight_multipliers.
+					$desired_search_fields[] = $values_field_name;
+					$desired_weight_multipliers[ $values_field_name ] = 1.0;
+				}
 			}
 
 			// Start with current fields and update taxonomy fields.
@@ -1621,6 +1644,15 @@ class Searchcraft_Admin {
 				// Check if this is a taxonomy field that's no longer selected.
 				// Map 'categories' back to 'category' for comparison.
 				$taxonomy_name = ( 'categories' === $field_name ) ? 'category' : $field_name;
+
+				// Also check for _values fields.
+				$is_values_field = false;
+				if ( substr( $field_name, -7 ) === '_values' ) {
+					$base_field_name = substr( $field_name, 0, -7 );
+					$taxonomy_name = ( 'categories' === $base_field_name ) ? 'category' : $base_field_name;
+					$is_values_field = true;
+				}
+
 				if ( in_array( $taxonomy_name, $all_taxonomies, true ) &&
 					! isset( $desired_taxonomy_fields[ $field_name ] ) ) {
 					unset( $updated_fields[ $field_name ] );
@@ -1632,18 +1664,70 @@ class Searchcraft_Admin {
 				$updated_fields[ $taxonomy_name ] = $field_config;
 			}
 
-			// Check if fields actually changed.
-			if ( serialize( $current_fields ) === serialize( $updated_fields ) ) { // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.serialize_serialize
+			// Update search_fields and weight_multipliers if we have new tag taxonomy fields.
+			$current_search_fields = $current_index['search_fields'] ?? array();
+			$current_weight_multipliers = $current_index['weight_multipliers'] ?? array();
+
+			$updated_search_fields = $current_search_fields;
+			$updated_weight_multipliers = $current_weight_multipliers;
+
+			// Add new search fields and weight multipliers for tag taxonomies.
+			foreach ( $desired_search_fields as $search_field ) {
+				if ( ! in_array( $search_field, $updated_search_fields, true ) ) {
+					$updated_search_fields[] = $search_field;
+				}
+			}
+
+			foreach ( $desired_weight_multipliers as $field => $weight ) {
+				if ( ! isset( $updated_weight_multipliers[ $field ] ) ) {
+					$updated_weight_multipliers[ $field ] = $weight;
+				}
+			}
+
+			// Remove search fields and weight multipliers for removed tag taxonomy fields.
+			foreach ( $current_search_fields as $key => $search_field ) {
+				if ( substr( $search_field, -7 ) === '_values' ) {
+					$base_field_name = substr( $search_field, 0, -7 );
+					$taxonomy_name = ( 'categories' === $base_field_name ) ? 'category' : $base_field_name;
+
+					if ( in_array( $taxonomy_name, $all_taxonomies, true ) &&
+						! in_array( $search_field, $desired_search_fields, true ) ) {
+						unset( $updated_search_fields[ $key ] );
+					}
+				}
+			}
+
+			foreach ( $current_weight_multipliers as $field => $weight ) {
+				if ( substr( $field, -7 ) === '_values' ) {
+					$base_field_name = substr( $field, 0, -7 );
+					$taxonomy_name = ( 'categories' === $base_field_name ) ? 'category' : $base_field_name;
+
+					if ( in_array( $taxonomy_name, $all_taxonomies, true ) &&
+						! isset( $desired_weight_multipliers[ $field ] ) ) {
+						unset( $updated_weight_multipliers[ $field ] );
+					}
+				}
+			}
+
+			// Re-index the search_fields array to remove gaps.
+			$updated_search_fields = array_values( $updated_search_fields );
+
+			// Check if anything actually changed.
+			$fields_changed = serialize( $current_fields ) !== serialize( $updated_fields ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.serialize_serialize
+			$search_fields_changed = serialize( $current_search_fields ) !== serialize( $updated_search_fields ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.serialize_serialize
+			$weight_multipliers_changed = serialize( $current_weight_multipliers ) !== serialize( $updated_weight_multipliers ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.serialize_serialize
+
+			if ( ! $fields_changed && ! $search_fields_changed && ! $weight_multipliers_changed ) {
 				$result['success'] = true;
 				return $result;
 			}
 
-			// Update the index with new fields.
-			// Start with the current index configuration and only update the fields.
-			// This preserves all other index properties (language, search_fields, weight_multipliers, etc.)
-			// without having to explicitly list them, making this future-proof.
-			$update_payload           = $current_index;
+			// Update the index with new fields, search_fields, and weight_multipliers.
+			// Start with the current index configuration and update what changed.
+			$update_payload = $current_index;
 			$update_payload['fields'] = $updated_fields;
+			$update_payload['search_fields'] = $updated_search_fields;
+			$update_payload['weight_multipliers'] = $updated_weight_multipliers;
 
 			$ingest_client->index()->updateIndex( $index_id, $update_payload );
 
@@ -1918,11 +2002,30 @@ class Searchcraft_Admin {
 					// Map 'category' to 'categories' for the index field name.
 					$field_name = ( 'category' === $taxonomy_name ) ? 'categories' : $taxonomy_name;
 					$taxonomy_data[ $field_name ] = array();
+
+					// Check if this is a non-hierarchical (tag) taxonomy.
+					$taxonomy_obj = get_taxonomy( $taxonomy_name );
+					$is_tag_taxonomy = $taxonomy_obj && ! $taxonomy_obj->hierarchical;
+
+					// If it's a tag taxonomy, also create a _values field with term names.
+					if ( $is_tag_taxonomy ) {
+						$values_field_name = $field_name . '_values';
+						$taxonomy_data[ $values_field_name ] = array();
+					}
+
 					foreach ( $terms as $term ) {
 						// Build term path including parent terms.
 						$term_path = $this->searchcraft_get_term_path( $term, $taxonomy_name );
 						if ( ! empty( $term_path ) ) {
 							$taxonomy_data[ $field_name ][] = $term_path;
+						}
+
+						// For tag taxonomies, also add the term name to the _values field.
+						if ( $is_tag_taxonomy ) {
+							// Decode HTML entities (e.g., &amp; -> &) and strip any HTML tags.
+							$term_name = html_entity_decode( $term->name, ENT_QUOTES | ENT_HTML5, 'UTF-8' );
+							$term_name = $this->searchcraft_strip_html_preserve_text( $term_name );
+							$taxonomy_data[ $values_field_name ][] = $term_name;
 						}
 					}
 				}
