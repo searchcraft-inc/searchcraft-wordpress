@@ -1,4 +1,4 @@
-import { p as proxyCustomElement, H, h, t as transformTag } from './index2.js?v=0.13.2';
+import { p as proxyCustomElement, H, h, t as transformTag } from './index2.js?v=0.13.3';
 
 const SearchcraftInputLabel = /*@__PURE__*/ proxyCustomElement(class SearchcraftInputLabel extends H {
     constructor(registerHost) {

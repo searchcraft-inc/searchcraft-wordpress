@@ -9,6 +9,19 @@ export interface FacetsFilterItem extends FilterItem {
     options: {
         showSublevel: boolean;
         exclude?: string[];
+        /**
+         * Initial collapse state of the facet section.
+         * - 'open': Section is expanded by default
+         * - 'closed': Section is collapsed by default
+         * @default 'open'
+         */
+        initialCollapseState?: 'open' | 'closed';
+        /**
+         * The number of facets to show before displaying a "view more" link.
+         * Set to 0 to show all facets without a "view more" link.
+         * @default 8
+         */
+        viewMoreThreshold?: number;
     };
 }
 export interface NumericFilterItem extends FilterItem {

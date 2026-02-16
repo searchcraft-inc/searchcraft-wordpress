@@ -162,6 +162,14 @@
                                 if (taxonomyName === 'categories' && searchcraft_config.hideUncategorized) {
                                     options.exclude = ['/uncategorized']
                                 }
+                                // Add collapse list option
+                                if (searchcraft_config.facetsCollapseList) {
+                                    options.initialCollapseState = 'closed';
+                                }
+                                // Add view more threshold option
+                                if (searchcraft_config.facetsViewMoreThreshold !== undefined) {
+                                    options.viewMoreThreshold = searchcraft_config.facetsViewMoreThreshold;
+                                }
                                 filterPanelItems.push({
                                     type: 'facets',
                                     fieldName: taxonomyName,

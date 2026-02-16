@@ -1,8 +1,8 @@
-import { p as proxyCustomElement, H, h, t as transformTag } from './index2.js?v=0.13.2';
-import { r as registry } from './CoreInstanceRegistry.js?v=0.13.2';
-import { d as defineCustomElement$4 } from './searchcraft-facet-list2.js?v=0.13.2';
-import { d as defineCustomElement$3 } from './searchcraft-slider2.js?v=0.13.2';
-import { d as defineCustomElement$2 } from './searchcraft-toggle-button2.js?v=0.13.2';
+import { p as proxyCustomElement, H, h, t as transformTag } from './index2.js?v=0.13.3';
+import { r as registry } from './CoreInstanceRegistry.js?v=0.13.3';
+import { d as defineCustomElement$4 } from './searchcraft-facet-list2.js?v=0.13.3';
+import { d as defineCustomElement$3 } from './searchcraft-slider2.js?v=0.13.3';
+import { d as defineCustomElement$2 } from './searchcraft-toggle-button2.js?v=0.13.3';
 
 const SearchcraftFilterPanel$1 = /*@__PURE__*/ proxyCustomElement(class SearchcraftFilterPanel extends H {
     constructor(registerHost) {
@@ -275,8 +275,40 @@ const SearchcraftFilterPanel$1 = /*@__PURE__*/ proxyCustomElement(class Searchcr
                 }
                 case 'facets': {
                     const item = filterItem;
+                    let facetListElement = null;
+                    let labelElement = null;
+                    const updateLabelAttributes = (isCollapsed) => {
+                        if (labelElement) {
+                            if (isCollapsed) {
+                                labelElement.removeAttribute('data-facet-section-expanded');
+                                labelElement.setAttribute('data-facet-section-collapsed', '');
+                                labelElement.setAttribute('aria-expanded', 'false');
+                            }
+                            else {
+                                labelElement.removeAttribute('data-facet-section-collapsed');
+                                labelElement.setAttribute('data-facet-section-expanded', '');
+                                labelElement.setAttribute('aria-expanded', 'true');
+                            }
+                        }
+                    };
+                    const handleToggle = async () => {
+                        if (facetListElement && 'handleCollapseToggle' in facetListElement && 'getIsCollapsed' in facetListElement) {
+                            await facetListElement.handleCollapseToggle();
+                            const isCollapsed = await facetListElement.getIsCollapsed();
+                            updateLabelAttributes(isCollapsed);
+                        }
+                    };
                     // return "filters-list"
-                    return (h("div", { class: 'searchcraft-filter-panel-section' }, h("p", { class: 'searchcraft-filter-panel-label' }, filterItem.label), h("searchcraft-facet-list", { fieldName: item.fieldName, exclude: item.options.exclude, onFacetSelectionUpdated: (event) => {
+                    return (h("div", { class: 'searchcraft-filter-panel-section' }, h("p", { ref: (el) => {
+                            labelElement = el || null;
+                        }, class: 'searchcraft-filter-panel-label', "data-toggle-facet-section": true, "data-facet-section-expanded": item.options.initialCollapseState !== 'closed' ? '' : undefined, "data-facet-section-collapsed": item.options.initialCollapseState === 'closed' ? '' : undefined, onClick: handleToggle, onKeyDown: async (event) => {
+                            if (event.key === 'Enter' || event.key === ' ') {
+                                event.preventDefault();
+                                await handleToggle();
+                            }
+                        }, tabIndex: 0, role: 'button', "aria-expanded": item.options.initialCollapseState !== 'closed' }, filterItem.label), h("searchcraft-facet-list", { ref: (el) => {
+                            facetListElement = el || null;
+                        }, fieldName: item.fieldName, exclude: item.options.exclude, initialCollapseState: item.options.initialCollapseState, viewMoreThreshold: item.options.viewMoreThreshold, onFacetSelectionUpdated: (event) => {
                             this.handleFacetSelectionUpdated(item.fieldName, event.detail.paths);
                         } })));
                 }

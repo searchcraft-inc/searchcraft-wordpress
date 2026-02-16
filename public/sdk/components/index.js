@@ -1,29 +1,29 @@
-export { g as getAssetPath, r as render, s as setAssetPath, a as setNonce, b as setPlatformOptions } from './index2.js?v=0.13.2';
-import { n as nanoid } from './searchcraft-ad2.js?v=0.13.2';
-import { D as DEFAULT_CORE_INSTANCE_ID, r as registry } from './CoreInstanceRegistry.js?v=0.13.2';
-export { SearchcraftAd, defineCustomElement as defineCustomElementSearchcraftAd } from './searchcraft-ad.js?v=0.13.2';
-export { SearchcraftButton, defineCustomElement as defineCustomElementSearchcraftButton } from './searchcraft-button.js?v=0.13.2';
-export { SearchcraftErrorMessage, defineCustomElement as defineCustomElementSearchcraftErrorMessage } from './searchcraft-error-message.js?v=0.13.2';
-export { SearchcraftFacetList, defineCustomElement as defineCustomElementSearchcraftFacetList } from './searchcraft-facet-list.js?v=0.13.2';
-export { SearchcraftFilterPanel, defineCustomElement as defineCustomElementSearchcraftFilterPanel } from './searchcraft-filter-panel.js?v=0.13.2';
-export { SearchcraftInputForm, defineCustomElement as defineCustomElementSearchcraftInputForm } from './searchcraft-input-form.js?v=0.13.2';
-export { SearchcraftInputLabel, defineCustomElement as defineCustomElementSearchcraftInputLabel } from './searchcraft-input-label.js?v=0.13.2';
-export { SearchcraftLoading, defineCustomElement as defineCustomElementSearchcraftLoading } from './searchcraft-loading.js?v=0.13.2';
-export { SearchcraftPagination, defineCustomElement as defineCustomElementSearchcraftPagination } from './searchcraft-pagination.js?v=0.13.2';
-export { SearchcraftPopoverButton, defineCustomElement as defineCustomElementSearchcraftPopoverButton } from './searchcraft-popover-button.js?v=0.13.2';
-export { SearchcraftPopoverFooter, defineCustomElement as defineCustomElementSearchcraftPopoverFooter } from './searchcraft-popover-footer.js?v=0.13.2';
-export { SearchcraftPopoverForm, defineCustomElement as defineCustomElementSearchcraftPopoverForm } from './searchcraft-popover-form.js?v=0.13.2';
-export { SearchcraftPopoverListItem, defineCustomElement as defineCustomElementSearchcraftPopoverListItem } from './searchcraft-popover-list-item.js?v=0.13.2';
-export { SearchcraftPopoverListView, defineCustomElement as defineCustomElementSearchcraftPopoverListView } from './searchcraft-popover-list-view.js?v=0.13.2';
-export { SearchcraftResultsInfo, defineCustomElement as defineCustomElementSearchcraftResultsInfo } from './searchcraft-results-info.js?v=0.13.2';
-export { SearchcraftSearchResult, defineCustomElement as defineCustomElementSearchcraftSearchResult } from './searchcraft-search-result.js?v=0.13.2';
-export { SearchcraftSearchResults, defineCustomElement as defineCustomElementSearchcraftSearchResults } from './searchcraft-search-results.js?v=0.13.2';
-export { SearchcraftSearchResultsPerPage, defineCustomElement as defineCustomElementSearchcraftSearchResultsPerPage } from './searchcraft-search-results-per-page.js?v=0.13.2';
-export { SearchcraftSelect, defineCustomElement as defineCustomElementSearchcraftSelect } from './searchcraft-select.js?v=0.13.2';
-export { SearchcraftSlider, defineCustomElement as defineCustomElementSearchcraftSlider } from './searchcraft-slider.js?v=0.13.2';
-export { SearchcraftSummaryBox, defineCustomElement as defineCustomElementSearchcraftSummaryBox } from './searchcraft-summary-box.js?v=0.13.2';
-export { SearchcraftTheme, defineCustomElement as defineCustomElementSearchcraftTheme } from './searchcraft-theme.js?v=0.13.2';
-export { SearchcraftToggleButton, defineCustomElement as defineCustomElementSearchcraftToggleButton } from './searchcraft-toggle-button.js?v=0.13.2';
+export { g as getAssetPath, r as render, s as setAssetPath, a as setNonce, b as setPlatformOptions } from './index2.js?v=0.13.3';
+import { n as nanoid } from './searchcraft-ad2.js?v=0.13.3';
+import { D as DEFAULT_CORE_INSTANCE_ID, r as registry } from './CoreInstanceRegistry.js?v=0.13.3';
+export { SearchcraftAd, defineCustomElement as defineCustomElementSearchcraftAd } from './searchcraft-ad.js?v=0.13.3';
+export { SearchcraftButton, defineCustomElement as defineCustomElementSearchcraftButton } from './searchcraft-button.js?v=0.13.3';
+export { SearchcraftErrorMessage, defineCustomElement as defineCustomElementSearchcraftErrorMessage } from './searchcraft-error-message.js?v=0.13.3';
+export { SearchcraftFacetList, defineCustomElement as defineCustomElementSearchcraftFacetList } from './searchcraft-facet-list.js?v=0.13.3';
+export { SearchcraftFilterPanel, defineCustomElement as defineCustomElementSearchcraftFilterPanel } from './searchcraft-filter-panel.js?v=0.13.3';
+export { SearchcraftInputForm, defineCustomElement as defineCustomElementSearchcraftInputForm } from './searchcraft-input-form.js?v=0.13.3';
+export { SearchcraftInputLabel, defineCustomElement as defineCustomElementSearchcraftInputLabel } from './searchcraft-input-label.js?v=0.13.3';
+export { SearchcraftLoading, defineCustomElement as defineCustomElementSearchcraftLoading } from './searchcraft-loading.js?v=0.13.3';
+export { SearchcraftPagination, defineCustomElement as defineCustomElementSearchcraftPagination } from './searchcraft-pagination.js?v=0.13.3';
+export { SearchcraftPopoverButton, defineCustomElement as defineCustomElementSearchcraftPopoverButton } from './searchcraft-popover-button.js?v=0.13.3';
+export { SearchcraftPopoverFooter, defineCustomElement as defineCustomElementSearchcraftPopoverFooter } from './searchcraft-popover-footer.js?v=0.13.3';
+export { SearchcraftPopoverForm, defineCustomElement as defineCustomElementSearchcraftPopoverForm } from './searchcraft-popover-form.js?v=0.13.3';
+export { SearchcraftPopoverListItem, defineCustomElement as defineCustomElementSearchcraftPopoverListItem } from './searchcraft-popover-list-item.js?v=0.13.3';
+export { SearchcraftPopoverListView, defineCustomElement as defineCustomElementSearchcraftPopoverListView } from './searchcraft-popover-list-view.js?v=0.13.3';
+export { SearchcraftResultsInfo, defineCustomElement as defineCustomElementSearchcraftResultsInfo } from './searchcraft-results-info.js?v=0.13.3';
+export { SearchcraftSearchResult, defineCustomElement as defineCustomElementSearchcraftSearchResult } from './searchcraft-search-result.js?v=0.13.3';
+export { SearchcraftSearchResults, defineCustomElement as defineCustomElementSearchcraftSearchResults } from './searchcraft-search-results.js?v=0.13.3';
+export { SearchcraftSearchResultsPerPage, defineCustomElement as defineCustomElementSearchcraftSearchResultsPerPage } from './searchcraft-search-results-per-page.js?v=0.13.3';
+export { SearchcraftSelect, defineCustomElement as defineCustomElementSearchcraftSelect } from './searchcraft-select.js?v=0.13.3';
+export { SearchcraftSlider, defineCustomElement as defineCustomElementSearchcraftSlider } from './searchcraft-slider.js?v=0.13.3';
+export { SearchcraftSummaryBox, defineCustomElement as defineCustomElementSearchcraftSummaryBox } from './searchcraft-summary-box.js?v=0.13.3';
+export { SearchcraftTheme, defineCustomElement as defineCustomElementSearchcraftTheme } from './searchcraft-theme.js?v=0.13.3';
+export { SearchcraftToggleButton, defineCustomElement as defineCustomElementSearchcraftToggleButton } from './searchcraft-toggle-button.js?v=0.13.3';
 
 var LogLevel;
 (function (LogLevel) {
@@ -100,9 +100,112 @@ class AdClient {
     async onAdContainerViewed(_data) { }
 }
 
+class AdMarketplaceClient extends AdClient {
+    /**
+     * Gets ads from the adMarketplace API based on the search term.
+     */
+    async getAds(_properties) {
+        const admConfig = this.config.admAdConfig;
+        if (!admConfig?.sub) {
+            console.error('No admSub specified in config.');
+            return [];
+        }
+        const paramString = new URLSearchParams({
+            partner: 'demofeed',
+            sub1: admConfig.sub,
+            qt: _properties.searchTerm,
+            v: '2.0',
+            rfr: 'searchcraft.io',
+            'results-ta': `${admConfig.textAdQuantity || 0}`,
+            'results-pa': `${admConfig.productAdQuantity || 0}`,
+        }).toString();
+        const path = `https://demofeed.is.ampfeed.com/is?${paramString}`;
+        const response = await fetch(path, { method: 'GET' });
+        const admResponse = (await response.json());
+        const productAds = admResponse.product_ads.map((ad) => ({
+            id: nanoid(),
+            adSource: 'adMarketplace',
+            admAdType: 'adm-product-ad',
+            admAd: ad,
+        }));
+        const textAds = admResponse.text_ads.map((ad) => ({
+            id: nanoid(),
+            adSource: 'adMarketplace',
+            admAdType: 'adm-text-ad',
+            admAd: ad,
+        }));
+        const allAds = productAds.concat(textAds);
+        return allAds;
+    }
+    async onAdContainerViewed(data) {
+        // Calls fetch on the impression url, to record an impression for adMarketplace
+        const item = data.adClientResponseItem;
+        if (item.admAd?.impression_url) {
+            fetch(item.admAd.impression_url);
+        }
+    }
+}
+
 class CustomAdClient extends AdClient {
     async getAds(_properties) {
         return [];
+    }
+}
+
+const AD_CALL_AFTER_FETCH_DELAY = 1000;
+class NativoClient extends AdClient {
+    adCallTimeout;
+    constructor(config) {
+        super(config);
+        this.addScriptTagToDocument();
+    }
+    async onQuerySubmitted(_properties) {
+        this.addScriptTagToDocument();
+    }
+    async onQueryFetched(_properties, response) {
+        if ((response.data.hits?.length || 0) === 0) {
+            this.removeScriptTagFromDocument();
+            return;
+        }
+        this.performAdCall(AD_CALL_AFTER_FETCH_DELAY);
+    }
+    async onInputCleared() {
+        this.removeScriptTagFromDocument();
+    }
+    performAdCall(delay) {
+        if (this.adCallTimeout) {
+            clearTimeout(this.adCallTimeout);
+        }
+        this.adCallTimeout = setTimeout(() => {
+            this.addScriptTagToDocument();
+            try {
+                // @ts-ignore
+                PostRelease?.Start({ ptd: [this.config.nativoPlacementId] });
+            }
+            catch (error) {
+                console.error(error);
+            }
+            // console.log('Performing ad call');
+        }, delay);
+    }
+    async getAds(_properties) {
+        return [];
+    }
+    addScriptTagToDocument() {
+        if (!document.head.querySelector('#nativo-tag')) {
+            const scriptTag = document.createElement('script');
+            scriptTag.type = 'text/javascript';
+            scriptTag.src = 'https://s.ntv.io/serve/load.js';
+            scriptTag.id = 'nativo-tag';
+            scriptTag.setAttribute('data-ntv-set-no-auto-start', 'true');
+            document.head.appendChild(scriptTag);
+        }
+    }
+    removeScriptTagFromDocument() {
+        const scriptTag = document.head.querySelector('#nativo-tag');
+        if (scriptTag) {
+            document.head.removeChild(scriptTag);
+        }
     }
 }
 
@@ -956,6 +1059,12 @@ class SearchcraftCore {
         if (config.customAdConfig) {
             this.adClient = new CustomAdClient(config);
         }
+        else if (config.nativoConfig) {
+            this.adClient = new NativoClient(config);
+        }
+        else if (config.admAdConfig) {
+            this.adClient = new AdMarketplaceClient(config);
+        }
         this.emitEvent('initialized', {
             name: 'initialized',
         });
@@ -1128,7 +1237,7 @@ class SearchcraftCore {
 }
 
 const name = "@searchcraft/javascript-sdk";
-const version = "0.13.2";
+const version = "0.13.3";
 
 /**
  * @fileoverview entry point for your component library
@@ -1155,4 +1264,4 @@ export { Searchcraft, SearchcraftCore };
 //# sourceMappingURL=index.js.map
 
 //# sourceMappingURL=index.js.map
-export { defineCustomElements } from './defineCustomElements.js?v=0.13.2';
+export { defineCustomElements } from './defineCustomElements.js?v=0.13.3';

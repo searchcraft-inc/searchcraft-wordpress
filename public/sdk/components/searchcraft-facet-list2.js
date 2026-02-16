@@ -1,5 +1,5 @@
-import { p as proxyCustomElement, H, c as createEvent, h, t as transformTag } from './index2.js?v=0.13.2';
-import { r as registry } from './CoreInstanceRegistry.js?v=0.13.2';
+import { p as proxyCustomElement, H, c as createEvent, h, t as transformTag } from './index2.js?v=0.13.3';
+import { r as registry } from './CoreInstanceRegistry.js?v=0.13.3';
 import './purify.es.js';
 
 /**
@@ -169,6 +169,17 @@ const SearchcraftFacetList = /*@__PURE__*/ proxyCustomElement(class SearchcraftF
      */
     exclude;
     /**
+     * Initial collapse state of the facet section.
+     * @default 'open'
+     */
+    initialCollapseState = 'open';
+    /**
+     * The number of facets to show before displaying a "view more" link.
+     * Set to 0 to show all facets without a "view more" link.
+     * @default 8
+     */
+    viewMoreThreshold = 8;
+    /**
      * Emitted when the facets are updated.
      */
     facetSelectionUpdated;
@@ -202,6 +213,14 @@ const SearchcraftFacetList = /*@__PURE__*/ proxyCustomElement(class SearchcraftF
         count: 0,
         children: {},
     };
+    /**
+     * Tracks whether the facet section is collapsed or expanded.
+     */
+    isCollapsed = false;
+    /**
+     * Tracks whether all facets are shown or limited by the threshold.
+     */
+    showAllFacets = false;
     // Internal vars used to track when to perform various facet actions.
     lastTimeTaken;
     lastSearchTerm;
@@ -387,6 +406,8 @@ const SearchcraftFacetList = /*@__PURE__*/ proxyCustomElement(class SearchcraftF
         });
     }
     connectedCallback() {
+        // Initialize collapse state based on prop
+        this.isCollapsed = this.initialCollapseState === 'closed';
         this.cleanupCore = registry.useCoreInstance(this.searchcraftId, this.onCoreAvailable.bind(this));
     }
     disconnectedCallback() {
@@ -426,6 +447,23 @@ const SearchcraftFacetList = /*@__PURE__*/ proxyCustomElement(class SearchcraftF
         const label = name.replace(/^\//, '');
         return `${label.replace(/-/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase())}`;
     };
+    /**
+     * Toggles the collapsed state of the facet section.
+     * @returns A promise that resolves when the toggle is complete.
+     */
+    async handleCollapseToggle() {
+        this.isCollapsed = !this.isCollapsed;
+    }
+    /**
+     * Returns whether the facet section is currently collapsed.
+     * @returns A promise that resolves to true if collapsed, false if expanded.
+     */
+    async getIsCollapsed() {
+        return this.isCollapsed;
+    }
+    handleViewMoreToggle = () => {
+        this.showAllFacets = !this.showAllFacets;
+    };
     renderFacet(keyName, facet) {
         let isChildSelected = false;
         for (const path of Object.keys(this.selectedPaths)) {
@@ -464,15 +502,32 @@ const SearchcraftFacetList = /*@__PURE__*/ proxyCustomElement(class SearchcraftF
             (this.lastSearchTerm || '').trim().length > 0) {
             return (h("p", { class: 'searchcraft-facet-list-message' }, "No facets are available for this search query."));
         }
-        return (h("div", { class: 'searchcraft-facet-list' }, this.renderFacet('@@root', this.renderedFacetTree)));
+        // Get root-level facets for view more functionality
+        const rootFacets = Object.keys(this.renderedFacetTree.children);
+        const threshold = this.viewMoreThreshold ?? 8;
+        const shouldShowViewMore = threshold > 0 && rootFacets.length > threshold;
+        const visibleFacets = shouldShowViewMore && !this.showAllFacets
+            ? rootFacets.slice(0, threshold)
+            : rootFacets;
+        return (h("div", { class: 'searchcraft-facet-list-wrapper', "data-facet-section-collapsed": this.isCollapsed ? '' : undefined, "data-facet-section-expanded": !this.isCollapsed ? '' : undefined }, !this.isCollapsed && (h("div", { class: 'searchcraft-facet-list-content' }, h("div", { class: 'searchcraft-facet-list' }, visibleFacets.map((key) => {
+            if (this.renderedFacetTree.children[key]) {
+                return this.renderFacet(key, this.renderedFacetTree.children[key]);
+            }
+        })), shouldShowViewMore && (h("button", { class: 'searchcraft-facet-list-view-more', onClick: this.handleViewMoreToggle, type: 'button' }, this.showAllFacets ? 'View less' : 'View more...'))))));
     }
 }, [768, "searchcraft-facet-list", {
         "searchcraftId": [1, "searchcraft-id"],
         "fieldName": [1, "field-name"],
         "exclude": [16],
+        "initialCollapseState": [1, "initial-collapse-state"],
+        "viewMoreThreshold": [2, "view-more-threshold"],
         "selectedPaths": [32],
         "facetTreeCollectedFromSearchResponse": [32],
-        "renderedFacetTree": [32]
+        "renderedFacetTree": [32],
+        "isCollapsed": [32],
+        "showAllFacets": [32],
+        "handleCollapseToggle": [64],
+        "getIsCollapsed": [64]
     }]);
 function defineCustomElement() {
     if (typeof customElements === "undefined") {

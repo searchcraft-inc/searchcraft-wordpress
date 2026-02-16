@@ -32,6 +32,11 @@ export declare class SearchcraftPagination {
      * The id of the Searchcraft instance that this component should use.
      */
     searchcraftId?: string;
+    /**
+     * Whether to scroll to the top of the search results when pagination buttons are clicked.
+     * @default true
+     */
+    scrollToTop?: boolean;
     searchTerm: any;
     searchResultsPerPage: any;
     searchResultsPage: any;
@@ -46,6 +51,10 @@ export declare class SearchcraftPagination {
     onCoreAvailable(core: SearchcraftCore): void;
     connectedCallback(): void;
     disconnectedCallback(): void;
+    /**
+     * Smooth scroll to the top of the search results component
+     */
+    private smoothScrollToSearchResults;
     handleGoToPage(page: number): void;
     renderOddPaginationItem(page: number): any;
     renderEvenPaginationItem(page: number): any;

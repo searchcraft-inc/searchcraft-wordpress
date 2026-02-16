@@ -1030,7 +1030,11 @@ var setAccessor = (elm, memberName, oldValue, newValue, isSvg, flags, initialRen
         }
       }
     }
-  } else if (memberName === "key") ; else if ((!elm.__lookupSetter__(memberName)) && memberName[0] === "o" && memberName[1] === "n") {
+  } else if (memberName === "key") ; else if (memberName === "ref") {
+    if (newValue) {
+      newValue(elm);
+    }
+  } else if ((!elm.__lookupSetter__(memberName)) && memberName[0] === "o" && memberName[1] === "n") {
     if (memberName[2] === "-") {
       memberName = memberName.slice(3);
     } else if (isMemberInElement(win, ln)) {
@@ -1261,6 +1265,7 @@ var removeVnodes = (vnodes, startIdx, endIdx) => {
     const vnode = vnodes[index];
     if (vnode) {
       const elm = vnode.$elm$;
+      nullifyVNodeRefs(vnode);
       if (elm) {
         {
           checkSlotFallbackVisibility = true;
@@ -1471,6 +1476,12 @@ var markSlotContentForRelocation = (elm) => {
     if (childNode.nodeType === 1 /* ElementNode */) {
       markSlotContentForRelocation(childNode);
     }
+  }
+};
+var nullifyVNodeRefs = (vNode) => {
+  {
+    vNode.$attrs$ && vNode.$attrs$.ref && vNode.$attrs$.ref(null);
+    vNode.$children$ && vNode.$children$.map(nullifyVNodeRefs);
   }
 };
 var insertBefore = (parent, newNode, reference) => {
