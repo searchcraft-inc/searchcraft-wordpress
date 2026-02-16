@@ -246,6 +246,8 @@ class Searchcraft_Public {
 		$js_config['enableDateRange']        = (bool) get_option( 'searchcraft_enable_date_range', '1' );
 		$js_config['enableFacets']           = (bool) get_option( 'searchcraft_enable_facets', '1' );
 		$js_config['hideUncategorized']      = (bool) get_option( 'searchcraft_hide_uncategorized', false );
+		$js_config['facetsCollapseList']     = (bool) get_option( 'searchcraft_facets_collapse_list', false );
+		$js_config['facetsViewMoreThreshold'] = (int) get_option( 'searchcraft_facets_view_more_threshold', 8 );
 
 		// Filter panel order.
 		$filter_panel_order = get_option( 'searchcraft_filter_panel_order', array( 'most_recent', 'exact_match', 'date_range', 'post_type', 'facets' ) );
