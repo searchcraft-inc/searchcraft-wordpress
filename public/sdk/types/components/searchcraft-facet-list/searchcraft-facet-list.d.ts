@@ -10,7 +10,21 @@ type HandlerActionType = 'SEARCH_TERM_EMPTY' | 'NEW_SEARCH_TERM' | 'NEW_SEARCH_T
  * @js-example
  * ```html
  * <!-- index.html -->
+ * <!-- Basic usage -->
  * <searchcraft-facet-list field-name="title" />
+ *
+ * <!-- With collapsible section (initially closed) and view more threshold -->
+ * <searchcraft-facet-list
+ *   field-name="category"
+ *   initial-collapse-state="closed"
+ *   view-more-threshold="5"
+ * />
+ *
+ * <!-- Show all facets without "view more" link -->
+ * <searchcraft-facet-list
+ *   field-name="brand"
+ *   view-more-threshold="0"
+ * />
  * ```
  *
  * ```js
@@ -20,6 +34,9 @@ type HandlerActionType = 'SEARCH_TERM_EMPTY' | 'NEW_SEARCH_TERM' | 'NEW_SEARCH_T
  * facetList.addEventListener('facetSelectionUpdated', () => {
  *   console.log('Facet selection updated');
  * });
+ *
+ * // Programmatically toggle collapse state
+ * await facetList.handleCollapseToggle();
  * ```
  *
  * @internal
@@ -37,6 +54,17 @@ export declare class SearchcraftFacetList {
      * Array of facet values to exclude from rendering.
      */
     exclude?: string[];
+    /**
+     * Initial collapse state of the facet section.
+     * @default 'open'
+     */
+    initialCollapseState?: 'open' | 'closed';
+    /**
+     * The number of facets to show before displaying a "view more" link.
+     * Set to 0 to show all facets without a "view more" link.
+     * @default 8
+     */
+    viewMoreThreshold?: number;
     /**
      * Emitted when the facets are updated.
      */
@@ -61,6 +89,14 @@ export declare class SearchcraftFacetList {
      * This is a mergin of the facetTreeCollectedFromSearchResponse and the facetTreeFromFacetPathsNotInSearchResponse tree
      */
     renderedFacetTree: FacetWithChildrenObject;
+    /**
+     * Tracks whether the facet section is collapsed or expanded.
+     */
+    isCollapsed: boolean;
+    /**
+     * Tracks whether all facets are shown or limited by the threshold.
+     */
+    showAllFacets: boolean;
     private lastTimeTaken?;
     private lastSearchTerm?;
     private lastSearchMode?;
@@ -77,6 +113,17 @@ export declare class SearchcraftFacetList {
     disconnectedCallback(): void;
     handleCheckboxChange(path: string): void;
     formatFacetName: (name: string) => string;
+    /**
+     * Toggles the collapsed state of the facet section.
+     * @returns A promise that resolves when the toggle is complete.
+     */
+    handleCollapseToggle(): Promise<void>;
+    /**
+     * Returns whether the facet section is currently collapsed.
+     * @returns A promise that resolves to true if collapsed, false if expanded.
+     */
+    getIsCollapsed(): Promise<boolean>;
+    handleViewMoreToggle: () => void;
     renderFacet(keyName: string, facet: FacetWithChildrenObject): any;
     render(): any;
 }

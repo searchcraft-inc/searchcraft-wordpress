@@ -1,8 +1,99 @@
 import { Readable } from 'stream';
 
+// src/app-data/index.ts
+var BUILD = {
+  allRenderFn: false,
+  element: true,
+  event: true,
+  hasRenderFn: true,
+  hostListener: true,
+  hostListenerTargetWindow: true,
+  hostListenerTargetDocument: true,
+  hostListenerTargetBody: true,
+  hostListenerTargetParent: false,
+  hostListenerTarget: true,
+  member: true,
+  method: true,
+  mode: true,
+  observeAttribute: true,
+  prop: true,
+  propMutable: true,
+  reflect: true,
+  scoped: true,
+  shadowDom: true,
+  slot: true,
+  cssAnnotations: true,
+  state: true,
+  style: true,
+  formAssociated: false,
+  svg: true,
+  updatable: true,
+  vdomAttribute: true,
+  vdomXlink: true,
+  vdomClass: true,
+  vdomFunctional: true,
+  vdomKey: true,
+  vdomListener: true,
+  vdomRef: true,
+  vdomPropOrAttr: true,
+  vdomRender: true,
+  vdomStyle: true,
+  vdomText: true,
+  propChangeCallback: true,
+  taskQueue: true,
+  hotModuleReplacement: false,
+  isDebug: false,
+  isDev: false,
+  isTesting: false,
+  hydrateServerSide: false,
+  hydrateClientSide: false,
+  lifecycleDOMEvents: false,
+  lazyLoad: false,
+  profile: false,
+  slotRelocation: true,
+  // TODO(STENCIL-914): remove this option when `experimentalSlotFixes` is the default behavior
+  appendChildSlotFix: false,
+  // TODO(STENCIL-914): remove this option when `experimentalSlotFixes` is the default behavior
+  cloneNodeFix: false,
+  hydratedAttribute: false,
+  hydratedClass: true,
+  // TODO(STENCIL-1305): remove this option
+  scriptDataOpts: false,
+  // TODO(STENCIL-914): remove this option when `experimentalSlotFixes` is the default behavior
+  scopedSlotTextContentFix: false,
+  // TODO(STENCIL-854): Remove code related to legacy shadowDomShim field
+  shadowDomShim: false,
+  // TODO(STENCIL-914): remove this option when `experimentalSlotFixes` is the default behavior
+  slotChildNodesFix: false,
+  invisiblePrehydration: true,
+  propBoolean: true,
+  propNumber: true,
+  propString: true,
+  constructableCSS: true,
+  devTools: false,
+  shadowDelegatesFocus: true,
+  initializeNextTick: false,
+  asyncLoading: true,
+  asyncQueue: false,
+  // TODO: deprecated in favour of `setTagTransformer` and `transformTag`. Remove in 5.0
+  transformTagName: false,
+  attachStyles: true,
+  // TODO(STENCIL-914): remove this option when `experimentalSlotFixes` is the default behavior
+  experimentalSlotFixes: false
+};
+var Env = {};
+var NAMESPACE = (
+  /* default */
+  "app"
+);
+
 const modeResolutionChain = [];
 
 function hydrateFactory($stencilWindow, $stencilHydrateOpts, $stencilHydrateResults, $stencilAfterHydrate, $stencilHydrateResolve) {
+  var everywhere;
+  try { everywhere = global || globalThis; } 
+  catch (e) { everywhere = window || globalThis; }
+
   var globalThis = $stencilWindow;
   var self = $stencilWindow;
   var top = $stencilWindow;
@@ -130,7 +221,7 @@ const NAMESPACE = 'searchcraft-javascript-sdk';
 const BUILD = /* searchcraft-javascript-sdk */ { hydratedSelectorName: "hydrated", shadowDom: false, slotRelocation: true, state: true, updatable: true};
 
 /*
- Stencil Hydrate Platform v4.38.3 | MIT Licensed | https://stenciljs.com
+ Stencil Hydrate Platform v4.39.0 | MIT Licensed | https://stenciljs.com
  */
 var __defProp = Object.defineProperty;
 var __export = (target, all) => {
@@ -545,6 +636,9 @@ var uniqueTime = (key, measureText) => {
 };
 var getScopeId = (cmp, mode) => "sc-" + (cmp.$tagName$);
 var h = (nodeName, vnodeData, ...children) => {
+  if (typeof nodeName === "string") {
+    nodeName = transformTag(nodeName);
+  }
   let child = null;
   let key = null;
   let slotName = null;
@@ -691,7 +785,7 @@ var initializeClientHydrate = (hostElm, tagName, hostId, hostRef) => {
     const orgLocationNode = plt.$orgLocNodes$.get(orgLocationId);
     const node = childRenderNode.$elm$;
     if (!shadowRoot) {
-      node["s-hn"] = tagName.toUpperCase();
+      node["s-hn"] = transformTag(tagName).toUpperCase();
       if (childRenderNode.$tag$ === "slot") {
         node["s-cr"] = hostElm["s-cr"];
       }
@@ -1100,7 +1194,11 @@ var setAccessor = (elm, memberName, oldValue, newValue, isSvg, flags, initialRen
         }
       }
     }
-  } else if (memberName === "key") ; else if ((!isProp ) && memberName[0] === "o" && memberName[1] === "n") {
+  } else if (memberName === "key") ; else if (memberName === "ref") {
+    if (newValue) {
+      newValue(elm);
+    }
+  } else if ((!isProp ) && memberName[0] === "o" && memberName[1] === "n") {
     if (memberName[2] === "-") {
       memberName = memberName.slice(3);
     } else if (isMemberInElement(win, ln)) {
@@ -1334,6 +1432,7 @@ var removeVnodes = (vnodes, startIdx, endIdx) => {
     const vnode = vnodes[index];
     if (vnode) {
       const elm = vnode.$elm$;
+      nullifyVNodeRefs(vnode);
       if (elm) {
         {
           checkSlotFallbackVisibility = true;
@@ -1544,6 +1643,12 @@ var markSlotContentForRelocation = (elm) => {
     if (childNode.nodeType === 1 /* ElementNode */) {
       markSlotContentForRelocation(childNode);
     }
+  }
+};
+var nullifyVNodeRefs = (vNode) => {
+  {
+    vNode.$attrs$ && vNode.$attrs$.ref && vNode.$attrs$.ref(null);
+    vNode.$children$ && vNode.$children$.map(nullifyVNodeRefs);
   }
 };
 var insertBefore = (parent, newNode, reference) => {
@@ -1804,6 +1909,9 @@ var postUpdateComponent = (hostRef) => {
   } else {
     safeCall(instance, "componentDidUpdate", void 0, elm);
     endPostUpdate();
+  }
+  {
+    hostRef.$onInstanceResolve$(elm);
   }
   {
     if (hostRef.$onRenderResolve$) {
@@ -2100,6 +2208,9 @@ var setContentReference = (elm) => {
 
 // src/runtime/fragment.ts
 var Fragment = (_, children) => children;
+function transformTag(tag) {
+  return tag;
+}
 
 // src/runtime/vdom/vdom-annotations.ts
 var insertVdomAnnotations = (doc, staticComponents) => {
@@ -2655,9 +2766,15 @@ var isMemberInElement = (elm, memberName) => {
 var registerComponents = (Cstrs) => {
   for (const Cstr of Cstrs) {
     const exportName = Cstr.cmpMeta.$tagName$;
+    const transformedTagName = everywhere.tagTransform(exportName);
     cmpModules.set(exportName, {
       [exportName]: Cstr
     });
+    if (transformedTagName !== exportName) {
+      cmpModules.set(transformedTagName, {
+        [transformedTagName]: Cstr
+      });
+    }
   }
 };
 var win = window;
@@ -3296,7 +3413,7 @@ function getFormattedDateString(granularity, date) {
     }
 }
 
-/*! @license DOMPurify 3.3.0 | (c) Cure53 and other contributors | Released under the Apache license 2.0 and Mozilla Public License 2.0 | github.com/cure53/DOMPurify/blob/3.3.0/LICENSE */
+/*! @license DOMPurify 3.3.1 | (c) Cure53 and other contributors | Released under the Apache license 2.0 and Mozilla Public License 2.0 | github.com/cure53/DOMPurify/blob/3.3.1/LICENSE */
 
 const {
   entries,
@@ -3594,7 +3711,7 @@ const _createHooksMap = function _createHooksMap() {
 function createDOMPurify() {
   let window = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : getGlobal();
   const DOMPurify = root => createDOMPurify(root);
-  DOMPurify.version = '3.3.0';
+  DOMPurify.version = '3.3.1';
   DOMPurify.removed = [];
   if (!window || !window.document || window.document.nodeType !== NODE_TYPE.document || !window.Element) {
     // Not running in a browser, provide a factory function
@@ -3939,6 +4056,12 @@ function createDOMPurify() {
         FORBID_CONTENTS = clone(FORBID_CONTENTS);
       }
       addToSet(FORBID_CONTENTS, cfg.FORBID_CONTENTS, transformCaseFunc);
+    }
+    if (cfg.ADD_FORBID_CONTENTS) {
+      if (FORBID_CONTENTS === DEFAULT_FORBID_CONTENTS) {
+        FORBID_CONTENTS = clone(FORBID_CONTENTS);
+      }
+      addToSet(FORBID_CONTENTS, cfg.ADD_FORBID_CONTENTS, transformCaseFunc);
     }
     /* Add #text in case KEEP_CONTENT is set to true */
     if (KEEP_CONTENT) {
@@ -4684,7 +4807,21 @@ const html$1 = (strings, ...values) => {
  * @js-example
  * ```html
  * <!-- index.html -->
+ * <!-- Basic usage -->
  * <searchcraft-facet-list field-name="title" />
+ *
+ * <!-- With collapsible section (initially closed) and view more threshold -->
+ * <searchcraft-facet-list
+ *   field-name="category"
+ *   initial-collapse-state="closed"
+ *   view-more-threshold="5"
+ * />
+ *
+ * <!-- Show all facets without "view more" link -->
+ * <searchcraft-facet-list
+ *   field-name="brand"
+ *   view-more-threshold="0"
+ * />
  * ```
  *
  * ```js
@@ -4694,6 +4831,9 @@ const html$1 = (strings, ...values) => {
  * facetList.addEventListener('facetSelectionUpdated', () => {
  *   console.log('Facet selection updated');
  * });
+ *
+ * // Programmatically toggle collapse state
+ * await facetList.handleCollapseToggle();
  * ```
  *
  * @internal
@@ -4715,6 +4855,17 @@ class SearchcraftFacetList {
      * Array of facet values to exclude from rendering.
      */
     exclude;
+    /**
+     * Initial collapse state of the facet section.
+     * @default 'open'
+     */
+    initialCollapseState = 'open';
+    /**
+     * The number of facets to show before displaying a "view more" link.
+     * Set to 0 to show all facets without a "view more" link.
+     * @default 8
+     */
+    viewMoreThreshold = 8;
     /**
      * Emitted when the facets are updated.
      */
@@ -4749,6 +4900,14 @@ class SearchcraftFacetList {
         count: 0,
         children: {},
     };
+    /**
+     * Tracks whether the facet section is collapsed or expanded.
+     */
+    isCollapsed = false;
+    /**
+     * Tracks whether all facets are shown or limited by the threshold.
+     */
+    showAllFacets = false;
     // Internal vars used to track when to perform various facet actions.
     lastTimeTaken;
     lastSearchTerm;
@@ -4934,6 +5093,8 @@ class SearchcraftFacetList {
         });
     }
     connectedCallback() {
+        // Initialize collapse state based on prop
+        this.isCollapsed = this.initialCollapseState === 'closed';
         this.cleanupCore = registry.useCoreInstance(this.searchcraftId, this.onCoreAvailable.bind(this));
     }
     disconnectedCallback() {
@@ -4973,6 +5134,23 @@ class SearchcraftFacetList {
         const label = name.replace(/^\//, '');
         return `${label.replace(/-/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase())}`;
     };
+    /**
+     * Toggles the collapsed state of the facet section.
+     * @returns A promise that resolves when the toggle is complete.
+     */
+    async handleCollapseToggle() {
+        this.isCollapsed = !this.isCollapsed;
+    }
+    /**
+     * Returns whether the facet section is currently collapsed.
+     * @returns A promise that resolves to true if collapsed, false if expanded.
+     */
+    async getIsCollapsed() {
+        return this.isCollapsed;
+    }
+    handleViewMoreToggle = () => {
+        this.showAllFacets = !this.showAllFacets;
+    };
     renderFacet(keyName, facet) {
         let isChildSelected = false;
         for (const path of Object.keys(this.selectedPaths)) {
@@ -5011,7 +5189,18 @@ class SearchcraftFacetList {
             (this.lastSearchTerm || '').trim().length > 0) {
             return (hAsync("p", { class: 'searchcraft-facet-list-message' }, "No facets are available for this search query."));
         }
-        return (hAsync("div", { class: 'searchcraft-facet-list' }, this.renderFacet('@@root', this.renderedFacetTree)));
+        // Get root-level facets for view more functionality
+        const rootFacets = Object.keys(this.renderedFacetTree.children);
+        const threshold = this.viewMoreThreshold ?? 8;
+        const shouldShowViewMore = threshold > 0 && rootFacets.length > threshold;
+        const visibleFacets = shouldShowViewMore && !this.showAllFacets
+            ? rootFacets.slice(0, threshold)
+            : rootFacets;
+        return (hAsync("div", { class: 'searchcraft-facet-list-wrapper', "data-facet-section-collapsed": this.isCollapsed ? '' : undefined, "data-facet-section-expanded": !this.isCollapsed ? '' : undefined }, !this.isCollapsed && (hAsync("div", { class: 'searchcraft-facet-list-content' }, hAsync("div", { class: 'searchcraft-facet-list' }, visibleFacets.map((key) => {
+            if (this.renderedFacetTree.children[key]) {
+                return this.renderFacet(key, this.renderedFacetTree.children[key]);
+            }
+        })), shouldShowViewMore && (hAsync("button", { class: 'searchcraft-facet-list-view-more', onClick: this.handleViewMoreToggle, type: 'button' }, this.showAllFacets ? 'View less' : 'View more...'))))));
     }
     static get cmpMeta() { return {
         "$flags$": 768,
@@ -5020,9 +5209,15 @@ class SearchcraftFacetList {
             "searchcraftId": [1, "searchcraft-id"],
             "fieldName": [1, "field-name"],
             "exclude": [16],
+            "initialCollapseState": [1, "initial-collapse-state"],
+            "viewMoreThreshold": [2, "view-more-threshold"],
             "selectedPaths": [32],
             "facetTreeCollectedFromSearchResponse": [32],
-            "renderedFacetTree": [32]
+            "renderedFacetTree": [32],
+            "isCollapsed": [32],
+            "showAllFacets": [32],
+            "handleCollapseToggle": [64],
+            "getIsCollapsed": [64]
         },
         "$listeners$": undefined,
         "$lazyBundleId$": "-",
@@ -5336,8 +5531,40 @@ class SearchcraftFilterPanel {
                 }
                 case 'facets': {
                     const item = filterItem;
+                    let facetListElement = null;
+                    let labelElement = null;
+                    const updateLabelAttributes = (isCollapsed) => {
+                        if (labelElement) {
+                            if (isCollapsed) {
+                                labelElement.removeAttribute('data-facet-section-expanded');
+                                labelElement.setAttribute('data-facet-section-collapsed', '');
+                                labelElement.setAttribute('aria-expanded', 'false');
+                            }
+                            else {
+                                labelElement.removeAttribute('data-facet-section-collapsed');
+                                labelElement.setAttribute('data-facet-section-expanded', '');
+                                labelElement.setAttribute('aria-expanded', 'true');
+                            }
+                        }
+                    };
+                    const handleToggle = async () => {
+                        if (facetListElement && 'handleCollapseToggle' in facetListElement && 'getIsCollapsed' in facetListElement) {
+                            await facetListElement.handleCollapseToggle();
+                            const isCollapsed = await facetListElement.getIsCollapsed();
+                            updateLabelAttributes(isCollapsed);
+                        }
+                    };
                     // return "filters-list"
-                    return (hAsync("div", { class: 'searchcraft-filter-panel-section' }, hAsync("p", { class: 'searchcraft-filter-panel-label' }, filterItem.label), hAsync("searchcraft-facet-list", { fieldName: item.fieldName, exclude: item.options.exclude, onFacetSelectionUpdated: (event) => {
+                    return (hAsync("div", { class: 'searchcraft-filter-panel-section' }, hAsync("p", { ref: (el) => {
+                            labelElement = el || null;
+                        }, class: 'searchcraft-filter-panel-label', "data-toggle-facet-section": true, "data-facet-section-expanded": item.options.initialCollapseState !== 'closed' ? '' : undefined, "data-facet-section-collapsed": item.options.initialCollapseState === 'closed' ? '' : undefined, onClick: handleToggle, onKeyDown: async (event) => {
+                            if (event.key === 'Enter' || event.key === ' ') {
+                                event.preventDefault();
+                                await handleToggle();
+                            }
+                        }, tabIndex: 0, role: 'button', "aria-expanded": item.options.initialCollapseState !== 'closed' }, filterItem.label), hAsync("searchcraft-facet-list", { ref: (el) => {
+                            facetListElement = el || null;
+                        }, fieldName: item.fieldName, exclude: item.options.exclude, initialCollapseState: item.options.initialCollapseState, viewMoreThreshold: item.options.viewMoreThreshold, onFacetSelectionUpdated: (event) => {
                             this.handleFacetSelectionUpdated(item.fieldName, event.detail.paths);
                         } })));
                 }
@@ -5674,6 +5901,11 @@ class SearchcraftPagination {
      * The id of the Searchcraft instance that this component should use.
      */
     searchcraftId;
+    /**
+     * Whether to scroll to the top of the search results when pagination buttons are clicked.
+     * @default true
+     */
+    scrollToTop = true;
     // store vars
     searchTerm;
     searchResultsPerPage;
@@ -5714,8 +5946,47 @@ class SearchcraftPagination {
         this.unsubscribe?.();
         this.cleanupCore?.();
     }
+    /**
+     * Smooth scroll to the top of the search results component
+     */
+    smoothScrollToSearchResults() {
+        if (!this.scrollToTop) {
+            return;
+        }
+        const searchResultsElement = document.querySelector('searchcraft-search-results .searchcraft-search-results');
+        if (!searchResultsElement) {
+            return;
+        }
+        const elementRect = searchResultsElement.getBoundingClientRect();
+        const scrollOffset = 200; // Offset in pixels above the element
+        const targetPosition = elementRect.top + window.scrollY - scrollOffset;
+        const startPosition = window.scrollY;
+        const distance = targetPosition - startPosition;
+        const duration = 1500;
+        let startTime = null;
+        // smooth scrolling
+        const easeOutExpo = (t) => {
+            return t === 1 ? 1 : 1 - 2 ** (-10 * t);
+        };
+        const animation = (currentTime) => {
+            if (startTime === null) {
+                startTime = currentTime;
+            }
+            const timeElapsed = currentTime - startTime;
+            const progress = Math.min(timeElapsed / duration, 1);
+            const ease = easeOutExpo(progress);
+            window.scrollTo(0, startPosition + distance * ease);
+            if (progress < 1) {
+                requestAnimationFrame(animation);
+            }
+        };
+        requestAnimationFrame(animation);
+    }
     handleGoToPage(page) {
         this.setSearchResultsPage(page);
+        if (this.scrollToTop) {
+            this.smoothScrollToSearchResults();
+        }
     }
     renderOddPaginationItem(page) {
         return (hAsync("li", null, hAsync("button", { class: classNames('searchcraft-pagination-item', {
@@ -5774,6 +6045,7 @@ class SearchcraftPagination {
         "$tagName$": "searchcraft-pagination",
         "$members$": {
             "searchcraftId": [1, "searchcraft-id"],
+            "scrollToTop": [4, "scroll-to-top"],
             "searchTerm": [32],
             "searchResultsPerPage": [32],
             "searchResultsPage": [32],
@@ -9872,7 +10144,7 @@ class SearchcraftSummaryBox {
     }; }
 }
 
-var styles = `﻿[class*=searchcraft-],[class*=searchcraft-] *,[class*=searchcraft-]::before,[class*=searchcraft-]::after,[class*=searchcraft-] *,::before,[class*=searchcraft-] *,::after{box-sizing:border-box;padding:0;margin:0}:root{--sc-text-base-size: 1em;--sc-text-scale-ratio: 1.1;--sc-font-family: sans-serif;--sc-font-bold: 700;--sc-font-normal: 400;--sc-heading-1-font-size: calc( var(--sc-text-base-size) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) );--sc-heading-2-font-size: calc( var(--sc-text-base-size) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) );--sc-heading-3-font-size: calc( var(--sc-text-base-size) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) );--sc-heading-4-font-size: calc( var(--sc-text-base-size) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) );--sc-heading-5-font-size: calc( var(--sc-text-base-size) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) );--sc-heading-6-font-size: calc( var(--sc-text-base-size) / ( var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) ) );--sc-body-font-size: calc(var(--sc-text-base-size));--sc-body-small-font-size: calc( var(--sc-text-base-size) / ( var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) ) )}:root{--sc-border-radius: 8px;--sc-border-radius-sm: calc(var(--sc-border-radius) / 2);--sc-border-radius-lg: calc(var(--sc-border-radius) * 2);--sc-border-radius-xl: calc(var(--sc-border-radius) * 3);--sc-border-radius-2xl: calc(var(--sc-border-radius) * 4);--sc-border-radius-full: 9999px}:root{--sc-breakpoint-sm: 576px;--sc-breakpoint-md: 768px;--sc-breakpoint-lg: 992px}:root{--sc-surface-neutral-primary: var(--sc-color-background, #ffffff);--sc-color-background-hover-computed: hsl( from var(--sc-color-background) h s clamp(10, calc(l + 5), 95) );--sc-surface-neutral-primary-hover: var( --sc-color-background-hover, var(--sc-color-background-hover-computed, #fafafa) );--sc-color-background-active-computed: hsl( from var(--sc-color-background) h s clamp(5, calc(l - 5), 90) );--sc-surface-neutral-primary-active: var( --sc-color-background-active, var(--sc-color-background-active-computed, #f7f7f7) );--sc-surface-neutral-secondary: var( --sc-color-background-secondary, var(--sc-color-background, #f3f3f3) );--sc-color-background-secondary-hover-computed: hsl( from var(--sc-color-background-secondary) h s clamp(10, calc(l + 5), 95) );--sc-surface-neutral-secondary-hover: var( --sc-color-background-hover, var(--sc-color-background-hover-computed, #e6e6e6) );--sc-color-background-secondary-active-computed: hsl( from var(--sc-color-background-secondary) h s clamp(5, calc(l - 5), 90) );--sc-surface-neutral-secondary-active: var( --sc-color-background-secondary-active, var(--sc-color-background-active-computed, #e0e0e0) );--sc-surface-neutral-light: #ffffff;--sc-content-neutral-primary: var(--sc-color-foreground, #292929);--sc-color-foreground-secondary-computed: hsl( from var(--sc-color-foreground) h s clamp(10, calc(l + 5), 90) );--sc-content-neutral-secondary: var( --sc-color-foreground-secondary, var(--sc-color-foreground-secondary-computed, #404040) );--sc-border-neutral: var(--sc-color-border, rgba(0, 0, 0, 0.1));--sc-surface-brand-primary: var(--sc-color-brand, #000000);--sc-color-brand-hover-computed: hsl( from var(--sc-color-brand) h s clamp(20, calc(l + 5), 95) );--sc-surface-brand-primary-hover: var( --sc-color-brand-hover, var(--sc-color-brand-hover-computed, #2e2e2e) );--sc-color-brand-active-computed: hsl( from var(--sc-color-brand) h s clamp(10, calc(l - 5), 85) );--sc-surface-brand-primary-active: var( --sc-color-brand-active, var(--sc-color-brand-active-computed, #292929) );--sc-surface-brand-secondary: var( --sc-color-brand-secondary, var(--sc-color-brand, #e6e6e6) );--sc-color-brand-secondary-hover-computed: hsl( from var(--sc-color-brand-secondary) h s clamp(10, calc(l + 5), 95) );--sc-surface-brand-secondary-hover: var( --sc-color-background-hover, var(--sc-color-background-hover-computed, #ebebeb) );--sc-color-brand-secondary-active-computed: hsl( from var(--sc-color-brand-secondary) h s clamp(5, calc(l - 5), 90) );--sc-surface-brand-secondary-active: var( --sc-color-brand-secondary-active, var(--sc-color-brand-active-computed, #e0e0e0) );--sc-content-brand: var( --sc-color-brand-text, var(--sc-surface-brand-primary) );--sc-content-brand-on-primary: #ffffff;--sc-border-brand: var(--sc-surface-brand-primary);--sc-surface-success-primary: var(--sc-color-success, #008000);--sc-color-success-primary-hover-computed: hsl( from var(--sc-color-success) h s 30 );--sc-surface-success-primary-hover: var( --sc-color-success-primary-hover, var(--sc-color-success-primary-hover-computed, #009900) );--sc-color-success-primary-active-computed: hsl( from var(--sc-color-success) h s 20 );--sc-surface-success-primary-active: var( --sc-color-success-primary-active, var(--sc-color-success-primary-active-computed, #006600) );--sc-color-success-secondary-computed: hsl( from var(--sc-color-success) h s 90 );--sc-surface-success-secondary: var( --sc-color-success-secondary, var(--sc-color-success-secondary-computed, #ccffcc) );--sc-color-success-secondary-hover-computed: hsl( from var(--sc-color-success-secondary) h s 95 );--sc-surface-success-secondary-hover: var( --sc-color-success-secondary-hover, var(--sc-color-success-secondary-hover-computed, #e6ffe6) );--sc-color-success-secondary-active-computed: hsl( from var(--sc-color-success-secondary) h s 85 );--sc-surface-success-secondary-active: var( --sc-color-success-secondary-active, var(--sc-color-success-secondary-active-computed, #b2ffb2) );--sc-content-success: var( --sc-color-brand-text, hsl(from var(--sc-surface-success-primary) h s 30) );--sc-content-success-on-primary: #ffffff;--sc-border-success: var(--sc-surface-success-primary);--sc-surface-caution-primary: var(--sc-color-caution, #cc6600);--sc-color-caution-primary-hover-computed: hsl( from var(--sc-color-caution) h s 30 );--sc-surface-caution-primary-hover: var( --sc-color-caution-primary-hover, var(--sc-color-caution-primary-hover-computed, #e57300) );--sc-color-caution-primary-active-computed: hsl( from var(--sc-color-caution) h s 20 );--sc-surface-caution-primary-active: var( --sc-color-caution-primary-active, var(--sc-color-caution-primary-active-computed, #b25a00) );--sc-color-caution-secondary-computed: hsl( from var(--sc-color-caution) h s 90 );--sc-surface-caution-secondary: var( --sc-color-caution-secondary, var(--sc-color-caution-secondary-computed, #ffd9b3) );--sc-color-caution-secondary-hover-computed: hsl( from var(--sc-color-caution-secondary) h s 95 );--sc-surface-caution-secondary-hover: var( --sc-color-caution-secondary-hover, var(--sc-color-caution-secondary-hover-computed, #ffe5cc) );--sc-color-caution-secondary-active-computed: hsl( from var(--sc-color-caution-secondary) h s 85 );--sc-surface-caution-secondary-active: var( --sc-color-caution-secondary-active, var(--sc-color-caution-secondary-active-computed, #ffcc99) );--sc-content-caution: var( --sc-color-caution-text, hsl(from var(--sc-surface-caution-primary) h s 30) );--sc-content-caution-on-primary: #ffffff;--sc-border-caution: var(--sc-surface-caution-primary);--sc-surface-danger-primary: var(--sc-color-danger, #cc0000);--sc-color-danger-primary-hover-computed: hsl( from var(--sc-color-danger) h s 30 );--sc-surface-danger-primary-hover: var( --sc-color-danger-primary-hover, var(--sc-color-danger-primary-hover-computed, #e50000) );--sc-color-danger-primary-active-computed: hsl( from var(--sc-color-danger) h s 20 );--sc-surface-danger-primary-active: var( --sc-color-danger-primary-active, var(--sc-color-danger-primary-active-computed, #b30000) );--sc-color-danger-secondary-computed: hsl(from var(--sc-color-danger) h s 90);--sc-surface-danger-secondary: var( --sc-color-danger-secondary, var(--sc-color-danger-secondary-computed, #ffcccc) );--sc-color-danger-secondary-hover-computed: hsl( from var(--sc-color-danger-secondary) h s 95 );--sc-surface-danger-secondary-hover: var( --sc-color-danger-secondary-hover, var(--sc-color-danger-secondary-hover-computed, #ffe7e7) );--sc-color-danger-secondary-active-computed: hsl( from var(--sc-color-danger-secondary) h s 85 );--sc-surface-danger-secondary-active: var( --sc-color-danger-secondary-active, var(--sc-color-danger-secondary-active-computed, #ffb3b3) );--sc-content-danger: var( --sc-color-caution-text, hsl(from var(--sc-surface-danger-primary) h s 30) );--sc-content-danger-on-primary: #ffffff;--sc-border-danger: var(--sc-surface-danger-primary);--sc-color-disabled: hsl(from var(--sc-color-page-primary) h s calc(l * 0.5));--sc-surface-disabled: var(--sc-color-disabled, #d9d9d9);--sc-color-disabled-text: hsl( from var(--sc-color-text-primary) h s calc(l * 0.5) );--sc-content-disabled: var(--sc-color-disabled-text, #737373);--sc-content-disabled-on-disabled: var(--sc-color-disabled-text, #737373)}@supports(hanging-punctuation: first) and (font: -apple-system-body) and (-webkit-appearance: none){:root{--sc-color-background-hover-computed: hsl( from var(--sc-color-background) h s clamp(10%, calc(l + 5%), 95%) );--sc-color-background-active-computed: hsl( from var(--sc-color-background) h s clamp(5%, calc(l - 5%), 90%) );--sc-color-foreground-secondary-computed: hsl( from var(--sc-color-foreground) h s clamp(10%, calc(l + 5%), 90%) );--sc-color-brand-hover-computed: hsl( from var(--sc-color-brand) h s clamp(20%, calc(l + 5%), 95%) );--sc-color-brand-active-computed: hsl( from var(--sc-color-brand) h s clamp(10%, calc(l - 5%), 85%) );--sc-color-success-primary-hover-computed: hsl( from var(--sc-color-success) h s 30% );--sc-color-success-primary-active-computed: hsl( from var(--sc-color-success) h s 20% );--sc-color-success-secondary-computed: hsl( from var(--sc-color-success) h s 90% );--sc-color-success-secondary-hover-computed: hsl( from var(--sc-color-success-secondary) h s 95% );--sc-color-success-secondary-active-computed: hsl( from var(--sc-color-success-secondary) h s 85% );--sc-content-success: var( --sc-color-brand-text, hsl(from var(--sc-surface-success-primary) h s 30%) );--sc-color-caution-primary-hover-computed: hsl( from var(--sc-color-caution) h s 30% );--sc-color-caution-primary-active-computed: hsl( from var(--sc-color-caution) h s 20% );--sc-color-caution-secondary-computed: hsl( from var(--sc-color-caution) h s 90% );--sc-color-caution-secondary-hover-computed: hsl( from var(--sc-color-caution-secondary) h s 95% );--sc-color-caution-secondary-active-computed: hsl( from var(--sc-color-caution-secondary) h s 85% );--sc-content-caution: var( --sc-color-caution-text, hsl(from var(--sc-surface-caution-primary) h s 30%) );--sc-color-danger-primary-hover-computed: hsl( from var(--sc-color-danger) h s 30% );--sc-color-danger-primary-active-computed: hsl( from var(--sc-color-danger) h s 20% );--sc-color-danger-secondary-computed: hsl( from var(--sc-color-danger) h s 90% );--sc-color-danger-secondary-hover-computed: hsl( from var(--sc-color-danger-secondary) h s 95% );--sc-color-danger-secondary-active-computed: hsl( from var(--sc-color-danger-secondary) h s 85% );--sc-content-danger: var( --sc-color-caution-text, hsl(from var(--sc-surface-danger-primary) h s 30%) )}}.searchcraft-ad{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased}.searchcraft-ad-no-template{display:flex;flex-direction:column;font-size:.875rem}.searchcraft-ad-no-template>p{margin:0}.searchcraft-adm-ad{display:flex;flex-direction:column;justify-content:center;gap:16px}.searchcraft-search-result{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased}.searchcraft-search-result-no-template{display:flex;flex-direction:column;font-size:.875rem}.searchcraft-search-result-no-template>p{margin:0}.searchcraft-search-results{display:flex;flex-direction:column;justify-content:center;gap:16px}.searchcraft-search-results-empty-state{text-align:center}.searchcraft-search-results-error-message{text-align:center}.searchcraft-button{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal);background:none;border:2px solid rgba(0,0,0,0);border-radius:var(--sc-border-radius);cursor:pointer;display:flex;gap:4px;padding:12px;position:relative}.searchcraft-button.searchcraft-button-disabled{cursor:not-allowed}.searchcraft-button-primary{background-color:var(--sc-surface-brand-primary);color:var(--sc-content-brand-on-primary);font-weight:var(--sc-font-bold)}.searchcraft-button-primary:hover{background-color:var(--sc-surface-brand-primary-hover)}.searchcraft-button-primary:focus{border-color:var(--sc-border-primary)}.searchcraft-button-primary:active{background-color:var(--sc-surface-brand-primary-active)}.searchcraft-button-primary.searchcraft-button-disabled,.searchcraft-button-primary.searchcraft-button-disabled:hover,.searchcraft-button-primary.searchcraft-button-disabled:focus,.searchcraft-button-primary.searchcraft-button-disabled:active{background-color:var(--sc-surface-disabled);border-color:rgba(0,0,0,0);color:var(--sc-content-disabled)}.searchcraft-button-tertiary{background-color:var(--sc-surface-neutral-primary);color:var(--sc-content-brand);font-weight:var(--sc-font-normal)}.searchcraft-button-tertiary:hover{background-color:var(--sc-surface-brand-secondary-hover)}.searchcraft-button-tertiary:focus{background-color:var(--sc-surface-neutral-light);border-color:var(--sc-border-primary)}.searchcraft-button-tertiary:active{background-color:var(--sc-surface-brand-secondary-active)}.searchcraft-button-tertiary.searchcraft-button-disabled,.searchcraft-button-tertiary.searchcraft-button-disabled:hover,.searchcraft-button-tertiary.searchcraft-button-disabled:focus,.searchcraft-button-tertiary.searchcraft-button-disabled:active{background-color:var(--sc-surface-neutral-light);border-color:rgba(0,0,0,0);color:var(--sc-content-disabled)}.searchcraft-button-icon{fill:none}.searchcraft-error-message{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-small-font-size);font-weight:var(--sc-font-normal);color:var(--sc-content-danger);margin:0}.searchcraft-facet-list{display:flex;flex-direction:column;gap:8px;width:100%}.searchcraft-facet-list-checkbox-label{align-items:center;color:var(--sc-content-neutral-primary);display:flex;font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal);gap:8px;position:relative;-webkit-font-smoothing:antialiased}.searchcraft-facet-list-checkbox-input-wrapper{position:relative}.searchcraft-facet-list-checkbox-input{align-items:center;appearance:none;background-color:var(--sc-surface-neutral-secondary);border:1px solid var(--sc-surface-disabled);border-radius:var(--sc-border-radius);cursor:pointer;display:flex;height:24px;justify-content:center;width:24px;margin:0}.searchcraft-facet-list-checkbox-input:focus{outline:2px solid var(--sc-surface-brand-primary);outline-offset:2px}.searchcraft-facet-list-checkbox-input:checked{background-color:var(--sc-surface-brand-primary);position:relative}.searchcraft-facet-list-checkbox-input:checked+.searchcraft-facet-list-checkbox-input-check-icon{display:flex}.searchcraft-facet-list-checkbox-input:checked+.searchcraft-facet-list-checkbox-input-dash-icon{display:flex}.searchcraft-facet-child-list{display:flex;flex-direction:column;gap:6px}.searchcraft-facet-child-list-checkbox-label{margin-left:24px}.searchcraft-facet-child-list-checkbox-label:first-child{margin-top:6px}.searchcraft-facet-list-checkbox-input-check-icon{display:none;height:16px;left:50%;position:absolute;margin-top:2px;top:50%;transform:translate(-50%, -50%);width:16px}.searchcraft-facet-list-checkbox-input-dash-icon{display:none;height:3px;left:50%;position:absolute;top:50%;transform:translate(-50%, -50%);width:14px}.searchcraft-facet-list-message{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-small-font-size);font-weight:var(--sc-font-normal);color:var(--sc-content-disabled);text-align:center}.searchcraft-filter-panel{display:flex;flex-direction:column;gap:16px}.searchcraft-filter-panel-section{display:flex;flex-direction:column;gap:8px}.searchcraft-filter-panel-label{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-small-font-size);font-weight:var(--sc-font-normal);font-weight:var(--sc-font-bold)}@media(max-width: 767px){[data-toggle-filter-panel]{cursor:pointer;display:flex !important;align-items:center;justify-content:space-between;width:100%}[data-toggle-filter-panel]::after{content:"›";display:inline-block;font-size:1.5em;line-height:1;margin-left:auto;flex-shrink:0;transition:transform .2s ease;transform-origin:center}[data-toggle-filter-panel][data-filter-panel-collapsed]::after{transform:rotate(90deg)}[data-toggle-filter-panel][data-filter-panel-expanded]::after{transform:rotate(-90deg)}}@media(min-width: 768px){[data-toggle-filter-panel]{cursor:default}[data-toggle-filter-panel]::after{display:none}}:root{--sc-input-form-border-radius: var(--sc-border-radius);--sc-input-form-search-icon-size: 20px;--sc-input-form-clear-icon-size: 20px}.searchcraft-input-form-grid{display:grid;gap:4px 8px}.searchcraft-input-form-grid-button-left{grid-template-rows:repeat(3, auto);grid-template-columns:auto 1fr}.searchcraft-input-form-grid-button-left .searchcraft-input-form-button{grid-column:1/span 1;grid-row:2/span 1}.searchcraft-input-form-grid-button-left .searchcraft-input-form-label{grid-column:2/span 1;grid-row:1/span 1}.searchcraft-input-form-grid-button-left .searchcraft-input-form-error-message{grid-column:2/span 1;grid-row:3/span 1}.searchcraft-input-form-grid-button-left .searchcraft-input-form-input-wrapper{grid-column:2/span 1;grid-row:2/span 1}.searchcraft-input-form-grid-button-right{grid-template-rows:repeat(3, auto);grid-template-columns:1fr auto}.searchcraft-input-form-grid-button-right .searchcraft-input-form-button{grid-column:2/span 1;grid-row:2/span 1}.searchcraft-input-form-grid-button-right .searchcraft-input-form-label{grid-column:1/span 1;grid-row:1/span 1}.searchcraft-input-form-grid-button-right .searchcraft-input-form-error-message{grid-column:1/span 1;grid-row:3/span 1}.searchcraft-input-form-grid-button-right .searchcraft-input-form-input-wrapper{grid-column:1/span 1;grid-row:2/span 1}.searchcraft-input-form-grid-button-none{grid-template-rows:repeat(3, auto);grid-template-columns:auto}.searchcraft-input-form-grid-button-none .searchcraft-input-form-button{display:none}.searchcraft-input-form-grid-button-none .searchcraft-input-form-label{grid-column:1/span 1;grid-row:1/span 1}.searchcraft-input-form-grid-button-none .searchcraft-input-form-error-message{grid-column:1/span 1;grid-row:3/span 1}.searchcraft-input-form-grid-button-none .searchcraft-input-form-input-wrapper{grid-column:1/span 1;grid-row:2/span 1}.searchcraft-input-form-input-wrapper{display:flex;position:relative}.searchcraft-input-form-input{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal);background-color:var(--sc-surface-neutral-secondary);border-radius:var(--sc-input-form-border-radius);border:none;color:var(--sc-content-neutral-primary);flex:1;outline:none;padding:12px 44px}.searchcraft-input-form-input::placeholder{color:var(--sc-content-disabled)}.searchcraft-input-form-input:focus{outline:var(--sc-border-brand) solid 2px;outline-offset:-1px}.searchcraft-input-form-input.searchcraft-placeholder-hide-on-focus:focus::placeholder{opacity:0}.searchcraft-input-form-error{color:var(--sc-content-danger);outline:var(--sc-border-danger) solid 2px}.searchcraft-input-form-error:focus{outline:var(--sc-border-danger) solid 2px}.searchcraft-input-form-input-icon{align-items:center;bottom:0;display:flex;justify-content:center;left:0;position:absolute;pointer-events:none;top:0;width:44px}.searchcraft-input-form-input-search-icon{color:var(--sc-content-neutral-secondary);fill:none;height:var(--sc-input-form-search-icon-size);pointer-events:none;width:var(--sc-input-form-search-icon-size)}.searchcraft-input-form-clear-button{all:unset;align-items:center;bottom:0;border:none;cursor:pointer;display:flex;justify-content:center;outline:none;position:absolute;right:0;top:0;width:44px}.searchcraft-input-form-clear-icon{color:var(--sc-content-brand);fill:none;height:var(--sc-input-form-clear-icon-size);width:var(--sc-input-form-clear-icon-size)}.searchcraft-input-label{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-small-font-size);font-weight:var(--sc-font-normal);color:var(--sc-content-neutral-primary);font-weight:var(--sc-font-bold);margin-top:4px;margin-bottom:4px}:root{--sc-popover-button-border-radius: var(--sc-border-radius)}@media(min-width: 576px){:root{--sc-popover-button-border-radius: var(--sc-border-radius-lg)}}.searchcraft-popover-button{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal);cursor:pointer}.searchcraft-popover-button-skeuomorphic{appearance:none;background:none;border:none;color:var(--sc-content-neutral-primary);display:block;width:100%}.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-wrapper{border:1px solid var(--sc-border-neutral);border-radius:var(--sc-popover-button-border-radius);box-shadow:0 1px 1px rgb(from var(--sc-content-neutral-secondary) r g b/10%) inset,0 2px 4px rgb(from var(--sc-content-neutral-secondary) r g b/5%) inset;display:flex;gap:24px;height:40px;justify-content:space-between;line-height:1;padding:4px 5px 4px 10px;background:var(--sc-surface-neutral-primary)}@media(min-width: 576px){.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-wrapper{box-shadow:0 1px 1px rgb(from var(--sc-content-neutral-secondary) r g b/10%) inset,0 2px 2px rgb(from var(--sc-content-neutral-secondary) r g b/5%) inset,0 4px 4px rgb(from var(--sc-content-neutral-secondary) r g b/5%) inset;height:63px;padding:8px 10px 8px 16px}}.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-input{align-items:center;display:flex;gap:4px}@media(min-width: 576px){.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-input{gap:8px}}.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-keycaps{color:var(--sc-content-neutral-secondary);display:flex;gap:4px;font-size:20px;font-weight:500}@media(min-width: 576px){.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-keycaps{gap:8px}}.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-keycaps-keycap{border-radius:calc(var(--sc-popover-button-border-radius) - 3px);border-radius:calc(var(var(--sc-popover-button-border-radius)) - 3px);background-color:var(--sc-surface-neutral-primary);box-shadow:0 3px hsl(from var(--sc-surface-neutral-secondary) h s calc(l - 5)),0 1px 2px rgb(from var(--sc-content-neutral-secondary) r g b/10%),0 6px 4px rgb(from var(--sc-content-neutral-secondary) r g b/5%);height:calc(100% - 2px);position:relative}@media(min-width: 576px){.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-keycaps-keycap{border-radius:calc(var(--sc-popover-button-border-radius) - 8px);border-radius:calc(var(var(--sc-popover-button-border-radius)) - 8px);box-shadow:0 4px hsl(from var(--sc-surface-neutral-secondary) h s calc(l - 5)),0 1px 2px rgb(from var(--sc-content-neutral-secondary) r g b/15%),0 6px 1px rgb(from var(--sc-content-neutral-secondary) r g b/20%),0 7px 2px rgb(from var(--sc-content-neutral-secondary) r g b/15%),0 9px 4px rgb(from var(--sc-content-neutral-secondary) r g b/10%),0 13px 8px rgb(from var(--sc-content-neutral-secondary) r g b/5%);height:calc(100% - 5px)}}.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-keycaps-keycap::before,.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-keycaps-keycap::after{content:"";display:block}.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-keycaps-keycap::before{border-radius:calc(var(--sc-popover-button-border-radius) - 4px);border-radius:calc(var(var(--sc-popover-button-border-radius)) - 4px);background:linear-gradient(340deg, rgb(from var(--sc-surface-neutral-secondary) r g b/2%) 0%, var(--sc-surface-neutral-secondary) 100%);inset:2px;position:absolute}@media(min-width: 576px){.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-keycaps-keycap::before{border-radius:calc(var(--sc-popover-button-border-radius) - 12px);border-radius:calc(var(var(--sc-popover-button-border-radius)) - 12px);inset:4px}}.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-keycaps-keycap::after{aspect-ratio:1/1;height:100%}.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-keycaps-keycap>span{display:flex;line-height:1;left:50%;margin-top:2%;position:absolute;top:50%;transform:translate(-50%, -50%)}.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-input-search-icon{height:60%;width:auto}@media(min-width: 576px){.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-input-search-icon{height:50%}}:root{--sc-popover-list-view-height: 600px;--sc-popover-modal-max-width: 800px}.searchcraft-popover-form{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal);display:flex;flex:1;flex-direction:column}.searchcraft-popover-form searchcraft-input-form,.searchcraft-popover-form searchcraft-popover-footer{width:100%}.searchcraft-popover-form.searchcraft-popover-form-active .searchcraft-popover-form-input{padding-bottom:1px}.searchcraft-popover-form searchcraft-popover-list-view{flex-shrink:1;height:100%;min-height:0;overflow:auto;padding:0 24px}.searchcraft-popover-form-input{display:flex;flex-direction:row;gap:12px}.searchcraft-popover-form-input .searchcraft-input-form-input{background-color:var(--sc-surface-neutral-primary);border:1px solid var(--sc-border-neutral);border-radius:var(--sc-border-radius-lg);box-shadow:0 1px 1px rgb(from var(--sc-content-neutral-primary) r g b/10%) inset,0 2px 2px rgb(from var(--sc-content-neutral-primary) r g b/5%) inset,0 4px 4px rgb(from var(--sc-content-neutral-primary) r g b/5%) inset;width:0}.searchcraft-popover-form-cancel-button{background:none;border:none;cursor:pointer;font-size:14px}.searchcraft-popover-form-modal-input,.searchcraft-popover-form-fullscreen-input{padding:24px}.searchcraft-popover-form-modal-popover-list-view,.searchcraft-popover-form-fullscreen-popover-list-view{flex-grow:1;flex-shrink:1;min-height:0;overflow:auto;padding:0 24px}.searchcraft-popover-form-inline{background-color:var(--sc-surface-neutral-primary);border:1px solid rgba(0,0,0,0);border-radius:var(--sc-border-radius-xl);padding:12px;position:relative}.searchcraft-popover-form-inline.searchcraft-popover-form-active{border:1px solid var(--sc-border-neutral);border-bottom:none;border-bottom-left-radius:0;border-bottom-right-radius:0;padding-bottom:1px}.searchcraft-popover-form-inline searchcraft-popover-list-view{padding:0 12px}.searchcraft-popover-form-inline .searchcraft-input-form-input,.searchcraft-popover-form-inline .searchcraft-popover-list-item-link,.searchcraft-popover-form-inline .searchcraft-adm-ad-link{border-radius:calc(--sc-border-radius-xl - 12px);border-radius:calc(var(--sc-border-radius-xl) - 12px)}.searchcraft-popover-form-inline-wrapper{background-color:var(--sc-surface-neutral-primary);border:1px solid var(--sc-border-neutral);border-top:none;border-bottom-left-radius:var(--sc-border-radius-xl);border-bottom-right-radius:var(--sc-border-radius-xl);display:flex;flex-direction:column;left:-1px;max-height:var(--sc-popover-list-view-height);overflow:hidden;position:absolute;right:-1px;top:100%}.searchcraft-popover-form-modal{align-items:center;display:flex;inset:0;position:fixed;z-index:1000}.searchcraft-popover-form-modal .searchcraft-input-form-input,.searchcraft-popover-form-modal .searchcraft-popover-list-item-link,.searchcraft-popover-form-modal .searchcraft-adm-ad-link{border-radius:calc(--sc-border-radius-2xl - 20px);border-radius:calc(var(--sc-border-radius-2xl) - 20px)}.searchcraft-popover-form-modal-backdrop{background-color:rgb(from var(--sc-content-neutral-primary) r g b/50%);display:none;inset:0;position:fixed}@media(min-width: 576px){.searchcraft-popover-form-modal-backdrop{display:block}}.searchcraft-popover-form-modal-wrapper{background-color:var(--sc-surface-neutral-primary);box-shadow:1px 2px rgb(from var(--sc-content-neutral-primary) r g b/7%),0 2px 4px rgb(from var(--sc-content-neutral-primary) r g b/7%),0 4px 8px rgb(from var(--sc-content-neutral-primary) r g b/7%),0 8px 16px rgb(from var(--sc-content-neutral-primary) r g b/7%),0 16px 32px rgb(from var(--sc-content-neutral-primary) r g b/7%),0 32px 64px rgb(from var(--sc-content-neutral-primary) r g b/7%);display:flex;flex-direction:column;inset:0;max-width:var(--sc-popover-modal-max-width);overflow:hidden;position:absolute;width:100%;z-index:1001}@media(min-width: 576px){.searchcraft-popover-form-modal-wrapper{border-radius:var(--sc-border-radius-2xl);inset:0;margin-top:100px;max-height:var(--sc-popover-list-view-height);max-width:var(--sc-popover-modal-max-width);position:relative}}.searchcraft-popover-form-modal-cancel-button{border-radius:calc(--sc-border-radius-2xl - 20px);border-radius:calc(var(--sc-border-radius-2xl) - 20px);padding:8px}@media(min-width: 576px){.searchcraft-popover-form-modal-cancel-button{padding:8px 12px}}.searchcraft-popover-form-fullscreen{background-color:var(--sc-surface-neutral-primary);display:flex;flex-direction:column;justify-content:space-between;inset:0;position:fixed;z-index:1000}.searchcraft-popover-form-fullscreen .searchcraft-popover-list-item-link,.searchcraft-popover-form-fullscreen .searchcraft-adm-ad-link{border-radius:var(--sc-border-radius-lg)}.searchcraft-popover-form-fullscreen-cancel-button{border-radius:var(--sc-border-radius-lg);padding:8px}@media(min-width: 576px){.searchcraft-popover-form-fullscreen-cancel-button{padding:8px 12px}}.searchcraft-popover-footer{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;background-color:var(--sc-surface-neutral-secondary);box-shadow:0 1px 1px rgb(from var(--sc-content-neutral-primary) r g b/10%) inset,0 2px 2px rgb(from var(--sc-content-neutral-primary) r g b/5%) inset,0 4px 4px rgb(from var(--sc-content-neutral-primary) r g b/5%) inset;display:flex;gap:8px;justify-content:space-between;line-height:1;padding:20px 24px}@media(min-width: 576px){.searchcraft-popover-footer{padding:20px 32px}}.searchcraft-popover-footer-results-info{margin:0}.searchcraft-popover-footer-link{color:var(--sc-content-neutral-primary);display:flex;max-width:160px;width:100%}:root{--sc-popover-list-item-image-fit: contain}.searchcraft-popover-list-item{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;border-bottom:1px solid var(--sc-border-neutral);padding:12px 0}searchcraft-popover-list-item:last-child .searchcraft-popover-list-item{border-bottom:none}.searchcraft-popover-list-item-link{align-items:flex-start;color:var(--sc-content-neutral-primary);display:flex;gap:24px;padding:12px;text-decoration:none}.searchcraft-popover-list-item-link:focus,.searchcraft-popover-list-item-link:active{background-color:var(--sc-surface-neutral-primary-active)}.searchcraft-popover-list-item-link:hover{background-color:var(--sc-surface-neutral-primary-hover)}.searchcraft-popover-list-item-image-wrapper{align-items:center;aspect-ratio:16/9;display:flex;flex-shrink:0;justify-content:center;width:160px}.searchcraft-popover-list-item-image{height:100%;object-fit:var(--sc-popover-list-item-image-fit);width:100%}.searchcraft-popover-list-item-content{display:flex;flex-direction:column;flex-grow:1;gap:4px;justify-content:center}.searchcraft-popover-list-item-content-title,.searchcraft-popover-list-item-content-subtitle{display:-webkit-box;line-clamp:2;margin:0;overflow:hidden;-webkit-line-clamp:2;-webkit-box-orient:vertical}.searchcraft-popover-list-item-content-title{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-heading-5-font-size);font-weight:var(--sc-font-bold)}.searchcraft-popover-list-item-content-subtitle{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal)}.searchcraft-popover-list-view{display:flex;flex-direction:column}.searchcraft-results-info{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal);color:var(--sc-content-primary);margin:0}.searchcraft-slider{align-items:center;display:flex;flex-direction:column;gap:10px;width:100%;margin-top:4px}.searchcraft-slider-range{align-items:center;background-color:var(--sc-surface-disabled);border-radius:999px;display:flex;position:relative;height:4px;width:100%}.searchcraft-slider-range::-webkit-slider-runnable-track{pointer-events:none}.searchcraft-slider-range .searchcraft-slider-active-range{background-color:var(--sc-surface-brand-primary);border-radius:2px;height:4px;position:absolute;top:50%;transform:translateY(-50%);z-index:0}.searchcraft-slider-range .searchcraft-slider-active-range::-webkit-slider-runnable-track{pointer-events:none}.searchcraft-slider-range .searchcraft-slider-active-range::-moz-range-track{pointer-events:none}.searchcraft-slider-range .searchcraft-slider-input{appearance:none;background:rgba(0,0,0,0);border-radius:2px;height:4px;margin:0;outline:none;pointer-events:none;position:absolute;width:100%;-webkit-appearance:none}.searchcraft-slider-range .searchcraft-slider-input::-webkit-slider-thumb{background-color:var(--sc-surface-neutral-light);border-radius:50%;border:1px solid var(--sc-border-neutral);cursor:pointer;height:18px;pointer-events:all;width:18px;-webkit-appearance:none}.searchcraft-slider-range .searchcraft-slider-input::-moz-range-thumb{background-color:var(--sc-surface-neutral-light);border-radius:50%;border:1px solid var(--sc-border-neutral);cursor:pointer;height:18px;pointer-events:all;width:18px}.searchcraft-slider-range .searchcraft-slider-input:focus::-webkit-slider-thumb{outline:2px solid var(--sc-surface-brand-primary)}.searchcraft-slider-range .searchcraft-slider-input:focus::-moz-range-thumb{outline:2px solid var(--sc-surface-brand-primary)}.searchcraft-slider-label{color:var(--sc-content-primary);display:flex;font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-small-font-size);font-weight:var(--sc-font-normal);justify-content:space-between;margin-top:4px;width:100%}.searchcraft-slider-start-label,.searchcraft-slider-end-label{min-width:30px;text-align:center}.searchcraft-toggle-button{align-items:flex-start;display:flex;gap:10px;justify-content:space-between}.searchcraft-toggle-button-label{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal);color:var(--sc-content-neutral-primary);margin:0}.searchcraft-toggle-button-sub-label{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-small-font-size);font-weight:var(--sc-font-normal);color:var(--sc-content-neutral-secondary);margin:0}.searchcraft-toggle-button-background{background:var(--sc-surface-disabled);border-radius:var(--sc-border-radius-full);border:none;cursor:pointer;flex-shrink:0;height:26px;position:relative;transition:background-color .2s;width:44px}.searchcraft-toggle-button-handle{background:var(--sc-surface-neutral-light);border-radius:50%;height:18px;left:4px;position:absolute;top:calc(50% - 9px);transition:transform .3s ease;width:18px}.searchcraft-toggle-button-active .searchcraft-toggle-button-background{background:var(--sc-surface-brand-primary);box-shadow:0px 0px 0px 1px rgba(0,0,0,.05)}.searchcraft-toggle-button-active .searchcraft-toggle-button-handle{transform:translateX(16px)}.searchcraft-pagination{display:inline-grid;gap:16px;grid-template-columns:repeat(3, auto);grid-template-rows:1fr}.searchcraft-pagination-list{border:1px solid var(--sc-border-neutral);border-radius:var(--sc-border-radius);display:flex;list-style-type:none;margin:0;overflow:hidden;padding:0;width:auto}.searchcraft-pagination-list li{border-right:1px solid var(--sc-border-neutral);height:100%;min-height:44px;width:44px}.searchcraft-pagination-list li:last-child{border-right:none}.searchcraft-pagination-item{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal);align-items:center;background-color:var(--sc-surface-neutral-primary);border:none;display:flex;height:100%;justify-content:center;width:100%}.searchcraft-pagination-item-active{background-color:var(--sc-surface-brand-secondary);font-weight:var(--sc-font-bold)}.searchcraft-pagination-control{border:1px solid var(--sc-border-neutral);border-radius:var(--sc-border-radius)}.searchcraft-pagination-range{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal);align-items:center;display:flex}.searchcraft-select{display:flex;flex-direction:column;gap:4px}.searchcraft-select-label{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-small-font-size);font-weight:var(--sc-font-normal);font-weight:var(--sc-font-bold)}.searchcraft-select-input-wrapper{position:relative}.searchcraft-select-input{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal);appearance:none;background-color:var(--sc-surface-neutral-secondary);border:2px solid rgba(0,0,0,0);border-radius:var(--sc-border-radius);cursor:pointer;height:44px;padding:0 44px 0 16px;width:100%}.searchcraft-select-input:hover{background-color:var(--sc-surface-neutral-secondary-hover)}.searchcraft-select-input:active{background-color:var(--sc-surface-neutral-secondary-active)}.searchcraft-select-input:focus{border-color:var(--sc-border-brand);outline:none}.searchcraft-select-input-icon{fill:none;pointer-events:none;position:absolute;right:12px;top:50%;transform:translateY(-50%)}.searchcraft-select-caption{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-small-font-size);font-weight:var(--sc-font-normal)}.searchcraft-search-results-per-page{display:flex}.searchcraft-search-results-per-page-select{align-items:center;display:flex;gap:12px}.searchcraft-search-results-per-page-select-label{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal)}.searchcraft-search-results-per-page-select-input{min-width:120px}.searchcraft-summary-box{padding:20px;border-radius:var(--sc-border-radius);background-color:var(--sc-surface-neutral-secondary);position:relative;min-height:200px;color:var(--sc-content-neutral-primary);font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal)}.searchcraft-summary-box h1,.searchcraft-summary-box h2,.searchcraft-summary-box h3,.searchcraft-summary-box h4,.searchcraft-summary-box h5{padding-top:10px;padding-bottom:10px}.searchcraft-summary-box p{padding-bottom:10px}.searchcraft-summary-box img{max-width:200px}.searchcraft-summary-box ol,.searchcraft-summary-box ul{padding-left:1em;padding-bottom:10px}.searchcraft-summary-box a{color:var(--sc-content-brand)}.searchcraft-loading-label{position:absolute;top:50%;left:50%;transform:translateY(-50%) translateX(-50%);margin-top:40px;letter-spacing:2px;color:#828282;font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-small-font-size);font-weight:var(--sc-font-normal)}.searchcraft-loading-bars{margin:0 auto;width:60px;height:50px;text-align:center;position:absolute;top:50%;left:50%;transform:translateY(-50%) translateX(-50%);display:flex;gap:2px}.searchcraft-loading-bars>div{height:100%;width:8px;-webkit-animation:delay .8s infinite ease-in-out;animation:delay .8s infinite ease-in-out;opacity:.2}.searchcraft-loading-bars .searchcraft-loading-bar-1{background-color:var(--sc-surface-brand-primary);opacity:.1}.searchcraft-loading-bars .searchcraft-loading-bar-2{background-color:var(--sc-surface-brand-primary);animation-delay:-0.7s;opacity:.2}.searchcraft-loading-bars .searchcraft-loading-bar-3{background-color:var(--sc-surface-brand-primary);animation-delay:-0.6s;opacity:.3}.searchcraft-loading-bars .searchcraft-loading-bar-4{background-color:var(--sc-surface-brand-primary);animation-delay:-0.5s;opacity:.4}.searchcraft-loading-bars .searchcraft-loading-bar-5{background-color:var(--sc-surface-brand-primary);animation-delay:-0.4s;opacity:.5}.searchcraft-loading-bars .searchcraft-loading-bar-6{background-color:var(--sc-surface-brand-primary);animation-delay:-0.3s;opacity:.6}@keyframes delay{0%,40%,100%{transform:scaleY(0.05)}20%{transform:scaleY(1)}}/*# sourceMappingURL=hologram.css.map */
+var styles = `﻿[class*=searchcraft-],[class*=searchcraft-] *,[class*=searchcraft-]::before,[class*=searchcraft-]::after,[class*=searchcraft-] *,::before,[class*=searchcraft-] *,::after{box-sizing:border-box;padding:0;margin:0}:root{--sc-text-base-size: 1em;--sc-text-scale-ratio: 1.1;--sc-font-family: sans-serif;--sc-font-bold: 700;--sc-font-normal: 400;--sc-heading-1-font-size: calc( var(--sc-text-base-size) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) );--sc-heading-2-font-size: calc( var(--sc-text-base-size) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) );--sc-heading-3-font-size: calc( var(--sc-text-base-size) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) );--sc-heading-4-font-size: calc( var(--sc-text-base-size) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) );--sc-heading-5-font-size: calc( var(--sc-text-base-size) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) );--sc-heading-6-font-size: calc( var(--sc-text-base-size) / ( var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) ) );--sc-body-font-size: calc(var(--sc-text-base-size));--sc-body-small-font-size: calc( var(--sc-text-base-size) / ( var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) ) )}:root{--sc-border-radius: 8px;--sc-border-radius-sm: calc(var(--sc-border-radius) / 2);--sc-border-radius-lg: calc(var(--sc-border-radius) * 2);--sc-border-radius-xl: calc(var(--sc-border-radius) * 3);--sc-border-radius-2xl: calc(var(--sc-border-radius) * 4);--sc-border-radius-full: 9999px}:root{--sc-breakpoint-sm: 576px;--sc-breakpoint-md: 768px;--sc-breakpoint-lg: 992px}:root{--sc-surface-neutral-primary: var(--sc-color-background, #ffffff);--sc-color-background-hover-computed: hsl( from var(--sc-color-background) h s clamp(10, calc(l + 5), 95) );--sc-surface-neutral-primary-hover: var( --sc-color-background-hover, var(--sc-color-background-hover-computed, #fafafa) );--sc-color-background-active-computed: hsl( from var(--sc-color-background) h s clamp(5, calc(l - 5), 90) );--sc-surface-neutral-primary-active: var( --sc-color-background-active, var(--sc-color-background-active-computed, #f7f7f7) );--sc-surface-neutral-secondary: var( --sc-color-background-secondary, var(--sc-color-background, #f3f3f3) );--sc-color-background-secondary-hover-computed: hsl( from var(--sc-color-background-secondary) h s clamp(10, calc(l + 5), 95) );--sc-surface-neutral-secondary-hover: var( --sc-color-background-hover, var(--sc-color-background-hover-computed, #e6e6e6) );--sc-color-background-secondary-active-computed: hsl( from var(--sc-color-background-secondary) h s clamp(5, calc(l - 5), 90) );--sc-surface-neutral-secondary-active: var( --sc-color-background-secondary-active, var(--sc-color-background-active-computed, #e0e0e0) );--sc-surface-neutral-light: #ffffff;--sc-content-neutral-primary: var(--sc-color-foreground, #292929);--sc-color-foreground-secondary-computed: hsl( from var(--sc-color-foreground) h s clamp(10, calc(l + 5), 90) );--sc-content-neutral-secondary: var( --sc-color-foreground-secondary, var(--sc-color-foreground-secondary-computed, #404040) );--sc-border-neutral: var(--sc-color-border, rgba(0, 0, 0, 0.1));--sc-surface-brand-primary: var(--sc-color-brand, #000000);--sc-color-brand-hover-computed: hsl( from var(--sc-color-brand) h s clamp(20, calc(l + 5), 95) );--sc-surface-brand-primary-hover: var( --sc-color-brand-hover, var(--sc-color-brand-hover-computed, #2e2e2e) );--sc-color-brand-active-computed: hsl( from var(--sc-color-brand) h s clamp(10, calc(l - 5), 85) );--sc-surface-brand-primary-active: var( --sc-color-brand-active, var(--sc-color-brand-active-computed, #292929) );--sc-surface-brand-secondary: var( --sc-color-brand-secondary, var(--sc-color-brand, #e6e6e6) );--sc-color-brand-secondary-hover-computed: hsl( from var(--sc-color-brand-secondary) h s clamp(10, calc(l + 5), 95) );--sc-surface-brand-secondary-hover: var( --sc-color-background-hover, var(--sc-color-background-hover-computed, #ebebeb) );--sc-color-brand-secondary-active-computed: hsl( from var(--sc-color-brand-secondary) h s clamp(5, calc(l - 5), 90) );--sc-surface-brand-secondary-active: var( --sc-color-brand-secondary-active, var(--sc-color-brand-active-computed, #e0e0e0) );--sc-content-brand: var( --sc-color-brand-text, var(--sc-surface-brand-primary) );--sc-content-brand-on-primary: #ffffff;--sc-border-brand: var(--sc-surface-brand-primary);--sc-surface-success-primary: var(--sc-color-success, #008000);--sc-color-success-primary-hover-computed: hsl( from var(--sc-color-success) h s 30 );--sc-surface-success-primary-hover: var( --sc-color-success-primary-hover, var(--sc-color-success-primary-hover-computed, #009900) );--sc-color-success-primary-active-computed: hsl( from var(--sc-color-success) h s 20 );--sc-surface-success-primary-active: var( --sc-color-success-primary-active, var(--sc-color-success-primary-active-computed, #006600) );--sc-color-success-secondary-computed: hsl( from var(--sc-color-success) h s 90 );--sc-surface-success-secondary: var( --sc-color-success-secondary, var(--sc-color-success-secondary-computed, #ccffcc) );--sc-color-success-secondary-hover-computed: hsl( from var(--sc-color-success-secondary) h s 95 );--sc-surface-success-secondary-hover: var( --sc-color-success-secondary-hover, var(--sc-color-success-secondary-hover-computed, #e6ffe6) );--sc-color-success-secondary-active-computed: hsl( from var(--sc-color-success-secondary) h s 85 );--sc-surface-success-secondary-active: var( --sc-color-success-secondary-active, var(--sc-color-success-secondary-active-computed, #b2ffb2) );--sc-content-success: var( --sc-color-brand-text, hsl(from var(--sc-surface-success-primary) h s 30) );--sc-content-success-on-primary: #ffffff;--sc-border-success: var(--sc-surface-success-primary);--sc-surface-caution-primary: var(--sc-color-caution, #cc6600);--sc-color-caution-primary-hover-computed: hsl( from var(--sc-color-caution) h s 30 );--sc-surface-caution-primary-hover: var( --sc-color-caution-primary-hover, var(--sc-color-caution-primary-hover-computed, #e57300) );--sc-color-caution-primary-active-computed: hsl( from var(--sc-color-caution) h s 20 );--sc-surface-caution-primary-active: var( --sc-color-caution-primary-active, var(--sc-color-caution-primary-active-computed, #b25a00) );--sc-color-caution-secondary-computed: hsl( from var(--sc-color-caution) h s 90 );--sc-surface-caution-secondary: var( --sc-color-caution-secondary, var(--sc-color-caution-secondary-computed, #ffd9b3) );--sc-color-caution-secondary-hover-computed: hsl( from var(--sc-color-caution-secondary) h s 95 );--sc-surface-caution-secondary-hover: var( --sc-color-caution-secondary-hover, var(--sc-color-caution-secondary-hover-computed, #ffe5cc) );--sc-color-caution-secondary-active-computed: hsl( from var(--sc-color-caution-secondary) h s 85 );--sc-surface-caution-secondary-active: var( --sc-color-caution-secondary-active, var(--sc-color-caution-secondary-active-computed, #ffcc99) );--sc-content-caution: var( --sc-color-caution-text, hsl(from var(--sc-surface-caution-primary) h s 30) );--sc-content-caution-on-primary: #ffffff;--sc-border-caution: var(--sc-surface-caution-primary);--sc-surface-danger-primary: var(--sc-color-danger, #cc0000);--sc-color-danger-primary-hover-computed: hsl( from var(--sc-color-danger) h s 30 );--sc-surface-danger-primary-hover: var( --sc-color-danger-primary-hover, var(--sc-color-danger-primary-hover-computed, #e50000) );--sc-color-danger-primary-active-computed: hsl( from var(--sc-color-danger) h s 20 );--sc-surface-danger-primary-active: var( --sc-color-danger-primary-active, var(--sc-color-danger-primary-active-computed, #b30000) );--sc-color-danger-secondary-computed: hsl(from var(--sc-color-danger) h s 90);--sc-surface-danger-secondary: var( --sc-color-danger-secondary, var(--sc-color-danger-secondary-computed, #ffcccc) );--sc-color-danger-secondary-hover-computed: hsl( from var(--sc-color-danger-secondary) h s 95 );--sc-surface-danger-secondary-hover: var( --sc-color-danger-secondary-hover, var(--sc-color-danger-secondary-hover-computed, #ffe7e7) );--sc-color-danger-secondary-active-computed: hsl( from var(--sc-color-danger-secondary) h s 85 );--sc-surface-danger-secondary-active: var( --sc-color-danger-secondary-active, var(--sc-color-danger-secondary-active-computed, #ffb3b3) );--sc-content-danger: var( --sc-color-caution-text, hsl(from var(--sc-surface-danger-primary) h s 30) );--sc-content-danger-on-primary: #ffffff;--sc-border-danger: var(--sc-surface-danger-primary);--sc-color-disabled: hsl(from var(--sc-color-page-primary) h s calc(l * 0.5));--sc-surface-disabled: var(--sc-color-disabled, #d9d9d9);--sc-color-disabled-text: hsl( from var(--sc-color-text-primary) h s calc(l * 0.5) );--sc-content-disabled: var(--sc-color-disabled-text, #737373);--sc-content-disabled-on-disabled: var(--sc-color-disabled-text, #737373)}@supports(hanging-punctuation: first) and (font: -apple-system-body) and (-webkit-appearance: none){:root{--sc-color-background-hover-computed: hsl( from var(--sc-color-background) h s clamp(10%, calc(l + 5%), 95%) );--sc-color-background-active-computed: hsl( from var(--sc-color-background) h s clamp(5%, calc(l - 5%), 90%) );--sc-color-foreground-secondary-computed: hsl( from var(--sc-color-foreground) h s clamp(10%, calc(l + 5%), 90%) );--sc-color-brand-hover-computed: hsl( from var(--sc-color-brand) h s clamp(20%, calc(l + 5%), 95%) );--sc-color-brand-active-computed: hsl( from var(--sc-color-brand) h s clamp(10%, calc(l - 5%), 85%) );--sc-color-success-primary-hover-computed: hsl( from var(--sc-color-success) h s 30% );--sc-color-success-primary-active-computed: hsl( from var(--sc-color-success) h s 20% );--sc-color-success-secondary-computed: hsl( from var(--sc-color-success) h s 90% );--sc-color-success-secondary-hover-computed: hsl( from var(--sc-color-success-secondary) h s 95% );--sc-color-success-secondary-active-computed: hsl( from var(--sc-color-success-secondary) h s 85% );--sc-content-success: var( --sc-color-brand-text, hsl(from var(--sc-surface-success-primary) h s 30%) );--sc-color-caution-primary-hover-computed: hsl( from var(--sc-color-caution) h s 30% );--sc-color-caution-primary-active-computed: hsl( from var(--sc-color-caution) h s 20% );--sc-color-caution-secondary-computed: hsl( from var(--sc-color-caution) h s 90% );--sc-color-caution-secondary-hover-computed: hsl( from var(--sc-color-caution-secondary) h s 95% );--sc-color-caution-secondary-active-computed: hsl( from var(--sc-color-caution-secondary) h s 85% );--sc-content-caution: var( --sc-color-caution-text, hsl(from var(--sc-surface-caution-primary) h s 30%) );--sc-color-danger-primary-hover-computed: hsl( from var(--sc-color-danger) h s 30% );--sc-color-danger-primary-active-computed: hsl( from var(--sc-color-danger) h s 20% );--sc-color-danger-secondary-computed: hsl( from var(--sc-color-danger) h s 90% );--sc-color-danger-secondary-hover-computed: hsl( from var(--sc-color-danger-secondary) h s 95% );--sc-color-danger-secondary-active-computed: hsl( from var(--sc-color-danger-secondary) h s 85% );--sc-content-danger: var( --sc-color-caution-text, hsl(from var(--sc-surface-danger-primary) h s 30%) )}}.searchcraft-ad{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased}.searchcraft-ad-no-template{display:flex;flex-direction:column;font-size:.875rem}.searchcraft-ad-no-template>p{margin:0}.searchcraft-adm-ad{display:flex;flex-direction:column;justify-content:center;gap:16px}.searchcraft-search-result{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased}.searchcraft-search-result-no-template{display:flex;flex-direction:column;font-size:.875rem}.searchcraft-search-result-no-template>p{margin:0}.searchcraft-search-results{display:flex;flex-direction:column;justify-content:center;gap:16px}.searchcraft-search-results-empty-state{text-align:center}.searchcraft-search-results-error-message{text-align:center}.searchcraft-button{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal);background:none;border:2px solid rgba(0,0,0,0);border-radius:var(--sc-border-radius);cursor:pointer;display:flex;gap:4px;padding:12px;position:relative}.searchcraft-button.searchcraft-button-disabled{cursor:not-allowed}.searchcraft-button-primary{background-color:var(--sc-surface-brand-primary);color:var(--sc-content-brand-on-primary);font-weight:var(--sc-font-bold)}.searchcraft-button-primary:hover{background-color:var(--sc-surface-brand-primary-hover)}.searchcraft-button-primary:focus{border-color:var(--sc-border-primary)}.searchcraft-button-primary:active{background-color:var(--sc-surface-brand-primary-active)}.searchcraft-button-primary.searchcraft-button-disabled,.searchcraft-button-primary.searchcraft-button-disabled:hover,.searchcraft-button-primary.searchcraft-button-disabled:focus,.searchcraft-button-primary.searchcraft-button-disabled:active{background-color:var(--sc-surface-disabled);border-color:rgba(0,0,0,0);color:var(--sc-content-disabled)}.searchcraft-button-tertiary{background-color:var(--sc-surface-neutral-primary);color:var(--sc-content-brand);font-weight:var(--sc-font-normal)}.searchcraft-button-tertiary:hover{background-color:var(--sc-surface-brand-secondary-hover)}.searchcraft-button-tertiary:focus{background-color:var(--sc-surface-neutral-light);border-color:var(--sc-border-primary)}.searchcraft-button-tertiary:active{background-color:var(--sc-surface-brand-secondary-active)}.searchcraft-button-tertiary.searchcraft-button-disabled,.searchcraft-button-tertiary.searchcraft-button-disabled:hover,.searchcraft-button-tertiary.searchcraft-button-disabled:focus,.searchcraft-button-tertiary.searchcraft-button-disabled:active{background-color:var(--sc-surface-neutral-light);border-color:rgba(0,0,0,0);color:var(--sc-content-disabled)}.searchcraft-button-icon{fill:none}.searchcraft-error-message{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-small-font-size);font-weight:var(--sc-font-normal);color:var(--sc-content-danger);margin:0}.searchcraft-facet-list{display:flex;flex-direction:column;gap:8px;width:100%}.searchcraft-facet-list-checkbox-label{align-items:center;color:var(--sc-content-neutral-primary);display:flex;font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal);gap:8px;position:relative;-webkit-font-smoothing:antialiased}.searchcraft-facet-list-checkbox-input-wrapper{position:relative}.searchcraft-facet-list-checkbox-input{align-items:center;appearance:none;background-color:var(--sc-surface-neutral-secondary);border:1px solid var(--sc-surface-disabled);border-radius:var(--sc-border-radius);cursor:pointer;display:flex;height:24px;justify-content:center;width:24px;margin:0}.searchcraft-facet-list-checkbox-input:focus{outline:2px solid var(--sc-surface-brand-primary);outline-offset:2px}.searchcraft-facet-list-checkbox-input:checked{background-color:var(--sc-surface-brand-primary);position:relative}.searchcraft-facet-list-checkbox-input:checked+.searchcraft-facet-list-checkbox-input-check-icon{display:flex}.searchcraft-facet-list-checkbox-input:checked+.searchcraft-facet-list-checkbox-input-dash-icon{display:flex}.searchcraft-facet-child-list{display:flex;flex-direction:column;gap:6px}.searchcraft-facet-child-list-checkbox-label{margin-left:24px}.searchcraft-facet-child-list-checkbox-label:first-child{margin-top:6px}.searchcraft-facet-list-checkbox-input-check-icon{display:none;height:16px;left:50%;position:absolute;margin-top:2px;top:50%;transform:translate(-50%, -50%);width:16px}.searchcraft-facet-list-checkbox-input-dash-icon{display:none;height:3px;left:50%;position:absolute;top:50%;transform:translate(-50%, -50%);width:14px}.searchcraft-facet-list-message{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-small-font-size);font-weight:var(--sc-font-normal);color:var(--sc-content-disabled);text-align:center}.searchcraft-facet-list-wrapper{display:flex;flex-direction:column;width:100%;min-height:0}.searchcraft-facet-list-content{display:flex;flex-direction:column;gap:8px;min-height:0;flex-shrink:0}.searchcraft-facet-list-view-more{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal);background:none;border:none;color:var(--sc-content-brand);cursor:pointer;padding:8px 0;text-align:left;text-decoration:underline}.searchcraft-facet-list-view-more:hover{color:var(--sc-surface-brand-primary-hover)}.searchcraft-facet-list-view-more:focus{outline:2px solid var(--sc-surface-brand-primary);outline-offset:2px}.searchcraft-filter-panel{display:flex;flex-direction:column;gap:16px}.searchcraft-filter-panel-section{display:flex;flex-direction:column;gap:8px}.searchcraft-filter-panel-label{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-small-font-size);font-weight:var(--sc-font-normal);font-weight:var(--sc-font-bold)}[data-toggle-facet-section]{cursor:pointer;display:flex;align-items:center;justify-content:space-between;width:100%;position:relative}[data-toggle-facet-section]::after{content:"›";display:inline-block;font-size:1.5em;line-height:1;margin-left:auto;flex-shrink:0;transition:transform .2s ease;transform-origin:center}[data-toggle-facet-section][data-facet-section-collapsed]::after{transform:rotate(90deg)}[data-toggle-facet-section][data-facet-section-expanded]::after{transform:rotate(-90deg)}@media(max-width: 767px){[data-toggle-filter-panel]{cursor:pointer;display:flex !important;align-items:center;justify-content:space-between;width:100%}[data-toggle-filter-panel]::after{content:"›";display:inline-block;font-size:1.5em;line-height:1;margin-left:auto;flex-shrink:0;transition:transform .2s ease;transform-origin:center}[data-toggle-filter-panel][data-filter-panel-collapsed]::after{transform:rotate(90deg)}[data-toggle-filter-panel][data-filter-panel-expanded]::after{transform:rotate(-90deg)}}@media(min-width: 768px){[data-toggle-filter-panel]{cursor:default}[data-toggle-filter-panel]::after{display:none}}:root{--sc-input-form-border-radius: var(--sc-border-radius);--sc-input-form-search-icon-size: 20px;--sc-input-form-clear-icon-size: 20px}.searchcraft-input-form-grid{display:grid;gap:4px 8px}.searchcraft-input-form-grid-button-left{grid-template-rows:repeat(3, auto);grid-template-columns:auto 1fr}.searchcraft-input-form-grid-button-left .searchcraft-input-form-button{grid-column:1/span 1;grid-row:2/span 1}.searchcraft-input-form-grid-button-left .searchcraft-input-form-label{grid-column:2/span 1;grid-row:1/span 1}.searchcraft-input-form-grid-button-left .searchcraft-input-form-error-message{grid-column:2/span 1;grid-row:3/span 1}.searchcraft-input-form-grid-button-left .searchcraft-input-form-input-wrapper{grid-column:2/span 1;grid-row:2/span 1}.searchcraft-input-form-grid-button-right{grid-template-rows:repeat(3, auto);grid-template-columns:1fr auto}.searchcraft-input-form-grid-button-right .searchcraft-input-form-button{grid-column:2/span 1;grid-row:2/span 1}.searchcraft-input-form-grid-button-right .searchcraft-input-form-label{grid-column:1/span 1;grid-row:1/span 1}.searchcraft-input-form-grid-button-right .searchcraft-input-form-error-message{grid-column:1/span 1;grid-row:3/span 1}.searchcraft-input-form-grid-button-right .searchcraft-input-form-input-wrapper{grid-column:1/span 1;grid-row:2/span 1}.searchcraft-input-form-grid-button-none{grid-template-rows:repeat(3, auto);grid-template-columns:auto}.searchcraft-input-form-grid-button-none .searchcraft-input-form-button{display:none}.searchcraft-input-form-grid-button-none .searchcraft-input-form-label{grid-column:1/span 1;grid-row:1/span 1}.searchcraft-input-form-grid-button-none .searchcraft-input-form-error-message{grid-column:1/span 1;grid-row:3/span 1}.searchcraft-input-form-grid-button-none .searchcraft-input-form-input-wrapper{grid-column:1/span 1;grid-row:2/span 1}.searchcraft-input-form-input-wrapper{display:flex;position:relative}.searchcraft-input-form-input{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal);background-color:var(--sc-surface-neutral-secondary);border-radius:var(--sc-input-form-border-radius);border:none;color:var(--sc-content-neutral-primary);flex:1;outline:none;padding:12px 44px}.searchcraft-input-form-input::placeholder{color:var(--sc-content-disabled)}.searchcraft-input-form-input:focus{outline:var(--sc-border-brand) solid 2px;outline-offset:-1px}.searchcraft-input-form-input.searchcraft-placeholder-hide-on-focus:focus::placeholder{opacity:0}.searchcraft-input-form-error{color:var(--sc-content-danger);outline:var(--sc-border-danger) solid 2px}.searchcraft-input-form-error:focus{outline:var(--sc-border-danger) solid 2px}.searchcraft-input-form-input-icon{align-items:center;bottom:0;display:flex;justify-content:center;left:0;position:absolute;pointer-events:none;top:0;width:44px}.searchcraft-input-form-input-search-icon{color:var(--sc-content-neutral-secondary);fill:none;height:var(--sc-input-form-search-icon-size);pointer-events:none;width:var(--sc-input-form-search-icon-size)}.searchcraft-input-form-clear-button{all:unset;align-items:center;bottom:0;border:none;cursor:pointer;display:flex;justify-content:center;outline:none;position:absolute;right:0;top:0;width:44px}.searchcraft-input-form-clear-icon{color:var(--sc-content-brand);fill:none;height:var(--sc-input-form-clear-icon-size);width:var(--sc-input-form-clear-icon-size)}.searchcraft-input-label{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-small-font-size);font-weight:var(--sc-font-normal);color:var(--sc-content-neutral-primary);font-weight:var(--sc-font-bold);margin-top:4px;margin-bottom:4px}:root{--sc-popover-button-border-radius: var(--sc-border-radius)}@media(min-width: 576px){:root{--sc-popover-button-border-radius: var(--sc-border-radius-lg)}}.searchcraft-popover-button{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal);cursor:pointer}.searchcraft-popover-button-skeuomorphic{appearance:none;background:none;border:none;color:var(--sc-content-neutral-primary);display:block;width:100%}.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-wrapper{border:1px solid var(--sc-border-neutral);border-radius:var(--sc-popover-button-border-radius);box-shadow:0 1px 1px rgb(from var(--sc-content-neutral-secondary) r g b/10%) inset,0 2px 4px rgb(from var(--sc-content-neutral-secondary) r g b/5%) inset;display:flex;gap:24px;height:40px;justify-content:space-between;line-height:1;padding:4px 5px 4px 10px;background:var(--sc-surface-neutral-primary)}@media(min-width: 576px){.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-wrapper{box-shadow:0 1px 1px rgb(from var(--sc-content-neutral-secondary) r g b/10%) inset,0 2px 2px rgb(from var(--sc-content-neutral-secondary) r g b/5%) inset,0 4px 4px rgb(from var(--sc-content-neutral-secondary) r g b/5%) inset;height:63px;padding:8px 10px 8px 16px}}.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-input{align-items:center;display:flex;gap:4px}@media(min-width: 576px){.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-input{gap:8px}}.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-keycaps{color:var(--sc-content-neutral-secondary);display:flex;gap:4px;font-size:20px;font-weight:500}@media(min-width: 576px){.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-keycaps{gap:8px}}.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-keycaps-keycap{border-radius:calc(var(--sc-popover-button-border-radius) - 3px);border-radius:calc(var(var(--sc-popover-button-border-radius)) - 3px);background-color:var(--sc-surface-neutral-primary);box-shadow:0 3px hsl(from var(--sc-surface-neutral-secondary) h s calc(l - 5)),0 1px 2px rgb(from var(--sc-content-neutral-secondary) r g b/10%),0 6px 4px rgb(from var(--sc-content-neutral-secondary) r g b/5%);height:calc(100% - 2px);position:relative}@media(min-width: 576px){.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-keycaps-keycap{border-radius:calc(var(--sc-popover-button-border-radius) - 8px);border-radius:calc(var(var(--sc-popover-button-border-radius)) - 8px);box-shadow:0 4px hsl(from var(--sc-surface-neutral-secondary) h s calc(l - 5)),0 1px 2px rgb(from var(--sc-content-neutral-secondary) r g b/15%),0 6px 1px rgb(from var(--sc-content-neutral-secondary) r g b/20%),0 7px 2px rgb(from var(--sc-content-neutral-secondary) r g b/15%),0 9px 4px rgb(from var(--sc-content-neutral-secondary) r g b/10%),0 13px 8px rgb(from var(--sc-content-neutral-secondary) r g b/5%);height:calc(100% - 5px)}}.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-keycaps-keycap::before,.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-keycaps-keycap::after{content:"";display:block}.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-keycaps-keycap::before{border-radius:calc(var(--sc-popover-button-border-radius) - 4px);border-radius:calc(var(var(--sc-popover-button-border-radius)) - 4px);background:linear-gradient(340deg, rgb(from var(--sc-surface-neutral-secondary) r g b/2%) 0%, var(--sc-surface-neutral-secondary) 100%);inset:2px;position:absolute}@media(min-width: 576px){.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-keycaps-keycap::before{border-radius:calc(var(--sc-popover-button-border-radius) - 12px);border-radius:calc(var(var(--sc-popover-button-border-radius)) - 12px);inset:4px}}.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-keycaps-keycap::after{aspect-ratio:1/1;height:100%}.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-keycaps-keycap>span{display:flex;line-height:1;left:50%;margin-top:2%;position:absolute;top:50%;transform:translate(-50%, -50%)}.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-input-search-icon{height:60%;width:auto}@media(min-width: 576px){.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-input-search-icon{height:50%}}:root{--sc-popover-list-view-height: 600px;--sc-popover-modal-max-width: 800px}.searchcraft-popover-form{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal);display:flex;flex:1;flex-direction:column}.searchcraft-popover-form searchcraft-input-form,.searchcraft-popover-form searchcraft-popover-footer{width:100%}.searchcraft-popover-form.searchcraft-popover-form-active .searchcraft-popover-form-input{padding-bottom:1px}.searchcraft-popover-form searchcraft-popover-list-view{flex-shrink:1;height:100%;min-height:0;overflow:auto;padding:0 24px}.searchcraft-popover-form-input{display:flex;flex-direction:row;gap:12px}.searchcraft-popover-form-input .searchcraft-input-form-input{background-color:var(--sc-surface-neutral-primary);border:1px solid var(--sc-border-neutral);border-radius:var(--sc-border-radius-lg);box-shadow:0 1px 1px rgb(from var(--sc-content-neutral-primary) r g b/10%) inset,0 2px 2px rgb(from var(--sc-content-neutral-primary) r g b/5%) inset,0 4px 4px rgb(from var(--sc-content-neutral-primary) r g b/5%) inset;width:0}.searchcraft-popover-form-cancel-button{background:none;border:none;cursor:pointer;font-size:14px}.searchcraft-popover-form-modal-input,.searchcraft-popover-form-fullscreen-input{padding:24px}.searchcraft-popover-form-modal-popover-list-view,.searchcraft-popover-form-fullscreen-popover-list-view{flex-grow:1;flex-shrink:1;min-height:0;overflow:auto;padding:0 24px}.searchcraft-popover-form-inline{background-color:var(--sc-surface-neutral-primary);border:1px solid rgba(0,0,0,0);border-radius:var(--sc-border-radius-xl);padding:12px;position:relative}.searchcraft-popover-form-inline.searchcraft-popover-form-active{border:1px solid var(--sc-border-neutral);border-bottom:none;border-bottom-left-radius:0;border-bottom-right-radius:0;padding-bottom:1px}.searchcraft-popover-form-inline searchcraft-popover-list-view{padding:0 12px}.searchcraft-popover-form-inline .searchcraft-input-form-input,.searchcraft-popover-form-inline .searchcraft-popover-list-item-link,.searchcraft-popover-form-inline .searchcraft-adm-ad-link{border-radius:calc(--sc-border-radius-xl - 12px);border-radius:calc(var(--sc-border-radius-xl) - 12px)}.searchcraft-popover-form-inline-wrapper{background-color:var(--sc-surface-neutral-primary);border:1px solid var(--sc-border-neutral);border-top:none;border-bottom-left-radius:var(--sc-border-radius-xl);border-bottom-right-radius:var(--sc-border-radius-xl);display:flex;flex-direction:column;left:-1px;max-height:var(--sc-popover-list-view-height);overflow:hidden;position:absolute;right:-1px;top:100%}.searchcraft-popover-form-modal{align-items:center;display:flex;inset:0;position:fixed;z-index:1000}.searchcraft-popover-form-modal .searchcraft-input-form-input,.searchcraft-popover-form-modal .searchcraft-popover-list-item-link,.searchcraft-popover-form-modal .searchcraft-adm-ad-link{border-radius:calc(--sc-border-radius-2xl - 20px);border-radius:calc(var(--sc-border-radius-2xl) - 20px)}.searchcraft-popover-form-modal-backdrop{background-color:rgb(from var(--sc-content-neutral-primary) r g b/50%);display:none;inset:0;position:fixed}@media(min-width: 576px){.searchcraft-popover-form-modal-backdrop{display:block}}.searchcraft-popover-form-modal-wrapper{background-color:var(--sc-surface-neutral-primary);box-shadow:1px 2px rgb(from var(--sc-content-neutral-primary) r g b/7%),0 2px 4px rgb(from var(--sc-content-neutral-primary) r g b/7%),0 4px 8px rgb(from var(--sc-content-neutral-primary) r g b/7%),0 8px 16px rgb(from var(--sc-content-neutral-primary) r g b/7%),0 16px 32px rgb(from var(--sc-content-neutral-primary) r g b/7%),0 32px 64px rgb(from var(--sc-content-neutral-primary) r g b/7%);display:flex;flex-direction:column;inset:0;max-width:var(--sc-popover-modal-max-width);overflow:hidden;position:absolute;width:100%;z-index:1001}@media(min-width: 576px){.searchcraft-popover-form-modal-wrapper{border-radius:var(--sc-border-radius-2xl);inset:0;margin-top:100px;max-height:var(--sc-popover-list-view-height);max-width:var(--sc-popover-modal-max-width);position:relative}}.searchcraft-popover-form-modal-cancel-button{border-radius:calc(--sc-border-radius-2xl - 20px);border-radius:calc(var(--sc-border-radius-2xl) - 20px);padding:8px}@media(min-width: 576px){.searchcraft-popover-form-modal-cancel-button{padding:8px 12px}}.searchcraft-popover-form-fullscreen{background-color:var(--sc-surface-neutral-primary);display:flex;flex-direction:column;justify-content:space-between;inset:0;position:fixed;z-index:1000}.searchcraft-popover-form-fullscreen .searchcraft-popover-list-item-link,.searchcraft-popover-form-fullscreen .searchcraft-adm-ad-link{border-radius:var(--sc-border-radius-lg)}.searchcraft-popover-form-fullscreen-cancel-button{border-radius:var(--sc-border-radius-lg);padding:8px}@media(min-width: 576px){.searchcraft-popover-form-fullscreen-cancel-button{padding:8px 12px}}.searchcraft-popover-footer{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;background-color:var(--sc-surface-neutral-secondary);box-shadow:0 1px 1px rgb(from var(--sc-content-neutral-primary) r g b/10%) inset,0 2px 2px rgb(from var(--sc-content-neutral-primary) r g b/5%) inset,0 4px 4px rgb(from var(--sc-content-neutral-primary) r g b/5%) inset;display:flex;gap:8px;justify-content:space-between;line-height:1;padding:20px 24px}@media(min-width: 576px){.searchcraft-popover-footer{padding:20px 32px}}.searchcraft-popover-footer-results-info{margin:0}.searchcraft-popover-footer-link{color:var(--sc-content-neutral-primary);display:flex;max-width:160px;width:100%}:root{--sc-popover-list-item-image-fit: contain}.searchcraft-popover-list-item{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;border-bottom:1px solid var(--sc-border-neutral);padding:12px 0}searchcraft-popover-list-item:last-child .searchcraft-popover-list-item{border-bottom:none}.searchcraft-popover-list-item-link{align-items:flex-start;color:var(--sc-content-neutral-primary);display:flex;gap:24px;padding:12px;text-decoration:none}.searchcraft-popover-list-item-link:focus,.searchcraft-popover-list-item-link:active{background-color:var(--sc-surface-neutral-primary-active)}.searchcraft-popover-list-item-link:hover{background-color:var(--sc-surface-neutral-primary-hover)}.searchcraft-popover-list-item-image-wrapper{align-items:center;aspect-ratio:16/9;display:flex;flex-shrink:0;justify-content:center;width:160px}.searchcraft-popover-list-item-image{height:100%;object-fit:var(--sc-popover-list-item-image-fit);width:100%}.searchcraft-popover-list-item-content{display:flex;flex-direction:column;flex-grow:1;gap:4px;justify-content:center}.searchcraft-popover-list-item-content-title,.searchcraft-popover-list-item-content-subtitle{display:-webkit-box;line-clamp:2;margin:0;overflow:hidden;-webkit-line-clamp:2;-webkit-box-orient:vertical}.searchcraft-popover-list-item-content-title{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-heading-5-font-size);font-weight:var(--sc-font-bold)}.searchcraft-popover-list-item-content-subtitle{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal)}.searchcraft-popover-list-view{display:flex;flex-direction:column}.searchcraft-results-info{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal);color:var(--sc-content-primary);margin:0}.searchcraft-slider{align-items:center;display:flex;flex-direction:column;gap:10px;width:100%;margin-top:4px}.searchcraft-slider-range{align-items:center;background-color:var(--sc-surface-disabled);border-radius:999px;display:flex;position:relative;height:4px;width:100%}.searchcraft-slider-range::-webkit-slider-runnable-track{pointer-events:none}.searchcraft-slider-range .searchcraft-slider-active-range{background-color:var(--sc-surface-brand-primary);border-radius:2px;height:4px;position:absolute;top:50%;transform:translateY(-50%);z-index:0}.searchcraft-slider-range .searchcraft-slider-active-range::-webkit-slider-runnable-track{pointer-events:none}.searchcraft-slider-range .searchcraft-slider-active-range::-moz-range-track{pointer-events:none}.searchcraft-slider-range .searchcraft-slider-input{appearance:none;background:rgba(0,0,0,0);border-radius:2px;height:4px;margin:0;outline:none;pointer-events:none;position:absolute;width:100%;-webkit-appearance:none}.searchcraft-slider-range .searchcraft-slider-input::-webkit-slider-thumb{background-color:var(--sc-surface-neutral-light);border-radius:50%;border:1px solid var(--sc-border-neutral);cursor:pointer;height:18px;pointer-events:all;width:18px;-webkit-appearance:none}.searchcraft-slider-range .searchcraft-slider-input::-moz-range-thumb{background-color:var(--sc-surface-neutral-light);border-radius:50%;border:1px solid var(--sc-border-neutral);cursor:pointer;height:18px;pointer-events:all;width:18px}.searchcraft-slider-range .searchcraft-slider-input:focus::-webkit-slider-thumb{outline:2px solid var(--sc-surface-brand-primary)}.searchcraft-slider-range .searchcraft-slider-input:focus::-moz-range-thumb{outline:2px solid var(--sc-surface-brand-primary)}.searchcraft-slider-label{color:var(--sc-content-primary);display:flex;font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-small-font-size);font-weight:var(--sc-font-normal);justify-content:space-between;margin-top:4px;width:100%}.searchcraft-slider-start-label,.searchcraft-slider-end-label{min-width:30px;text-align:center}.searchcraft-toggle-button{align-items:flex-start;display:flex;gap:10px;justify-content:space-between}.searchcraft-toggle-button-label{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal);color:var(--sc-content-neutral-primary);margin:0}.searchcraft-toggle-button-sub-label{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-small-font-size);font-weight:var(--sc-font-normal);color:var(--sc-content-neutral-secondary);margin:0}.searchcraft-toggle-button-background{background:var(--sc-surface-disabled);border-radius:var(--sc-border-radius-full);border:none;cursor:pointer;flex-shrink:0;height:26px;position:relative;transition:background-color .2s;width:44px}.searchcraft-toggle-button-handle{background:var(--sc-surface-neutral-light);border-radius:50%;height:18px;left:4px;position:absolute;top:calc(50% - 9px);transition:transform .3s ease;width:18px}.searchcraft-toggle-button-active .searchcraft-toggle-button-background{background:var(--sc-surface-brand-primary);box-shadow:0px 0px 0px 1px rgba(0,0,0,.05)}.searchcraft-toggle-button-active .searchcraft-toggle-button-handle{transform:translateX(16px)}.searchcraft-pagination{display:inline-grid;gap:16px;grid-template-columns:repeat(3, auto);grid-template-rows:1fr}.searchcraft-pagination-list{border:1px solid var(--sc-border-neutral);border-radius:var(--sc-border-radius);display:flex;list-style-type:none;margin:0;overflow:hidden;padding:0;width:auto}.searchcraft-pagination-list li{border-right:1px solid var(--sc-border-neutral);height:100%;min-height:44px;width:44px}.searchcraft-pagination-list li:last-child{border-right:none}.searchcraft-pagination-item{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal);align-items:center;background-color:var(--sc-surface-neutral-primary);border:none;display:flex;height:100%;justify-content:center;width:100%}.searchcraft-pagination-item-active{background-color:var(--sc-surface-brand-secondary);font-weight:var(--sc-font-bold)}.searchcraft-pagination-control{border:1px solid var(--sc-border-neutral);border-radius:var(--sc-border-radius)}.searchcraft-pagination-range{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal);align-items:center;display:flex}.searchcraft-select{display:flex;flex-direction:column;gap:4px}.searchcraft-select-label{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-small-font-size);font-weight:var(--sc-font-normal);font-weight:var(--sc-font-bold)}.searchcraft-select-input-wrapper{position:relative}.searchcraft-select-input{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal);appearance:none;background-color:var(--sc-surface-neutral-secondary);border:2px solid rgba(0,0,0,0);border-radius:var(--sc-border-radius);cursor:pointer;height:44px;padding:0 44px 0 16px;width:100%}.searchcraft-select-input:hover{background-color:var(--sc-surface-neutral-secondary-hover)}.searchcraft-select-input:active{background-color:var(--sc-surface-neutral-secondary-active)}.searchcraft-select-input:focus{border-color:var(--sc-border-brand);outline:none}.searchcraft-select-input-icon{fill:none;pointer-events:none;position:absolute;right:12px;top:50%;transform:translateY(-50%)}.searchcraft-select-caption{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-small-font-size);font-weight:var(--sc-font-normal)}.searchcraft-search-results-per-page{display:flex}.searchcraft-search-results-per-page-select{align-items:center;display:flex;gap:12px}.searchcraft-search-results-per-page-select-label{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal)}.searchcraft-search-results-per-page-select-input{min-width:120px}.searchcraft-summary-box{padding:20px;border-radius:var(--sc-border-radius);background-color:var(--sc-surface-neutral-secondary);position:relative;min-height:200px;color:var(--sc-content-neutral-primary);font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal)}.searchcraft-summary-box h1,.searchcraft-summary-box h2,.searchcraft-summary-box h3,.searchcraft-summary-box h4,.searchcraft-summary-box h5{padding-top:10px;padding-bottom:10px}.searchcraft-summary-box p{padding-bottom:10px}.searchcraft-summary-box img{max-width:200px}.searchcraft-summary-box ol,.searchcraft-summary-box ul{padding-left:1em;padding-bottom:10px}.searchcraft-summary-box a{color:var(--sc-content-brand)}.searchcraft-loading-label{position:absolute;top:50%;left:50%;transform:translateY(-50%) translateX(-50%);margin-top:40px;letter-spacing:2px;color:#828282;font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-small-font-size);font-weight:var(--sc-font-normal)}.searchcraft-loading-bars{margin:0 auto;width:60px;height:50px;text-align:center;position:absolute;top:50%;left:50%;transform:translateY(-50%) translateX(-50%);display:flex;gap:2px}.searchcraft-loading-bars>div{height:100%;width:8px;-webkit-animation:delay .8s infinite ease-in-out;animation:delay .8s infinite ease-in-out;opacity:.2}.searchcraft-loading-bars .searchcraft-loading-bar-1{background-color:var(--sc-surface-brand-primary);opacity:.1}.searchcraft-loading-bars .searchcraft-loading-bar-2{background-color:var(--sc-surface-brand-primary);animation-delay:-0.7s;opacity:.2}.searchcraft-loading-bars .searchcraft-loading-bar-3{background-color:var(--sc-surface-brand-primary);animation-delay:-0.6s;opacity:.3}.searchcraft-loading-bars .searchcraft-loading-bar-4{background-color:var(--sc-surface-brand-primary);animation-delay:-0.5s;opacity:.4}.searchcraft-loading-bars .searchcraft-loading-bar-5{background-color:var(--sc-surface-brand-primary);animation-delay:-0.4s;opacity:.5}.searchcraft-loading-bars .searchcraft-loading-bar-6{background-color:var(--sc-surface-brand-primary);animation-delay:-0.3s;opacity:.6}@keyframes delay{0%,40%,100%{transform:scaleY(0.05)}20%{transform:scaleY(1)}}/*# sourceMappingURL=hologram.css.map */
 `;
 
 /**
@@ -10028,100 +10300,50 @@ exports.hydrateApp = hydrateApp;
   hydrateAppClosure($stencilWindow);
 }
 
-// src/app-data/index.ts
-var BUILD = {
-  allRenderFn: false,
-  element: true,
-  event: true,
-  hasRenderFn: true,
-  hostListener: true,
-  hostListenerTargetWindow: true,
-  hostListenerTargetDocument: true,
-  hostListenerTargetBody: true,
-  hostListenerTargetParent: false,
-  hostListenerTarget: true,
-  member: true,
-  method: true,
-  mode: true,
-  observeAttribute: true,
-  prop: true,
-  propMutable: true,
-  reflect: true,
-  scoped: true,
-  shadowDom: true,
-  slot: true,
-  cssAnnotations: true,
-  state: true,
-  style: true,
-  formAssociated: false,
-  svg: true,
-  updatable: true,
-  vdomAttribute: true,
-  vdomXlink: true,
-  vdomClass: true,
-  vdomFunctional: true,
-  vdomKey: true,
-  vdomListener: true,
-  vdomRef: true,
-  vdomPropOrAttr: true,
-  vdomRender: true,
-  vdomStyle: true,
-  vdomText: true,
-  propChangeCallback: true,
-  taskQueue: true,
-  hotModuleReplacement: false,
-  isDebug: false,
-  isDev: false,
-  isTesting: false,
-  hydrateServerSide: false,
-  hydrateClientSide: false,
-  lifecycleDOMEvents: false,
-  lazyLoad: false,
-  profile: false,
-  slotRelocation: true,
-  // TODO(STENCIL-914): remove this option when `experimentalSlotFixes` is the default behavior
-  appendChildSlotFix: false,
-  // TODO(STENCIL-914): remove this option when `experimentalSlotFixes` is the default behavior
-  cloneNodeFix: false,
-  hydratedAttribute: false,
-  hydratedClass: true,
-  // TODO(STENCIL-1305): remove this option
-  scriptDataOpts: false,
-  // TODO(STENCIL-914): remove this option when `experimentalSlotFixes` is the default behavior
-  scopedSlotTextContentFix: false,
-  // TODO(STENCIL-854): Remove code related to legacy shadowDomShim field
-  shadowDomShim: false,
-  // TODO(STENCIL-914): remove this option when `experimentalSlotFixes` is the default behavior
-  slotChildNodesFix: false,
-  invisiblePrehydration: true,
-  propBoolean: true,
-  propNumber: true,
-  propString: true,
-  constructableCSS: true,
-  devTools: false,
-  shadowDelegatesFocus: true,
-  initializeNextTick: false,
-  asyncLoading: true,
-  asyncQueue: false,
-  transformTagName: false,
-  attachStyles: true,
-  // TODO(STENCIL-914): remove this option when `experimentalSlotFixes` is the default behavior
-  experimentalSlotFixes: false
-};
-var Env = {};
-var NAMESPACE = (
-  /* default */
-  "app"
-);
-
 /*
- Stencil Hydrate Runner v4.38.3 | MIT Licensed | https://stenciljs.com
+ Stencil Hydrate Runner v4.39.0 | MIT Licensed | https://stenciljs.com
  */
 var __defProp = Object.defineProperty;
 var __export = (target, all) => {
   for (var name in all)
     __defProp(target, name, { get: all[name], enumerable: true });
 };
+var Build = {
+  isDev: BUILD.isDev ? true : false,
+  isBrowser: true,
+  isServer: false,
+  isTesting: BUILD.isTesting ? true : false
+};
+
+// src/utils/constants.ts
+var PrimitiveType = /* @__PURE__ */ ((PrimitiveType2) => {
+  PrimitiveType2["Undefined"] = "undefined";
+  PrimitiveType2["Null"] = "null";
+  PrimitiveType2["String"] = "string";
+  PrimitiveType2["Number"] = "number";
+  PrimitiveType2["SpecialNumber"] = "number";
+  PrimitiveType2["Boolean"] = "boolean";
+  PrimitiveType2["BigInt"] = "bigint";
+  return PrimitiveType2;
+})(PrimitiveType || {});
+var NonPrimitiveType = /* @__PURE__ */ ((NonPrimitiveType2) => {
+  NonPrimitiveType2["Array"] = "array";
+  NonPrimitiveType2["Date"] = "date";
+  NonPrimitiveType2["Map"] = "map";
+  NonPrimitiveType2["Object"] = "object";
+  NonPrimitiveType2["RegularExpression"] = "regexp";
+  NonPrimitiveType2["Set"] = "set";
+  NonPrimitiveType2["Channel"] = "channel";
+  NonPrimitiveType2["Symbol"] = "symbol";
+  return NonPrimitiveType2;
+})(NonPrimitiveType || {});
+var TYPE_CONSTANT = "type";
+var VALUE_CONSTANT = "value";
+var SERIALIZED_PREFIX = "serialized:";
+var STENCIL_DEV_MODE = BUILD.isTesting ? ["STENCIL:"] : [
+  "%cstencil",
+  "color: white;background:#4c47ff;font-weight: bold; font-size:10px; padding:2px 6px; border-radius: 5px"
+];
 
 // src/runtime/runtime-constants.ts
 var CONTENT_REF_ID = "r";
@@ -10132,6 +10354,520 @@ var HYDRATE_ID = "s-id";
 var HYDRATED_STYLE_ID = "sty-id";
 var STENCIL_DOC_DATA = "_stencilDocData";
 var XLINK_NS = "http://www.w3.org/1999/xlink";
+var win = typeof window !== "undefined" ? window : {};
+var H = win.HTMLElement || class {
+};
+var supportsShadow = BUILD.shadowDom;
+var supportsConstructableStylesheets = BUILD.constructableCSS ? /* @__PURE__ */ (() => {
+  try {
+    new CSSStyleSheet();
+    return typeof new CSSStyleSheet().replaceSync === "function";
+  } catch (e) {
+  }
+  return false;
+})() : false;
+
+// src/utils/helpers.ts
+var isString = (v) => typeof v === "string";
+
+// src/utils/local-value.ts
+var LocalValue = class _LocalValue {
+  constructor(type, value) {
+    if (type === "undefined" /* Undefined */ || type === "null" /* Null */) {
+      this.type = type;
+    } else {
+      this.type = type;
+      this.value = value;
+    }
+  }
+  /**
+   * Creates a new LocalValue object with a string value.
+   *
+   * @param {string} value - The string value to be stored in the LocalValue object.
+   * @returns {LocalValue} - The created LocalValue object.
+   */
+  static createStringValue(value) {
+    return new _LocalValue("string" /* String */, value);
+  }
+  /**
+   * Creates a new LocalValue object with a number value.
+   *
+   * @param {number} value - The number value.
+   * @returns {LocalValue} - The created LocalValue object.
+   */
+  static createNumberValue(value) {
+    return new _LocalValue("number" /* Number */, value);
+  }
+  /**
+   * Creates a new LocalValue object with a special number value.
+   *
+   * @param {number} value - The value of the special number.
+   * @returns {LocalValue} - The created LocalValue object.
+   */
+  static createSpecialNumberValue(value) {
+    if (Number.isNaN(value)) {
+      return new _LocalValue("number" /* SpecialNumber */, "NaN");
+    }
+    if (Object.is(value, -0)) {
+      return new _LocalValue("number" /* SpecialNumber */, "-0");
+    }
+    if (value === Infinity) {
+      return new _LocalValue("number" /* SpecialNumber */, "Infinity");
+    }
+    if (value === -Infinity) {
+      return new _LocalValue("number" /* SpecialNumber */, "-Infinity");
+    }
+    return new _LocalValue("number" /* SpecialNumber */, value);
+  }
+  /**
+   * Creates a new LocalValue object with an undefined value.
+   * @returns {LocalValue} - The created LocalValue object.
+   */
+  static createUndefinedValue() {
+    return new _LocalValue("undefined" /* Undefined */);
+  }
+  /**
+   * Creates a new LocalValue object with a null value.
+   * @returns {LocalValue} - The created LocalValue object.
+   */
+  static createNullValue() {
+    return new _LocalValue("null" /* Null */);
+  }
+  /**
+   * Creates a new LocalValue object with a boolean value.
+   *
+   * @param {boolean} value - The boolean value.
+   * @returns {LocalValue} - The created LocalValue object.
+   */
+  static createBooleanValue(value) {
+    return new _LocalValue("boolean" /* Boolean */, value);
+  }
+  /**
+   * Creates a new LocalValue object with a BigInt value.
+   *
+   * @param {BigInt} value - The BigInt value.
+   * @returns {LocalValue} - The created LocalValue object.
+   */
+  static createBigIntValue(value) {
+    return new _LocalValue("bigint" /* BigInt */, value.toString());
+  }
+  /**
+   * Creates a new LocalValue object with an array.
+   *
+   * @param {Array} value - The array.
+   * @returns {LocalValue} - The created LocalValue object.
+   */
+  static createArrayValue(value) {
+    return new _LocalValue("array" /* Array */, value);
+  }
+  /**
+   * Creates a new LocalValue object with date value.
+   *
+   * @param {string} value - The date.
+   * @returns {LocalValue} - The created LocalValue object.
+   */
+  static createDateValue(value) {
+    return new _LocalValue("date" /* Date */, value);
+  }
+  /**
+   * Creates a new LocalValue object of map value.
+   * @param {Map} map - The map.
+   * @returns {LocalValue} - The created LocalValue object.
+   */
+  static createMapValue(map2) {
+    const value = [];
+    Array.from(map2.entries()).forEach(([key, val]) => {
+      value.push([_LocalValue.getArgument(key), _LocalValue.getArgument(val)]);
+    });
+    return new _LocalValue("map" /* Map */, value);
+  }
+  /**
+   * Creates a new LocalValue object from the passed object.
+   *
+   * @param object the object to create a LocalValue from
+   * @returns {LocalValue} - The created LocalValue object.
+   */
+  static createObjectValue(object) {
+    const value = [];
+    Object.entries(object).forEach(([key, val]) => {
+      value.push([key, _LocalValue.getArgument(val)]);
+    });
+    return new _LocalValue("object" /* Object */, value);
+  }
+  /**
+   * Creates a new LocalValue object of regular expression value.
+   *
+   * @param {string} value - The value of the regular expression.
+   * @returns {LocalValue} - The created LocalValue object.
+   */
+  static createRegularExpressionValue(value) {
+    return new _LocalValue("regexp" /* RegularExpression */, value);
+  }
+  /**
+   * Creates a new LocalValue object with the specified value.
+   * @param {Set} value - The value to be set.
+   * @returns {LocalValue} - The created LocalValue object.
+   */
+  static createSetValue(value) {
+    return new _LocalValue("set" /* Set */, value);
+  }
+  /**
+   * Creates a new LocalValue object with the given channel value
+   *
+   * @param {ChannelValue} value - The channel value.
+   * @returns {LocalValue} - The created LocalValue object.
+   */
+  static createChannelValue(value) {
+    return new _LocalValue("channel" /* Channel */, value);
+  }
+  /**
+   * Creates a new LocalValue object with a Symbol value.
+   *
+   * @param {Symbol} symbol - The Symbol value
+   * @returns {LocalValue} - The created LocalValue object
+   */
+  static createSymbolValue(symbol) {
+    const description = symbol.description || "Symbol()";
+    return new _LocalValue("symbol" /* Symbol */, description);
+  }
+  static getArgument(argument) {
+    const type = typeof argument;
+    switch (type) {
+      case "string" /* String */:
+        return _LocalValue.createStringValue(argument);
+      case "number" /* Number */:
+        if (Number.isNaN(argument) || Object.is(argument, -0) || !Number.isFinite(argument)) {
+          return _LocalValue.createSpecialNumberValue(argument);
+        }
+        return _LocalValue.createNumberValue(argument);
+      case "boolean" /* Boolean */:
+        return _LocalValue.createBooleanValue(argument);
+      case "bigint" /* BigInt */:
+        return _LocalValue.createBigIntValue(argument);
+      case "undefined" /* Undefined */:
+        return _LocalValue.createUndefinedValue();
+      case "symbol" /* Symbol */:
+        return _LocalValue.createSymbolValue(argument);
+      case "object" /* Object */:
+        if (argument === null) {
+          return _LocalValue.createNullValue();
+        }
+        if (argument instanceof Date) {
+          return _LocalValue.createDateValue(argument);
+        }
+        if (argument instanceof Map) {
+          const map2 = [];
+          argument.forEach((value, key) => {
+            const objectKey = typeof key === "string" ? key : _LocalValue.getArgument(key);
+            const objectValue = _LocalValue.getArgument(value);
+            map2.push([objectKey, objectValue]);
+          });
+          return _LocalValue.createMapValue(argument);
+        }
+        if (argument instanceof Set) {
+          const set = [];
+          argument.forEach((value) => {
+            set.push(_LocalValue.getArgument(value));
+          });
+          return _LocalValue.createSetValue(set);
+        }
+        if (argument instanceof Array) {
+          const arr = [];
+          argument.forEach((value) => {
+            arr.push(_LocalValue.getArgument(value));
+          });
+          return _LocalValue.createArrayValue(arr);
+        }
+        if (argument instanceof RegExp) {
+          return _LocalValue.createRegularExpressionValue({
+            pattern: argument.source,
+            flags: argument.flags
+          });
+        }
+        return _LocalValue.createObjectValue(argument);
+    }
+    throw new Error(`Unsupported type: ${type}`);
+  }
+  asMap() {
+    return {
+      [TYPE_CONSTANT]: this.type,
+      ...!(this.type === "null" /* Null */ || this.type === "undefined" /* Undefined */) ? { [VALUE_CONSTANT]: this.value } : {}
+    };
+  }
+};
+
+// src/utils/message-utils.ts
+var catchError = (diagnostics, err2, msg) => {
+  const diagnostic = {
+    level: "error",
+    type: "build",
+    header: "Build Error",
+    messageText: "build error",
+    lines: []
+  };
+  if (isString(msg)) {
+    diagnostic.messageText = msg.length ? msg : "UNKNOWN ERROR";
+  } else if (err2 != null) {
+    if (err2.stack != null) {
+      diagnostic.messageText = err2.stack.toString();
+    } else {
+      if (err2.message != null) {
+        diagnostic.messageText = err2.message.length ? err2.message : "UNKNOWN ERROR";
+      } else {
+        diagnostic.messageText = err2.toString();
+      }
+    }
+  }
+  if (diagnostics != null && !shouldIgnoreError(diagnostic.messageText)) {
+    diagnostics.push(diagnostic);
+  }
+  return diagnostic;
+};
+var hasError = (diagnostics) => {
+  if (diagnostics == null || diagnostics.length === 0) {
+    return false;
+  }
+  return diagnostics.some((d) => d.level === "error" && d.type !== "runtime");
+};
+var shouldIgnoreError = (msg) => {
+  return msg === TASK_CANCELED_MSG;
+};
+var TASK_CANCELED_MSG = `task canceled`;
+
+// src/utils/regular-expression.ts
+var escapeRegExpSpecialCharacters = (text) => {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+};
+
+// src/utils/remote-value.ts
+var RemoteValue = class _RemoteValue {
+  /**
+   * Deserializes a LocalValue serialized object back to its original JavaScript representation
+   *
+   * @param serialized The serialized LocalValue object
+   * @returns The original JavaScript value/object
+   */
+  static fromLocalValue(serialized) {
+    const type = serialized[TYPE_CONSTANT];
+    const value = VALUE_CONSTANT in serialized ? serialized[VALUE_CONSTANT] : void 0;
+    switch (type) {
+      case "string" /* String */:
+        return value;
+      case "boolean" /* Boolean */:
+        return value;
+      case "bigint" /* BigInt */:
+        return BigInt(value);
+      case "undefined" /* Undefined */:
+        return void 0;
+      case "null" /* Null */:
+        return null;
+      case "number" /* Number */:
+        if (value === "NaN") return NaN;
+        if (value === "-0") return -0;
+        if (value === "Infinity") return Infinity;
+        if (value === "-Infinity") return -Infinity;
+        return value;
+      case "array" /* Array */:
+        return value.map((item) => _RemoteValue.fromLocalValue(item));
+      case "date" /* Date */:
+        return new Date(value);
+      case "map" /* Map */:
+        const map2 = /* @__PURE__ */ new Map();
+        for (const [key, val] of value) {
+          const deserializedKey = typeof key === "object" && key !== null ? _RemoteValue.fromLocalValue(key) : key;
+          const deserializedValue = _RemoteValue.fromLocalValue(val);
+          map2.set(deserializedKey, deserializedValue);
+        }
+        return map2;
+      case "object" /* Object */:
+        const obj = {};
+        for (const [key, val] of value) {
+          obj[key] = _RemoteValue.fromLocalValue(val);
+        }
+        return obj;
+      case "regexp" /* RegularExpression */:
+        const { pattern, flags } = value;
+        return new RegExp(pattern, flags);
+      case "set" /* Set */:
+        const set = /* @__PURE__ */ new Set();
+        for (const item of value) {
+          set.add(_RemoteValue.fromLocalValue(item));
+        }
+        return set;
+      case "symbol" /* Symbol */:
+        return Symbol(value);
+      default:
+        throw new Error(`Unsupported type: ${type}`);
+    }
+  }
+  /**
+   * Utility method to deserialize multiple LocalValues at once
+   *
+   * @param serializedValues Array of serialized LocalValue objects
+   * @returns Array of deserialized JavaScript values
+   */
+  static fromLocalValueArray(serializedValues) {
+    return serializedValues.map((value) => _RemoteValue.fromLocalValue(value));
+  }
+  /**
+   * Verifies if the given object matches the structure of a serialized LocalValue
+   *
+   * @param obj Object to verify
+   * @returns boolean indicating if the object has LocalValue structure
+   */
+  static isLocalValueObject(obj) {
+    if (typeof obj !== "object" || obj === null) {
+      return false;
+    }
+    if (!obj.hasOwnProperty(TYPE_CONSTANT)) {
+      return false;
+    }
+    const type = obj[TYPE_CONSTANT];
+    const hasTypeProperty = Object.values({ ...PrimitiveType, ...NonPrimitiveType }).includes(type);
+    if (!hasTypeProperty) {
+      return false;
+    }
+    if (type !== "null" /* Null */ && type !== "undefined" /* Undefined */) {
+      return obj.hasOwnProperty(VALUE_CONSTANT);
+    }
+    return true;
+  }
+};
+
+// src/utils/result.ts
+var result_exports = {};
+__export(result_exports, {
+  err: () => err,
+  map: () => map,
+  ok: () => ok,
+  unwrap: () => unwrap,
+  unwrapErr: () => unwrapErr
+});
+var ok = (value) => ({
+  isOk: true,
+  isErr: false,
+  value
+});
+var err = (value) => ({
+  isOk: false,
+  isErr: true,
+  value
+});
+function map(result, fn) {
+  if (result.isOk) {
+    const val = fn(result.value);
+    if (val instanceof Promise) {
+      return val.then((newVal) => ok(newVal));
+    } else {
+      return ok(val);
+    }
+  }
+  if (result.isErr) {
+    const value = result.value;
+    return err(value);
+  }
+  throw "should never get here";
+}
+var unwrap = (result) => {
+  if (result.isOk) {
+    return result.value;
+  } else {
+    throw result.value;
+  }
+};
+var unwrapErr = (result) => {
+  if (result.isErr) {
+    return result.value;
+  } else {
+    throw result.value;
+  }
+};
+
+// src/utils/serialize.ts
+function serializeProperty(value) {
+  if (["string", "boolean", "undefined"].includes(typeof value) || typeof value === "number" && value !== Infinity && value !== -Infinity && !isNaN(value)) {
+    return value;
+  }
+  const arg = LocalValue.getArgument(value);
+  return SERIALIZED_PREFIX + btoa(JSON.stringify(arg));
+}
+function deserializeProperty(value) {
+  if (typeof value !== "string" || !value.startsWith(SERIALIZED_PREFIX)) {
+    return value;
+  }
+  return RemoteValue.fromLocalValue(JSON.parse(atob(value.slice(SERIALIZED_PREFIX.length))));
+}
+
+// src/utils/util.ts
+var lowerPathParam = (fn) => (p) => fn(p.toLowerCase());
+var isDtsFile = lowerPathParam((p) => p.endsWith(".d.ts") || p.endsWith(".d.mts") || p.endsWith(".d.cts"));
+var isTsFile = lowerPathParam(
+  (p) => !isDtsFile(p) && (p.endsWith(".ts") || p.endsWith(".mts") || p.endsWith(".cts"))
+);
+var isTsxFile = lowerPathParam(
+  (p) => p.endsWith(".tsx") || p.endsWith(".mtsx") || p.endsWith(".ctsx")
+);
+var isJsxFile = lowerPathParam(
+  (p) => p.endsWith(".jsx") || p.endsWith(".mjsx") || p.endsWith(".cjsx")
+);
+var isJsFile = lowerPathParam((p) => p.endsWith(".js") || p.endsWith(".mjs") || p.endsWith(".cjs"));
+
+// src/utils/shadow-css.ts
+/**
+ * @license
+ * Copyright Google Inc. All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.io/license
+ *
+ * This file is a port of shadowCSS from `webcomponents.js` to TypeScript.
+ * https://github.com/webcomponents/webcomponentsjs/blob/4efecd7e0e/src/ShadowCSS/ShadowCSS.js
+ * https://github.com/angular/angular/blob/master/packages/compiler/src/shadow_css.ts
+ */
+var _polyfillHost = "-shadowcsshost";
+var _polyfillSlotted = "-shadowcssslotted";
+var _polyfillHostContext = "-shadowcsscontext";
+var _parenSuffix = ")(?:\\(((?:\\([^)(]*\\)|[^)(]*)+?)\\))?([^,{]*)";
+var _cssColonHostRe = new RegExp("(" + _polyfillHost + _parenSuffix, "gim");
+var _cssColonHostContextRe = new RegExp("(" + _polyfillHostContext + _parenSuffix, "gim");
+var _cssColonSlottedRe = new RegExp("(" + _polyfillSlotted + _parenSuffix, "gim");
+var _polyfillHostNoCombinator = _polyfillHost + "-no-combinator";
+var createSupportsRuleRe = (selector) => {
+  const safeSelector = escapeRegExpSpecialCharacters(selector);
+  return new RegExp(
+    // First capture group: match any context before the selector that's not inside @supports selector()
+    // Using negative lookahead to avoid matching inside @supports selector(...) condition
+    `(^|[^@]|@(?!supports\\s+selector\\s*\\([^{]*?${safeSelector}))(${safeSelector}\\b)`,
+    "g"
+  );
+};
+var _colonSlottedRe = createSupportsRuleRe("::slotted");
+var _colonHostRe = createSupportsRuleRe(":host");
+var _colonHostContextRe = createSupportsRuleRe(":host-context");
+
+// src/runtime/mode.ts
+var setMode = (handler) => modeResolutionChain.push(handler);
+var CAPTURE_EVENT_SUFFIX = "Capture";
+var CAPTURE_EVENT_REGEX = new RegExp(CAPTURE_EVENT_SUFFIX + "$");
+var baseClass = BUILD.lazyLoad ? class {
+} : globalThis.HTMLElement || class {
+};
+
+// src/runtime/tag-transform.ts
+var tagTransformer = void 0;
+function transformTag(tag) {
+  if (!tagTransformer) return tag;
+  return tagTransformer(tag);
+}
+function setTagTransformer(transformer) {
+  if (tagTransformer) {
+    console.warn(`
+      A tagTransformer has already been set. 
+      Overwriting it may lead to error and unexpected results if your components have already been defined.
+    `);
+  }
+  tagTransformer = transformer;
+}
 
 // src/mock-doc/attribute.ts
 var attrHandler = {
@@ -10403,7 +11139,7 @@ var MockCustomElementRegistry = class {
             proxyElements.set(host, upgradedCmp);
           }
         }
-        fireConnectedCallback(host);
+        fireConnectedCallback2(host);
       });
     }
   }
@@ -10503,7 +11239,7 @@ function connectNode(ownerDocument, node) {
     if (ownerDocument != null && node.nodeName.includes("-")) {
       const win2 = ownerDocument.defaultView;
       if (win2 != null && typeof node.connectedCallback === "function" && node.isConnected) {
-        fireConnectedCallback(node);
+        fireConnectedCallback2(node);
       }
       const shadowRoot = node.shadowRoot;
       if (shadowRoot != null) {
@@ -10521,7 +11257,7 @@ function connectNode(ownerDocument, node) {
     });
   }
 }
-function fireConnectedCallback(node) {
+function fireConnectedCallback2(node) {
   if (typeof node.connectedCallback === "function") {
     if (tempDisableCallbacks.has(node.ownerDocument) === false) {
       try {
@@ -10571,7 +11307,7 @@ function dataset(elm) {
     const attr = attributes.item(i);
     const nodeName = attr.nodeName;
     if (nodeName.startsWith("data-")) {
-      ds[dashToPascalCase(nodeName)] = attr.nodeValue;
+      ds[dashToPascalCase2(nodeName)] = attr.nodeValue;
     }
   }
   return new Proxy(ds, {
@@ -10588,7 +11324,7 @@ function dataset(elm) {
 function toDataAttribute(str) {
   return "data-" + String(str).replace(/([A-Z0-9])/g, (g) => " " + g[0]).trim().replace(/ /g, "-").toLowerCase();
 }
-function dashToPascalCase(str) {
+function dashToPascalCase2(str) {
   str = String(str).slice(5);
   return str.split("-").map((segment, index) => {
     if (index === 0) {
@@ -18940,14 +19676,14 @@ var jquery_default = (
   *
   * Date: 2023-12-11T17:55Z
   */
-  function(global2, factory) {
+  (function(global2, factory) {
     "use strict";
     if (true) {
       return factory(global2, true);
     } else {
       factory(global2);
     }
-  }({
+  })({
     document: {
       createElement() {
         return {};
@@ -20917,10 +21653,10 @@ var MockNode2 = class {
   insertBefore(newNode, referenceNode) {
     if (newNode.nodeType === 11 /* DOCUMENT_FRAGMENT_NODE */) {
       for (let i = 0, ii = newNode.childNodes.length; i < ii; i++) {
-        insertBefore(this, newNode.childNodes[i], referenceNode);
+        insertBefore2(this, newNode.childNodes[i], referenceNode);
       }
     } else {
-      insertBefore(this, newNode, referenceNode);
+      insertBefore2(this, newNode, referenceNode);
     }
     return newNode;
   }
@@ -21265,13 +22001,13 @@ var MockElement = class extends MockNode2 {
   }
   insertAdjacentElement(position, elm) {
     if (position === "beforebegin" && this.parentNode) {
-      insertBefore(this.parentNode, elm, this);
+      insertBefore2(this.parentNode, elm, this);
     } else if (position === "afterbegin") {
       this.prepend(elm);
     } else if (position === "beforeend") {
       this.appendChild(elm);
     } else if (position === "afterend" && this.parentNode) {
-      insertBefore(this.parentNode, elm, this.nextSibling);
+      insertBefore2(this.parentNode, elm, this.nextSibling);
     }
     return elm;
   }
@@ -21280,7 +22016,7 @@ var MockElement = class extends MockNode2 {
     if (position === "beforebegin") {
       while (frag.childNodes.length > 0) {
         if (this.parentNode) {
-          insertBefore(this.parentNode, frag.childNodes[0], this);
+          insertBefore2(this.parentNode, frag.childNodes[0], this);
         }
       }
     } else if (position === "afterbegin") {
@@ -21294,7 +22030,7 @@ var MockElement = class extends MockNode2 {
     } else if (position === "afterend") {
       while (frag.childNodes.length > 0) {
         if (this.parentNode) {
-          insertBefore(this.parentNode, frag.childNodes[frag.childNodes.length - 1], this.nextSibling);
+          insertBefore2(this.parentNode, frag.childNodes[frag.childNodes.length - 1], this.nextSibling);
         }
       }
     }
@@ -21302,13 +22038,13 @@ var MockElement = class extends MockNode2 {
   insertAdjacentText(position, text) {
     const elm = this.ownerDocument.createTextNode(text);
     if (position === "beforebegin" && this.parentNode) {
-      insertBefore(this.parentNode, elm, this);
+      insertBefore2(this.parentNode, elm, this);
     } else if (position === "afterbegin") {
       this.prepend(elm);
     } else if (position === "beforeend") {
       this.appendChild(elm);
     } else if (position === "afterend" && this.parentNode) {
-      insertBefore(this.parentNode, elm, this.nextSibling);
+      insertBefore2(this.parentNode, elm, this.nextSibling);
     }
   }
   hasAttribute(attrName) {
@@ -21723,7 +22459,7 @@ function resetElement(elm) {
   delete elm.__shadowRoot;
   delete elm.__style;
 }
-function insertBefore(parentNode, newNode, referenceNode) {
+function insertBefore2(parentNode, newNode, referenceNode) {
   if (newNode !== referenceNode) {
     newNode.remove();
     newNode.parentNode = parentNode;
@@ -24263,540 +24999,6 @@ function createWindowFromHtml(templateHtml, uniqueId) {
   const win2 = cloneWindow(templateWindow);
   return win2;
 }
-var Build = {
-  isDev: BUILD.isDev ? true : false,
-  isBrowser: true,
-  isServer: false,
-  isTesting: BUILD.isTesting ? true : false
-};
-
-// src/utils/constants.ts
-var PrimitiveType = /* @__PURE__ */ ((PrimitiveType2) => {
-  PrimitiveType2["Undefined"] = "undefined";
-  PrimitiveType2["Null"] = "null";
-  PrimitiveType2["String"] = "string";
-  PrimitiveType2["Number"] = "number";
-  PrimitiveType2["SpecialNumber"] = "number";
-  PrimitiveType2["Boolean"] = "boolean";
-  PrimitiveType2["BigInt"] = "bigint";
-  return PrimitiveType2;
-})(PrimitiveType || {});
-var NonPrimitiveType = /* @__PURE__ */ ((NonPrimitiveType2) => {
-  NonPrimitiveType2["Array"] = "array";
-  NonPrimitiveType2["Date"] = "date";
-  NonPrimitiveType2["Map"] = "map";
-  NonPrimitiveType2["Object"] = "object";
-  NonPrimitiveType2["RegularExpression"] = "regexp";
-  NonPrimitiveType2["Set"] = "set";
-  NonPrimitiveType2["Channel"] = "channel";
-  NonPrimitiveType2["Symbol"] = "symbol";
-  return NonPrimitiveType2;
-})(NonPrimitiveType || {});
-var TYPE_CONSTANT = "type";
-var VALUE_CONSTANT = "value";
-var SERIALIZED_PREFIX = "serialized:";
-var STENCIL_DEV_MODE = BUILD.isTesting ? ["STENCIL:"] : [
-  "%cstencil",
-  "color: white;background:#4c47ff;font-weight: bold; font-size:10px; padding:2px 6px; border-radius: 5px"
-];
-var win = typeof window !== "undefined" ? window : {};
-var H = win.HTMLElement || class {
-};
-var supportsShadow = BUILD.shadowDom;
-var supportsConstructableStylesheets = BUILD.constructableCSS ? /* @__PURE__ */ (() => {
-  try {
-    new CSSStyleSheet();
-    return typeof new CSSStyleSheet().replaceSync === "function";
-  } catch (e) {
-  }
-  return false;
-})() : false;
-
-// src/utils/helpers.ts
-var isString = (v) => typeof v === "string";
-
-// src/utils/local-value.ts
-var LocalValue = class _LocalValue {
-  constructor(type, value) {
-    if (type === "undefined" /* Undefined */ || type === "null" /* Null */) {
-      this.type = type;
-    } else {
-      this.type = type;
-      this.value = value;
-    }
-  }
-  /**
-   * Creates a new LocalValue object with a string value.
-   *
-   * @param {string} value - The string value to be stored in the LocalValue object.
-   * @returns {LocalValue} - The created LocalValue object.
-   */
-  static createStringValue(value) {
-    return new _LocalValue("string" /* String */, value);
-  }
-  /**
-   * Creates a new LocalValue object with a number value.
-   *
-   * @param {number} value - The number value.
-   * @returns {LocalValue} - The created LocalValue object.
-   */
-  static createNumberValue(value) {
-    return new _LocalValue("number" /* Number */, value);
-  }
-  /**
-   * Creates a new LocalValue object with a special number value.
-   *
-   * @param {number} value - The value of the special number.
-   * @returns {LocalValue} - The created LocalValue object.
-   */
-  static createSpecialNumberValue(value) {
-    if (Number.isNaN(value)) {
-      return new _LocalValue("number" /* SpecialNumber */, "NaN");
-    }
-    if (Object.is(value, -0)) {
-      return new _LocalValue("number" /* SpecialNumber */, "-0");
-    }
-    if (value === Infinity) {
-      return new _LocalValue("number" /* SpecialNumber */, "Infinity");
-    }
-    if (value === -Infinity) {
-      return new _LocalValue("number" /* SpecialNumber */, "-Infinity");
-    }
-    return new _LocalValue("number" /* SpecialNumber */, value);
-  }
-  /**
-   * Creates a new LocalValue object with an undefined value.
-   * @returns {LocalValue} - The created LocalValue object.
-   */
-  static createUndefinedValue() {
-    return new _LocalValue("undefined" /* Undefined */);
-  }
-  /**
-   * Creates a new LocalValue object with a null value.
-   * @returns {LocalValue} - The created LocalValue object.
-   */
-  static createNullValue() {
-    return new _LocalValue("null" /* Null */);
-  }
-  /**
-   * Creates a new LocalValue object with a boolean value.
-   *
-   * @param {boolean} value - The boolean value.
-   * @returns {LocalValue} - The created LocalValue object.
-   */
-  static createBooleanValue(value) {
-    return new _LocalValue("boolean" /* Boolean */, value);
-  }
-  /**
-   * Creates a new LocalValue object with a BigInt value.
-   *
-   * @param {BigInt} value - The BigInt value.
-   * @returns {LocalValue} - The created LocalValue object.
-   */
-  static createBigIntValue(value) {
-    return new _LocalValue("bigint" /* BigInt */, value.toString());
-  }
-  /**
-   * Creates a new LocalValue object with an array.
-   *
-   * @param {Array} value - The array.
-   * @returns {LocalValue} - The created LocalValue object.
-   */
-  static createArrayValue(value) {
-    return new _LocalValue("array" /* Array */, value);
-  }
-  /**
-   * Creates a new LocalValue object with date value.
-   *
-   * @param {string} value - The date.
-   * @returns {LocalValue} - The created LocalValue object.
-   */
-  static createDateValue(value) {
-    return new _LocalValue("date" /* Date */, value);
-  }
-  /**
-   * Creates a new LocalValue object of map value.
-   * @param {Map} map - The map.
-   * @returns {LocalValue} - The created LocalValue object.
-   */
-  static createMapValue(map2) {
-    const value = [];
-    Array.from(map2.entries()).forEach(([key, val]) => {
-      value.push([_LocalValue.getArgument(key), _LocalValue.getArgument(val)]);
-    });
-    return new _LocalValue("map" /* Map */, value);
-  }
-  /**
-   * Creates a new LocalValue object from the passed object.
-   *
-   * @param object the object to create a LocalValue from
-   * @returns {LocalValue} - The created LocalValue object.
-   */
-  static createObjectValue(object) {
-    const value = [];
-    Object.entries(object).forEach(([key, val]) => {
-      value.push([key, _LocalValue.getArgument(val)]);
-    });
-    return new _LocalValue("object" /* Object */, value);
-  }
-  /**
-   * Creates a new LocalValue object of regular expression value.
-   *
-   * @param {string} value - The value of the regular expression.
-   * @returns {LocalValue} - The created LocalValue object.
-   */
-  static createRegularExpressionValue(value) {
-    return new _LocalValue("regexp" /* RegularExpression */, value);
-  }
-  /**
-   * Creates a new LocalValue object with the specified value.
-   * @param {Set} value - The value to be set.
-   * @returns {LocalValue} - The created LocalValue object.
-   */
-  static createSetValue(value) {
-    return new _LocalValue("set" /* Set */, value);
-  }
-  /**
-   * Creates a new LocalValue object with the given channel value
-   *
-   * @param {ChannelValue} value - The channel value.
-   * @returns {LocalValue} - The created LocalValue object.
-   */
-  static createChannelValue(value) {
-    return new _LocalValue("channel" /* Channel */, value);
-  }
-  /**
-   * Creates a new LocalValue object with a Symbol value.
-   *
-   * @param {Symbol} symbol - The Symbol value
-   * @returns {LocalValue} - The created LocalValue object
-   */
-  static createSymbolValue(symbol) {
-    const description = symbol.description || "Symbol()";
-    return new _LocalValue("symbol" /* Symbol */, description);
-  }
-  static getArgument(argument) {
-    const type = typeof argument;
-    switch (type) {
-      case "string" /* String */:
-        return _LocalValue.createStringValue(argument);
-      case "number" /* Number */:
-        if (Number.isNaN(argument) || Object.is(argument, -0) || !Number.isFinite(argument)) {
-          return _LocalValue.createSpecialNumberValue(argument);
-        }
-        return _LocalValue.createNumberValue(argument);
-      case "boolean" /* Boolean */:
-        return _LocalValue.createBooleanValue(argument);
-      case "bigint" /* BigInt */:
-        return _LocalValue.createBigIntValue(argument);
-      case "undefined" /* Undefined */:
-        return _LocalValue.createUndefinedValue();
-      case "symbol" /* Symbol */:
-        return _LocalValue.createSymbolValue(argument);
-      case "object" /* Object */:
-        if (argument === null) {
-          return _LocalValue.createNullValue();
-        }
-        if (argument instanceof Date) {
-          return _LocalValue.createDateValue(argument);
-        }
-        if (argument instanceof Map) {
-          const map2 = [];
-          argument.forEach((value, key) => {
-            const objectKey = typeof key === "string" ? key : _LocalValue.getArgument(key);
-            const objectValue = _LocalValue.getArgument(value);
-            map2.push([objectKey, objectValue]);
-          });
-          return _LocalValue.createMapValue(argument);
-        }
-        if (argument instanceof Set) {
-          const set = [];
-          argument.forEach((value) => {
-            set.push(_LocalValue.getArgument(value));
-          });
-          return _LocalValue.createSetValue(set);
-        }
-        if (argument instanceof Array) {
-          const arr = [];
-          argument.forEach((value) => {
-            arr.push(_LocalValue.getArgument(value));
-          });
-          return _LocalValue.createArrayValue(arr);
-        }
-        if (argument instanceof RegExp) {
-          return _LocalValue.createRegularExpressionValue({
-            pattern: argument.source,
-            flags: argument.flags
-          });
-        }
-        return _LocalValue.createObjectValue(argument);
-    }
-    throw new Error(`Unsupported type: ${type}`);
-  }
-  asMap() {
-    return {
-      [TYPE_CONSTANT]: this.type,
-      ...!(this.type === "null" /* Null */ || this.type === "undefined" /* Undefined */) ? { [VALUE_CONSTANT]: this.value } : {}
-    };
-  }
-};
-
-// src/utils/message-utils.ts
-var catchError = (diagnostics, err2, msg) => {
-  const diagnostic = {
-    level: "error",
-    type: "build",
-    header: "Build Error",
-    messageText: "build error",
-    lines: []
-  };
-  if (isString(msg)) {
-    diagnostic.messageText = msg.length ? msg : "UNKNOWN ERROR";
-  } else if (err2 != null) {
-    if (err2.stack != null) {
-      diagnostic.messageText = err2.stack.toString();
-    } else {
-      if (err2.message != null) {
-        diagnostic.messageText = err2.message.length ? err2.message : "UNKNOWN ERROR";
-      } else {
-        diagnostic.messageText = err2.toString();
-      }
-    }
-  }
-  if (diagnostics != null && !shouldIgnoreError(diagnostic.messageText)) {
-    diagnostics.push(diagnostic);
-  }
-  return diagnostic;
-};
-var hasError = (diagnostics) => {
-  if (diagnostics == null || diagnostics.length === 0) {
-    return false;
-  }
-  return diagnostics.some((d) => d.level === "error" && d.type !== "runtime");
-};
-var shouldIgnoreError = (msg) => {
-  return msg === TASK_CANCELED_MSG;
-};
-var TASK_CANCELED_MSG = `task canceled`;
-
-// src/utils/regular-expression.ts
-var escapeRegExpSpecialCharacters = (text) => {
-  return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-};
-
-// src/utils/remote-value.ts
-var RemoteValue = class _RemoteValue {
-  /**
-   * Deserializes a LocalValue serialized object back to its original JavaScript representation
-   *
-   * @param serialized The serialized LocalValue object
-   * @returns The original JavaScript value/object
-   */
-  static fromLocalValue(serialized) {
-    const type = serialized[TYPE_CONSTANT];
-    const value = VALUE_CONSTANT in serialized ? serialized[VALUE_CONSTANT] : void 0;
-    switch (type) {
-      case "string" /* String */:
-        return value;
-      case "boolean" /* Boolean */:
-        return value;
-      case "bigint" /* BigInt */:
-        return BigInt(value);
-      case "undefined" /* Undefined */:
-        return void 0;
-      case "null" /* Null */:
-        return null;
-      case "number" /* Number */:
-        if (value === "NaN") return NaN;
-        if (value === "-0") return -0;
-        if (value === "Infinity") return Infinity;
-        if (value === "-Infinity") return -Infinity;
-        return value;
-      case "array" /* Array */:
-        return value.map((item) => _RemoteValue.fromLocalValue(item));
-      case "date" /* Date */:
-        return new Date(value);
-      case "map" /* Map */:
-        const map2 = /* @__PURE__ */ new Map();
-        for (const [key, val] of value) {
-          const deserializedKey = typeof key === "object" && key !== null ? _RemoteValue.fromLocalValue(key) : key;
-          const deserializedValue = _RemoteValue.fromLocalValue(val);
-          map2.set(deserializedKey, deserializedValue);
-        }
-        return map2;
-      case "object" /* Object */:
-        const obj = {};
-        for (const [key, val] of value) {
-          obj[key] = _RemoteValue.fromLocalValue(val);
-        }
-        return obj;
-      case "regexp" /* RegularExpression */:
-        const { pattern, flags } = value;
-        return new RegExp(pattern, flags);
-      case "set" /* Set */:
-        const set = /* @__PURE__ */ new Set();
-        for (const item of value) {
-          set.add(_RemoteValue.fromLocalValue(item));
-        }
-        return set;
-      case "symbol" /* Symbol */:
-        return Symbol(value);
-      default:
-        throw new Error(`Unsupported type: ${type}`);
-    }
-  }
-  /**
-   * Utility method to deserialize multiple LocalValues at once
-   *
-   * @param serializedValues Array of serialized LocalValue objects
-   * @returns Array of deserialized JavaScript values
-   */
-  static fromLocalValueArray(serializedValues) {
-    return serializedValues.map((value) => _RemoteValue.fromLocalValue(value));
-  }
-  /**
-   * Verifies if the given object matches the structure of a serialized LocalValue
-   *
-   * @param obj Object to verify
-   * @returns boolean indicating if the object has LocalValue structure
-   */
-  static isLocalValueObject(obj) {
-    if (typeof obj !== "object" || obj === null) {
-      return false;
-    }
-    if (!obj.hasOwnProperty(TYPE_CONSTANT)) {
-      return false;
-    }
-    const type = obj[TYPE_CONSTANT];
-    const hasTypeProperty = Object.values({ ...PrimitiveType, ...NonPrimitiveType }).includes(type);
-    if (!hasTypeProperty) {
-      return false;
-    }
-    if (type !== "null" /* Null */ && type !== "undefined" /* Undefined */) {
-      return obj.hasOwnProperty(VALUE_CONSTANT);
-    }
-    return true;
-  }
-};
-
-// src/utils/result.ts
-var result_exports = {};
-__export(result_exports, {
-  err: () => err,
-  map: () => map,
-  ok: () => ok,
-  unwrap: () => unwrap,
-  unwrapErr: () => unwrapErr
-});
-var ok = (value) => ({
-  isOk: true,
-  isErr: false,
-  value
-});
-var err = (value) => ({
-  isOk: false,
-  isErr: true,
-  value
-});
-function map(result, fn) {
-  if (result.isOk) {
-    const val = fn(result.value);
-    if (val instanceof Promise) {
-      return val.then((newVal) => ok(newVal));
-    } else {
-      return ok(val);
-    }
-  }
-  if (result.isErr) {
-    const value = result.value;
-    return err(value);
-  }
-  throw "should never get here";
-}
-var unwrap = (result) => {
-  if (result.isOk) {
-    return result.value;
-  } else {
-    throw result.value;
-  }
-};
-var unwrapErr = (result) => {
-  if (result.isErr) {
-    return result.value;
-  } else {
-    throw result.value;
-  }
-};
-
-// src/utils/serialize.ts
-function serializeProperty(value) {
-  if (["string", "boolean", "undefined"].includes(typeof value) || typeof value === "number" && value !== Infinity && value !== -Infinity && !isNaN(value)) {
-    return value;
-  }
-  const arg = LocalValue.getArgument(value);
-  return SERIALIZED_PREFIX + btoa(JSON.stringify(arg));
-}
-function deserializeProperty(value) {
-  if (typeof value !== "string" || !value.startsWith(SERIALIZED_PREFIX)) {
-    return value;
-  }
-  return RemoteValue.fromLocalValue(JSON.parse(atob(value.slice(SERIALIZED_PREFIX.length))));
-}
-
-// src/utils/util.ts
-var lowerPathParam = (fn) => (p) => fn(p.toLowerCase());
-var isDtsFile = lowerPathParam((p) => p.endsWith(".d.ts") || p.endsWith(".d.mts") || p.endsWith(".d.cts"));
-var isTsFile = lowerPathParam(
-  (p) => !isDtsFile(p) && (p.endsWith(".ts") || p.endsWith(".mts") || p.endsWith(".cts"))
-);
-var isTsxFile = lowerPathParam(
-  (p) => p.endsWith(".tsx") || p.endsWith(".mtsx") || p.endsWith(".ctsx")
-);
-var isJsxFile = lowerPathParam(
-  (p) => p.endsWith(".jsx") || p.endsWith(".mjsx") || p.endsWith(".cjsx")
-);
-var isJsFile = lowerPathParam((p) => p.endsWith(".js") || p.endsWith(".mjs") || p.endsWith(".cjs"));
-
-// src/utils/shadow-css.ts
-/**
- * @license
- * Copyright Google Inc. All Rights Reserved.
- *
- * Use of this source code is governed by an MIT-style license that can be
- * found in the LICENSE file at https://angular.io/license
- *
- * This file is a port of shadowCSS from `webcomponents.js` to TypeScript.
- * https://github.com/webcomponents/webcomponentsjs/blob/4efecd7e0e/src/ShadowCSS/ShadowCSS.js
- * https://github.com/angular/angular/blob/master/packages/compiler/src/shadow_css.ts
- */
-var _polyfillHost = "-shadowcsshost";
-var _polyfillSlotted = "-shadowcssslotted";
-var _polyfillHostContext = "-shadowcsscontext";
-var _parenSuffix = ")(?:\\(((?:\\([^)(]*\\)|[^)(]*)+?)\\))?([^,{]*)";
-var _cssColonHostRe = new RegExp("(" + _polyfillHost + _parenSuffix, "gim");
-var _cssColonHostContextRe = new RegExp("(" + _polyfillHostContext + _parenSuffix, "gim");
-var _cssColonSlottedRe = new RegExp("(" + _polyfillSlotted + _parenSuffix, "gim");
-var _polyfillHostNoCombinator = _polyfillHost + "-no-combinator";
-var createSupportsRuleRe = (selector) => {
-  const safeSelector = escapeRegExpSpecialCharacters(selector);
-  return new RegExp(
-    // First capture group: match any context before the selector that's not inside @supports selector()
-    // Using negative lookahead to avoid matching inside @supports selector(...) condition
-    `(^|[^@]|@(?!supports\\s+selector\\s*\\([^{]*?${safeSelector}))(${safeSelector}\\b)`,
-    "g"
-  );
-};
-var _colonSlottedRe = createSupportsRuleRe("::slotted");
-var _colonHostRe = createSupportsRuleRe(":host");
-var _colonHostContextRe = createSupportsRuleRe(":host-context");
-
-// src/runtime/mode.ts
-var setMode = (handler) => modeResolutionChain.push(handler);
-var CAPTURE_EVENT_SUFFIX = "Capture";
-var CAPTURE_EVENT_REGEX = new RegExp(CAPTURE_EVENT_SUFFIX + "$");
-var baseClass = BUILD.lazyLoad ? class {
-} : globalThis.HTMLElement || class {
-};
 
 // src/compiler/html/canonical-link.ts
 var updateCanonicalLink = (doc, href) => {
@@ -26179,4 +26381,13 @@ function removeScripts(elm) {
   }
 }
 
-export { createWindowFromHtml, deserializeProperty, hydrateDocument, renderToString, serializeDocumentToString, serializeProperty, streamToString };
+// src/hydrate/runner/index.ts
+var everywhere;
+try {
+  everywhere = global || globalThis;
+} catch (e) {
+  everywhere = window || globalThis;
+}
+everywhere.tagTransform = transformTag;
+
+export { createWindowFromHtml, deserializeProperty, hydrateDocument, renderToString, serializeDocumentToString, serializeProperty, setTagTransformer, streamToString, transformTag };

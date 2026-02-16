@@ -28,6 +28,8 @@ $enable_date_range         = true;
 $enable_facets             = true;
 $hide_uncategorized        = false;
 $enable_post_type_filter   = false;
+$facets_collapse_list      = false;
+$facets_view_more_threshold = 8;
 
 if ( $is_configured ) {
 	$search_experience         = get_option( 'searchcraft_search_experience', 'full' );
@@ -39,6 +41,8 @@ if ( $is_configured ) {
 	$enable_facets             = get_option( 'searchcraft_enable_facets', '1' );
 	$hide_uncategorized        = get_option( 'searchcraft_hide_uncategorized', false );
 	$enable_post_type_filter   = get_option( 'searchcraft_enable_post_type_filter', false );
+	$facets_collapse_list      = get_option( 'searchcraft_facets_collapse_list', false );
+	$facets_view_more_threshold = get_option( 'searchcraft_facets_view_more_threshold', 8 );
 }
 
 // Check if there are multiple post types enabled.
@@ -617,7 +621,7 @@ if ( ! is_array( $filter_panel_order ) || empty( $filter_panel_order ) ) {
 												</label>
 												<?php if ( isset( $item['has_suboption'] ) && $item['has_suboption'] ) : ?>
 													<div class="searchcraft-facets-options" style="<?php echo $enable_facets ? '' : 'display:none;'; ?> padding-left: 2em; margin-top: 0.5em;">
-														<label for="searchcraft_hide_uncategorized" style="display: block;">
+														<label for="searchcraft_hide_uncategorized" style="display: block; margin-bottom: 0.75em;">
 															<input
 																type="checkbox"
 																name="searchcraft_hide_uncategorized"
@@ -629,6 +633,35 @@ if ( ! is_array( $filter_panel_order ) || empty( $filter_panel_order ) ) {
 															<p class="description" style="margin: 0.25em 0 0 1.5em;">
 																Hide the "Uncategorized" option from category facets.
 															</p>
+														</label>
+														<label for="searchcraft_facets_collapse_list" style="display: block; margin-bottom: 0.75em;">
+															<input
+																type="checkbox"
+																name="searchcraft_facets_collapse_list"
+																id="searchcraft_facets_collapse_list"
+																value="1"
+																<?php checked( $facets_collapse_list, true ); ?>
+															/>
+															<strong>Collapse List</strong>
+															<p class="description" style="margin: 0.25em 0 0 1.5em;">
+																Start with facet lists collapsed. Users can click to expand them.
+															</p>
+														</label>
+														<label for="searchcraft_facets_view_more_threshold" style="display: block;">
+															<strong>View More Threshold</strong>
+															<p class="description" style="margin: 0.25em 0 0.5em 0;">
+																Number of facet items to show before displaying "View more" button. Set to 0 to disable.
+															</p>
+															<input
+																type="number"
+																name="searchcraft_facets_view_more_threshold"
+																id="searchcraft_facets_view_more_threshold"
+																value="<?php echo esc_attr( $facets_view_more_threshold ); ?>"
+																class="small-text"
+																min="0"
+																max="100"
+																style="margin-left: 0;"
+															/>
 														</label>
 													</div>
 												<?php endif; ?>

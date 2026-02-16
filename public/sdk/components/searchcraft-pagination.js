@@ -1,7 +1,7 @@
-import { p as proxyCustomElement, H, h, t as transformTag } from './index2.js?v=0.13.2';
-import { r as registry } from './CoreInstanceRegistry.js?v=0.13.2';
-import { c as classNames } from './index3.js?v=0.13.2';
-import { d as defineCustomElement$2 } from './searchcraft-button2.js?v=0.13.2';
+import { p as proxyCustomElement, H, h, t as transformTag } from './index2.js?v=0.13.3';
+import { r as registry } from './CoreInstanceRegistry.js?v=0.13.3';
+import { c as classNames } from './index3.js?v=0.13.3';
+import { d as defineCustomElement$2 } from './searchcraft-button2.js?v=0.13.3';
 
 const SearchcraftPagination$1 = /*@__PURE__*/ proxyCustomElement(class SearchcraftPagination extends H {
     constructor(registerHost) {
@@ -14,6 +14,11 @@ const SearchcraftPagination$1 = /*@__PURE__*/ proxyCustomElement(class Searchcra
      * The id of the Searchcraft instance that this component should use.
      */
     searchcraftId;
+    /**
+     * Whether to scroll to the top of the search results when pagination buttons are clicked.
+     * @default true
+     */
+    scrollToTop = true;
     // store vars
     searchTerm;
     searchResultsPerPage;
@@ -54,8 +59,47 @@ const SearchcraftPagination$1 = /*@__PURE__*/ proxyCustomElement(class Searchcra
         this.unsubscribe?.();
         this.cleanupCore?.();
     }
+    /**
+     * Smooth scroll to the top of the search results component
+     */
+    smoothScrollToSearchResults() {
+        if (!this.scrollToTop) {
+            return;
+        }
+        const searchResultsElement = document.querySelector('searchcraft-search-results .searchcraft-search-results');
+        if (!searchResultsElement) {
+            return;
+        }
+        const elementRect = searchResultsElement.getBoundingClientRect();
+        const scrollOffset = 200; // Offset in pixels above the element
+        const targetPosition = elementRect.top + window.scrollY - scrollOffset;
+        const startPosition = window.scrollY;
+        const distance = targetPosition - startPosition;
+        const duration = 1500;
+        let startTime = null;
+        // smooth scrolling
+        const easeOutExpo = (t) => {
+            return t === 1 ? 1 : 1 - 2 ** (-10 * t);
+        };
+        const animation = (currentTime) => {
+            if (startTime === null) {
+                startTime = currentTime;
+            }
+            const timeElapsed = currentTime - startTime;
+            const progress = Math.min(timeElapsed / duration, 1);
+            const ease = easeOutExpo(progress);
+            window.scrollTo(0, startPosition + distance * ease);
+            if (progress < 1) {
+                requestAnimationFrame(animation);
+            }
+        };
+        requestAnimationFrame(animation);
+    }
     handleGoToPage(page) {
         this.setSearchResultsPage(page);
+        if (this.scrollToTop) {
+            this.smoothScrollToSearchResults();
+        }
     }
     renderOddPaginationItem(page) {
         return (h("li", null, h("button", { class: classNames('searchcraft-pagination-item', {
@@ -111,6 +155,7 @@ const SearchcraftPagination$1 = /*@__PURE__*/ proxyCustomElement(class Searchcra
     }
 }, [768, "searchcraft-pagination", {
         "searchcraftId": [1, "searchcraft-id"],
+        "scrollToTop": [4, "scroll-to-top"],
         "searchTerm": [32],
         "searchResultsPerPage": [32],
         "searchResultsPage": [32],

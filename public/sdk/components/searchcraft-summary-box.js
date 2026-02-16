@@ -1,7 +1,7 @@
-import { p as proxyCustomElement, H, h, t as transformTag } from './index2.js?v=0.13.2';
-import { r as registry } from './CoreInstanceRegistry.js?v=0.13.2';
-import { p as purify } from './purify.es.js?v=0.13.2';
-import { d as defineCustomElement$2 } from './searchcraft-loading2.js?v=0.13.2';
+import { p as proxyCustomElement, H, h, t as transformTag } from './index2.js?v=0.13.3';
+import { r as registry } from './CoreInstanceRegistry.js?v=0.13.3';
+import { p as purify } from './purify.es.js?v=0.13.3';
+import { d as defineCustomElement$2 } from './searchcraft-loading2.js?v=0.13.3';
 
 /**
  * marked v15.0.12 - a markdown parser

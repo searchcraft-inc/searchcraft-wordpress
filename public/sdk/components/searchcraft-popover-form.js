@@ -1,14 +1,14 @@
-import { p as proxyCustomElement, H, h, t as transformTag } from './index2.js?v=0.13.2';
-import { r as registry } from './CoreInstanceRegistry.js?v=0.13.2';
-import { c as classNames } from './index3.js?v=0.13.2';
-import { d as defineCustomElement$9 } from './searchcraft-ad2.js?v=0.13.2';
-import { d as defineCustomElement$8 } from './searchcraft-button2.js?v=0.13.2';
-import { d as defineCustomElement$7 } from './searchcraft-error-message2.js?v=0.13.2';
-import { d as defineCustomElement$6 } from './searchcraft-input-form2.js?v=0.13.2';
-import { d as defineCustomElement$5 } from './searchcraft-input-label2.js?v=0.13.2';
-import { d as defineCustomElement$4 } from './searchcraft-popover-footer2.js?v=0.13.2';
-import { d as defineCustomElement$3 } from './searchcraft-popover-list-item2.js?v=0.13.2';
-import { d as defineCustomElement$2 } from './searchcraft-popover-list-view2.js?v=0.13.2';
+import { p as proxyCustomElement, H, h, t as transformTag } from './index2.js?v=0.13.3';
+import { r as registry } from './CoreInstanceRegistry.js?v=0.13.3';
+import { c as classNames } from './index3.js?v=0.13.3';
+import { d as defineCustomElement$9 } from './searchcraft-ad2.js?v=0.13.3';
+import { d as defineCustomElement$8 } from './searchcraft-button2.js?v=0.13.3';
+import { d as defineCustomElement$7 } from './searchcraft-error-message2.js?v=0.13.3';
+import { d as defineCustomElement$6 } from './searchcraft-input-form2.js?v=0.13.3';
+import { d as defineCustomElement$5 } from './searchcraft-input-label2.js?v=0.13.3';
+import { d as defineCustomElement$4 } from './searchcraft-popover-footer2.js?v=0.13.3';
+import { d as defineCustomElement$3 } from './searchcraft-popover-list-item2.js?v=0.13.3';
+import { d as defineCustomElement$2 } from './searchcraft-popover-list-view2.js?v=0.13.3';
 
 const SearchcraftPopoverForm$1 = /*@__PURE__*/ proxyCustomElement(class SearchcraftPopoverForm extends H {
     constructor(registerHost) {
