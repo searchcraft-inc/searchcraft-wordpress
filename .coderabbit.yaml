@@ -4,7 +4,15 @@ reviews:
   auto_review:
     enabled: true
     base_branches: ["development"]
+    ignore_title_keywords:
+      - "WIP"
+      - "DO NOT MERGE"
+      - "DRAFT"
+      - "Version"
+      - "Release"
+
     drafts: false
+
 
   profile: "chill"
   request_changes_workflow: true
