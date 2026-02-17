@@ -1,8 +1,8 @@
-import { p as proxyCustomElement, H, h, t as transformTag } from './index2.js?v=0.13.2';
-import { r as registry } from './CoreInstanceRegistry.js?v=0.13.2';
-import { d as defineCustomElement$4 } from './searchcraft-ad2.js?v=0.13.2';
-import { d as defineCustomElement$3 } from './searchcraft-error-message2.js?v=0.13.2';
-import { d as defineCustomElement$2 } from './searchcraft-search-result2.js?v=0.13.2';
+import { p as proxyCustomElement, H, h, t as transformTag } from './index2.js?v=0.13.3';
+import { r as registry } from './CoreInstanceRegistry.js?v=0.13.3';
+import { d as defineCustomElement$4 } from './searchcraft-ad2.js?v=0.13.3';
+import { d as defineCustomElement$3 } from './searchcraft-error-message2.js?v=0.13.3';
+import { d as defineCustomElement$2 } from './searchcraft-search-result2.js?v=0.13.3';
 
 const SearchcraftSearchResults$1 = /*@__PURE__*/ proxyCustomElement(class SearchcraftSearchResults extends H {
     constructor(registerHost) {

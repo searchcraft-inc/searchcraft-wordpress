@@ -1197,6 +1197,12 @@ class Searchcraft_Admin {
 		$hide_uncategorized = isset( $request['searchcraft_hide_uncategorized'] ) ? true : false;
 		update_option( 'searchcraft_hide_uncategorized', $hide_uncategorized );
 
+		$facets_collapse_list = isset( $request['searchcraft_facets_collapse_list'] ) ? true : false;
+		update_option( 'searchcraft_facets_collapse_list', $facets_collapse_list );
+
+		$facets_view_more_threshold = isset( $request['searchcraft_facets_view_more_threshold'] ) ? absint( $request['searchcraft_facets_view_more_threshold'] ) : 8;
+		update_option( 'searchcraft_facets_view_more_threshold', $facets_view_more_threshold );
+
 		$enable_post_type_filter = isset( $request['searchcraft_enable_post_type_filter'] ) ? true : false;
 		update_option( 'searchcraft_enable_post_type_filter', $enable_post_type_filter );
 
@@ -1646,11 +1652,9 @@ class Searchcraft_Admin {
 				$taxonomy_name = ( 'categories' === $field_name ) ? 'category' : $field_name;
 
 				// Also check for _values fields.
-				$is_values_field = false;
 				if ( substr( $field_name, -7 ) === '_values' ) {
 					$base_field_name = substr( $field_name, 0, -7 );
 					$taxonomy_name = ( 'categories' === $base_field_name ) ? 'category' : $base_field_name;
-					$is_values_field = true;
 				}
 
 				if ( in_array( $taxonomy_name, $all_taxonomies, true ) &&
@@ -2808,6 +2812,8 @@ class Searchcraft_Admin {
 			'searchcraft_enable_date_range',
 			'searchcraft_enable_facets',
 			'searchcraft_hide_uncategorized',
+			'searchcraft_facets_collapse_list',
+			'searchcraft_facets_view_more_threshold',
 			'searchcraft_enable_post_type_filter',
 			'searchcraft_enable_ai_summary',
 			'searchcraft_ai_summary_banner',

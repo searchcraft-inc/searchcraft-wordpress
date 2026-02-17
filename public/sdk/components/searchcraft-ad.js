@@ -1,4 +1,4 @@
-import { S as SearchcraftPopoverListItemAd, d as defineCustomElement$1 } from './searchcraft-ad2.js?v=0.13.2';
+import { S as SearchcraftPopoverListItemAd, d as defineCustomElement$1 } from './searchcraft-ad2.js?v=0.13.3';
 
 const SearchcraftAd = SearchcraftPopoverListItemAd;
 const defineCustomElement = defineCustomElement$1;

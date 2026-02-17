@@ -1,7 +1,7 @@
-import { p as proxyCustomElement, t as transformTag, H, h } from './index2.js?v=0.13.2';
-import { c as classNames } from './index3.js?v=0.13.2';
-import { r as registry } from './CoreInstanceRegistry.js?v=0.13.2';
-import { h as html } from './html.js?v=0.13.2';
+import { p as proxyCustomElement, t as transformTag, H, h } from './index2.js?v=0.13.3';
+import { c as classNames } from './index3.js?v=0.13.3';
+import { r as registry } from './CoreInstanceRegistry.js?v=0.13.3';
+import { h as html } from './html.js?v=0.13.3';
 
 const urlAlphabet =
   'useandom-26T198340PX75pxJACKVERYMINDBUSHWOLF_GQZbfghjklqvwyzrict';

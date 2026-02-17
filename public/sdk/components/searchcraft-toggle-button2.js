@@ -1,6 +1,6 @@
-import { p as proxyCustomElement, H, c as createEvent, h, t as transformTag } from './index2.js?v=0.13.2';
-import { r as registry } from './CoreInstanceRegistry.js?v=0.13.2';
-import { c as classNames } from './index3.js?v=0.13.2';
+import { p as proxyCustomElement, H, c as createEvent, h, t as transformTag } from './index2.js?v=0.13.3';
+import { r as registry } from './CoreInstanceRegistry.js?v=0.13.3';
+import { c as classNames } from './index3.js?v=0.13.3';
 
 const SearchcraftToggleButton = /*@__PURE__*/ proxyCustomElement(class SearchcraftToggleButton extends H {
     constructor(registerHost) {
