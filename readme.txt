@@ -47,7 +47,7 @@ Woocommerce is not supported with the Searchcraft plugin at this time, this plug
 
 = Can I use the Searchcraft plugin with custom post types? =
 
-Custom post types are not supported at this time.
+Yes! Custom post types and custom taxonomy are both supported.
 
 = How do I use the Searchcraft plugin with multiple domains? =
 
