@@ -9,7 +9,9 @@ reviews:
       - "DO NOT MERGE"
       - "DRAFT"
       - "Version"
+      - "version"
       - "Release"
+      - "release"
 
     drafts: false
 
