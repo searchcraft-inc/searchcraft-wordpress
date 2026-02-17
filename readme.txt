@@ -71,7 +71,7 @@ Searchcraft Cloud customers may also reach out via our Discord server for assist
 
 = 1.3.6 =
 * New Feature - Filter panel facet sections are now collapsible and have a configuration option to set the default behavior.
-- New Feature - Added "view more" for long filter panel facet lists. The threshold for when this takes effect is configurable.
+* New Feature - Added "view more" for long filter panel facet lists. The threshold for when this takes effect is configurable.
 
 = 1.3.5 =
 * Enhancement - Adds capability for tag based (non-hierarchical) taxonomies to add an additional search field for the values as a multi-value field. This allows search queries to match against these tag names. Works with both stock and custom tag taxonomies.
