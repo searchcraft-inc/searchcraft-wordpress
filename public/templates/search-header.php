@@ -466,7 +466,7 @@ if ( ! empty( $custom_css ) ) {
 				<?php if ( 'modal' === $search_experience ) : ?>
 					<searchcraft-popover-button type="skeuomorphic"></searchcraft-popover-button>
 				<?php endif; ?>
-				<searchcraft-popover-form type="<?php echo esc_attr( $search_experience ); ?>" placeholder-value="<?php echo esc_attr( $search_placeholder ); ?>"></searchcraft-popover-form>
+				<searchcraft-popover-form type="<?php echo esc_attr( $search_experience ); ?>" placeholder-value="<?php echo esc_attr( $search_placeholder ); ?>"<?php if ( $searchcraft_enable_view_all_results ) : ?> view-all-results-base-url="<?php echo esc_url( site_url( '/' ) . '?s=' ); ?>"<?php endif; ?><?php if ( ! empty( $searchcraft_view_all_results_label ) ) : ?> view-all-results-label="<?php echo esc_attr( $searchcraft_view_all_results_label ); ?>"<?php endif; ?>></searchcraft-popover-form>
 			</div>
 		<?php else : ?>
 			<div class="searchcraft-full-search-experience">

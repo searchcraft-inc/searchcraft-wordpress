@@ -121,6 +121,21 @@ function toggleFormFields() {
 }
 
 /**
+ * Toggle view all label row visibility based on checkbox state
+ */
+function toggleViewAllLabelRow() {
+	const checkbox = document.getElementById('searchcraft_enable_view_all_results');
+	const labelRows = document.querySelectorAll('.searchcraft-view-all-label-row');
+	if (!checkbox || !labelRows.length) {
+		return;
+	}
+	const isChecked = checkbox.checked;
+	labelRows.forEach((row) => {
+		row.style.display = isChecked ? '' : 'none';
+	});
+}
+
+/**
  * Toggle filter panel options visibility
  */
 function toggleFilterPanelOptions() {
@@ -691,6 +706,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
 			// Add event listener
 			facetsCheckbox.addEventListener('change', toggleFacetsOptions);
+		}
+
+		// View all label row toggle
+		const viewAllCheckbox = document.getElementById('searchcraft_enable_view_all_results');
+		if (viewAllCheckbox) {
+			// Initial state
+			toggleViewAllLabelRow();
+
+			// Add event listener
+			viewAllCheckbox.addEventListener('change', toggleViewAllLabelRow);
 		}
 
 		// AI summary banner text toggle

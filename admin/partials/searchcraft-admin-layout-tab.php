@@ -242,6 +242,40 @@ if ( ! is_array( $filter_panel_order ) || empty( $filter_panel_order ) ) {
 								</p>
 							</td>
 						</tr>
+						<tr class="searchcraft-popover-only">
+							<th scope="row">
+								<label for="searchcraft_enable_view_all_results">Enable View All Results</label>
+							</th>
+							<td>
+								<label for="searchcraft_enable_view_all_results">
+									<input
+										type="checkbox"
+										name="searchcraft_enable_view_all_results"
+										id="searchcraft_enable_view_all_results"
+										value="1"
+										<?php checked( get_option( 'searchcraft_enable_view_all_results', false ), true ); ?>
+									/>
+									Enable a &ldquo;View All Results&rdquo; link in the popover search form.
+								</label>
+								<p class="description">
+									When enabled, a link will appear in the search form directing users to the full search results page.
+								</p>
+							</td>
+						</tr>
+						<tr class="searchcraft-popover-only searchcraft-view-all-label-row">
+							<th scope="row">
+								<label for="searchcraft_view_all_results_label">View All Label</label>
+							</th>
+							<td>
+								<?php
+								$view_all_results_label = get_option( 'searchcraft_view_all_results_label', '' );
+								?>
+								<input type="text" name="searchcraft_view_all_results_label" id="searchcraft_view_all_results_label" value="<?php echo esc_attr( $view_all_results_label ); ?>" class="regular-text" placeholder="View All" />
+								<p class="description">
+									The label text for the &ldquo;View All Results&rdquo; link.
+								</p>
+							</td>
+						</tr>
 					</tbody>
 				</table>
 		</div>

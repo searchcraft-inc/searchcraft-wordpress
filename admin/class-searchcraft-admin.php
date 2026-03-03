@@ -1488,6 +1488,16 @@ class Searchcraft_Admin {
 			update_option( 'searchcraft_popover_element_behavior', $popover_element_behavior );
 		}
 
+		// Handle enable view all results setting.
+		$enable_view_all_results = isset( $request['searchcraft_enable_view_all_results'] ) ? true : false;
+		update_option( 'searchcraft_enable_view_all_results', $enable_view_all_results );
+
+		// Handle view all results label.
+		if ( isset( $request['searchcraft_view_all_results_label'] ) ) {
+			$view_all_results_label = sanitize_text_field( wp_unslash( $request['searchcraft_view_all_results_label'] ) );
+			update_option( 'searchcraft_view_all_results_label', $view_all_results_label );
+		}
+
 		// Handle retain get_search_form setting.
 		$retain_get_search_form = isset( $request['searchcraft_retain_get_search_form'] ) ? true : false;
 		update_option( 'searchcraft_retain_get_search_form', $retain_get_search_form );

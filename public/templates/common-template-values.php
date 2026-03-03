@@ -44,6 +44,8 @@ $search_placeholder                       = get_option( 'searchcraft_search_plac
 $searchcraft_include_filter_panel         = get_option( 'searchcraft_include_filter_panel', false );
 $searchcraft_input_width                  = get_option( 'searchcraft_input_width', '100' );
 $searchcraft_result_orientation           = get_option( 'searchcraft_result_orientation', 'column' );
+$searchcraft_enable_view_all_results      = get_option( 'searchcraft_enable_view_all_results', false );
+$searchcraft_view_all_results_label       = get_option( 'searchcraft_view_all_results_label', '' );
 $value_attr                               = '';
 if ( is_search() ) {
 	$search_query = get_search_query( true );
