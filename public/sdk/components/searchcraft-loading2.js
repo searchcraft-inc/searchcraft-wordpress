@@ -1,4 +1,4 @@
-import { p as proxyCustomElement, H, h, t as transformTag } from './index2.js?v=0.13.3';
+import { p as proxyCustomElement, H, h, t as transformTag } from './index2.js?scv=0.14.0';
 
 const SearchcraftInputLabel = /*@__PURE__*/ proxyCustomElement(class SearchcraftInputLabel extends H {
     constructor(registerHost) {
@@ -9,7 +9,10 @@ const SearchcraftInputLabel = /*@__PURE__*/ proxyCustomElement(class Searchcraft
     }
     label;
     render() {
-        return (h("div", { key: '5bda164202246eeb2e56bb6a25bede9931898e7a', class: 'searchcraft-loading' }, h("div", { key: 'e33a5abc6686f9983c718a2532aa2d46902d98a2', class: 'searchcraft-loading-bars' }, h("div", { key: '85ff7af527b8f419c9bfd6e84331dd68772e6fdd', class: 'searchcraft-loading-bar-1' }), h("div", { key: '1485d17e9262dbec6d2e5976a63149878137821c', class: 'searchcraft-loading-bar-2' }), h("div", { key: 'd2939b9f7bc0599df7d96db91802ebfcbf232f3e', class: 'searchcraft-loading-bar-3' }), h("div", { key: '7a73bd5baf25ec789c3170e066d1333b905bfe7b', class: 'searchcraft-loading-bar-4' }), h("div", { key: 'b644b618766727773b21d288945c21b6ef0be958', class: 'searchcraft-loading-bar-5' }), h("div", { key: '4f5123a786fc40891ca54edc538dd56f683b26ce', class: 'searchcraft-loading-bar-6' })), h("p", { key: '967c1a6fb41231c8d713b78facca98e7f5a80709', class: 'searchcraft-loading-label' }, this.label)));
+        const accessibleLabel = this.label ?? 'Loading';
+        return (h("div", { key: 'd749250c5f56c703da7f1cba4a226a202ae269c0', class: 'searchcraft-loading',
+            // biome-ignore lint/a11y/useSemanticElements: <output> is semantically incorrect for a loading indicator
+            role: 'status', "aria-live": 'polite', "aria-label": accessibleLabel }, h("div", { key: '0f834793686bcf8dff56769ad65311c1f591e8dd', class: 'searchcraft-loading-dots', "aria-hidden": 'true' }, h("div", { key: '2174c333eecf0630ce984b2dece74675356259d9', class: 'searchcraft-loading-dot-1' }), h("div", { key: '927fee69cd86dbd9ae57776c2a15fa6956707fac', class: 'searchcraft-loading-dot-2' }), h("div", { key: 'cfd37c9a9a12dfc9963aa53c3979fb59dc7a132c', class: 'searchcraft-loading-dot-3' })), this.label ? (h("p", { class: 'searchcraft-loading-label' }, this.label)) : null));
     }
 }, [768, "searchcraft-loading", {
         "label": [1]

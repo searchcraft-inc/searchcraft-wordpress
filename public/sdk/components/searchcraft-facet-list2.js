@@ -1,5 +1,5 @@
-import { p as proxyCustomElement, H, c as createEvent, h, t as transformTag } from './index2.js?v=0.13.3';
-import { r as registry } from './CoreInstanceRegistry.js?v=0.13.3';
+import { p as proxyCustomElement, H, c as createEvent, h, t as transformTag } from './index2.js?scv=0.14.0';
+import { r as registry } from './CoreInstanceRegistry.js?scv=0.14.0';
 import './purify.es.js';
 
 /**

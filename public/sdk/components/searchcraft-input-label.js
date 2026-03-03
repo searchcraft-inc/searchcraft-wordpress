@@ -1,4 +1,4 @@
-import { S as SearchcraftInputLabel$1, d as defineCustomElement$1 } from './searchcraft-input-label2.js?v=0.13.3';
+import { S as SearchcraftInputLabel$1, d as defineCustomElement$1 } from './searchcraft-input-label2.js?scv=0.14.0';
 
 const SearchcraftInputLabel = SearchcraftInputLabel$1;
 const defineCustomElement = defineCustomElement$1;
