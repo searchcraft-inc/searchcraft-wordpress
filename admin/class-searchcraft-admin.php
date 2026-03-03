@@ -1034,8 +1034,11 @@ class Searchcraft_Admin {
 		if ( isset( $request['searchcraft_search_experience'] ) ) {
 			$experience = sanitize_text_field( wp_unslash( $request['searchcraft_search_experience'] ) );
 
-			// Validate the experience value.
-			$valid_experiences = array( 'full', 'popover' );
+			// Validate the experience value. Map legacy 'popover' to 'modal'.
+			if ( 'popover' === $experience ) {
+				$experience = 'modal';
+			}
+			$valid_experiences = array( 'full', 'modal', 'inline' );
 			if ( ! in_array( $experience, $valid_experiences, true ) ) {
 				$experience = 'full';
 			}

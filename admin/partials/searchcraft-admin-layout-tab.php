@@ -89,6 +89,10 @@ if ( ! is_array( $filter_panel_order ) || empty( $filter_panel_order ) ) {
 							<td>
 								<?php
 								$search_experience = get_option( 'searchcraft_search_experience', 'full' );
+								// Legacy: treat old 'popover' value as 'modal'.
+								if ( 'popover' === $search_experience ) {
+									$search_experience = 'modal';
+								}
 								?>
 								<fieldset>
 									<legend class="screen-reader-text"><span>Search Experience Type</span></legend>
@@ -98,12 +102,17 @@ if ( ! is_array( $filter_panel_order ) || empty( $filter_panel_order ) ) {
 									</label>
 									<br><br>
 									<label>
-										<input type="radio" name="searchcraft_search_experience" value="popover" <?php checked( $search_experience, 'popover' ); ?> />
-										<strong>Popover</strong> - Compact search overlay that appears on demand
+										<input type="radio" name="searchcraft_search_experience" value="modal" <?php checked( $search_experience, 'modal' ); ?> />
+										<strong>Modal</strong> - Compact search overlay triggered by a search button, appearing in a modal
+									</label>
+									<br><br>
+									<label>
+										<input type="radio" name="searchcraft_search_experience" value="inline" <?php checked( $search_experience, 'inline' ); ?> />
+										<strong>Inline</strong> - Renders inline on the page, with results appearing as an overlay below
 									</label>
 								</fieldset>
 								<p class="description">
-									Choose how you want search to be presented to your users. The full experience provides deep filtering controls while the popover offers a simple, single input experience.
+									Choose how you want search to be presented to your users. The full experience provides deep filtering controls, while Modal and Inline offer a compact popover experience.
 								</p>
 							</td>
 						</tr>

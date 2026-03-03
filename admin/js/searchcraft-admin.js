@@ -114,7 +114,7 @@ function toggleFormFields() {
 		row.classList.toggle('hidden', !isFullSelected);
 	});
 
-	// Show/hide popover fields
+	// Show/hide popover fields (modal and inline are both popover variants)
 	popoverOnlyRows.forEach((row) => {
 		row.classList.toggle('hidden', isFullSelected);
 	});
@@ -647,32 +647,28 @@ function updateFilterPanelOrder() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-	// Initialize color pickers
 	initColorPickers();
-
-	// Initialize password toggle functionality
 	initPasswordToggle();
-
-	// Initialize button with spinner functionality
 	initButtonWithSpinner();
-
-	// Initialize custom post type checkboxes
 	initCustomPostTypeCheckboxes();
-
-	// Initialize excerpt override inputs with datalist
 	initExcerptOverrideInputs();
 
 	// layout tab functionality
 	if (document.querySelector('.searchcraft-layout')) {
-		const fullRadio = document.querySelector('input[name="searchcraft_search_experience"][value="full"]');
-		const popoverRadio = document.querySelector('input[name="searchcraft_search_experience"][value="popover"]');
+		// Search behavior toggle for input container description
+		const onPageRadio = document.querySelector('input[name="searchcraft_search_behavior"][value="on_page"]');
+		const standAloneRadio = document.querySelector('input[name="searchcraft_search_behavior"][value="stand_alone"]');
 
 		// Initial state
 		toggleFormFields();
+		updateSearchInputContainerDescription();
 
-		// Add event listeners
-		fullRadio?.addEventListener('change', toggleFormFields);
-		popoverRadio?.addEventListener('change', toggleFormFields);
+		// Add event listeners for all three experience radio buttons
+		document.querySelectorAll('input[name="searchcraft_search_experience"]').forEach((radio) => {
+			radio.addEventListener('change', toggleFormFields);
+		});
+		onPageRadio?.addEventListener('change', updateSearchInputContainerDescription);
+		standAloneRadio?.addEventListener('change', updateSearchInputContainerDescription);
 
 		// Filter panel options toggle
 		const filterPanelCheckbox = document.getElementById('searchcraft_include_filter_panel');
@@ -684,19 +680,8 @@ document.addEventListener('DOMContentLoaded', () => {
 			filterPanelCheckbox.addEventListener('change', toggleFilterPanelOptions);
 		}
 
-		// Search behavior toggle for input container description
-		const onPageRadio = document.querySelector('input[name="searchcraft_search_behavior"][value="on_page"]');
-		const standAloneRadio = document.querySelector('input[name="searchcraft_search_behavior"][value="stand_alone"]');
-
 		// Initialize container ID tag UI
 		initContainerIdTagUI();
-
-		// Initial state
-		updateSearchInputContainerDescription();
-
-		// Add event listeners
-		onPageRadio?.addEventListener('change', updateSearchInputContainerDescription);
-		standAloneRadio?.addEventListener('change', updateSearchInputContainerDescription);
 
 		// Facets options toggle
 		const facetsCheckbox = document.getElementById('searchcraft_enable_facets');

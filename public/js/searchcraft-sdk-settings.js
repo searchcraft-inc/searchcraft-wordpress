@@ -36,9 +36,13 @@
 
         templatesInjected = true;
 
+        const isPopover = settings.searchExperience === 'modal' || settings.searchExperience === 'inline'
+            // Legacy support for old 'popover' value.
+            || settings.searchExperience === 'popover';
+
         // Handle full experience or popover with no container specified
         if (settings.searchExperience === 'full' ||
-            (settings.searchExperience === 'popover' && !settings.popoverContainerId)) {
+            (isPopover && !settings.popoverContainerId)) {
             injectSearchHeader(settings.headerContent, settings.inputContainerId);
             // Inject results content for full experience
             if (settings.searchExperience === 'full' && settings.resultsContent) {
@@ -46,7 +50,7 @@
             }
         }
         // Handle popover with specific container
-        else if (settings.searchExperience === 'popover' && settings.popoverContainerId) {
+        else if (isPopover && settings.popoverContainerId) {
             injectPopoverContent(
                 settings.headerContent,
                 settings.popoverContainerId,

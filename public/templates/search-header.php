@@ -461,10 +461,12 @@ if ( ! empty( $custom_css ) ) {
 </style>
 <div class="searchcraft-header-container">
 	<?php if ( $is_configured ) : ?>
-		<?php if ( 'popover' === $search_experience ) : ?>
+		<?php if ( in_array( $search_experience, array( 'modal', 'inline' ), true ) ) : ?>
 			<div class="searchcraft-popover-container">
-				<searchcraft-popover-button type="skeuomorphic"></searchcraft-popover-button>
-				<searchcraft-popover-form type="modal" placeholder-value="<?php echo esc_attr( $search_placeholder ); ?>"></searchcraft-popover-form>
+				<?php if ( 'modal' === $search_experience ) : ?>
+					<searchcraft-popover-button type="skeuomorphic"></searchcraft-popover-button>
+				<?php endif; ?>
+				<searchcraft-popover-form type="<?php echo esc_attr( $search_experience ); ?>" placeholder-value="<?php echo esc_attr( $search_placeholder ); ?>"></searchcraft-popover-form>
 			</div>
 		<?php else : ?>
 			<div class="searchcraft-full-search-experience">
