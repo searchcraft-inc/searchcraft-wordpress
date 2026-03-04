@@ -4,7 +4,7 @@ Contributors: searchcraft
 Tags:         search, fuzzy search, better search, instant search, search replacement
 Requires at least: 5.3
 Tested up to: 6.9
-Stable tag:   1.3.6
+Stable tag:   1.3.7
 License:      Apache 2.0
 License URI:  LICENSE.txt
 
@@ -68,6 +68,12 @@ If you would like to report an issue or suggest an enhancement you may contact t
 Searchcraft Cloud customers may also reach out via our Discord server for assistance or to request a custom feature.
 
 == Changelog ==
+
+= 1.3.7 =
+* Updated internal SDK usage to 0.14.0.
+* New Feature - Changes the search experience options from full/popover to full/modal/inline. Installs that previously used 'popover' will be migrated to 'modal'.
+* New Feature - Inline and modal variants now have a "view all results" option.
+* New Feature - New configuration option to control result items in the inline and modal experiences separately from the results per page on the results page.
 
 = 1.3.6 =
 * New Feature - Filter panel facet sections are now collapsible and have a configuration option to set the default behavior.
