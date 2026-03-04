@@ -1,4 +1,4 @@
-import { S as SearchcraftButton$1, d as defineCustomElement$1 } from './searchcraft-button2.js?v=0.13.3';
+import { S as SearchcraftButton$1, d as defineCustomElement$1 } from './searchcraft-button2.js?scv=0.14.0';
 
 const SearchcraftButton = SearchcraftButton$1;
 const defineCustomElement = defineCustomElement$1;

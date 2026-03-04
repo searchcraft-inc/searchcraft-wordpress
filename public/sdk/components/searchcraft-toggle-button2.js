@@ -1,6 +1,6 @@
-import { p as proxyCustomElement, H, c as createEvent, h, t as transformTag } from './index2.js?v=0.13.3';
-import { r as registry } from './CoreInstanceRegistry.js?v=0.13.3';
-import { c as classNames } from './index3.js?v=0.13.3';
+import { p as proxyCustomElement, H, c as createEvent, h, t as transformTag } from './index2.js?scv=0.14.0';
+import { r as registry } from './CoreInstanceRegistry.js?scv=0.14.0';
+import { c as classNames } from './index3.js?scv=0.14.0';
 
 const SearchcraftToggleButton = /*@__PURE__*/ proxyCustomElement(class SearchcraftToggleButton extends H {
     constructor(registerHost) {
@@ -52,9 +52,9 @@ const SearchcraftToggleButton = /*@__PURE__*/ proxyCustomElement(class Searchcra
         this.cleanupCore?.();
     }
     render() {
-        return (h("div", { key: '7dad6f4e4422a62f6403724ff16fe25e042ae2ac', class: classNames('searchcraft-toggle-button', {
+        return (h("div", { key: '27d05b370fcb2a4ca440abc3ef777c264f6139a6', class: classNames('searchcraft-toggle-button', {
                 'searchcraft-toggle-button-active': this.isActive,
-            }) }, h("div", { key: '2faa2ee1eb5cb78dc39f523415f2be96bc23fed1' }, h("p", { key: '29ea63c281b8f1ae041ba75a149ce1b60e936662', class: 'searchcraft-toggle-button-label' }, this.label), this.subLabel && (h("p", { key: 'e51efaae5ca79eede71852e6dec8eff4575139fe', class: 'searchcraft-toggle-button-sub-label' }, this.subLabel))), h("button", { key: 'd590da981692db162df9b8086ba2444d6a56ef9d', class: 'searchcraft-toggle-button-background', onClick: this.handleToggle, type: 'button' }, h("div", { key: '5be6ee1dd7dc58bd67fff18923569caee37b4936', class: 'searchcraft-toggle-button-handle' }))));
+            }) }, h("div", { key: 'e3079a80acf706576a36efb04c52c84bda90be8a' }, h("p", { key: 'cbd732b19bd408e9b3dc3602b16a47060603e4f6', class: 'searchcraft-toggle-button-label' }, this.label), this.subLabel && (h("p", { key: '7b68d0c50b9498e9f64968987b0d433b6bdf6327', class: 'searchcraft-toggle-button-sub-label' }, this.subLabel))), h("button", { key: '05366d9f252746d4860909de37b01e908f85f2fb', class: 'searchcraft-toggle-button-background', onClick: this.handleToggle, type: 'button' }, h("div", { key: '26d3ab13df50e18e6f7ec76da55089feed6d53b9', class: 'searchcraft-toggle-button-handle' }))));
     }
 }, [768, "searchcraft-toggle-button", {
         "label": [1],

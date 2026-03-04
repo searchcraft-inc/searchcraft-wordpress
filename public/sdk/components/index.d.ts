@@ -1055,6 +1055,11 @@ export namespace Components {
 	 */
 	interface SearchcraftPagination {
 		/**
+		  * The URL query string parameter name used to track the current page. When a user navigates to a URL that contains this parameter, the pagination component will automatically navigate to that page.
+		  * @default "p"
+		 */
+		"pageQueryParam": string;
+		/**
 		  * Whether to scroll to the top of the search results when pagination buttons are clicked.
 		  * @default true
 		 */
@@ -1063,6 +1068,11 @@ export namespace Components {
 		  * The id of the Searchcraft instance that this component should use.
 		 */
 		"searchcraftId"?: string;
+		/**
+		  * Whether to use a query string parameter to track and restore the current page. Set to `false` to disable query string synchronisation entirely.
+		  * @default true
+		 */
+		"usePageQueryParam": boolean;
 	}
 	/**
 	 * Renders a button which, when clicked, turns on popover visibility.
@@ -1123,9 +1133,22 @@ export namespace Components {
 	 */
 	interface SearchcraftPopoverFooter {
 		/**
+		  * The SDK variant used to render this component. Used for UTM attribution. This isn't exposed for developer consumption, it's set automatically.
+		  * @default 'js'
+		 */
+		"sdkVariant"?: "js" | "react" | "vue";
+		/**
 		  * The id of the Searchcraft instance that this component should use.
 		 */
 		"searchcraftId"?: string;
+		/**
+		  * Optional href for the "View all" button.
+		 */
+		"viewAllResultsHref"?: string;
+		/**
+		  * Optional label for the "View all" button.
+		 */
+		"viewAllResultsLabel"?: string;
 	}
 	/**
 	 * This web component is designed to display search results in a popover container that dynamically appears when the user interacts with a search input field, or when a popover-button is pressed.
@@ -1176,14 +1199,32 @@ export namespace Components {
 		 */
 		"popoverResultMappings"?: PopoverResultMappings;
 		/**
+		  * The SDK variant used to render this component. Used for UTM attribution on the footer link.
+		  * @default 'js'
+		 */
+		"sdkVariant"?: "js" | "react" | "vue";
+		/**
 		  * The id of the Searchcraft instance that this component should use.
 		 */
 		"searchcraftId"?: string;
+		/**
+		  * Whether to display the AI generative summary box before the search results. NOTE: This requires the usage of a read key that has "SUMMARY" permissions and either a subscription to Searchcraft Cloud with AI features enabled or a self-hosted model connected.
+		  * @default false
+		 */
+		"showSummaryBox"?: boolean;
 		/**
 		  * The type of popover form to render. - `inline` - Renders inline with the rest of the content on the page. The search results pop over the page content. - `fullscreen` - Renders in fullscreen view. Used together with the `searchcraft-popover-button` component. - `modal` - Renders in a modal view. Used together with the `searchcraft-popover-button` component.
 		  * @default 'inline'
 		 */
 		"type"?: "inline" | "fullscreen" | "modal";
+		/**
+		  * Base URL for the "View all" footer link. The current search term will be appended (URL encoded).  For example, in a CMS-backed site you might set this to `/?s=` so the final URL becomes `/?s=<search-term>`.
+		 */
+		"viewAllResultsBaseUrl"?: string;
+		/**
+		  * Optional label for the "View All" footer button. Defaults to "View All".
+		 */
+		"viewAllResultsLabel"?: string;
 	}
 	/**
 	 * A single list item rendered in a searchcraft-popover-list-view.
@@ -2412,6 +2453,11 @@ declare namespace LocalJSX {
 	 */
 	interface SearchcraftPagination {
 		/**
+		  * The URL query string parameter name used to track the current page. When a user navigates to a URL that contains this parameter, the pagination component will automatically navigate to that page.
+		  * @default "p"
+		 */
+		"pageQueryParam"?: string;
+		/**
 		  * Whether to scroll to the top of the search results when pagination buttons are clicked.
 		  * @default true
 		 */
@@ -2420,6 +2466,11 @@ declare namespace LocalJSX {
 		  * The id of the Searchcraft instance that this component should use.
 		 */
 		"searchcraftId"?: string;
+		/**
+		  * Whether to use a query string parameter to track and restore the current page. Set to `false` to disable query string synchronisation entirely.
+		  * @default true
+		 */
+		"usePageQueryParam"?: boolean;
 	}
 	/**
 	 * Renders a button which, when clicked, turns on popover visibility.
@@ -2480,9 +2531,22 @@ declare namespace LocalJSX {
 	 */
 	interface SearchcraftPopoverFooter {
 		/**
+		  * The SDK variant used to render this component. Used for UTM attribution. This isn't exposed for developer consumption, it's set automatically.
+		  * @default 'js'
+		 */
+		"sdkVariant"?: "js" | "react" | "vue";
+		/**
 		  * The id of the Searchcraft instance that this component should use.
 		 */
 		"searchcraftId"?: string;
+		/**
+		  * Optional href for the "View all" button.
+		 */
+		"viewAllResultsHref"?: string;
+		/**
+		  * Optional label for the "View all" button.
+		 */
+		"viewAllResultsLabel"?: string;
 	}
 	/**
 	 * This web component is designed to display search results in a popover container that dynamically appears when the user interacts with a search input field, or when a popover-button is pressed.
@@ -2533,14 +2597,32 @@ declare namespace LocalJSX {
 		 */
 		"popoverResultMappings"?: PopoverResultMappings;
 		/**
+		  * The SDK variant used to render this component. Used for UTM attribution on the footer link.
+		  * @default 'js'
+		 */
+		"sdkVariant"?: "js" | "react" | "vue";
+		/**
 		  * The id of the Searchcraft instance that this component should use.
 		 */
 		"searchcraftId"?: string;
+		/**
+		  * Whether to display the AI generative summary box before the search results. NOTE: This requires the usage of a read key that has "SUMMARY" permissions and either a subscription to Searchcraft Cloud with AI features enabled or a self-hosted model connected.
+		  * @default false
+		 */
+		"showSummaryBox"?: boolean;
 		/**
 		  * The type of popover form to render. - `inline` - Renders inline with the rest of the content on the page. The search results pop over the page content. - `fullscreen` - Renders in fullscreen view. Used together with the `searchcraft-popover-button` component. - `modal` - Renders in a modal view. Used together with the `searchcraft-popover-button` component.
 		  * @default 'inline'
 		 */
 		"type"?: "inline" | "fullscreen" | "modal";
+		/**
+		  * Base URL for the "View all" footer link. The current search term will be appended (URL encoded).  For example, in a CMS-backed site you might set this to `/?s=` so the final URL becomes `/?s=<search-term>`.
+		 */
+		"viewAllResultsBaseUrl"?: string;
+		/**
+		  * Optional label for the "View All" footer button. Defaults to "View All".
+		 */
+		"viewAllResultsLabel"?: string;
 	}
 	/**
 	 * A single list item rendered in a searchcraft-popover-list-view.

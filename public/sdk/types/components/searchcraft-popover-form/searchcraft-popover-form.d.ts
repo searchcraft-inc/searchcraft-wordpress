@@ -71,6 +71,27 @@ export declare class SearchcraftPopoverForm {
      * 'hide-on-text-entered' - Only hide the placeholder when the input form has text entered into it.
      */
     placeholderBehavior?: 'hide-on-focus' | 'hide-on-text-entered';
+    /**
+     * Base URL for the "View all" footer link. The current search term will be appended (URL encoded).
+     *
+     * For example, in a CMS-backed site you might set this to `/?s=` so the final URL becomes `/?s=<search-term>`.
+     */
+    viewAllResultsBaseUrl?: string;
+    /**
+     * Optional label for the "View All" footer button. Defaults to "View All".
+     */
+    viewAllResultsLabel?: string;
+    /**
+     * Whether to display the AI generative summary box before the search results.
+     * NOTE: This requires the usage of a read key that has "SUMMARY" permissions and either a subscription to Searchcraft Cloud with AI features enabled or a self-hosted model connected.
+     */
+    showSummaryBox?: boolean;
+    /**
+     * The SDK variant used to render this component. Used for UTM attribution on the footer link.
+     *
+     * @internal
+     */
+    sdkVariant?: 'js' | 'react' | 'vue';
     isPopoverVisibleInState: boolean;
     searchClientResponseItems: SearchClientResponseItem[];
     adClientResponseItems: AdClientResponseItem[];
@@ -119,6 +140,9 @@ export declare class SearchcraftPopoverForm {
      */
     focusOnNextListItem(direction: 'ArrowDown' | 'ArrowUp'): void;
     get hasResultsToShow(): boolean | "" | undefined;
+    get viewAllResultsHref(): string | undefined;
+    get resolvedViewAllResultsLabel(): string;
+    navigateToViewAllResults(): void;
     renderInlinePopover(): any;
     renderModalPopover(): any;
     renderFullscreenPopover(): any;
