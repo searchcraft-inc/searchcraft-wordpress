@@ -35,6 +35,7 @@ if ( $is_configured ) {
 	$search_experience         = get_option( 'searchcraft_search_experience', 'full' );
 	$include_filter_panel      = get_option( 'searchcraft_include_filter_panel', false );
 	$results_per_page          = get_option( 'searchcraft_results_per_page', 10 );
+	$overlay_results_per_page  = get_option( 'searchcraft_overlay_results_per_page', 5 );
 	$enable_most_recent_toggle = get_option( 'searchcraft_enable_most_recent_toggle', '1' );
 	$enable_exact_match_toggle = get_option( 'searchcraft_enable_exact_match_toggle', '1' );
 	$enable_date_range         = get_option( 'searchcraft_enable_date_range', '1' );
@@ -273,6 +274,21 @@ if ( ! is_array( $filter_panel_order ) || empty( $filter_panel_order ) ) {
 								<input type="text" name="searchcraft_view_all_results_label" id="searchcraft_view_all_results_label" value="<?php echo esc_attr( $view_all_results_label ); ?>" class="regular-text" placeholder="View All" />
 								<p class="description">
 									The label text for the &ldquo;View All Results&rdquo; link.
+								</p>
+							</td>
+						</tr>
+						<tr class="searchcraft-popover-only">
+							<th scope="row">
+								<label for="searchcraft_overlay_results_per_page">Results in Overlay</label>
+							</th>
+							<td>
+								<select name="searchcraft_overlay_results_per_page" id="searchcraft_overlay_results_per_page" class="regular-text">
+									<?php for ( $i = 1; $i <= 20; $i++ ) : ?>
+										<option value="<?php echo esc_attr( $i ); ?>" <?php selected( $overlay_results_per_page, $i ); ?>><?php echo esc_html( $i ); ?></option>
+									<?php endfor; ?>
+								</select>
+								<p class="description">
+									Number of search results to display in the modal or inline overlay. Default is 5 results.
 								</p>
 							</td>
 						</tr>

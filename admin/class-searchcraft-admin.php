@@ -1498,6 +1498,20 @@ class Searchcraft_Admin {
 			update_option( 'searchcraft_view_all_results_label', $view_all_results_label );
 		}
 
+		// Handle overlay results per page setting.
+		if ( isset( $request['searchcraft_overlay_results_per_page'] ) ) {
+			$overlay_results_per_page = absint( wp_unslash( $request['searchcraft_overlay_results_per_page'] ) );
+
+			// Validate the overlay results per page value (between 1 and 20).
+			if ( $overlay_results_per_page < 1 ) {
+				$overlay_results_per_page = 1;
+			} elseif ( $overlay_results_per_page > 20 ) {
+				$overlay_results_per_page = 20;
+			}
+
+			update_option( 'searchcraft_overlay_results_per_page', $overlay_results_per_page );
+		}
+
 		// Handle retain get_search_form setting.
 		$retain_get_search_form = isset( $request['searchcraft_retain_get_search_form'] ) ? true : false;
 		update_option( 'searchcraft_retain_get_search_form', $retain_get_search_form );
