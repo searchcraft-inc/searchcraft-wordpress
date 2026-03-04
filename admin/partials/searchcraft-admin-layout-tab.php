@@ -35,6 +35,7 @@ if ( $is_configured ) {
 	$search_experience         = get_option( 'searchcraft_search_experience', 'full' );
 	$include_filter_panel      = get_option( 'searchcraft_include_filter_panel', false );
 	$results_per_page          = get_option( 'searchcraft_results_per_page', 10 );
+	$overlay_results_per_page  = get_option( 'searchcraft_overlay_results_per_page', 5 );
 	$enable_most_recent_toggle = get_option( 'searchcraft_enable_most_recent_toggle', '1' );
 	$enable_exact_match_toggle = get_option( 'searchcraft_enable_exact_match_toggle', '1' );
 	$enable_date_range         = get_option( 'searchcraft_enable_date_range', '1' );
@@ -89,6 +90,10 @@ if ( ! is_array( $filter_panel_order ) || empty( $filter_panel_order ) ) {
 							<td>
 								<?php
 								$search_experience = get_option( 'searchcraft_search_experience', 'full' );
+								// Legacy: treat old 'popover' value as 'modal'.
+								if ( 'popover' === $search_experience ) {
+									$search_experience = 'modal';
+								}
 								?>
 								<fieldset>
 									<legend class="screen-reader-text"><span>Search Experience Type</span></legend>
@@ -98,12 +103,17 @@ if ( ! is_array( $filter_panel_order ) || empty( $filter_panel_order ) ) {
 									</label>
 									<br><br>
 									<label>
-										<input type="radio" name="searchcraft_search_experience" value="popover" <?php checked( $search_experience, 'popover' ); ?> />
-										<strong>Popover</strong> - Compact search overlay that appears on demand
+										<input type="radio" name="searchcraft_search_experience" value="modal" <?php checked( $search_experience, 'modal' ); ?> />
+										<strong>Modal</strong> - Compact search overlay triggered by a search button, appearing in a modal
+									</label>
+									<br><br>
+									<label>
+										<input type="radio" name="searchcraft_search_experience" value="inline" <?php checked( $search_experience, 'inline' ); ?> />
+										<strong>Inline</strong> - Renders inline on the page, with results appearing as an overlay below
 									</label>
 								</fieldset>
 								<p class="description">
-									Choose how you want search to be presented to your users. The full experience provides deep filtering controls while the popover offers a simple, single input experience.
+									Choose how you want search to be presented to your users. The full experience provides deep filtering controls, while Modal and Inline offer a compact popover experience.
 								</p>
 							</td>
 						</tr>
@@ -230,6 +240,55 @@ if ( ! is_array( $filter_panel_order ) || empty( $filter_panel_order ) ) {
 								<span>%</span>
 								<p class="description">
 									The width of the search input field as a percentage (1-100%).
+								</p>
+							</td>
+						</tr>
+						<tr class="searchcraft-popover-only">
+							<th scope="row">
+								<label for="searchcraft_enable_view_all_results">Enable View All Results</label>
+							</th>
+							<td>
+								<label for="searchcraft_enable_view_all_results">
+									<input
+										type="checkbox"
+										name="searchcraft_enable_view_all_results"
+										id="searchcraft_enable_view_all_results"
+										value="1"
+										<?php checked( get_option( 'searchcraft_enable_view_all_results', false ), true ); ?>
+									/>
+									Enable a &ldquo;View All Results&rdquo; link in the popover search form.
+								</label>
+								<p class="description">
+									When enabled, a link will appear in the search form directing users to the full search results page.
+								</p>
+							</td>
+						</tr>
+						<tr class="searchcraft-popover-only searchcraft-view-all-label-row">
+							<th scope="row">
+								<label for="searchcraft_view_all_results_label">View All Label</label>
+							</th>
+							<td>
+								<?php
+								$view_all_results_label = get_option( 'searchcraft_view_all_results_label', '' );
+								?>
+								<input type="text" name="searchcraft_view_all_results_label" id="searchcraft_view_all_results_label" value="<?php echo esc_attr( $view_all_results_label ); ?>" class="regular-text" placeholder="View All" />
+								<p class="description">
+									The label text for the &ldquo;View All Results&rdquo; link.
+								</p>
+							</td>
+						</tr>
+						<tr class="searchcraft-popover-only">
+							<th scope="row">
+								<label for="searchcraft_overlay_results_per_page">Results in Overlay</label>
+							</th>
+							<td>
+								<select name="searchcraft_overlay_results_per_page" id="searchcraft_overlay_results_per_page" class="regular-text">
+									<?php for ( $i = 1; $i <= 20; $i++ ) : ?>
+										<option value="<?php echo esc_attr( $i ); ?>" <?php selected( $overlay_results_per_page, $i ); ?>><?php echo esc_html( $i ); ?></option>
+									<?php endfor; ?>
+								</select>
+								<p class="description">
+									Number of search results to display in the modal or inline overlay. Default is 5 results.
 								</p>
 							</td>
 						</tr>

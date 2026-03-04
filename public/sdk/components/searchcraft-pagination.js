@@ -1,7 +1,7 @@
-import { p as proxyCustomElement, H, h, t as transformTag } from './index2.js?v=0.13.3';
-import { r as registry } from './CoreInstanceRegistry.js?v=0.13.3';
-import { c as classNames } from './index3.js?v=0.13.3';
-import { d as defineCustomElement$2 } from './searchcraft-button2.js?v=0.13.3';
+import { p as proxyCustomElement, H, h, t as transformTag } from './index2.js?scv=0.14.0';
+import { r as registry } from './CoreInstanceRegistry.js?scv=0.14.0';
+import { c as classNames } from './index3.js?scv=0.14.0';
+import { d as defineCustomElement$2 } from './searchcraft-button2.js?scv=0.14.0';
 
 const SearchcraftPagination$1 = /*@__PURE__*/ proxyCustomElement(class SearchcraftPagination extends H {
     constructor(registerHost) {
@@ -19,6 +19,19 @@ const SearchcraftPagination$1 = /*@__PURE__*/ proxyCustomElement(class Searchcra
      * @default true
      */
     scrollToTop = true;
+    /**
+     * The URL query string parameter name used to track the current page. When a user navigates
+     * to a URL that contains this parameter, the pagination component will automatically navigate
+     * to that page.
+     * @default "p"
+     */
+    pageQueryParam = 'p';
+    /**
+     * Whether to use a query string parameter to track and restore the current page.
+     * Set to `false` to disable query string synchronisation entirely.
+     * @default true
+     */
+    usePageQueryParam = true;
     // store vars
     searchTerm;
     searchResultsPerPage;
@@ -33,6 +46,7 @@ const SearchcraftPagination$1 = /*@__PURE__*/ proxyCustomElement(class Searchcra
     setSearchResultsPage = () => { };
     unsubscribe = () => { };
     cleanupCore;
+    _initialPageApplied = false;
     onCoreAvailable(core) {
         this.unsubscribe = core.store.subscribe((state) => {
             // store vars
@@ -50,6 +64,14 @@ const SearchcraftPagination$1 = /*@__PURE__*/ proxyCustomElement(class Searchcra
                     this.searchResultsPerPage;
             // store functions
             this.setSearchResultsPage = state.setSearchResultsPage;
+            // Apply initial page from URL query param (only once, on first subscription tick)
+            if (!this._initialPageApplied) {
+                this._initialPageApplied = true;
+                const initialPage = this.getPageFromUrl();
+                if (initialPage !== null && initialPage !== state.searchResultsPage) {
+                    state.setSearchResultsPage(initialPage);
+                }
+            }
         });
     }
     connectedCallback() {
@@ -62,6 +84,7 @@ const SearchcraftPagination$1 = /*@__PURE__*/ proxyCustomElement(class Searchcra
     /**
      * Smooth scroll to the top of the search results component
      */
+    scrollAnimationId;
     smoothScrollToSearchResults() {
         if (!this.scrollToTop) {
             return;
@@ -70,14 +93,17 @@ const SearchcraftPagination$1 = /*@__PURE__*/ proxyCustomElement(class Searchcra
         if (!searchResultsElement) {
             return;
         }
+        // Cancel any in-flight scroll animation
+        if (this.scrollAnimationId) {
+            cancelAnimationFrame(this.scrollAnimationId);
+        }
         const elementRect = searchResultsElement.getBoundingClientRect();
-        const scrollOffset = 200; // Offset in pixels above the element
+        const scrollOffset = 200;
         const targetPosition = elementRect.top + window.scrollY - scrollOffset;
         const startPosition = window.scrollY;
         const distance = targetPosition - startPosition;
         const duration = 1500;
         let startTime = null;
-        // smooth scrolling
         const easeOutExpo = (t) => {
             return t === 1 ? 1 : 1 - 2 ** (-10 * t);
         };
@@ -90,13 +116,73 @@ const SearchcraftPagination$1 = /*@__PURE__*/ proxyCustomElement(class Searchcra
             const ease = easeOutExpo(progress);
             window.scrollTo(0, startPosition + distance * ease);
             if (progress < 1) {
-                requestAnimationFrame(animation);
+                this.scrollAnimationId = requestAnimationFrame(animation);
+            }
+            else {
+                this.scrollAnimationId = undefined;
             }
         };
-        requestAnimationFrame(animation);
+        this.scrollAnimationId = requestAnimationFrame(animation);
+    }
+    /**
+     * Returns the page number from the URL query string, or null if not present / disabled.
+     * Reads from the top-level window when inside a same-origin iframe so that the
+     * address-bar URL is the source of truth (consistent with updateUrlPage).
+     */
+    getPageFromUrl() {
+        if (!this.usePageQueryParam || typeof window === 'undefined') {
+            return null;
+        }
+        let targetWindow = window;
+        try {
+            if (window.top && window.top !== window && window.top.location.href) {
+                targetWindow = window.top;
+            }
+        }
+        catch {
+            // Cross-origin iframe — stay with the current window
+        }
+        const params = new URLSearchParams(targetWindow.location.search);
+        const raw = params.get(this.pageQueryParam);
+        if (raw === null) {
+            return null;
+        }
+        const page = Number.parseInt(raw, 10);
+        return Number.isNaN(page) || page < 1 ? null : page;
+    }
+    /**
+     * Updates (or removes) the page query string parameter in the browser URL without
+     * triggering a navigation/reload.
+     * When running inside a same-origin iframe (e.g. Storybook), the top-level window's
+     * URL is updated so the change is visible in the address bar.
+     */
+    updateUrlPage(page) {
+        if (!this.usePageQueryParam || typeof window === 'undefined') {
+            return;
+        }
+        // Prefer the top-level window so the address bar updates even inside iframes
+        // (e.g. Storybook). Falls back to the current window for cross-origin iframes.
+        let targetWindow = window;
+        try {
+            if (window.top && window.top !== window && window.top.location.href) {
+                targetWindow = window.top;
+            }
+        }
+        catch {
+            // Cross-origin iframe — stay with the current window
+        }
+        const url = new URL(targetWindow.location.href);
+        if (page <= 1) {
+            url.searchParams.delete(this.pageQueryParam);
+        }
+        else {
+            url.searchParams.set(this.pageQueryParam, String(page));
+        }
+        targetWindow.history.replaceState(targetWindow.history.state, '', url.toString());
     }
     handleGoToPage(page) {
         this.setSearchResultsPage(page);
+        this.updateUrlPage(page);
         if (this.scrollToTop) {
             this.smoothScrollToSearchResults();
         }
@@ -156,6 +242,8 @@ const SearchcraftPagination$1 = /*@__PURE__*/ proxyCustomElement(class Searchcra
 }, [768, "searchcraft-pagination", {
         "searchcraftId": [1, "searchcraft-id"],
         "scrollToTop": [4, "scroll-to-top"],
+        "pageQueryParam": [1, "page-query-param"],
+        "usePageQueryParam": [4, "use-page-query-param"],
         "searchTerm": [32],
         "searchResultsPerPage": [32],
         "searchResultsPage": [32],

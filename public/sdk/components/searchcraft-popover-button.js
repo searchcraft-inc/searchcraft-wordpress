@@ -1,6 +1,6 @@
-import { p as proxyCustomElement, H, h, t as transformTag } from './index2.js?v=0.13.3';
-import { r as registry } from './CoreInstanceRegistry.js?v=0.13.3';
-import { h as html } from './html.js?v=0.13.3';
+import { p as proxyCustomElement, H, h, t as transformTag } from './index2.js?scv=0.14.0';
+import { r as registry } from './CoreInstanceRegistry.js?scv=0.14.0';
+import { h as html } from './html.js?scv=0.14.0';
 
 const SearchcraftPopoverButton$1 = /*@__PURE__*/ proxyCustomElement(class SearchcraftPopoverButton extends H {
     constructor(registerHost) {
@@ -103,7 +103,7 @@ const SearchcraftPopoverButton$1 = /*@__PURE__*/ proxyCustomElement(class Search
         }
     }
     render() {
-        return (h("button", { key: '4f11d81bb189a929372d9e398a0913b3b626e42c', class: `searchcraft-popover-button ${this.type ? ` searchcraft-popover-button-${this.type}` : ''}`, innerHTML: typeof this.template !== 'undefined'
+        return (h("button", { key: 'af0bb449457f7dbefa00ac690e7d3490b5162883', class: `searchcraft-popover-button ${this.type ? ` searchcraft-popover-button-${this.type}` : ''}`, innerHTML: typeof this.template !== 'undefined'
                 ? this.template({ isPopoverVisible: this.isPopoverVisible }, { html })
                 : undefined, onClick: this.handleOnClick.bind(this), type: 'button' }, typeof this.template !== 'undefined'
             ? undefined

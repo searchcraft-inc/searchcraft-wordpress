@@ -302,7 +302,8 @@ class Searchcraft_Public {
 		$oldest_post_year            = $admin_instance->get_oldest_post_year();
 		$js_config['oldestPostYear'] = $oldest_post_year;
 
-		$js_config['resultsPerPage'] = intval( get_option( 'searchcraft_results_per_page', 10 ) );
+		$js_config['resultsPerPage']        = intval( get_option( 'searchcraft_results_per_page', 10 ) );
+		$js_config['overlayResultsPerPage'] = intval( get_option( 'searchcraft_overlay_results_per_page', 5 ) );
 
 		// Filter taxonomies.
 		$filter_taxonomies = get_option( 'searchcraft_filter_taxonomies', array() );
@@ -387,6 +388,7 @@ class Searchcraft_Public {
 			'resultsContainerId'    => $results_container_id,
 			'popoverContainerId'    => $popover_container_id,
 			'popoverInsertBehavior' => $popover_insert_behavior,
+			'isSearchPage'          => is_search(),
 		);
 	}
 

@@ -1034,8 +1034,11 @@ class Searchcraft_Admin {
 		if ( isset( $request['searchcraft_search_experience'] ) ) {
 			$experience = sanitize_text_field( wp_unslash( $request['searchcraft_search_experience'] ) );
 
-			// Validate the experience value.
-			$valid_experiences = array( 'full', 'popover' );
+			// Validate the experience value. Map legacy 'popover' to 'modal'.
+			if ( 'popover' === $experience ) {
+				$experience = 'modal';
+			}
+			$valid_experiences = array( 'full', 'modal', 'inline' );
 			if ( ! in_array( $experience, $valid_experiences, true ) ) {
 				$experience = 'full';
 			}
@@ -1483,6 +1486,30 @@ class Searchcraft_Admin {
 			}
 
 			update_option( 'searchcraft_popover_element_behavior', $popover_element_behavior );
+		}
+
+		// Handle enable view all results setting.
+		$enable_view_all_results = isset( $request['searchcraft_enable_view_all_results'] ) ? true : false;
+		update_option( 'searchcraft_enable_view_all_results', $enable_view_all_results );
+
+		// Handle view all results label.
+		if ( isset( $request['searchcraft_view_all_results_label'] ) ) {
+			$view_all_results_label = sanitize_text_field( wp_unslash( $request['searchcraft_view_all_results_label'] ) );
+			update_option( 'searchcraft_view_all_results_label', $view_all_results_label );
+		}
+
+		// Handle overlay results per page setting.
+		if ( isset( $request['searchcraft_overlay_results_per_page'] ) ) {
+			$overlay_results_per_page = absint( wp_unslash( $request['searchcraft_overlay_results_per_page'] ) );
+
+			// Validate the overlay results per page value (between 1 and 20).
+			if ( $overlay_results_per_page < 1 ) {
+				$overlay_results_per_page = 1;
+			} elseif ( $overlay_results_per_page > 20 ) {
+				$overlay_results_per_page = 20;
+			}
+
+			update_option( 'searchcraft_overlay_results_per_page', $overlay_results_per_page );
 		}
 
 		// Handle retain get_search_form setting.

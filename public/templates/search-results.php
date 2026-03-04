@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 require_once 'common-template-values.php';
 
 ?>
-<?php if ( $is_configured && 'popover' !== $search_experience ) : ?>
+<?php if ( $is_configured && ( ! in_array( $search_experience, array( 'modal', 'inline' ), true ) || is_search() ) ) : ?>
 	<?php
 	if ( ! is_search() && 'stand_alone' === $search_behavior ) {
 		return;

@@ -67,12 +67,21 @@
                 return;
             }
             const isWPSearchPage = searchcraft_config.isWPSearchPage || false;
+
+            // Determine which results per page setting to use
+            // Use overlayResultsPerPage for modal/inline when NOT on search page
+            // Use regular resultsPerPage for full experience or when on search page
+            let resultsPerPage = parseInt(searchcraft_config.resultsPerPage) || 10;
+            if (!isWPSearchPage && searchcraft_config.overlayResultsPerPage) {
+                resultsPerPage = parseInt(searchcraft_config.overlayResultsPerPage) || 5;
+            }
+
             const config = {
                 indexName: searchcraft_config.indexName,
                 readKey: searchcraft_config.readKey,
                 endpointURL: searchcraft_config.endpointURL,
                 searchDebounceDelay: 50,
-                searchResultsPerPage: parseInt(searchcraft_config.resultsPerPage) || 10
+                searchResultsPerPage: resultsPerPage
             };
 
             // Add cortexURL if AI summary is enabled
