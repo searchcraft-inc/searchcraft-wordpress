@@ -40,14 +40,24 @@
             // Legacy support for old 'popover' value.
             || settings.searchExperience === 'popover';
 
-        // Handle full experience or popover with no container specified
-        if (settings.searchExperience === 'full' ||
-            (isPopover && !settings.popoverContainerId)) {
+        const isSearchPage = settings.isSearchPage == 1;
+        // On search page with modal/inline, always inject full header + results
+        if (isSearchPage && isPopover) {
             injectSearchHeader(settings.headerContent, settings.inputContainerId);
-            // Inject results content for full experience
-            if (settings.searchExperience === 'full' && settings.resultsContent) {
+            if (settings.resultsContent) {
                 injectSearchResults(settings.resultsContent, settings.resultsContainerId);
             }
+        }
+        // Handle full experience
+        else if (settings.searchExperience === 'full') {
+            injectSearchHeader(settings.headerContent, settings.inputContainerId);
+            if (settings.resultsContent) {
+                injectSearchResults(settings.resultsContent, settings.resultsContainerId);
+            }
+        }
+        // Handle popover with no container specified
+        else if (isPopover && !settings.popoverContainerId) {
+            injectSearchHeader(settings.headerContent, settings.inputContainerId);
         }
         // Handle popover with specific container
         else if (isPopover && settings.popoverContainerId) {

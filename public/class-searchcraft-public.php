@@ -387,6 +387,7 @@ class Searchcraft_Public {
 			'resultsContainerId'    => $results_container_id,
 			'popoverContainerId'    => $popover_container_id,
 			'popoverInsertBehavior' => $popover_insert_behavior,
+			'isSearchPage'          => is_search(),
 		);
 	}
 

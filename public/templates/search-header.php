@@ -461,7 +461,7 @@ if ( ! empty( $custom_css ) ) {
 </style>
 <div class="searchcraft-header-container">
 	<?php if ( $is_configured ) : ?>
-		<?php if ( in_array( $search_experience, array( 'modal', 'inline' ), true ) ) : ?>
+		<?php if ( in_array( $search_experience, array( 'modal', 'inline' ), true ) && ! is_search() ) : ?>
 			<div class="searchcraft-popover-container">
 				<?php if ( 'modal' === $search_experience ) : ?>
 					<searchcraft-popover-button type="skeuomorphic"></searchcraft-popover-button>
