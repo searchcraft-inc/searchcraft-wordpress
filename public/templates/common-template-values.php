@@ -53,3 +53,14 @@ if ( is_search() ) {
 		$value_attr = ' value="' . esc_attr( $search_query ) . '"';
 	}
 }
+
+// Build the powered by link with UTM parameters.
+$site_url                                 = wp_parse_url( get_site_url(), PHP_URL_HOST );
+$utm_params                               = array(
+	'utm_source'              => $site_url,
+	'utm_medium'              => 'wp_plugin',
+	'utm_campaign'            => 'powered-by',
+	'utm_content'             => 'results-page',
+	'sc_wp_plugin_version'    => SEARCHCRAFT_VERSION,
+);
+$searchcraft_powered_by_link              = add_query_arg( $utm_params, 'https://searchcraft.io/' );
