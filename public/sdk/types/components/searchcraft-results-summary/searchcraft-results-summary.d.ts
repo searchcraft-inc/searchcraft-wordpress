@@ -1,10 +1,6 @@
 import type { SearchcraftCore } from "../../classes/index";
 /**
- * @deprecated Use `searchcraft-results-summary` instead.
- * This component is deprecated and will be removed in a future version.
- * Please update to use `searchcraft-results-summary` which has the same functionality.
- *
- * This component renders a summary box for RAG search result summaries.
+ * This component renders a results summary for RAG search result summaries.
  * When the user makes a search, a network call is made to retrieve the summary content, which is then
  * rendered in this box.
  *
@@ -12,30 +8,30 @@ import type { SearchcraftCore } from "../../classes/index";
  *
  * @react-import
  * ```jsx
- * import { SearchcraftSummaryBox } from "@searchcraft/react-sdk";
+ * import { SearchcraftResultsSummary } from "@searchcraft/react-sdk";
  * ```
  *
  * @vue-import
- * ```jsx
- * import { SearchcraftSummaryBox } from "@searchcraft/vue-sdk";
+ * ```ts
+ * import { SearchcraftResultsSummary } from "@searchcraft/vue-sdk";
  * ```
  *
  * @js-example
  * ```html
- * <searchcraft-summary-box />
+ * <searchcraft-results-summary />
  * ```
  *
  * @react-example
  * ```jsx
- * <SearchcraftSummaryBox />
+ * <SearchcraftResultsSummary />
  * ```
  *
  * @vue-example
  * ```jsx
- * <SearchcraftSummaryBox />
+ * <SearchcraftResultsSummary />
  * ```
  */
-export declare class SearchcraftSummaryBox {
+export declare class SearchcraftResultsSummary {
     /**
      * The id of the Searchcraft instance that this component should use.
      */
@@ -46,6 +42,9 @@ export declare class SearchcraftSummaryBox {
     isSummaryNotEnabled: boolean;
     private unsubscribe?;
     private cleanupCore?;
+    /**
+    * Callback invoked when the Searchcraft core instance is available.
+    */
     onCoreAvailable(core: SearchcraftCore): void;
     connectedCallback(): void;
     disconnectedCallback(): void;
@@ -63,4 +62,4 @@ export declare class SearchcraftSummaryBox {
     private renderContent;
     render(): any;
 }
-//# sourceMappingURL=searchcraft-summary-box.d.ts.map
+//# sourceMappingURL=searchcraft-results-summary.d.ts.map

@@ -360,7 +360,7 @@ export namespace Components {
         /**
           * The type of popover button to render.
          */
-        "type"?: 'skeuomorphic';
+        "type"?: 'skeuomorphic' | 'magnifying-glass';
     }
     /**
      * Renders the footer for the searchcraft-popover-form.
@@ -545,6 +545,33 @@ export namespace Components {
         "template"?: ResultsInfoTemplate;
     }
     /**
+     * This component renders a results summary for RAG search result summaries.
+     * When the user makes a search, a network call is made to retrieve the summary content, which is then
+     * rendered in this box.
+     * NOTE: This component requires the usage of a read key that has "SUMMARY" permissions.
+     * @react-import ```jsx
+     * import { SearchcraftResultsSummary } from "@searchcraft/react-sdk";
+     * ```
+     * @vue-import ```ts
+     * import { SearchcraftResultsSummary } from "@searchcraft/vue-sdk";
+     * ```
+     * @js-example ```html
+     * <searchcraft-results-summary />
+     * ```
+     * @react-example ```jsx
+     * <SearchcraftResultsSummary />
+     * ```
+     * @vue-example ```jsx
+     * <SearchcraftResultsSummary />
+     * ```
+     */
+    interface SearchcraftResultsSummary {
+        /**
+          * The id of the Searchcraft instance that this component should use.
+         */
+        "searchcraftId"?: string;
+    }
+    /**
      * This web component is designed to display detailed information for a single search result. Once a query is submitted, the component formats and presents the result.
      */
     interface SearchcraftSearchResult {
@@ -725,6 +752,9 @@ export namespace Components {
         "step": number;
     }
     /**
+     * @deprecated Use `searchcraft-results-summary` instead.
+     * This component is deprecated and will be removed in a future version.
+     * Please update to use `searchcraft-results-summary` which has the same functionality.
      * This component renders a summary box for RAG search result summaries.
      * When the user makes a search, a network call is made to retrieve the summary content, which is then
      * rendered in this box.
@@ -1168,6 +1198,33 @@ declare global {
         new (): HTMLSearchcraftResultsInfoElement;
     };
     /**
+     * This component renders a results summary for RAG search result summaries.
+     * When the user makes a search, a network call is made to retrieve the summary content, which is then
+     * rendered in this box.
+     * NOTE: This component requires the usage of a read key that has "SUMMARY" permissions.
+     * @react-import ```jsx
+     * import { SearchcraftResultsSummary } from "@searchcraft/react-sdk";
+     * ```
+     * @vue-import ```ts
+     * import { SearchcraftResultsSummary } from "@searchcraft/vue-sdk";
+     * ```
+     * @js-example ```html
+     * <searchcraft-results-summary />
+     * ```
+     * @react-example ```jsx
+     * <SearchcraftResultsSummary />
+     * ```
+     * @vue-example ```jsx
+     * <SearchcraftResultsSummary />
+     * ```
+     */
+    interface HTMLSearchcraftResultsSummaryElement extends Components.SearchcraftResultsSummary, HTMLStencilElement {
+    }
+    var HTMLSearchcraftResultsSummaryElement: {
+        prototype: HTMLSearchcraftResultsSummaryElement;
+        new (): HTMLSearchcraftResultsSummaryElement;
+    };
+    /**
      * This web component is designed to display detailed information for a single search result. Once a query is submitted, the component formats and presents the result.
      */
     interface HTMLSearchcraftSearchResultElement extends Components.SearchcraftSearchResult, HTMLStencilElement {
@@ -1297,6 +1354,9 @@ declare global {
         new (): HTMLSearchcraftSliderElement;
     };
     /**
+     * @deprecated Use `searchcraft-results-summary` instead.
+     * This component is deprecated and will be removed in a future version.
+     * Please update to use `searchcraft-results-summary` which has the same functionality.
      * This component renders a summary box for RAG search result summaries.
      * When the user makes a search, a network call is made to retrieve the summary content, which is then
      * rendered in this box.
@@ -1383,6 +1443,7 @@ declare global {
         "searchcraft-popover-list-item": HTMLSearchcraftPopoverListItemElement;
         "searchcraft-popover-list-view": HTMLSearchcraftPopoverListViewElement;
         "searchcraft-results-info": HTMLSearchcraftResultsInfoElement;
+        "searchcraft-results-summary": HTMLSearchcraftResultsSummaryElement;
         "searchcraft-search-result": HTMLSearchcraftSearchResultElement;
         "searchcraft-search-results": HTMLSearchcraftSearchResultsElement;
         "searchcraft-search-results-per-page": HTMLSearchcraftSearchResultsPerPageElement;
@@ -1754,7 +1815,7 @@ declare namespace LocalJSX {
         /**
           * The type of popover button to render.
          */
-        "type"?: 'skeuomorphic';
+        "type"?: 'skeuomorphic' | 'magnifying-glass';
     }
     /**
      * Renders the footer for the searchcraft-popover-form.
@@ -1927,6 +1988,33 @@ declare namespace LocalJSX {
           * A callback function responsible for rendering the results info.
          */
         "template"?: ResultsInfoTemplate;
+    }
+    /**
+     * This component renders a results summary for RAG search result summaries.
+     * When the user makes a search, a network call is made to retrieve the summary content, which is then
+     * rendered in this box.
+     * NOTE: This component requires the usage of a read key that has "SUMMARY" permissions.
+     * @react-import ```jsx
+     * import { SearchcraftResultsSummary } from "@searchcraft/react-sdk";
+     * ```
+     * @vue-import ```ts
+     * import { SearchcraftResultsSummary } from "@searchcraft/vue-sdk";
+     * ```
+     * @js-example ```html
+     * <searchcraft-results-summary />
+     * ```
+     * @react-example ```jsx
+     * <SearchcraftResultsSummary />
+     * ```
+     * @vue-example ```jsx
+     * <SearchcraftResultsSummary />
+     * ```
+     */
+    interface SearchcraftResultsSummary {
+        /**
+          * The id of the Searchcraft instance that this component should use.
+         */
+        "searchcraftId"?: string;
     }
     /**
      * This web component is designed to display detailed information for a single search result. Once a query is submitted, the component formats and presents the result.
@@ -2117,6 +2205,9 @@ declare namespace LocalJSX {
         "step"?: number;
     }
     /**
+     * @deprecated Use `searchcraft-results-summary` instead.
+     * This component is deprecated and will be removed in a future version.
+     * Please update to use `searchcraft-results-summary` which has the same functionality.
      * This component renders a summary box for RAG search result summaries.
      * When the user makes a search, a network call is made to retrieve the summary content, which is then
      * rendered in this box.
@@ -2201,6 +2292,7 @@ declare namespace LocalJSX {
         "searchcraft-popover-list-item": SearchcraftPopoverListItem;
         "searchcraft-popover-list-view": SearchcraftPopoverListView;
         "searchcraft-results-info": SearchcraftResultsInfo;
+        "searchcraft-results-summary": SearchcraftResultsSummary;
         "searchcraft-search-result": SearchcraftSearchResult;
         "searchcraft-search-results": SearchcraftSearchResults;
         "searchcraft-search-results-per-page": SearchcraftSearchResultsPerPage;
@@ -2458,6 +2550,28 @@ declare module "@stencil/core" {
              */
             "searchcraft-results-info": LocalJSX.SearchcraftResultsInfo & JSXBase.HTMLAttributes<HTMLSearchcraftResultsInfoElement>;
             /**
+             * This component renders a results summary for RAG search result summaries.
+             * When the user makes a search, a network call is made to retrieve the summary content, which is then
+             * rendered in this box.
+             * NOTE: This component requires the usage of a read key that has "SUMMARY" permissions.
+             * @react-import ```jsx
+             * import { SearchcraftResultsSummary } from "@searchcraft/react-sdk";
+             * ```
+             * @vue-import ```ts
+             * import { SearchcraftResultsSummary } from "@searchcraft/vue-sdk";
+             * ```
+             * @js-example ```html
+             * <searchcraft-results-summary />
+             * ```
+             * @react-example ```jsx
+             * <SearchcraftResultsSummary />
+             * ```
+             * @vue-example ```jsx
+             * <SearchcraftResultsSummary />
+             * ```
+             */
+            "searchcraft-results-summary": LocalJSX.SearchcraftResultsSummary & JSXBase.HTMLAttributes<HTMLSearchcraftResultsSummaryElement>;
+            /**
              * This web component is designed to display detailed information for a single search result. Once a query is submitted, the component formats and presents the result.
              */
             "searchcraft-search-result": LocalJSX.SearchcraftSearchResult & JSXBase.HTMLAttributes<HTMLSearchcraftSearchResultElement>;
@@ -2540,6 +2654,9 @@ declare module "@stencil/core" {
              */
             "searchcraft-slider": LocalJSX.SearchcraftSlider & JSXBase.HTMLAttributes<HTMLSearchcraftSliderElement>;
             /**
+             * @deprecated Use `searchcraft-results-summary` instead.
+             * This component is deprecated and will be removed in a future version.
+             * Please update to use `searchcraft-results-summary` which has the same functionality.
              * This component renders a summary box for RAG search result summaries.
              * When the user makes a search, a network call is made to retrieve the summary content, which is then
              * rendered in this box.

@@ -61,6 +61,7 @@ export interface SearchcraftStateValues {
     orderByField: string | undefined | null;
     sortType: 'asc' | 'desc' | undefined | null;
     summary: string;
+    summaryErrorMessage: string;
     hasSummaryBox: boolean;
     isSummaryLoading: boolean;
     summaryClient?: SummaryClient;

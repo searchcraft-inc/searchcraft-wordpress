@@ -1,8 +1,8 @@
-import { p as proxyCustomElement, H, h, t as transformTag } from './index2.js?scv=0.14.0';
-import { r as registry } from './CoreInstanceRegistry.js?scv=0.14.0';
-import { d as defineCustomElement$4 } from './searchcraft-facet-list2.js?scv=0.14.0';
-import { d as defineCustomElement$3 } from './searchcraft-slider2.js?scv=0.14.0';
-import { d as defineCustomElement$2 } from './searchcraft-toggle-button2.js?scv=0.14.0';
+import { p as proxyCustomElement, H, h, t as transformTag } from './index2.js?scv=0.15.0';
+import { r as registry } from './CoreInstanceRegistry.js?scv=0.15.0';
+import { d as defineCustomElement$4 } from './searchcraft-facet-list2.js?scv=0.15.0';
+import { d as defineCustomElement$3 } from './searchcraft-slider2.js?scv=0.15.0';
+import { d as defineCustomElement$2 } from './searchcraft-toggle-button2.js?scv=0.15.0';
 
 const SearchcraftFilterPanel$1 = /*@__PURE__*/ proxyCustomElement(class SearchcraftFilterPanel extends H {
     constructor(registerHost) {

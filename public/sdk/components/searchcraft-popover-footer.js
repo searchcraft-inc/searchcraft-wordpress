@@ -1,4 +1,4 @@
-import { S as SearchcraftPopoverFooter$1, d as defineCustomElement$1 } from './searchcraft-popover-footer2.js?scv=0.14.0';
+import { S as SearchcraftPopoverFooter$1, d as defineCustomElement$1 } from './searchcraft-popover-footer2.js?scv=0.15.0';
 
 const SearchcraftPopoverFooter = SearchcraftPopoverFooter$1;
 const defineCustomElement = defineCustomElement$1;

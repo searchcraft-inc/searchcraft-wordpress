@@ -1,7 +1,7 @@
-import { p as proxyCustomElement, t as transformTag, H, h } from './index2.js?scv=0.14.0';
-import { c as classNames } from './index3.js?scv=0.14.0';
-import { r as registry } from './CoreInstanceRegistry.js?scv=0.14.0';
-import { h as html } from './html.js?scv=0.14.0';
+import { p as proxyCustomElement, t as transformTag, H, h } from './index2.js?scv=0.15.0';
+import { c as classNames } from './index3.js?scv=0.15.0';
+import { r as registry } from './CoreInstanceRegistry.js?scv=0.15.0';
+import { h as html } from './html.js?scv=0.15.0';
 
 const urlAlphabet =
   'useandom-26T198340PX75pxJACKVERYMINDBUSHWOLF_GQZbfghjklqvwyzrict';
