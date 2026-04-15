@@ -695,7 +695,6 @@ class Searchcraft_Admin {
 				'index_id'     => isset( $config_data['index_id'] ) ? sanitize_text_field( wp_unslash( $config_data['index_id'] ) ) : '',
 				'read_key'     => isset( $config_data['read_key'] ) && ! empty( $config_data['read_key'] ) ? sanitize_text_field( wp_unslash( $config_data['read_key'] ) ) : $existing_config['read_key'],
 				'ingest_key'   => isset( $config_data['ingest_key'] ) && ! empty( $config_data['ingest_key'] ) ? sanitize_text_field( wp_unslash( $config_data['ingest_key'] ) ) : $existing_config['ingest_key'],
-				'cortex_url'   => isset( $config_data['cortex_url'] ) && ! empty( $config_data['cortex_url'] ) ? esc_url_raw( wp_unslash( $config_data['cortex_url'] ) ) : '',
 			);
 
 			// Validate the configuration.

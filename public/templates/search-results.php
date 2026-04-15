@@ -33,7 +33,7 @@ require_once 'common-template-values.php';
 	</div>
 	<?php endif; ?>
 	<div class="searchcraft-results-content">
-			<?php if ( $searchcraft_enable_ai_summary && ! empty( $searchcraft_cortex_url ) ) : ?>
+			<?php if ( $searchcraft_enable_ai_summary ) : ?>
 			<div class="searchcraft-summary-container">
 				<div class="searchcraft-summary-header-container">
 					<svg xmlns="http://www.w3.org/2000/svg" width="24" height="20" viewBox="0 0 24 20" fill="none">

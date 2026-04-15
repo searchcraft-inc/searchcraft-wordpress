@@ -195,27 +195,11 @@ if ( ! is_array( $selected_builtin_post_types ) ) {
 							</button>
 						</div>
 						<p class="description">
-							API key for read operations (searching).
+							API key for read operations (searching). If you are using AI features, make sure this key has the correct permissions.
 						</p>
 					</td>
 				</tr>
-				<tr>
-					<th scope="row">
-						<label for="searchcraft_cortex_url">Cortex URL</label>
-					</th>
-					<td>
-						<input
-							type="url"
-							id="searchcraft_cortex_url"
-							name="searchcraft_config[cortex_url]"
-							value="<?php echo esc_attr( isset( $config['cortex_url'] ) ? $config['cortex_url'] : '' ); ?>"
-							class="regular-text"
-						/>
-						<p class="description">
-							Optional URL for AI summary functionality. Contact Searchcraft support for this value.
-						</p>
-					</td>
-				</tr>
+
 			</tbody>
 		</table>
 

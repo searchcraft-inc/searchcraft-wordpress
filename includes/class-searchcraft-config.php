@@ -49,7 +49,6 @@ class Searchcraft_Config {
 		'ingest_key'   => '',
 		'endpoint_url' => '',
 		'index_id'     => '',
-		'cortex_url'   => '',
 	);
 
 	/**

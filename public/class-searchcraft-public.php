@@ -219,9 +219,6 @@ class Searchcraft_Public {
 		// AI summary settings.
 		$enable_ai_summary            = get_option( 'searchcraft_enable_ai_summary', false );
 		$js_config['enableAiSummary'] = (bool) $enable_ai_summary;
-		if ( $enable_ai_summary && ! empty( $config['cortex_url'] ) ) {
-			$js_config['cortexURL'] = $config['cortex_url'];
-		}
 		$js_config['summaryBackgroundColor'] = get_option( 'searchcraft_summary_background_color', '#F5F5F5' );
 		$js_config['summaryBoxBorderRadius'] = get_option( 'searchcraft_summary_box_border_radius', '' );
 
