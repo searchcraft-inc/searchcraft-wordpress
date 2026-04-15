@@ -1,4 +1,4 @@
-import { S as SearchcraftPopoverListItem$1, d as defineCustomElement$1 } from './searchcraft-popover-list-item2.js?scv=0.14.0';
+import { S as SearchcraftPopoverListItem$1, d as defineCustomElement$1 } from './searchcraft-popover-list-item2.js?scv=0.15.0';
 
 const SearchcraftPopoverListItem = SearchcraftPopoverListItem$1;
 const defineCustomElement = defineCustomElement$1;

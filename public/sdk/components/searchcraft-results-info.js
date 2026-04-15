@@ -1,7 +1,7 @@
-import { p as proxyCustomElement, H, h, t as transformTag } from './index2.js?scv=0.14.0';
-import { r as registry } from './CoreInstanceRegistry.js?scv=0.14.0';
-import { f as formatNumberWithCommas } from './units.js?scv=0.14.0';
-import { h as html } from './html.js?scv=0.14.0';
+import { p as proxyCustomElement, H, h, t as transformTag } from './index2.js?scv=0.15.0';
+import { r as registry } from './CoreInstanceRegistry.js?scv=0.15.0';
+import { f as formatNumberWithCommas } from './units.js?scv=0.15.0';
+import { h as html } from './html.js?scv=0.15.0';
 
 const SearchcraftResultsInfo$1 = /*@__PURE__*/ proxyCustomElement(class SearchcraftResultsInfo extends H {
     constructor(registerHost) {

@@ -1,5 +1,5 @@
-import { p as proxyCustomElement, H, c as createEvent, h, F as Fragment, t as transformTag } from './index2.js?scv=0.14.0';
-import { c as classNames } from './index3.js?scv=0.14.0';
+import { p as proxyCustomElement, H, c as createEvent, h, F as Fragment, t as transformTag } from './index2.js?scv=0.15.0';
+import { c as classNames } from './index3.js?scv=0.15.0';
 
 const SearchcraftButton = /*@__PURE__*/ proxyCustomElement(class SearchcraftButton extends H {
     constructor(registerHost) {

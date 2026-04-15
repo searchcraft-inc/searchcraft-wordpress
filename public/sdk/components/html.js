@@ -1,4 +1,4 @@
-import { p as purify } from './purify.es.js?scv=0.14.0';
+import { p as purify } from './purify.es.js?scv=0.15.0';
 
 /**
  * This allows you to parse a template string with a function.

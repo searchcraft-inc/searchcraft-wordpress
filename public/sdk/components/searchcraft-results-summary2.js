@@ -2,9 +2,9 @@ import { p as proxyCustomElement, H, h, t as transformTag } from './index2.js?sc
 import { r as registry } from './CoreInstanceRegistry.js?scv=0.15.0';
 import { p as purify } from './purify.es.js?scv=0.15.0';
 import { m as marked } from './marked.esm.js?scv=0.15.0';
-import { d as defineCustomElement$2 } from './searchcraft-loading2.js?scv=0.15.0';
+import { d as defineCustomElement$1 } from './searchcraft-loading2.js?scv=0.15.0';
 
-const SearchcraftSummaryBox$1 = /*@__PURE__*/ proxyCustomElement(class SearchcraftSummaryBox extends H {
+const SearchcraftResultsSummary = /*@__PURE__*/ proxyCustomElement(class SearchcraftResultsSummary extends H {
     constructor(registerHost) {
         super();
         if (registerHost !== false) {
@@ -21,6 +21,9 @@ const SearchcraftSummaryBox$1 = /*@__PURE__*/ proxyCustomElement(class Searchcra
     isSummaryNotEnabled = false;
     unsubscribe;
     cleanupCore;
+    /**
+    * Callback invoked when the Searchcraft core instance is available.
+    */
     onCoreAvailable(core) {
         core.store.setState({ hasSummaryBox: true });
         this.unsubscribe = core.store.subscribe(this.handleStateChange.bind(this));
@@ -55,43 +58,40 @@ const SearchcraftSummaryBox$1 = /*@__PURE__*/ proxyCustomElement(class Searchcra
             return h("searchcraft-loading", { label: 'LOADING' });
         }
         if (this.isSummaryNotEnabled) {
-            return (h("div", { class: 'searchcraft-summary-box-content' }, this.summaryErrorMessage || 'AI summaries are not enabled'));
+            return (h("div", { class: 'searchcraft-results-summary-content' }, this.summaryErrorMessage || 'AI summaries are not enabled'));
         }
-        return (h("div", { class: 'searchcraft-summary-box-content', innerHTML: this.summary }));
+        return (h("div", { class: 'searchcraft-results-summary-content', innerHTML: this.summary, "aria-live": "polite" }));
     }
     render() {
-        return h("div", { key: 'a33091962cfbbcf0399e9e15e8346590511090e1', class: 'searchcraft-summary-box' }, this.renderContent());
+        return (h("div", { key: '4fabef16a76b57d737aa47fcf106c7375d19a5bc', class: 'searchcraft-results-summary' }, this.renderContent()));
     }
-}, [768, "searchcraft-summary-box", {
+}, [768, "searchcraft-results-summary", {
         "searchcraftId": [1, "searchcraft-id"],
         "summary": [32],
         "summaryErrorMessage": [32],
         "isLoading": [32],
         "isSummaryNotEnabled": [32]
     }]);
-function defineCustomElement$1() {
+function defineCustomElement() {
     if (typeof customElements === "undefined") {
         return;
     }
-    const components = ["searchcraft-summary-box", "searchcraft-loading"];
+    const components = ["searchcraft-results-summary", "searchcraft-loading"];
     components.forEach(tagName => { switch (tagName) {
-        case "searchcraft-summary-box":
+        case "searchcraft-results-summary":
             if (!customElements.get(transformTag(tagName))) {
-                customElements.define(transformTag(tagName), SearchcraftSummaryBox$1);
+                customElements.define(transformTag(tagName), SearchcraftResultsSummary);
             }
             break;
         case "searchcraft-loading":
             if (!customElements.get(transformTag(tagName))) {
-                defineCustomElement$2();
+                defineCustomElement$1();
             }
             break;
     } });
 }
 
-const SearchcraftSummaryBox = SearchcraftSummaryBox$1;
-const defineCustomElement = defineCustomElement$1;
+export { SearchcraftResultsSummary as S, defineCustomElement as d };
+//# sourceMappingURL=searchcraft-results-summary2.js.map
 
-export { SearchcraftSummaryBox, defineCustomElement };
-//# sourceMappingURL=searchcraft-summary-box.js.map
-
-//# sourceMappingURL=searchcraft-summary-box.js.map
+//# sourceMappingURL=searchcraft-results-summary2.js.map

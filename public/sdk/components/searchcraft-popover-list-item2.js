@@ -1,6 +1,6 @@
-import { p as proxyCustomElement, H, h, t as transformTag } from './index2.js?scv=0.14.0';
-import { r as registry } from './CoreInstanceRegistry.js?scv=0.14.0';
-import { g as getDocumentValueFromSearchResultMapping } from './units.js?scv=0.14.0';
+import { p as proxyCustomElement, H, h, t as transformTag } from './index2.js?scv=0.15.0';
+import { r as registry } from './CoreInstanceRegistry.js?scv=0.15.0';
+import { g as getDocumentValueFromSearchResultMapping } from './units.js?scv=0.15.0';
 import './purify.es.js';
 
 const SearchcraftPopoverListItem = /*@__PURE__*/ proxyCustomElement(class SearchcraftPopoverListItem extends H {
@@ -57,7 +57,7 @@ const SearchcraftPopoverListItem = /*@__PURE__*/ proxyCustomElement(class Search
         }
     };
     render() {
-        return (h("div", { key: '119fc0a527160924a22d185ce764202b1d342e9b', class: 'searchcraft-popover-list-item' }, h("a", { key: '95a5db24035c3be7decb2f062710214fa5726f27', class: 'searchcraft-popover-list-item-link', href: this.href, onClick: this.handleLinkClick.bind(this) }, this.imageSource && (h("div", { key: '6a5ddee0b5f03bc7cf5c5dacc5b4a5ee2fcbe511', class: 'searchcraft-popover-list-item-image-wrapper' }, h("img", { key: '3cdae906aee5b6ef7d1f618419476e75af4c4ebe', alt: this.imageAlt, src: this.imageSource, class: 'searchcraft-popover-list-item-image' }))), h("div", { key: 'd0b55113188fb8fafff8ee15d3dc919617852b62', class: 'searchcraft-popover-list-item-content' }, this.title && (h("p", { key: '1482260827b057f03db9eb6e8d7df7f5977fe3dc', class: 'searchcraft-popover-list-item-content-title' }, this.title)), this.subtitle && (h("p", { key: 'c4210cef3c4372ee4f9ce4a41dbea10d0e915175', class: 'searchcraft-popover-list-item-content-subtitle' }, this.subtitle))))));
+        return (h("div", { key: 'd1c9c310b8abc9d2370efb802eac1edf4189519d', class: 'searchcraft-popover-list-item' }, h("a", { key: '30eb1a5076c5b4b95ae43147eaee0bb72ce46179', class: 'searchcraft-popover-list-item-link', href: this.href, onClick: this.handleLinkClick.bind(this) }, this.imageSource && (h("div", { key: 'd18ff55823dc2c61f3786f423936af8b009aeeda', class: 'searchcraft-popover-list-item-image-wrapper' }, h("img", { key: '56f4cc1d472f7da05e64fcf52c560a7ad0cdf7a6', alt: this.imageAlt, src: this.imageSource, class: 'searchcraft-popover-list-item-image' }))), h("div", { key: '78a0f0235d5e71d10076b70ccbaf4b58e0d6fea0', class: 'searchcraft-popover-list-item-content' }, this.title && (h("p", { key: '4489047af56e5aa295cb5f036e970dcad053d3b7', class: 'searchcraft-popover-list-item-content-title' }, this.title)), this.subtitle && (h("p", { key: '4d177c227a1dbf1233022d738403c8eb93ba328d', class: 'searchcraft-popover-list-item-content-subtitle' }, this.subtitle))))));
     }
 }, [768, "searchcraft-popover-list-item", {
         "item": [16],
