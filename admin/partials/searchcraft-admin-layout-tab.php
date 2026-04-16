@@ -153,7 +153,7 @@ if ( ! is_array( $filter_panel_order ) || empty( $filter_panel_order ) ) {
 								</fieldset>
 							</td>
 						</tr>
-						<tr class="searchcraft-full-only">
+						<tr>
 							<th scope="row">
 								<label for="searchcraft_input_padding">Input Component Horizontal Padding</label>
 							</th>
@@ -168,7 +168,7 @@ if ( ! is_array( $filter_panel_order ) || empty( $filter_panel_order ) ) {
 								</p>
 							</td>
 						</tr>
-						<tr class="searchcraft-full-only">
+						<tr>
 							<th scope="row">
 								<label for="searchcraft_input_vertical_padding">Input Component Vertical Padding</label>
 							</th>
@@ -183,7 +183,7 @@ if ( ! is_array( $filter_panel_order ) || empty( $filter_panel_order ) ) {
 								</p>
 							</td>
 						</tr>
-						<tr class="searchcraft-full-only">
+						<tr>
 							<th scope="row">
 								<label for="searchcraft_input_border_radius">Input Border Radius</label>
 							</th>
@@ -198,7 +198,7 @@ if ( ! is_array( $filter_panel_order ) || empty( $filter_panel_order ) ) {
 								</p>
 							</td>
 						</tr>
-						<tr class="searchcraft-full-only">
+						<tr>
 							<th scope="row">
 								<label for="searchcraft_search_icon_color">Search Icon Color</label>
 							</th>
@@ -213,7 +213,7 @@ if ( ! is_array( $filter_panel_order ) || empty( $filter_panel_order ) ) {
 								</p>
 							</td>
 						</tr>
-						<tr class="searchcraft-full-only">
+						<tr>
 							<th scope="row">
 								<label for="searchcraft_clear_icon_color">Clear Search Button Color</label>
 							</th>
@@ -320,7 +320,7 @@ if ( ! is_array( $filter_panel_order ) || empty( $filter_panel_order ) ) {
 									Summarize search results with AI.
 								</label>
 								<p class="description">
-									Reach out to <a href="mailto:support@searchcraft.io">support@searchcraft.io</a> Searchcraft support to enable this feature.
+									Requires a paid Searchcraft Cloud plan.
 								</p>
 							</td>
 						</tr>
