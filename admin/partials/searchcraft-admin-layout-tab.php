@@ -575,7 +575,22 @@ if ( ! is_array( $filter_panel_order ) || empty( $filter_panel_order ) ) {
 								</p>
 							</td>
 						</tr>
-												<tr>
+												<tr class="searchcraft-popover-only">
+							<th scope="row">
+								<label for="searchcraft_popover_footer_background_color">Popover Footer Background</label>
+							</th>
+							<td>
+								<?php
+								$popover_footer_background_color = get_option( 'searchcraft_popover_footer_background_color', '#f3f3f3' );
+								?>
+								<input type="color" name="searchcraft_popover_footer_background_color" id="searchcraft_popover_footer_background_color" value="<?php echo esc_attr( $popover_footer_background_color ); ?>" class="searchcraft-color-picker" />
+								<input type="text" name="searchcraft_popover_footer_background_color_hex" id="searchcraft_popover_footer_background_color_hex" value="<?php echo esc_attr( $popover_footer_background_color ); ?>" class="regular-text searchcraft-hex-input" pattern="^#[0-9A-Fa-f]{6}$" placeholder="#f3f3f3" />
+								<p class="description">
+									Choose the background color for the footer of the modal and inline popover search form. You can use the color picker or enter a hex color code directly (e.g., #f3f3f3).
+								</p>
+							</td>
+						</tr>
+						<tr>
 							<th scope="row">
 								<label for="searchcraft_include_filter_panel">Include Filter Panel</label>
 							</th>
