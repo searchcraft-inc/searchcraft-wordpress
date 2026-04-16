@@ -1251,6 +1251,18 @@ class Searchcraft_Admin {
 			update_option( 'searchcraft_filter_label_color', $filter_label_color );
 		}
 
+		// Handle popover footer background color.
+		if ( isset( $request['searchcraft_popover_footer_background_color'] ) ) {
+			$popover_footer_background_color = sanitize_text_field( wp_unslash( $request['searchcraft_popover_footer_background_color'] ) );
+
+			// Validate hex color format.
+			if ( ! preg_match( '/^#[a-fA-F0-9]{6}$/', $popover_footer_background_color ) ) {
+				$popover_footer_background_color = '#f3f3f3';
+			}
+
+			update_option( 'searchcraft_popover_footer_background_color', $popover_footer_background_color );
+		}
+
 		// Handle results per page setting.
 		if ( isset( $request['searchcraft_results_per_page'] ) ) {
 			$results_per_page = absint( wp_unslash( $request['searchcraft_results_per_page'] ) );
@@ -2853,6 +2865,7 @@ class Searchcraft_Admin {
 			'searchcraft_filter_taxonomies',
 			'searchcraft_filter_panel_order',
 			'searchcraft_filter_label_color',
+			'searchcraft_popover_footer_background_color',
 			'searchcraft_toggle_button_disabled_color',
 			'searchcraft_clear_icon_color',
 			'searchcraft_search_icon_color',

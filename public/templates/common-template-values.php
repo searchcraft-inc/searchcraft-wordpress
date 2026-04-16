@@ -32,6 +32,7 @@ $searchcraft_input_border_radius          = get_option( 'searchcraft_input_borde
 $searchcraft_search_icon_color            = get_option( 'searchcraft_search_icon_color', '#000000' );
 $searchcraft_clear_icon_color             = get_option( 'searchcraft_clear_icon_color', '#000000' );
 $searchcraft_toggle_button_disabled_color = get_option( 'searchcraft_toggle_button_disabled_color', '#E0E0E0' );
+$searchcraft_popover_footer_background_color = get_option( 'searchcraft_popover_footer_background_color', '#f3f3f3' );
 $searchcraft_filter_label_color           = get_option( 'searchcraft_filter_label_color', '#000000' );
 $search_experience                        = get_option( 'searchcraft_search_experience', 'full' );
 // Legacy: treat old 'popover' value as 'modal'.

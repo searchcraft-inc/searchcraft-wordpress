@@ -24,14 +24,18 @@ require_once 'common-template-values.php';
 
 <style>
 :root {
+	/* === SDK design tokens — these are consumed directly by the Searchcraft SDK theme === */
 	--sc-color-brand: <?php echo esc_attr( $searchcraft_brand_color ); ?>;
-	--sc-result-info-text-color: <?php echo esc_attr( $searchcraft_result_info_text_color ); ?>;
 	--sc-border-radius: <?php echo esc_attr( $searchcraft_input_border_radius ); ?>px;
+
+	/* === WordPress-only variables — defined here and used only in the overrides below === */
+	--sc-result-info-text-color: <?php echo esc_attr( $searchcraft_result_info_text_color ); ?>;
 	--sc-search-icon-color: <?php echo esc_attr( $searchcraft_search_icon_color ); ?>;
 	--sc-clear-icon-color: <?php echo esc_attr( $searchcraft_clear_icon_color ); ?>;
 	--sc-toggle-button-disabled-color: <?php echo esc_attr( $searchcraft_toggle_button_disabled_color ); ?>;
 	--sc-summary-title-color: <?php echo esc_attr( $searchcraft_summary_title_color ); ?>;
 	--sc-summary-text-color: <?php echo esc_attr( $searchcraft_summary_text_color ); ?>;
+	--sc-popover-footer-bg: <?php echo esc_attr( $searchcraft_popover_footer_background_color ); ?>;
 }
 .searchcraft-input-form-input {
 	padding: 12px 44px !important;
@@ -47,6 +51,10 @@ require_once 'common-template-values.php';
 
 button.searchcraft-toggle-button-background {
 	background-color: var(--sc-toggle-button-disabled-color);
+}
+
+.searchcraft-popover-footer {
+	background-color: var(--sc-popover-footer-bg);
 }
 
 .searchcraft-header-container {
