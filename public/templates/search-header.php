@@ -357,7 +357,7 @@ searchcraft-summary-box, .searchcraft-summary-box {
 		padding: 0 !important;
 	}
 
-	& h1, h2, h3, h4, h5 {
+	& h1, & h2, & h3, & h4, & h5 {
 		color: var(--sc-summary-title-color);
 		font-weight: bold;
 	}
@@ -379,6 +379,30 @@ searchcraft-summary-box, .searchcraft-summary-box {
 .searchcraft-footer-link:hover {
   color: var(--sc-color-brand);
 }
+
+/* Summary component styles when rendered inside the popover form */
+searchcraft-popover-form .searchcraft-results-summary {
+	background-color: <?php echo esc_attr( $searchcraft_summary_background_color ); ?>;
+	border: 1px solid <?php echo esc_attr( $searchcraft_summary_border_color ); ?>;
+	border-radius: <?php echo esc_attr( $searchcraft_summary_box_border_radius ); ?>px;
+	padding: 16px;
+
+	& .searchcraft-results-summary-content {
+		& h1, & h2, & h3, & h4, & h5 {
+			color: var(--sc-summary-title-color);
+			font-weight: bold;
+		}
+
+		& p {
+			color: var(--sc-summary-text-color);
+		}
+
+		& a {
+			color: <?php echo esc_attr( $searchcraft_brand_color ); ?>;
+		}
+	}
+}
+
 .searchcraft-filter-panel-header {
 	display: none;
 	border-bottom: 1px solid #e9ecef;
@@ -470,7 +494,7 @@ if ( ! empty( $custom_css ) ) {
 				<?php if ( 'modal' === $search_experience ) : ?>
 					<searchcraft-popover-button type="magnifying-glass"></searchcraft-popover-button>
 				<?php endif; ?>
-				<searchcraft-popover-form type="<?php echo esc_attr( $search_experience ); ?>" placeholder-value="<?php echo esc_attr( $search_placeholder ); ?>"<?php if ( $searchcraft_enable_view_all_results ) : ?> view-all-results-base-url="<?php echo esc_url( site_url( '/' ) . '?s=' ); ?>"<?php endif; ?><?php if ( ! empty( $searchcraft_view_all_results_label ) ) : ?> view-all-results-label="<?php echo esc_attr( $searchcraft_view_all_results_label ); ?>"<?php endif; ?>></searchcraft-popover-form>
+				<searchcraft-popover-form type="<?php echo esc_attr( $search_experience ); ?>" placeholder-value="<?php echo esc_attr( $search_placeholder ); ?>"<?php if ( $searchcraft_enable_view_all_results ) : ?> view-all-results-base-url="<?php echo esc_url( site_url( '/' ) . '?s=' ); ?>"<?php endif; ?><?php if ( ! empty( $searchcraft_view_all_results_label ) ) : ?> view-all-results-label="<?php echo esc_attr( $searchcraft_view_all_results_label ); ?>"<?php endif; ?><?php if ( $searchcraft_enable_ai_summary ) : ?> show-summary-box<?php endif; ?>></searchcraft-popover-form>
 			</div>
 		<?php else : ?>
 			<div class="searchcraft-full-search-experience">
