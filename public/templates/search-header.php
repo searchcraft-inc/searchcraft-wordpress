@@ -26,7 +26,7 @@ require_once 'common-template-values.php';
 :root {
 	--sc-color-brand: <?php echo esc_attr( $searchcraft_brand_color ); ?>;
 	--sc-result-info-text-color: <?php echo esc_attr( $searchcraft_result_info_text_color ); ?>;
-	--sc-input-form-border-radius: <?php echo esc_attr( $searchcraft_input_border_radius ); ?>px;
+	--sc-border-radius: <?php echo esc_attr( $searchcraft_input_border_radius ); ?>px;
 	--sc-search-icon-color: <?php echo esc_attr( $searchcraft_search_icon_color ); ?>;
 	--sc-clear-icon-color: <?php echo esc_attr( $searchcraft_clear_icon_color ); ?>;
 	--sc-toggle-button-disabled-color: <?php echo esc_attr( $searchcraft_toggle_button_disabled_color ); ?>;
@@ -47,10 +47,6 @@ require_once 'common-template-values.php';
 
 button.searchcraft-toggle-button-background {
 	background-color: var(--sc-toggle-button-disabled-color);
-}
-
-.searchcraft-full-search-experience .searchcraft-input-form-input {
-	border-radius: var(--sc-input-form-border-radius) !important;
 }
 
 .searchcraft-header-container {
@@ -98,16 +94,16 @@ button.searchcraft-toggle-button-background {
 	text-align: center;
 	min-width: 20%;
 }
-.searchcraft-popover-container {
-	max-width: var(--wp--style--global--wide-size, 1200px);
-	min-width: 260px;
-	margin: 0 auto;
-	width: <?php echo esc_attr( $searchcraft_input_width ); ?>%;
-}
-.searchcraft-full-search-experience {
+
+.searchcraft-full-search-experience, .searchcraft-popover-container {
 	max-width: var(--wp--style--global--wide-size, 1200px);
 	margin: 0 auto;
 	padding: <?php echo esc_attr( $input_vertical_padding ); ?>px <?php echo esc_attr( $input_horizontal_padding ); ?>px;
+}
+
+.searchcraft-popover-container {
+	min-width: 260px;
+	width: <?php echo esc_attr( $searchcraft_input_width ); ?>%;
 }
 
 .searchcraft-toggle-button-label {
@@ -464,7 +460,7 @@ if ( ! empty( $custom_css ) ) {
 		<?php if ( in_array( $search_experience, array( 'modal', 'inline' ), true ) && ! is_search() ) : ?>
 			<div class="searchcraft-popover-container">
 				<?php if ( 'modal' === $search_experience ) : ?>
-					<searchcraft-popover-button type="skeuomorphic"></searchcraft-popover-button>
+					<searchcraft-popover-button type="magnifying-glass"></searchcraft-popover-button>
 				<?php endif; ?>
 				<searchcraft-popover-form type="<?php echo esc_attr( $search_experience ); ?>" placeholder-value="<?php echo esc_attr( $search_placeholder ); ?>"<?php if ( $searchcraft_enable_view_all_results ) : ?> view-all-results-base-url="<?php echo esc_url( site_url( '/' ) . '?s=' ); ?>"<?php endif; ?><?php if ( ! empty( $searchcraft_view_all_results_label ) ) : ?> view-all-results-label="<?php echo esc_attr( $searchcraft_view_all_results_label ); ?>"<?php endif; ?>></searchcraft-popover-form>
 			</div>
