@@ -1,7 +1,7 @@
 === Searchcraft ===
 Donate link: https://searchcraft.io/
 Contributors: searchcraft
-Tags:         search, fuzzy search, better search, instant search, search replacement
+Tags:         search, fuzzy search, better search, instant search, custom search
 Requires at least: 5.3
 Tested up to: 6.9
 Stable tag:   1.3.7
@@ -14,17 +14,24 @@ Bring fast, relevant search to your site. Searchcraft replaces the default searc
 == Description ==
 Searchcraft brings fast, relevant search to your site. You can choose between a near-instant keyword search or utilize AI to generate post summaries that are powered by your own content. Searchcraft doesn't add any bloat to your database, it's index data is stored remotely and is designed to be a drop-in replacement for the default search.
 
+https://www.youtube.com/watch?v=22PixVQpsSU
+
 == Features ==
 
 * Fast, relevant search that can scale to hundreds of millions of posts.
 * Drop-in replacement for default search.
 * Instant results.
 * Choose which content is searchable and which to exclude. Supports both posts and pages.
-* Multiple layout options including pop-over and faceted search.
+* Supports custom taxonomy and author plugins.
+* Multiple layout options including full page, modal, and inline search experiences.
+* Highly configurable filter panel with collapsible sections and faceted search.
 * Customizable search fields and weighting.
+* Custom result templates for full control over search result markup.
 * Synonyms (configured via Searchcraft Cloud).
 * Stopwords (configured via Searchcraft Cloud).
+* Optional AI summaries using your content (via a Searchcraft Cloud paid plan).
 * Search analytics (via Searchcraft Cloud).
+* Import and export settings to simplify migrations between environments.
 * Works with Searchcraft Cloud or self-hosted Searchcraft Core.
 
 == Installation ==
