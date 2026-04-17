@@ -1,4 +1,4 @@
-import { p as proxyCustomElement, H, h, t as transformTag } from './index2.js?scv=0.15.0';
+import { p as proxyCustomElement, H, h, t as transformTag } from './index2.js?scv=0.15.1';
 
 const SearchcraftErrorMessage = /*@__PURE__*/ proxyCustomElement(class SearchcraftErrorMessage extends H {
     constructor(registerHost) {

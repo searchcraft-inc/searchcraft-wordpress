@@ -1,8 +1,8 @@
-import { p as proxyCustomElement, H, h, t as transformTag } from './index2.js?scv=0.15.0';
-import { r as registry } from './CoreInstanceRegistry.js?scv=0.15.0';
-import { p as purify } from './purify.es.js?scv=0.15.0';
-import { m as marked } from './marked.esm.js?scv=0.15.0';
-import { d as defineCustomElement$1 } from './searchcraft-loading2.js?scv=0.15.0';
+import { p as proxyCustomElement, H, h, t as transformTag } from './index2.js?scv=0.15.1';
+import { r as registry } from './CoreInstanceRegistry.js?scv=0.15.1';
+import { p as purify } from './purify.es.js?scv=0.15.1';
+import { m as marked } from './marked.esm.js?scv=0.15.1';
+import { d as defineCustomElement$1 } from './searchcraft-loading2.js?scv=0.15.1';
 
 const SearchcraftResultsSummary = /*@__PURE__*/ proxyCustomElement(class SearchcraftResultsSummary extends H {
     constructor(registerHost) {
@@ -22,10 +22,11 @@ const SearchcraftResultsSummary = /*@__PURE__*/ proxyCustomElement(class Searchc
     unsubscribe;
     cleanupCore;
     /**
-    * Callback invoked when the Searchcraft core instance is available.
-    */
+     * Callback invoked when the Searchcraft core instance is available.
+     */
     onCoreAvailable(core) {
         core.store.setState({ hasSummaryBox: true });
+        this.handleStateChange(core.store.getState());
         this.unsubscribe = core.store.subscribe(this.handleStateChange.bind(this));
     }
     connectedCallback() {
@@ -60,10 +61,10 @@ const SearchcraftResultsSummary = /*@__PURE__*/ proxyCustomElement(class Searchc
         if (this.isSummaryNotEnabled) {
             return (h("div", { class: 'searchcraft-results-summary-content' }, this.summaryErrorMessage || 'AI summaries are not enabled'));
         }
-        return (h("div", { class: 'searchcraft-results-summary-content', innerHTML: this.summary, "aria-live": "polite" }));
+        return (h("div", { class: 'searchcraft-results-summary-content', innerHTML: this.summary, "aria-live": 'polite' }));
     }
     render() {
-        return (h("div", { key: '4fabef16a76b57d737aa47fcf106c7375d19a5bc', class: 'searchcraft-results-summary' }, this.renderContent()));
+        return (h("div", { key: 'aca6fe712c108fd3cb886be7dacfb763d2df8a92', class: 'searchcraft-results-summary' }, this.renderContent()));
     }
 }, [768, "searchcraft-results-summary", {
         "searchcraftId": [1, "searchcraft-id"],

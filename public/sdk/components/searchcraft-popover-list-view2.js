@@ -1,7 +1,7 @@
-import { p as proxyCustomElement, H, h, t as transformTag } from './index2.js?scv=0.15.0';
-import { r as registry } from './CoreInstanceRegistry.js?scv=0.15.0';
-import { d as defineCustomElement$2 } from './searchcraft-ad2.js?scv=0.15.0';
-import { d as defineCustomElement$1 } from './searchcraft-popover-list-item2.js?scv=0.15.0';
+import { p as proxyCustomElement, H, h, t as transformTag } from './index2.js?scv=0.15.1';
+import { r as registry } from './CoreInstanceRegistry.js?scv=0.15.1';
+import { d as defineCustomElement$2 } from './searchcraft-ad2.js?scv=0.15.1';
+import { d as defineCustomElement$1 } from './searchcraft-popover-list-item2.js?scv=0.15.1';
 
 const SearchcraftPopoverListView = /*@__PURE__*/ proxyCustomElement(class SearchcraftPopoverListView extends H {
     constructor(registerHost) {

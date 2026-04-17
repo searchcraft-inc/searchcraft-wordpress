@@ -1,7 +1,7 @@
-import { p as proxyCustomElement, H, c as createEvent, h, t as transformTag } from './index2.js?scv=0.15.0';
-import { a as getDifferenceInUnits, b as getStartOf, c as getFormattedDateString } from './units.js?scv=0.15.0';
+import { p as proxyCustomElement, H, c as createEvent, h, t as transformTag } from './index2.js?scv=0.15.1';
+import { a as getDifferenceInUnits, b as getStartOf, c as getFormattedDateString } from './units.js?scv=0.15.1';
 import './purify.es.js';
-import { c as classNames } from './index3.js?scv=0.15.0';
+import { c as classNames } from './index3.js?scv=0.15.1';
 
 /**
  * Creates a throttled version of the given function that only invokes

@@ -43,8 +43,8 @@ export declare class SearchcraftResultsSummary {
     private unsubscribe?;
     private cleanupCore?;
     /**
-    * Callback invoked when the Searchcraft core instance is available.
-    */
+     * Callback invoked when the Searchcraft core instance is available.
+     */
     onCoreAvailable(core: SearchcraftCore): void;
     connectedCallback(): void;
     disconnectedCallback(): void;

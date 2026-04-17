@@ -1,4 +1,4 @@
-import { S as SearchcraftInputForm$1, d as defineCustomElement$1 } from './searchcraft-input-form2.js?scv=0.15.0';
+import { S as SearchcraftInputForm$1, d as defineCustomElement$1 } from './searchcraft-input-form2.js?scv=0.15.1';
 
 const SearchcraftInputForm = SearchcraftInputForm$1;
 const defineCustomElement = defineCustomElement$1;
