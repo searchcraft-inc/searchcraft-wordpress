@@ -1,10 +1,10 @@
-import { p as proxyCustomElement, H, h, t as transformTag } from './index2.js?scv=0.15.0';
-import { r as registry } from './CoreInstanceRegistry.js?scv=0.15.0';
-import { f as formatNumberWithCommas } from './units.js?scv=0.15.0';
+import { p as proxyCustomElement, H, h, t as transformTag } from './index2.js?scv=0.15.1';
+import { r as registry } from './CoreInstanceRegistry.js?scv=0.15.1';
+import { f as formatNumberWithCommas } from './units.js?scv=0.15.1';
 import './purify.es.js';
 
 const name = "@searchcraft/javascript-sdk";
-const version = "0.15.0";
+const version = "0.15.1";
 
 const SearchcraftPopoverFooter = /*@__PURE__*/ proxyCustomElement(class SearchcraftPopoverFooter extends H {
     constructor(registerHost) {
@@ -74,7 +74,7 @@ const SearchcraftPopoverFooter = /*@__PURE__*/ proxyCustomElement(class Searchcr
         const hasResults = typeof this.searchResultsCount === 'number' &&
             this.searchResultsCount > 0;
         const showViewAll = !!this.safeViewAllHref && hasResults;
-        return (h("footer", { key: '548704335f80a2b4bc7ebd4ea2d0a2eb73376fde', class: 'searchcraft-popover-footer' }, h("a", { key: 'a10cbfd833ef0c6016932fede6ca3195eecdfaea', class: 'searchcraft-popover-footer-link', href: href, target: '_blank', rel: 'noreferrer' }, h("span", { key: '6c6333a61ae282419e32721fc9760d3d237870df', class: 'searchcraft-popover-footer-link-prefix' }, "Powered by\u00A0"), " Searchcraft"), h("div", { key: 'c35f7d6c5b16510fa58301b8fad070e6cd14d72f', class: 'searchcraft-popover-footer-results' }, h("p", { key: 'e1576404d2d23a7b53e761e617720cc4fb45ea8d', class: 'searchcraft-popover-footer-results-info' }, hasResults ? (h("span", null, formatNumberWithCommas(this.searchResultsCount), " Results", h("span", { class: 'searchcraft-popover-footer-results-found' }, ' Found'))) : (' ')), showViewAll && (h("a", { key: '6f5585d1a75ccc44174a22603d13f3604078ca63', class: 'searchcraft-popover-footer-view-all', href: this.safeViewAllHref }, h("span", { key: '12d8202b01d4493700fafd61f81989458d7620c4', class: 'searchcraft-popover-footer-view-all-label' }, this.viewAllResultsLabel), h("span", { key: '3b26ffdc731827612e789fdb38c751062c1077ff', class: 'searchcraft-popover-footer-view-all-shortcut', "aria-hidden": 'true' }, h("kbd", { key: '6999416b99a6b4b5b24702597736846b9168b12d' }, "\u2318"), h("kbd", { key: '8a7f8ee088d037e96102dab463eb93a9d27d85ea' }, "\u21B5")))))));
+        return (h("footer", { key: '548704335f80a2b4bc7ebd4ea2d0a2eb73376fde', class: 'searchcraft-popover-footer' }, h("a", { key: 'a10cbfd833ef0c6016932fede6ca3195eecdfaea', class: 'searchcraft-popover-footer-link', href: href, target: '_blank', rel: 'noreferrer' }, h("span", { key: '6c6333a61ae282419e32721fc9760d3d237870df', class: 'searchcraft-popover-footer-link-prefix' }, "Powered by\u00A0"), ' ', "Searchcraft"), h("div", { key: 'ac3af12966e7de74be888511493cc8b5411be6f5', class: 'searchcraft-popover-footer-results' }, h("p", { key: '4a8bbc33d91852efb12b11ed7a82d34a91718456', class: 'searchcraft-popover-footer-results-info' }, hasResults ? (h("span", null, formatNumberWithCommas(this.searchResultsCount), " Results", h("span", { class: 'searchcraft-popover-footer-results-found' }, ' Found'))) : (' ')), showViewAll && (h("a", { key: '480adfb8b751ce450c6547a78750d29cbe542359', class: 'searchcraft-popover-footer-view-all', href: this.safeViewAllHref }, h("span", { key: '5cb8eb24a192fc3c22784e72414a5b8bf8070c8b', class: 'searchcraft-popover-footer-view-all-label' }, this.viewAllResultsLabel), h("span", { key: 'cc6e55e19527e99eded57edb5b35eebc574fbec0', class: 'searchcraft-popover-footer-view-all-shortcut', "aria-hidden": 'true' }, h("kbd", { key: '8e55153e517ca311239d9029073d127b9638ba05' }, "\u2318"), h("kbd", { key: '71e773899f5abe1bcf8d94c3617732f2c213571a' }, "\u21B5")))))));
     }
 }, [768, "searchcraft-popover-footer", {
         "searchcraftId": [1, "searchcraft-id"],
