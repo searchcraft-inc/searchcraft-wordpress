@@ -4,7 +4,7 @@ Contributors: searchcraft
 Tags:         search, fuzzy search, better search, instant search, custom search
 Requires at least: 5.3
 Tested up to: 6.9
-Stable tag:   1.3.7
+Stable tag:   1.4.0
 License:      Apache 2.0
 License URI:  LICENSE.txt
 
@@ -75,6 +75,18 @@ If you would like to report an issue or suggest an enhancement you may contact t
 Searchcraft Cloud customers may also reach out via our Discord server for assistance or to request a custom feature.
 
 == Changelog ==
+
+= 1.4.0 =
+* Updated internal JavaScript SDK usage to 0.15.1.
+* Updated internal Searchcraft PHP client to 0.8.0.
+* New Feature - AI results summary component is now available within the modal search experience when enabled in the plugin config.
+* New Feature - Modal footer background color is now configurable from the layout settings.
+* New Feature - Spacing and color styles for search forms are now available to both inline and modal experiences, not just the full experience.
+* Improvement - Removed deprecated Cortex URL settings in favor of the unified cluster URL configuration.
+* Bugfix - Fixes issue where searching with quotes in the full experience and sending to a results page could cause issues.
+* Enhancement- UTM parameters attribution.
+
+Important upgrade note: If you are currently using AI search summaries via the stand alone Cortex service you will need to update your settings in the AI tab within the Vektron dashboard before upgrading your plugin.
 
 = 1.3.7 =
 * Updated internal SDK usage to 0.14.0.
