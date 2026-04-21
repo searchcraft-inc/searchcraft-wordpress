@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<ruleset name="Searchcraft WP Plugin">
+    <description>WPCS ruleset for the Searchcraft WordPress plugin.</description>
+
+    <file>.</file>
+
+    <exclude-pattern>/vendor/*</exclude-pattern>
+    <exclude-pattern>/node_modules/*</exclude-pattern>
+    <exclude-pattern>/public/*</exclude-pattern>
+    <exclude-pattern>/assets/*</exclude-pattern>
+    <exclude-pattern>/languages/*</exclude-pattern>
+    <exclude-pattern>/tests/*</exclude-pattern>
+
+    <rule ref="WordPress"/>
+
+    <config name="minimum_supported_wp_version" value="5.3"/>
+    <config name="testVersion" value="7.4-"/>
+</ruleset>
