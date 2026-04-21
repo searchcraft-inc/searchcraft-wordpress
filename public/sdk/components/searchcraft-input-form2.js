@@ -1,9 +1,9 @@
-import { p as proxyCustomElement, H, c as createEvent, h, t as transformTag } from './index2.js?scv=0.14.0';
-import { c as classNames } from './index3.js?scv=0.14.0';
-import { r as registry } from './CoreInstanceRegistry.js?scv=0.14.0';
-import { d as defineCustomElement$3 } from './searchcraft-button2.js?scv=0.14.0';
-import { d as defineCustomElement$2 } from './searchcraft-error-message2.js?scv=0.14.0';
-import { d as defineCustomElement$1 } from './searchcraft-input-label2.js?scv=0.14.0';
+import { p as proxyCustomElement, H, c as createEvent, h, t as transformTag } from './index2.js?scv=0.15.1';
+import { c as classNames } from './index3.js?scv=0.15.1';
+import { r as registry } from './CoreInstanceRegistry.js?scv=0.15.1';
+import { d as defineCustomElement$3 } from './searchcraft-button2.js?scv=0.15.1';
+import { d as defineCustomElement$2 } from './searchcraft-error-message2.js?scv=0.15.1';
+import { d as defineCustomElement$1 } from './searchcraft-input-label2.js?scv=0.15.1';
 
 const SearchcraftInputForm = /*@__PURE__*/ proxyCustomElement(class SearchcraftInputForm extends H {
     constructor(registerHost) {

@@ -1,10 +1,10 @@
 === Searchcraft ===
 Donate link: https://searchcraft.io/
 Contributors: searchcraft
-Tags:         search, fuzzy search, better search, instant search, search replacement
+Tags:         search, fuzzy search, better search, instant search, custom search
 Requires at least: 5.3
 Tested up to: 6.9
-Stable tag:   1.3.7
+Stable tag:   1.4.0
 License:      Apache 2.0
 License URI:  LICENSE.txt
 
@@ -14,17 +14,24 @@ Bring fast, relevant search to your site. Searchcraft replaces the default searc
 == Description ==
 Searchcraft brings fast, relevant search to your site. You can choose between a near-instant keyword search or utilize AI to generate post summaries that are powered by your own content. Searchcraft doesn't add any bloat to your database, it's index data is stored remotely and is designed to be a drop-in replacement for the default search.
 
+https://www.youtube.com/watch?v=22PixVQpsSU
+
 == Features ==
 
 * Fast, relevant search that can scale to hundreds of millions of posts.
 * Drop-in replacement for default search.
 * Instant results.
 * Choose which content is searchable and which to exclude. Supports both posts and pages.
-* Multiple layout options including pop-over and faceted search.
+* Supports custom taxonomy and author plugins.
+* Multiple layout options including full page, modal, and inline search experiences.
+* Highly configurable filter panel with collapsible sections and faceted search.
 * Customizable search fields and weighting.
+* Custom result templates for full control over search result markup.
 * Synonyms (configured via Searchcraft Cloud).
 * Stopwords (configured via Searchcraft Cloud).
+* Optional AI summaries using your content (via a Searchcraft Cloud paid plan).
 * Search analytics (via Searchcraft Cloud).
+* Import and export settings to simplify migrations between environments.
 * Works with Searchcraft Cloud or self-hosted Searchcraft Core.
 
 == Installation ==
@@ -68,6 +75,18 @@ If you would like to report an issue or suggest an enhancement you may contact t
 Searchcraft Cloud customers may also reach out via our Discord server for assistance or to request a custom feature.
 
 == Changelog ==
+
+= 1.4.0 =
+* Updated internal JavaScript SDK usage to 0.15.1.
+* Updated internal Searchcraft PHP client to 0.8.0.
+* New Feature - AI results summary component is now available within the modal search experience when enabled in the plugin config.
+* New Feature - Modal footer background color is now configurable from the layout settings.
+* New Feature - Spacing and color styles for search forms are now available to both inline and modal experiences, not just the full experience.
+* Improvement - Removed deprecated Cortex URL settings in favor of the unified cluster URL configuration.
+* Bugfix - Fixes issue where searching with quotes in the full experience and sending to a results page could cause issues.
+* Enhancement- UTM parameters attribution.
+
+Important upgrade note: If you are currently using AI search summaries via the stand alone Cortex service you will need to update your settings in the AI tab within the Vektron dashboard before upgrading your plugin.
 
 = 1.3.7 =
 * Updated internal SDK usage to 0.14.0.

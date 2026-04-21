@@ -153,7 +153,7 @@ if ( ! is_array( $filter_panel_order ) || empty( $filter_panel_order ) ) {
 								</fieldset>
 							</td>
 						</tr>
-						<tr class="searchcraft-full-only">
+						<tr>
 							<th scope="row">
 								<label for="searchcraft_input_padding">Input Component Horizontal Padding</label>
 							</th>
@@ -168,7 +168,7 @@ if ( ! is_array( $filter_panel_order ) || empty( $filter_panel_order ) ) {
 								</p>
 							</td>
 						</tr>
-						<tr class="searchcraft-full-only">
+						<tr>
 							<th scope="row">
 								<label for="searchcraft_input_vertical_padding">Input Component Vertical Padding</label>
 							</th>
@@ -183,7 +183,7 @@ if ( ! is_array( $filter_panel_order ) || empty( $filter_panel_order ) ) {
 								</p>
 							</td>
 						</tr>
-						<tr class="searchcraft-full-only">
+						<tr>
 							<th scope="row">
 								<label for="searchcraft_input_border_radius">Input Border Radius</label>
 							</th>
@@ -198,7 +198,7 @@ if ( ! is_array( $filter_panel_order ) || empty( $filter_panel_order ) ) {
 								</p>
 							</td>
 						</tr>
-						<tr class="searchcraft-full-only">
+						<tr>
 							<th scope="row">
 								<label for="searchcraft_search_icon_color">Search Icon Color</label>
 							</th>
@@ -213,7 +213,7 @@ if ( ! is_array( $filter_panel_order ) || empty( $filter_panel_order ) ) {
 								</p>
 							</td>
 						</tr>
-						<tr class="searchcraft-full-only">
+						<tr>
 							<th scope="row">
 								<label for="searchcraft_clear_icon_color">Clear Search Button Color</label>
 							</th>
@@ -320,7 +320,7 @@ if ( ! is_array( $filter_panel_order ) || empty( $filter_panel_order ) ) {
 									Summarize search results with AI.
 								</label>
 								<p class="description">
-									Reach out to <a href="mailto:support@searchcraft.io">support@searchcraft.io</a> Searchcraft support to enable this feature.
+									Requires a paid Searchcraft Cloud plan.
 								</p>
 							</td>
 						</tr>
@@ -575,7 +575,22 @@ if ( ! is_array( $filter_panel_order ) || empty( $filter_panel_order ) ) {
 								</p>
 							</td>
 						</tr>
-												<tr>
+												<tr class="searchcraft-popover-only">
+							<th scope="row">
+								<label for="searchcraft_popover_footer_background_color">Popover Footer Background</label>
+							</th>
+							<td>
+								<?php
+								$popover_footer_background_color = get_option( 'searchcraft_popover_footer_background_color', '#f3f3f3' );
+								?>
+								<input type="color" name="searchcraft_popover_footer_background_color" id="searchcraft_popover_footer_background_color" value="<?php echo esc_attr( $popover_footer_background_color ); ?>" class="searchcraft-color-picker" />
+								<input type="text" name="searchcraft_popover_footer_background_color_hex" id="searchcraft_popover_footer_background_color_hex" value="<?php echo esc_attr( $popover_footer_background_color ); ?>" class="regular-text searchcraft-hex-input" pattern="^#[0-9A-Fa-f]{6}$" placeholder="#f3f3f3" />
+								<p class="description">
+									Choose the background color for the footer of the modal and inline popover search form. You can use the color picker or enter a hex color code directly (e.g., #f3f3f3).
+								</p>
+							</td>
+						</tr>
+						<tr>
 							<th scope="row">
 								<label for="searchcraft_include_filter_panel">Include Filter Panel</label>
 							</th>

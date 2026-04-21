@@ -1,7 +1,7 @@
-import { p as proxyCustomElement, H, c as createEvent, h, t as transformTag } from './index2.js?scv=0.14.0';
-import { a as getDifferenceInUnits, b as getStartOf, c as getFormattedDateString } from './units.js?scv=0.14.0';
+import { p as proxyCustomElement, H, c as createEvent, h, t as transformTag } from './index2.js?scv=0.15.1';
+import { a as getDifferenceInUnits, b as getStartOf, c as getFormattedDateString } from './units.js?scv=0.15.1';
 import './purify.es.js';
-import { c as classNames } from './index3.js?scv=0.14.0';
+import { c as classNames } from './index3.js?scv=0.15.1';
 
 /**
  * Creates a throttled version of the given function that only invokes
@@ -159,10 +159,10 @@ const SearchcraftSlider = /*@__PURE__*/ proxyCustomElement(class SearchcraftSlid
             100;
         const startLabel = this.getLabel(this.startValue);
         const endLabel = this.getLabel(this.endValue);
-        return (h("div", { key: '59b07f5c8a14f6cbad8bae6faebf12e9a511bcbb', class: 'searchcraft-slider' }, h("div", { key: '603c0bc39c6fe018016caf17b3b73f5b3c410fba', class: 'searchcraft-slider-range' }, h("div", { key: '31d4097f29aa13d0ab14ec861ecea803e8190ed0', class: 'searchcraft-slider-active-range', style: {
+        return (h("div", { key: '2c72254f52151edd2e2fa89c092fc788db0b5562', class: 'searchcraft-slider' }, h("div", { key: '98c25badf2c9386d7173ea552e510dcc168e7fc7', class: 'searchcraft-slider-range' }, h("div", { key: '50774db2253e34b1bce68acc0a40b2706cab542d', class: 'searchcraft-slider-active-range', style: {
                 left: `${startPercent}%`,
                 width: `${endPercent - startPercent}%`,
-            } }), h("input", { key: '40299fe0d7b973b448151a045b7a7f6c3b8846fd', class: classNames('searchcraft-slider-input', 'searchcraft-slider-input-min-handle'), max: this.upperBound, min: this.lowerBound, onInput: this.handleStartValueChange.bind(this), step: this.step, style: { zIndex: this.lastFocusedHandle === 'min' ? '2' : '1' }, type: 'range', value: this.startValue }), h("input", { key: 'd46ad0cee946b168cd6004f8a2f819f6e46c50e4', class: classNames('searchcraft-slider-input', 'searchcraft-slider-input-max-handle'), max: this.upperBound, min: this.lowerBound, onInput: this.handleEndValueChange.bind(this), step: this.step, style: { zIndex: this.lastFocusedHandle === 'max' ? '2' : '1' }, type: 'range', value: this.endValue })), h("div", { key: 'e65452bc456b0fa69d0dc0dd1276e19b9cf521e6', class: 'searchcraft-slider-label' }, h("span", { key: '2b5aec3e96d9bc9420b047a1d00cce40f361c729', class: 'searchcraft-slider-start-label' }, startLabel), h("span", { key: 'fce2109bd481b3df9ac4beee3731a24c012e4512', class: 'searchcraft-slider-end-label' }, endLabel))));
+            } }), h("input", { key: '229afedc1318a63cbd75806805210cf4f5695e6e', class: classNames('searchcraft-slider-input', 'searchcraft-slider-input-min-handle'), max: this.upperBound, min: this.lowerBound, onInput: this.handleStartValueChange.bind(this), step: this.step, style: { zIndex: this.lastFocusedHandle === 'min' ? '2' : '1' }, type: 'range', value: this.startValue }), h("input", { key: '6aa038b01daaba86f501ebbbec30fc6720b549b3', class: classNames('searchcraft-slider-input', 'searchcraft-slider-input-max-handle'), max: this.upperBound, min: this.lowerBound, onInput: this.handleEndValueChange.bind(this), step: this.step, style: { zIndex: this.lastFocusedHandle === 'max' ? '2' : '1' }, type: 'range', value: this.endValue })), h("div", { key: 'f70501538635c3b08ad1e6ac101d0b3192ef8e04', class: 'searchcraft-slider-label' }, h("span", { key: 'ddd539b86774f8900771d77d5ef7eb3a67c98d59', class: 'searchcraft-slider-start-label' }, startLabel), h("span", { key: 'b754a9c8d284e0623032cee6b92f9df88873ec04', class: 'searchcraft-slider-end-label' }, endLabel))));
     }
 }, [768, "searchcraft-slider", {
         "max": [2],

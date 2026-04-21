@@ -34,11 +34,11 @@ export interface SearchcraftConfig {
      */
     searchResultsPerPage?: number;
     /**
-     * The URL pointing towards Searchcraft Cloud's semantic search and RAG summary processing layer. When using a `searchcraft-summary-box` component, this value must be specified.
+     * @deprecated Summary requests now use `endpointURL` and `indexName`. This field is ignored by current SDK summary requests.
      */
     cortexURL?: string;
     /**
-     * Instructions provided to the LLM when creating search result summaries.
+     * @deprecated Summary prompt instructions are configured server-side on the index. This field is ignored by the engine summary endpoint.
      */
     summaryInstructionsPrompt?: string;
     /**

@@ -21,7 +21,6 @@ $input_horizontal_padding                 = get_option( 'searchcraft_input_paddi
 $input_vertical_padding                   = get_option( 'searchcraft_input_vertical_padding', '0' );
 $searchcraft_brand_color                  = get_option( 'searchcraft_brand_color', '#000000' );
 $searchcraft_result_info_text_color       = get_option( 'searchcraft_result_info_text_color', '#6C757D' );
-$searchcraft_cortex_url                   = Searchcraft_Config::get( 'cortex_url', '' );
 $searchcraft_summary_background_color     = get_option( 'searchcraft_summary_background_color', '#e0dcdc' );
 $searchcraft_summary_border_color         = get_option( 'searchcraft_summary_border_color', '#E0E0E0' );
 $searchcraft_summary_title_color          = get_option( 'searchcraft_summary_title_color', '#000000' );
@@ -33,6 +32,7 @@ $searchcraft_input_border_radius          = get_option( 'searchcraft_input_borde
 $searchcraft_search_icon_color            = get_option( 'searchcraft_search_icon_color', '#000000' );
 $searchcraft_clear_icon_color             = get_option( 'searchcraft_clear_icon_color', '#000000' );
 $searchcraft_toggle_button_disabled_color = get_option( 'searchcraft_toggle_button_disabled_color', '#E0E0E0' );
+$searchcraft_popover_footer_background_color = get_option( 'searchcraft_popover_footer_background_color', '#f3f3f3' );
 $searchcraft_filter_label_color           = get_option( 'searchcraft_filter_label_color', '#000000' );
 $search_experience                        = get_option( 'searchcraft_search_experience', 'full' );
 // Legacy: treat old 'popover' value as 'modal'.
@@ -53,3 +53,14 @@ if ( is_search() ) {
 		$value_attr = ' value="' . esc_attr( $search_query ) . '"';
 	}
 }
+
+// Build the powered by link with UTM parameters.
+$site_url                                 = wp_parse_url( get_site_url(), PHP_URL_HOST );
+$utm_params                               = array(
+	'utm_source'              => $site_url,
+	'utm_medium'              => 'wp_plugin',
+	'utm_campaign'            => 'powered-by',
+	'utm_content'             => 'results-page',
+	'sc_wp_plugin_version'    => SEARCHCRAFT_VERSION,
+);
+$searchcraft_powered_by_link              = add_query_arg( $utm_params, 'https://searchcraft.io/' );

@@ -1,5 +1,9 @@
 import type { SearchcraftCore } from "../../classes/index";
 /**
+ * @deprecated Use `searchcraft-results-summary` instead.
+ * This component is deprecated and will be removed in a future version.
+ * Please update to use `searchcraft-results-summary` which has the same functionality.
+ *
  * This component renders a summary box for RAG search result summaries.
  * When the user makes a search, a network call is made to retrieve the summary content, which is then
  * rendered in this box.
@@ -37,9 +41,9 @@ export declare class SearchcraftSummaryBox {
      */
     searchcraftId?: string;
     summary: string;
+    summaryErrorMessage: string;
     isLoading: boolean;
     isSummaryNotEnabled: boolean;
-    hostElement?: HTMLElement;
     private unsubscribe?;
     private cleanupCore?;
     onCoreAvailable(core: SearchcraftCore): void;
@@ -53,10 +57,6 @@ export declare class SearchcraftSummaryBox {
      * Sanitizes and converts markdown to HTML.
      */
     private sanitizeMarkdown;
-    /**
-     * Updates the content element directly without triggering a re-render.
-     */
-    private updateContentElement;
     /**
      * Renders the appropriate content based on current state.
      */

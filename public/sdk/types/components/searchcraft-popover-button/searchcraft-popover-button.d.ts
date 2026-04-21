@@ -60,7 +60,7 @@ export declare class SearchcraftPopoverButton {
     /**
      * The type of popover button to render.
      */
-    type?: 'skeuomorphic';
+    type?: 'skeuomorphic' | 'magnifying-glass';
     /**
      * The id of the Searchcraft instance that this component should use.
      */

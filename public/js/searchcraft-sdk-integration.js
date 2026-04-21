@@ -84,11 +84,6 @@
                 searchResultsPerPage: resultsPerPage
             };
 
-            // Add cortexURL if AI summary is enabled
-            if (searchcraft_config.cortexURL && searchcraft_config.enableAiSummary) {
-                config.cortexURL = searchcraft_config.cortexURL;
-            }
-
             // Add user identifier for analytics if available
             if (searchcraft_config.measureUserIdentifier && searchcraft_config.measureUserIdentifier !== '0') {
                 config.measureUserIdentifier = searchcraft_config.measureUserIdentifier;

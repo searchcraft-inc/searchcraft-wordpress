@@ -1,30 +1,31 @@
-export { g as getAssetPath, r as render, s as setAssetPath, a as setNonce, b as setPlatformOptions } from './index2.js?scv=0.14.0';
-import { n as nanoid } from './searchcraft-ad2.js?scv=0.14.0';
-import { D as DEFAULT_CORE_INSTANCE_ID, r as registry } from './CoreInstanceRegistry.js?scv=0.14.0';
-import { v as version, n as name } from './searchcraft-popover-footer2.js?scv=0.14.0';
-export { SearchcraftAd, defineCustomElement as defineCustomElementSearchcraftAd } from './searchcraft-ad.js?scv=0.14.0';
-export { SearchcraftButton, defineCustomElement as defineCustomElementSearchcraftButton } from './searchcraft-button.js?scv=0.14.0';
-export { SearchcraftErrorMessage, defineCustomElement as defineCustomElementSearchcraftErrorMessage } from './searchcraft-error-message.js?scv=0.14.0';
-export { SearchcraftFacetList, defineCustomElement as defineCustomElementSearchcraftFacetList } from './searchcraft-facet-list.js?scv=0.14.0';
-export { SearchcraftFilterPanel, defineCustomElement as defineCustomElementSearchcraftFilterPanel } from './searchcraft-filter-panel.js?scv=0.14.0';
-export { SearchcraftInputForm, defineCustomElement as defineCustomElementSearchcraftInputForm } from './searchcraft-input-form.js?scv=0.14.0';
-export { SearchcraftInputLabel, defineCustomElement as defineCustomElementSearchcraftInputLabel } from './searchcraft-input-label.js?scv=0.14.0';
-export { SearchcraftLoading, defineCustomElement as defineCustomElementSearchcraftLoading } from './searchcraft-loading.js?scv=0.14.0';
-export { SearchcraftPagination, defineCustomElement as defineCustomElementSearchcraftPagination } from './searchcraft-pagination.js?scv=0.14.0';
-export { SearchcraftPopoverButton, defineCustomElement as defineCustomElementSearchcraftPopoverButton } from './searchcraft-popover-button.js?scv=0.14.0';
-export { SearchcraftPopoverFooter, defineCustomElement as defineCustomElementSearchcraftPopoverFooter } from './searchcraft-popover-footer.js?scv=0.14.0';
-export { SearchcraftPopoverForm, defineCustomElement as defineCustomElementSearchcraftPopoverForm } from './searchcraft-popover-form.js?scv=0.14.0';
-export { SearchcraftPopoverListItem, defineCustomElement as defineCustomElementSearchcraftPopoverListItem } from './searchcraft-popover-list-item.js?scv=0.14.0';
-export { SearchcraftPopoverListView, defineCustomElement as defineCustomElementSearchcraftPopoverListView } from './searchcraft-popover-list-view.js?scv=0.14.0';
-export { SearchcraftResultsInfo, defineCustomElement as defineCustomElementSearchcraftResultsInfo } from './searchcraft-results-info.js?scv=0.14.0';
-export { SearchcraftSearchResult, defineCustomElement as defineCustomElementSearchcraftSearchResult } from './searchcraft-search-result.js?scv=0.14.0';
-export { SearchcraftSearchResults, defineCustomElement as defineCustomElementSearchcraftSearchResults } from './searchcraft-search-results.js?scv=0.14.0';
-export { SearchcraftSearchResultsPerPage, defineCustomElement as defineCustomElementSearchcraftSearchResultsPerPage } from './searchcraft-search-results-per-page.js?scv=0.14.0';
-export { SearchcraftSelect, defineCustomElement as defineCustomElementSearchcraftSelect } from './searchcraft-select.js?scv=0.14.0';
-export { SearchcraftSlider, defineCustomElement as defineCustomElementSearchcraftSlider } from './searchcraft-slider.js?scv=0.14.0';
-export { SearchcraftSummaryBox, defineCustomElement as defineCustomElementSearchcraftSummaryBox } from './searchcraft-summary-box.js?scv=0.14.0';
-export { SearchcraftTheme, defineCustomElement as defineCustomElementSearchcraftTheme } from './searchcraft-theme.js?scv=0.14.0';
-export { SearchcraftToggleButton, defineCustomElement as defineCustomElementSearchcraftToggleButton } from './searchcraft-toggle-button.js?scv=0.14.0';
+export { g as getAssetPath, r as render, s as setAssetPath, a as setNonce, b as setPlatformOptions } from './index2.js?scv=0.15.1';
+import { n as nanoid } from './searchcraft-ad2.js?scv=0.15.1';
+import { D as DEFAULT_CORE_INSTANCE_ID, r as registry } from './CoreInstanceRegistry.js?scv=0.15.1';
+import { v as version, n as name } from './searchcraft-popover-footer2.js?scv=0.15.1';
+export { SearchcraftAd, defineCustomElement as defineCustomElementSearchcraftAd } from './searchcraft-ad.js?scv=0.15.1';
+export { SearchcraftButton, defineCustomElement as defineCustomElementSearchcraftButton } from './searchcraft-button.js?scv=0.15.1';
+export { SearchcraftErrorMessage, defineCustomElement as defineCustomElementSearchcraftErrorMessage } from './searchcraft-error-message.js?scv=0.15.1';
+export { SearchcraftFacetList, defineCustomElement as defineCustomElementSearchcraftFacetList } from './searchcraft-facet-list.js?scv=0.15.1';
+export { SearchcraftFilterPanel, defineCustomElement as defineCustomElementSearchcraftFilterPanel } from './searchcraft-filter-panel.js?scv=0.15.1';
+export { SearchcraftInputForm, defineCustomElement as defineCustomElementSearchcraftInputForm } from './searchcraft-input-form.js?scv=0.15.1';
+export { SearchcraftInputLabel, defineCustomElement as defineCustomElementSearchcraftInputLabel } from './searchcraft-input-label.js?scv=0.15.1';
+export { SearchcraftLoading, defineCustomElement as defineCustomElementSearchcraftLoading } from './searchcraft-loading.js?scv=0.15.1';
+export { SearchcraftPagination, defineCustomElement as defineCustomElementSearchcraftPagination } from './searchcraft-pagination.js?scv=0.15.1';
+export { SearchcraftPopoverButton, defineCustomElement as defineCustomElementSearchcraftPopoverButton } from './searchcraft-popover-button.js?scv=0.15.1';
+export { SearchcraftPopoverFooter, defineCustomElement as defineCustomElementSearchcraftPopoverFooter } from './searchcraft-popover-footer.js?scv=0.15.1';
+export { SearchcraftPopoverForm, defineCustomElement as defineCustomElementSearchcraftPopoverForm } from './searchcraft-popover-form.js?scv=0.15.1';
+export { SearchcraftPopoverListItem, defineCustomElement as defineCustomElementSearchcraftPopoverListItem } from './searchcraft-popover-list-item.js?scv=0.15.1';
+export { SearchcraftPopoverListView, defineCustomElement as defineCustomElementSearchcraftPopoverListView } from './searchcraft-popover-list-view.js?scv=0.15.1';
+export { SearchcraftResultsInfo, defineCustomElement as defineCustomElementSearchcraftResultsInfo } from './searchcraft-results-info.js?scv=0.15.1';
+export { SearchcraftResultsSummary, defineCustomElement as defineCustomElementSearchcraftResultsSummary } from './searchcraft-results-summary.js?scv=0.15.1';
+export { SearchcraftSearchResult, defineCustomElement as defineCustomElementSearchcraftSearchResult } from './searchcraft-search-result.js?scv=0.15.1';
+export { SearchcraftSearchResults, defineCustomElement as defineCustomElementSearchcraftSearchResults } from './searchcraft-search-results.js?scv=0.15.1';
+export { SearchcraftSearchResultsPerPage, defineCustomElement as defineCustomElementSearchcraftSearchResultsPerPage } from './searchcraft-search-results-per-page.js?scv=0.15.1';
+export { SearchcraftSelect, defineCustomElement as defineCustomElementSearchcraftSelect } from './searchcraft-select.js?scv=0.15.1';
+export { SearchcraftSlider, defineCustomElement as defineCustomElementSearchcraftSlider } from './searchcraft-slider.js?scv=0.15.1';
+export { SearchcraftSummaryBox, defineCustomElement as defineCustomElementSearchcraftSummaryBox } from './searchcraft-summary-box.js?scv=0.15.1';
+export { SearchcraftTheme, defineCustomElement as defineCustomElementSearchcraftTheme } from './searchcraft-theme.js?scv=0.15.1';
+export { SearchcraftToggleButton, defineCustomElement as defineCustomElementSearchcraftToggleButton } from './searchcraft-toggle-button.js?scv=0.15.1';
 
 var LogLevel;
 (function (LogLevel) {
@@ -101,112 +102,9 @@ class AdClient {
     async onAdContainerViewed(_data) { }
 }
 
-class AdMarketplaceClient extends AdClient {
-    /**
-     * Gets ads from the adMarketplace API based on the search term.
-     */
-    async getAds(_properties) {
-        const admConfig = this.config.admAdConfig;
-        if (!admConfig?.sub) {
-            console.error('No admSub specified in config.');
-            return [];
-        }
-        const paramString = new URLSearchParams({
-            partner: 'demofeed',
-            sub1: admConfig.sub,
-            qt: _properties.searchTerm,
-            v: '2.0',
-            rfr: 'searchcraft.io',
-            'results-ta': `${admConfig.textAdQuantity || 0}`,
-            'results-pa': `${admConfig.productAdQuantity || 0}`,
-        }).toString();
-        const path = `https://demofeed.is.ampfeed.com/is?${paramString}`;
-        const response = await fetch(path, { method: 'GET' });
-        const admResponse = (await response.json());
-        const productAds = admResponse.product_ads.map((ad) => ({
-            id: nanoid(),
-            adSource: 'adMarketplace',
-            admAdType: 'adm-product-ad',
-            admAd: ad,
-        }));
-        const textAds = admResponse.text_ads.map((ad) => ({
-            id: nanoid(),
-            adSource: 'adMarketplace',
-            admAdType: 'adm-text-ad',
-            admAd: ad,
-        }));
-        const allAds = productAds.concat(textAds);
-        return allAds;
-    }
-    async onAdContainerViewed(data) {
-        // Calls fetch on the impression url, to record an impression for adMarketplace
-        const item = data.adClientResponseItem;
-        if (item.admAd?.impression_url) {
-            fetch(item.admAd.impression_url);
-        }
-    }
-}
-
 class CustomAdClient extends AdClient {
     async getAds(_properties) {
         return [];
-    }
-}
-
-const AD_CALL_AFTER_FETCH_DELAY = 1000;
-class NativoClient extends AdClient {
-    adCallTimeout;
-    constructor(config) {
-        super(config);
-        this.addScriptTagToDocument();
-    }
-    async onQuerySubmitted(_properties) {
-        this.addScriptTagToDocument();
-    }
-    async onQueryFetched(_properties, response) {
-        if ((response.data.hits?.length || 0) === 0) {
-            this.removeScriptTagFromDocument();
-            return;
-        }
-        this.performAdCall(AD_CALL_AFTER_FETCH_DELAY);
-    }
-    async onInputCleared() {
-        this.removeScriptTagFromDocument();
-    }
-    performAdCall(delay) {
-        if (this.adCallTimeout) {
-            clearTimeout(this.adCallTimeout);
-        }
-        this.adCallTimeout = setTimeout(() => {
-            this.addScriptTagToDocument();
-            try {
-                // @ts-ignore
-                PostRelease?.Start({ ptd: [this.config.nativoPlacementId] });
-            }
-            catch (error) {
-                console.error(error);
-            }
-            // console.log('Performing ad call');
-        }, delay);
-    }
-    async getAds(_properties) {
-        return [];
-    }
-    addScriptTagToDocument() {
-        if (!document.head.querySelector('#nativo-tag')) {
-            const scriptTag = document.createElement('script');
-            scriptTag.type = 'text/javascript';
-            scriptTag.src = 'https://s.ntv.io/serve/load.js';
-            scriptTag.id = 'nativo-tag';
-            scriptTag.setAttribute('data-ntv-set-no-auto-start', 'true');
-            document.head.appendChild(scriptTag);
-        }
-    }
-    removeScriptTagFromDocument() {
-        const scriptTag = document.head.querySelector('#nativo-tag');
-        if (scriptTag) {
-            document.head.removeChild(scriptTag);
-        }
     }
 }
 
@@ -609,16 +507,19 @@ const createStoreImpl = (createState) => {
 const createStore = ((createState) => createState ? createStoreImpl(createState) : createStoreImpl);
 
 const DEBOUNCE_DELAY = 1000;
+const SUMMARY_PERMISSION_MESSAGE = 'Your read key does not have permission to generate AI summaries.';
+const SUMMARY_NOT_ENABLED_MESSAGE = 'AI summaries are not enabled for this account. Please contact Searchcraft to enable them.';
 class SummaryClient {
     set;
     get;
     abortController;
     timeout;
+    hasWarnedAboutDeprecatedCortexURL = false;
     constructor(get, set) {
         this.get = get;
         this.set = set;
     }
-    streamSummaryData() {
+    streamSummaryData(requestProperties) {
         const begin = async () => {
             const state = this.get();
             const config = state.core?.config;
@@ -626,21 +527,34 @@ class SummaryClient {
                 console.error('Could not stream summary data, no config found.');
                 return;
             }
-            if (!config.cortexURL) {
-                console.error('Could not stream summary data, cortexURL was not specified in the config.');
-                return;
-            }
+            const deprecatedCortexURL = config.cortexURL;
+            this.warnIfUsingDeprecatedCortexURL(deprecatedCortexURL);
             const indexName = state.core?.config.indexName;
             if (!state.hasSummaryBox || !indexName) {
+                return;
+            }
+            let searchClientRequest;
+            try {
+                searchClientRequest = this.buildSearchClientRequest(requestProperties, config.searchResultsPerPage);
+            }
+            catch (error) {
+                if (error instanceof Error) {
+                    console.error(error.message);
+                }
+                this.set({
+                    isSummaryLoading: false,
+                });
                 return;
             }
             this.abortController?.abort('A newer request has replaced this one.');
             this.abortController = new AbortController();
             this.set({
                 isSummaryLoading: true,
+                isSummaryNotEnabled: false,
                 summary: '',
+                summaryErrorMessage: '',
             });
-            const endpointUrl = `${config.cortexURL.replace(/\/$/, '')}/api/search/summary`;
+            const endpointUrl = `${config.endpointURL}/index/${indexName}/search/summary`;
             try {
                 const fetchResponse = await fetch(endpointUrl, {
                     method: 'POST',
@@ -651,45 +565,49 @@ class SummaryClient {
                         'X-Sc-Session-Id': state.core?.measureClient?.sessionId || '',
                         'X-Sc-User-Type': state.core?.userType || 'anonymous',
                     },
-                    body: JSON.stringify({
-                        searchQuery: state.searchClientRequest,
-                        summaryInstructionsPrompt: state.core?.config.summaryInstructionsPrompt,
-                        indexName: indexName,
-                        endpointUrl: state.core?.config.endpointURL,
-                    }),
+                    body: JSON.stringify(searchClientRequest),
                     signal: this.abortController.signal,
                 });
                 if (!fetchResponse) {
                     throw new Error('Invalid fetch response');
                 }
-                if (!fetchResponse.body) {
-                    throw new Error('Invalid fetch response');
-                }
                 if (!fetchResponse.ok) {
+                    if (fetchResponse.status === 401) {
+                        console.warn(SUMMARY_PERMISSION_MESSAGE);
+                        this.setSummaryUnavailable(SUMMARY_PERMISSION_MESSAGE);
+                        return;
+                    }
                     if (fetchResponse.status === 403) {
-                        console.warn('Please contact Searchcraft to enable AI summaries with your account');
-                        this.set({
-                            isSummaryLoading: false,
-                            isSummaryNotEnabled: true,
-                        });
+                        console.warn(SUMMARY_NOT_ENABLED_MESSAGE);
+                        this.setSummaryUnavailable(SUMMARY_NOT_ENABLED_MESSAGE);
                         return;
                     }
                     throw new Error(`HTTP ${fetchResponse.status}`);
                 }
+                if (!fetchResponse.body) {
+                    throw new Error('Invalid fetch response');
+                }
                 const reader = fetchResponse.body.getReader();
                 const decoder = new TextDecoder();
-                let finishedReading = false;
-                do {
+                let buffer = '';
+                while (true) {
                     const { done, value } = await reader.read();
-                    finishedReading = done;
-                    const chunk = decoder.decode(value, { stream: true });
-                    this.set((state) => ({
-                        isSummaryLoading: false,
-                        summary: `${state.summary}${chunk}`,
-                    }));
-                } while (!finishedReading);
+                    buffer += decoder.decode(value || new Uint8Array(), {
+                        stream: !done,
+                    });
+                    buffer = this.processSseBuffer(buffer);
+                    if (done) {
+                        break;
+                    }
+                }
+                if (buffer.trim()) {
+                    this.handleSseFrame(buffer);
+                }
             }
             catch (error) {
+                if (error instanceof Error && error.name === 'AbortError') {
+                    return;
+                }
                 if (error instanceof Error) {
                     console.error(error.message);
                 }
@@ -701,6 +619,157 @@ class SummaryClient {
         const delay = this.get().core?.config.summaryDebounceDelay || DEBOUNCE_DELAY;
         clearTimeout(this.timeout);
         this.timeout = setTimeout(() => begin(), delay);
+    }
+    setSummaryUnavailable(message) {
+        this.set({
+            isSummaryLoading: false,
+            isSummaryNotEnabled: true,
+            summary: '',
+            summaryErrorMessage: message,
+        });
+    }
+    warnIfUsingDeprecatedCortexURL(cortexURL) {
+        if (!cortexURL || this.hasWarnedAboutDeprecatedCortexURL) {
+            return;
+        }
+        this.hasWarnedAboutDeprecatedCortexURL = true;
+        console.warn('The Searchcraft config field `cortexURL` is deprecated and ignored. Summary requests now use `endpointURL` and `indexName`.');
+    }
+    buildSearchClientRequest(requestProperties, defaultLimit) {
+        if (typeof requestProperties === 'string') {
+            let parsedRequest;
+            try {
+                parsedRequest = JSON.parse(requestProperties);
+            }
+            catch {
+                throw new Error('Invalid summary request payload.');
+            }
+            return {
+                limit: defaultLimit,
+                ...parsedRequest,
+            };
+        }
+        return {
+            query: this.formatParamsForRequest(requestProperties),
+            offset: requestProperties.offset || 0,
+            limit: requestProperties.limit || defaultLimit || 20,
+            ...(requestProperties.order_by && {
+                order_by: requestProperties.order_by,
+            }),
+            ...(requestProperties.sort && {
+                sort: requestProperties.sort,
+            }),
+        };
+    }
+    formatParamsForRequest(properties) {
+        const queries = [];
+        let occur = 'should';
+        if (properties.facetPathsForIndexFields) {
+            Object.keys(properties.facetPathsForIndexFields).forEach((fieldName) => {
+                const item = properties.facetPathsForIndexFields?.[fieldName];
+                if (item) {
+                    occur = 'must';
+                    queries.push({
+                        occur: 'must',
+                        exact: {
+                            ctx: sanitize(item.value),
+                        },
+                    });
+                }
+            });
+        }
+        if (properties.rangeValueForIndexFields) {
+            Object.keys(properties.rangeValueForIndexFields).forEach((fieldName) => {
+                const item = properties.rangeValueForIndexFields?.[fieldName];
+                if (item) {
+                    occur = 'must';
+                    queries.push({
+                        occur: 'must',
+                        exact: {
+                            ctx: sanitize(item.value),
+                        },
+                    });
+                }
+            });
+        }
+        const searchTerm = sanitize(properties.searchTerm);
+        const query = properties.mode === 'fuzzy'
+            ? { fuzzy: { ctx: searchTerm } }
+            : {
+                exact: {
+                    ctx: `${searchTerm.startsWith('"') ? searchTerm : `"${searchTerm}"`}`,
+                },
+            };
+        queries.push({
+            occur: properties.mode === 'exact' ? 'must' : occur,
+            ...query,
+        });
+        return queries;
+    }
+    processSseBuffer(buffer) {
+        const frames = buffer.replace(/\r\n/g, '\n').split('\n\n');
+        const remainder = frames.pop() ?? '';
+        frames.forEach((frame) => this.handleSseFrame(frame));
+        return remainder;
+    }
+    handleSseFrame(frame) {
+        const parsedEvent = this.parseSseFrame(frame);
+        if (!parsedEvent?.event) {
+            return;
+        }
+        if (parsedEvent.event === 'metadata' || parsedEvent.event === 'done') {
+            this.set({
+                isSummaryLoading: false,
+            });
+            return;
+        }
+        let payload;
+        if (parsedEvent.data) {
+            try {
+                payload = JSON.parse(parsedEvent.data);
+            }
+            catch {
+                throw new Error(`Invalid summary SSE payload for "${parsedEvent.event}" event.`);
+            }
+        }
+        if (parsedEvent.event === 'delta') {
+            const content = payload && typeof payload.content === 'string' ? payload.content : '';
+            if (!content) {
+                return;
+            }
+            this.set((state) => ({
+                isSummaryLoading: false,
+                summary: `${state.summary}${content}`,
+            }));
+            return;
+        }
+        if (parsedEvent.event === 'error') {
+            throw new Error(payload && typeof payload.message === 'string'
+                ? payload.message
+                : 'Summary stream error');
+        }
+    }
+    parseSseFrame(frame) {
+        const eventData = {};
+        const dataLines = [];
+        frame.split('\n').forEach((line) => {
+            if (!line || line.startsWith(':')) {
+                return;
+            }
+            const separatorIndex = line.indexOf(':');
+            const field = separatorIndex >= 0 ? line.slice(0, separatorIndex) : line;
+            const value = separatorIndex >= 0 ? line.slice(separatorIndex + 1).trimStart() : '';
+            if (field === 'event') {
+                eventData.event = value;
+            }
+            if (field === 'data') {
+                dataLines.push(value);
+            }
+        });
+        if (dataLines.length > 0) {
+            eventData.data = dataLines.join('\n');
+        }
+        return eventData.event || eventData.data ? eventData : undefined;
     }
 }
 
@@ -735,6 +804,7 @@ const initialSearchcraftStateValues = {
     sortType: undefined,
     orderByField: undefined,
     summary: '',
+    summaryErrorMessage: '',
     hasSummaryBox: false,
     summaryClient: undefined,
     isSummaryLoading: false,
@@ -814,9 +884,6 @@ const createSearchcraftStore = (searchcraftId, initialState = {}) => {
                 if (!state.core) {
                     throw new Error('Searchcraft instance is not initialized.');
                 }
-                if (state.core.config.cortexURL && !options?.skipSummary) {
-                    state.summaryClient?.streamSummaryData();
-                }
                 // Check if this is an initialQuery case (string requestProperties with empty searchTerm)
                 const isInitialQuery = typeof state.cachedSearchClientRequestProperties === 'string' &&
                     state.searchTerm.trim() === '';
@@ -831,8 +898,15 @@ const createSearchcraftStore = (searchcraftId, initialState = {}) => {
                         (hasActiveFilters ||
                             hasNonDefaultPagination ||
                             hasNonDefaultSearchMode)) {
-                        // Parse the initialQuery
-                        const initialQueryObj = JSON.parse(state.cachedSearchClientRequestProperties);
+                        let initialQueryObj;
+                        try {
+                            initialQueryObj = JSON.parse(state.cachedSearchClientRequestProperties);
+                        }
+                        catch {
+                            console.error('Invalid cached initial query payload.');
+                            set({ isSearchInProgress: false });
+                            return;
+                        }
                         set({ isSearchInProgress: true });
                         // Build the modified query array starting with the base query
                         const baseQuery = Array.isArray(initialQueryObj.query)
@@ -876,6 +950,9 @@ const createSearchcraftStore = (searchcraftId, initialState = {}) => {
                                 : 0,
                             limit: state.searchResultsPerPage,
                         };
+                        if (!options?.skipSummary) {
+                            state.summaryClient?.streamSummaryData(JSON.stringify(modifiedRequest));
+                        }
                         state.core.getResponseItems({
                             requestProperties: JSON.stringify(modifiedRequest),
                             shouldCacheResultsForEmptyState: false,
@@ -912,6 +989,9 @@ const createSearchcraftStore = (searchcraftId, initialState = {}) => {
                         : 0,
                     limit: state.searchResultsPerPage,
                 };
+                if (!options?.skipSummary) {
+                    state.summaryClient?.streamSummaryData(searchClientRequestProperites);
+                }
                 state.core.getResponseItems({
                     requestProperties: searchClientRequestProperites,
                     shouldCacheResultsForEmptyState: false,
@@ -1059,12 +1139,6 @@ class SearchcraftCore {
         this.searchClient = new SearchClient(this, config, userId);
         if (config.customAdConfig) {
             this.adClient = new CustomAdClient(config);
-        }
-        else if (config.nativoConfig) {
-            this.adClient = new NativoClient(config);
-        }
-        else if (config.admAdConfig) {
-            this.adClient = new AdMarketplaceClient(config);
         }
         this.emitEvent('initialized', {
             name: 'initialized',
@@ -1262,4 +1336,4 @@ export { Searchcraft, SearchcraftCore };
 //# sourceMappingURL=index.js.map
 
 //# sourceMappingURL=index.js.map
-export { defineCustomElements } from './defineCustomElements.js?scv=0.14.0';
+export { defineCustomElements } from './defineCustomElements.js?scv=0.15.1';

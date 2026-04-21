@@ -1,6 +1,6 @@
-import { p as proxyCustomElement, H, h, t as transformTag } from './index2.js?scv=0.14.0';
-import { r as registry } from './CoreInstanceRegistry.js?scv=0.14.0';
-import { h as html } from './html.js?scv=0.14.0';
+import { p as proxyCustomElement, H, h, t as transformTag } from './index2.js?scv=0.15.1';
+import { r as registry } from './CoreInstanceRegistry.js?scv=0.15.1';
+import { h as html } from './html.js?scv=0.15.1';
 
 const SearchcraftPopoverButton$1 = /*@__PURE__*/ proxyCustomElement(class SearchcraftPopoverButton extends H {
     constructor(registerHost) {
@@ -98,12 +98,14 @@ const SearchcraftPopoverButton$1 = /*@__PURE__*/ proxyCustomElement(class Search
         switch (this.type) {
             case 'skeuomorphic':
                 return this.renderSkeuomorphicSlot();
+            case 'magnifying-glass':
+                return (h("div", { class: 'searchcraft-popover-button-input' }, h("svg", { class: 'searchcraft-popover-button-input-search-icon', viewBox: '0 0 20 20', fill: 'none', xmlns: 'http://www.w3.org/2000/svg', version: '1.1', "aria-hidden": 'true' }, h("path", { d: 'M17.5 17.5L13.875 13.875M15.8333 9.16667C15.8333 12.8486 12.8486 15.8333 9.16667 15.8333C5.48477 15.8333 2.5 12.8486 2.5 9.16667C2.5 5.48477 5.48477 2.5 9.16667 2.5C12.8486 2.5 15.8333 5.48477 15.8333 9.16667Z', stroke: 'currentColor', "stroke-width": '1.5', "stroke-linecap": 'round', "stroke-linejoin": 'round' }))));
             default:
                 return (h("div", null, h("slot", null)));
         }
     }
     render() {
-        return (h("button", { key: 'af0bb449457f7dbefa00ac690e7d3490b5162883', class: `searchcraft-popover-button ${this.type ? ` searchcraft-popover-button-${this.type}` : ''}`, innerHTML: typeof this.template !== 'undefined'
+        return (h("button", { key: '760f4f8d8daddaaadc0367e21b9efe23c4ef7c7d', "aria-label": this.type === 'magnifying-glass' ? 'Search' : undefined, class: `searchcraft-popover-button ${this.type ? ` searchcraft-popover-button-${this.type}` : ''}`, innerHTML: typeof this.template !== 'undefined'
                 ? this.template({ isPopoverVisible: this.isPopoverVisible }, { html })
                 : undefined, onClick: this.handleOnClick.bind(this), type: 'button' }, typeof this.template !== 'undefined'
             ? undefined

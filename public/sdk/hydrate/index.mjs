@@ -6307,12 +6307,14 @@ class SearchcraftPopoverButton {
         switch (this.type) {
             case 'skeuomorphic':
                 return this.renderSkeuomorphicSlot();
+            case 'magnifying-glass':
+                return (hAsync("div", { class: 'searchcraft-popover-button-input' }, hAsync("svg", { class: 'searchcraft-popover-button-input-search-icon', viewBox: '0 0 20 20', fill: 'none', xmlns: 'http://www.w3.org/2000/svg', version: '1.1', "aria-hidden": 'true' }, hAsync("path", { d: 'M17.5 17.5L13.875 13.875M15.8333 9.16667C15.8333 12.8486 12.8486 15.8333 9.16667 15.8333C5.48477 15.8333 2.5 12.8486 2.5 9.16667C2.5 5.48477 5.48477 2.5 9.16667 2.5C12.8486 2.5 15.8333 5.48477 15.8333 9.16667Z', stroke: 'currentColor', "stroke-width": '1.5', "stroke-linecap": 'round', "stroke-linejoin": 'round' }))));
             default:
                 return (hAsync("div", null, hAsync("slot", null)));
         }
     }
     render() {
-        return (hAsync("button", { key: 'af0bb449457f7dbefa00ac690e7d3490b5162883', class: `searchcraft-popover-button ${this.type ? ` searchcraft-popover-button-${this.type}` : ''}`, innerHTML: typeof this.template !== 'undefined'
+        return (hAsync("button", { key: '760f4f8d8daddaaadc0367e21b9efe23c4ef7c7d', "aria-label": this.type === 'magnifying-glass' ? 'Search' : undefined, class: `searchcraft-popover-button ${this.type ? ` searchcraft-popover-button-${this.type}` : ''}`, innerHTML: typeof this.template !== 'undefined'
                 ? this.template({ isPopoverVisible: this.isPopoverVisible }, { html: html$1 })
                 : undefined, onClick: this.handleOnClick.bind(this), type: 'button' }, typeof this.template !== 'undefined'
             ? undefined
@@ -6339,7 +6341,7 @@ class SearchcraftPopoverButton {
     }; }
 }
 
-const version = "0.14.0";
+const version = "0.15.1";
 
 /**
  * Renders the footer for the searchcraft-popover-form.
@@ -6411,9 +6413,7 @@ class SearchcraftPopoverFooter {
         const hasResults = typeof this.searchResultsCount === 'number' &&
             this.searchResultsCount > 0;
         const showViewAll = !!this.safeViewAllHref && hasResults;
-        return (hAsync("footer", { key: '548704335f80a2b4bc7ebd4ea2d0a2eb73376fde', class: 'searchcraft-popover-footer' }, hAsync("a", { key: 'a10cbfd833ef0c6016932fede6ca3195eecdfaea', class: 'searchcraft-popover-footer-link', href: href, target: '_blank', rel: 'noreferrer' }, hAsync("svg", { key: 'a053515f5656f1fa9a44f5590847f0a63b0b5b4f', class: 'searchcraft-popover-footer-link-image', width: '169', height: '20', viewBox: '0 0 169 20', fill: 'none', xmlns: 'http://www.w3.org/2000/svg' }, hAsync("title", { key: '9ebd08877c49cf03f00d88f59834b8cce2f3e707' }, "Powered by Searchcraft"), hAsync("path", { key: 'b60c62800241cb02097381351e2a36524d5c1263', d: 'M5.07288 0.608C7.60088 0.608 8.84888 2.064 8.84888 4.112C8.84888 6.16 7.60088 7.616 5.07288 7.616H1.68088V12H0.336875V0.608H5.07288ZM5.07288 6.4C6.67288 6.4 7.45688 5.552 7.45688 4.112C7.45688 2.672 6.67288 1.824 5.07288 1.824H1.68088V6.4H5.07288ZM13.31 12.192C10.99 12.192 9.31 10.512 9.31 7.872C9.31 5.232 10.99 3.552 13.31 3.552C15.63 3.552 17.31 5.232 17.31 7.872C17.31 10.512 15.63 12.192 13.31 12.192ZM13.31 11.04C14.91 11.04 15.966 9.872 15.966 7.872C15.966 5.872 14.91 4.704 13.31 4.704C11.71 4.704 10.654 5.872 10.654 7.872C10.654 9.872 11.71 11.04 13.31 11.04ZM28.3826 3.744H29.7586L27.0066 12H25.6626L24.4466 8.176C24.1586 7.264 23.8706 6.304 23.6146 5.376C23.3426 6.304 23.0546 7.264 22.7666 8.176L21.5666 12H20.2226L17.4706 3.744H18.8466L20.0146 7.472C20.3346 8.48 20.6226 9.472 20.9106 10.48C21.1826 9.472 21.4706 8.48 21.7906 7.472L22.9426 3.744H24.2866L25.4386 7.472C25.7426 8.464 26.0466 9.456 26.3346 10.448C26.6066 9.456 26.9106 8.464 27.2146 7.472L28.3826 3.744ZM37.5194 7.872V8.32H31.2474C31.3754 10.176 32.3514 11.024 33.7914 11.024C34.9594 11.024 35.6954 10.416 35.9834 9.488H37.3114C36.9114 11.04 35.7274 12.192 33.7594 12.192C31.5034 12.192 29.9194 10.544 29.9194 7.872C29.9194 5.28 31.4394 3.552 33.7274 3.552C36.1914 3.552 37.5194 5.504 37.5194 7.872ZM33.7274 4.72C32.4314 4.72 31.4874 5.536 31.2794 7.168H36.1434C36.0154 5.808 35.1994 4.72 33.7274 4.72ZM42.9101 3.616C43.0381 3.616 43.1661 3.616 43.3421 3.632V4.864H43.0221C41.3741 4.864 40.3181 5.696 40.3181 7.296V12H39.0381V3.744H40.2541V5.2C40.7181 4.336 41.5661 3.616 42.9101 3.616ZM51.2538 7.872V8.32H44.9818C45.1098 10.176 46.0858 11.024 47.5258 11.024C48.6938 11.024 49.4298 10.416 49.7178 9.488H51.0458C50.6458 11.04 49.4618 12.192 47.4938 12.192C45.2378 12.192 43.6538 10.544 43.6538 7.872C43.6538 5.28 45.1738 3.552 47.4618 3.552C49.9258 3.552 51.2538 5.504 51.2538 7.872ZM47.4618 4.72C46.1658 4.72 45.2218 5.536 45.0138 7.168H49.8778C49.7498 5.808 48.9338 4.72 47.4618 4.72ZM58.9805 0.608H60.2605V12H59.0445V10.72C58.4205 11.664 57.4445 12.192 56.2125 12.192C53.8925 12.192 52.3725 10.512 52.3725 7.872C52.3725 5.232 53.8925 3.552 56.2125 3.552C57.4125 3.552 58.3565 4.048 58.9805 4.928V0.608ZM56.3725 11.04C57.9725 11.04 59.0285 9.872 59.0285 7.872C59.0285 5.872 57.9725 4.704 56.3725 4.704C54.7725 4.704 53.7165 5.936 53.7165 7.936C53.7165 9.936 54.7725 11.04 56.3725 11.04ZM69.2736 3.552C71.5936 3.552 73.1136 5.232 73.1136 7.872C73.1136 10.512 71.5936 12.192 69.2736 12.192C68.0416 12.192 67.0656 11.664 66.4416 10.72V12H65.2256V0.608H66.5056V4.928C67.1296 4.048 68.0736 3.552 69.2736 3.552ZM69.1136 11.04C70.7136 11.04 71.7696 9.808 71.7696 7.808C71.7696 5.808 70.7136 4.704 69.1136 4.704C67.5136 4.704 66.4576 5.872 66.4576 7.872C66.4576 9.872 67.5136 11.04 69.1136 11.04ZM79.3795 3.744H80.7715L77.2835 13.296C76.7555 14.752 75.9075 15.184 74.5955 15.184C74.3395 15.184 74.0995 15.168 73.8275 15.136V14.064H74.5795C75.3955 14.064 75.8275 13.696 76.0835 13.04C76.1795 12.8 76.2755 12.528 76.3715 12.272L73.2675 3.744H74.6755L75.8435 7.184C76.2595 8.384 76.6435 9.568 77.0275 10.752C77.3955 9.568 77.7955 8.368 78.2115 7.168L79.3795 3.744ZM89.1546 12.256C86.1146 12.256 84.2906 10.864 84.2746 8.24H86.4026C86.4346 10.032 87.6346 10.512 89.2186 10.512C90.7066 10.512 91.5226 9.936 91.5226 8.864C91.5226 7.968 90.9306 7.568 89.1866 7.216L88.2266 7.024C86.0186 6.608 84.5626 5.632 84.5626 3.568C84.5626 1.68 86.0506 0.351999 88.7866 0.351999C91.9866 0.351999 93.3466 1.856 93.4266 4H91.3306C91.2506 2.784 90.6266 2.096 88.8186 2.096C87.4426 2.096 86.7706 2.64 86.7706 3.504C86.7706 4.416 87.2986 4.832 88.9946 5.184L89.9866 5.376C92.6746 5.904 93.7626 6.944 93.7626 8.752C93.7626 11.008 92.0026 12.256 89.1546 12.256ZM102.952 8.016V8.496H96.7758C96.9198 9.968 97.7518 10.624 98.9198 10.624C99.8798 10.624 100.504 10.176 100.808 9.44H102.744C102.328 11.12 100.888 12.192 98.9038 12.192C96.4718 12.192 94.7918 10.512 94.7918 7.872C94.7918 5.28 96.4238 3.552 98.8718 3.552C101.4 3.552 102.952 5.392 102.952 8.016ZM98.8558 5.12C97.7838 5.12 96.9838 5.728 96.7918 7.088H100.936C100.776 5.92 100.056 5.12 98.8558 5.12ZM111.599 12H109.583C109.455 11.776 109.391 11.392 109.359 10.992C108.815 11.76 107.919 12.192 106.703 12.192C104.943 12.192 103.727 11.312 103.727 9.712C103.727 8.336 104.559 7.36 106.895 7.136L108.143 7.024C108.911 6.928 109.311 6.688 109.311 6.08C109.311 5.44 108.975 5.056 107.807 5.056C106.655 5.056 106.175 5.36 106.095 6.368H104.111C104.223 4.624 105.247 3.552 107.823 3.552C110.287 3.552 111.263 4.544 111.263 6.032V10.432C111.263 11.024 111.375 11.68 111.599 12ZM107.183 10.752C108.255 10.752 109.311 10.176 109.311 8.736V7.984C109.103 8.176 108.799 8.272 108.367 8.32L107.279 8.448C106.159 8.576 105.791 8.976 105.791 9.632C105.791 10.32 106.255 10.752 107.183 10.752ZM117.216 3.616C117.392 3.616 117.536 3.616 117.712 3.648V5.504H117.2C115.712 5.504 114.816 6.24 114.816 7.808V12H112.8V3.744H114.752V5.216C115.152 4.288 115.936 3.616 117.216 3.616ZM122.137 12.192C119.689 12.192 118.057 10.512 118.057 7.872C118.057 5.232 119.673 3.552 122.137 3.552C124.297 3.552 125.737 4.784 125.977 6.72H123.961C123.769 5.696 123.033 5.232 122.137 5.232C120.937 5.232 120.121 6.064 120.121 7.872C120.121 9.68 120.969 10.512 122.137 10.512C123.049 10.512 123.833 10.016 123.993 8.928H126.009C125.785 10.944 124.249 12.192 122.137 12.192ZM131.641 3.552C133.369 3.552 134.537 4.56 134.537 6.528V12H132.521V6.864C132.521 5.808 131.993 5.296 130.969 5.296C130.089 5.296 129.129 5.904 129.129 7.376V12H127.113V0.608H129.129V4.848C129.673 4.096 130.521 3.552 131.641 3.552ZM139.887 12.192C137.439 12.192 135.807 10.512 135.807 7.872C135.807 5.232 137.423 3.552 139.887 3.552C142.047 3.552 143.487 4.784 143.727 6.72H141.711C141.519 5.696 140.783 5.232 139.887 5.232C138.687 5.232 137.871 6.064 137.871 7.872C137.871 9.68 138.719 10.512 139.887 10.512C140.799 10.512 141.583 10.016 141.743 8.928H143.759C143.535 10.944 141.999 12.192 139.887 12.192ZM149.279 3.616C149.455 3.616 149.599 3.616 149.775 3.648V5.504H149.263C147.775 5.504 146.879 6.24 146.879 7.808V12H144.863V3.744H146.815V5.216C147.215 4.288 147.999 3.616 149.279 3.616ZM157.803 12H155.787C155.659 11.776 155.595 11.392 155.563 10.992C155.019 11.76 154.123 12.192 152.907 12.192C151.147 12.192 149.931 11.312 149.931 9.712C149.931 8.336 150.763 7.36 153.099 7.136L154.347 7.024C155.115 6.928 155.515 6.688 155.515 6.08C155.515 5.44 155.179 5.056 154.011 5.056C152.859 5.056 152.379 5.36 152.299 6.368H150.315C150.427 4.624 151.451 3.552 154.027 3.552C156.491 3.552 157.467 4.544 157.467 6.032V10.432C157.467 11.024 157.579 11.68 157.803 12ZM153.387 10.752C154.459 10.752 155.515 10.176 155.515 8.736V7.984C155.307 8.176 155.003 8.272 154.571 8.32L153.483 8.448C152.363 8.576 151.995 8.976 151.995 9.632C151.995 10.32 152.459 10.752 153.387 10.752ZM162.466 2.16C161.746 2.16 161.426 2.512 161.426 3.152V3.744H163.122V5.28H161.426V12H159.426V5.28H158.146V3.744H159.426V3.12C159.426 1.664 160.146 0.559999 162.13 0.559999C162.45 0.559999 162.882 0.575999 163.17 0.608V2.16H162.466ZM168.636 5.28H167.004V9.744C167.004 10.288 167.276 10.464 167.948 10.464H168.636V12C168.268 12.032 167.9 12.064 167.58 12.064C165.836 12.064 165.004 11.472 165.004 9.952V5.28H163.724V3.744H165.004V1.344H167.004V3.744H168.636V5.28Z', fill: 'currentColor' }))), hAsync("div", { key: '75aaa228b8c01975fa957d33bc33b1e29f66ce03', class: 'searchcraft-popover-footer-results' }, hAsync("p", { key: '6a55da1e5a3a67a2eb2b9118ddfd49af3446c2ed', class: 'searchcraft-popover-footer-results-info' }, hasResults
-            ? `${formatNumberWithCommas(this.searchResultsCount)} Results Found`
-            : ' '), showViewAll && (hAsync("a", { key: 'f6b5d3d55a90ac722ad561a9dc1fe9435607a15f', class: 'searchcraft-popover-footer-view-all', href: this.safeViewAllHref }, hAsync("span", { key: '50bc54b0a295738323790ff8d95f83c4771ad1c6', class: 'searchcraft-popover-footer-view-all-label' }, this.viewAllResultsLabel), hAsync("span", { key: '5da21f2ae33b48f548ba3a3174798ae833fa622f', class: 'searchcraft-popover-footer-view-all-shortcut', "aria-hidden": 'true' }, hAsync("kbd", { key: 'be6a5e1b8fdc3fd01412735180ff94fecf69247e' }, "\u2318"), hAsync("kbd", { key: 'e98f65b70e75f3be6623cd768afade9bf19301d5' }, "\u21B5")))))));
+        return (hAsync("footer", { key: '548704335f80a2b4bc7ebd4ea2d0a2eb73376fde', class: 'searchcraft-popover-footer' }, hAsync("a", { key: 'a10cbfd833ef0c6016932fede6ca3195eecdfaea', class: 'searchcraft-popover-footer-link', href: href, target: '_blank', rel: 'noreferrer' }, hAsync("span", { key: '6c6333a61ae282419e32721fc9760d3d237870df', class: 'searchcraft-popover-footer-link-prefix' }, "Powered by\u00A0"), ' ', "Searchcraft"), hAsync("div", { key: 'ac3af12966e7de74be888511493cc8b5411be6f5', class: 'searchcraft-popover-footer-results' }, hAsync("p", { key: '4a8bbc33d91852efb12b11ed7a82d34a91718456', class: 'searchcraft-popover-footer-results-info' }, hasResults ? (hAsync("span", null, formatNumberWithCommas(this.searchResultsCount), " Results", hAsync("span", { class: 'searchcraft-popover-footer-results-found' }, ' Found'))) : (' ')), showViewAll && (hAsync("a", { key: '480adfb8b751ce450c6547a78750d29cbe542359', class: 'searchcraft-popover-footer-view-all', href: this.safeViewAllHref }, hAsync("span", { key: '5cb8eb24a192fc3c22784e72414a5b8bf8070c8b', class: 'searchcraft-popover-footer-view-all-label' }, this.viewAllResultsLabel), hAsync("span", { key: 'cc6e55e19527e99eded57edb5b35eebc574fbec0', class: 'searchcraft-popover-footer-view-all-shortcut', "aria-hidden": 'true' }, hAsync("kbd", { key: '8e55153e517ca311239d9029073d127b9638ba05' }, "\u2318"), hAsync("kbd", { key: '71e773899f5abe1bcf8d94c3617732f2c213571a' }, "\u21B5")))))));
     }
     static get cmpMeta() { return {
         "$flags$": 768,
@@ -6746,20 +6746,20 @@ class SearchcraftPopoverForm {
         const isListViewVisible = this.hasResultsToShow && this.isFocused;
         return (hAsync("div", { class: classNames('searchcraft-popover-form searchcraft-popover-form-inline', {
                 'searchcraft-popover-form-active': isListViewVisible,
-            }) }, hAsync("div", { class: 'searchcraft-popover-form-input searchcraft-popover-form-inline-input' }, hAsync("searchcraft-input-form", { onInputFocus: this.handleInputFocus.bind(this), searchcraftId: this.searchcraftId, placeholderValue: this.placeholderValue, placeholderBehavior: this.placeholderBehavior })), isListViewVisible && (hAsync("div", { class: 'searchcraft-popover-form-inline-wrapper' }, this.showSummaryBox && (hAsync("searchcraft-summary-box", { searchcraftId: this.searchcraftId })), hAsync("searchcraft-popover-list-view", { popoverResultMappings: this.popoverResultMappings, searchClientResponseItems: this.searchClientResponseItems, adClientResponseItems: this.adClientResponseItems, searchResultsPage: this.searchResultsPage, searchResultsPerPage: this.searchResultsPerPage, searchcraftId: this.searchcraftId }), hAsync("searchcraft-popover-footer", { searchcraftId: this.searchcraftId, sdkVariant: this.sdkVariant, viewAllResultsHref: this.viewAllResultsHref, viewAllResultsLabel: this.resolvedViewAllResultsLabel })))));
+            }) }, hAsync("div", { class: 'searchcraft-popover-form-input searchcraft-popover-form-inline-input' }, hAsync("searchcraft-input-form", { onInputFocus: this.handleInputFocus.bind(this), searchcraftId: this.searchcraftId, placeholderValue: this.placeholderValue, placeholderBehavior: this.placeholderBehavior })), isListViewVisible && (hAsync("div", { class: 'searchcraft-popover-form-inline-wrapper' }, hAsync("div", { class: 'searchcraft-popover-form-inline-scroll-area' }, this.showSummaryBox && (hAsync("searchcraft-results-summary", { searchcraftId: this.searchcraftId })), hAsync("searchcraft-popover-list-view", { popoverResultMappings: this.popoverResultMappings, searchClientResponseItems: this.searchClientResponseItems, adClientResponseItems: this.adClientResponseItems, searchResultsPage: this.searchResultsPage, searchResultsPerPage: this.searchResultsPerPage, searchcraftId: this.searchcraftId })), hAsync("searchcraft-popover-footer", { searchcraftId: this.searchcraftId, sdkVariant: this.sdkVariant, viewAllResultsHref: this.viewAllResultsHref, viewAllResultsLabel: this.resolvedViewAllResultsLabel })))));
     }
     renderModalPopover() {
         if (this.isPopoverVisibleInState) {
             return (hAsync("div", { class: classNames('searchcraft-popover-form searchcraft-popover-form-modal', {
                     'searchcraft-popover-form-active': this.hasResultsToShow,
-                }) }, hAsync("div", { class: 'searchcraft-popover-form-modal-backdrop', onClick: this.handleModalBackdropClick }), hAsync("div", { class: 'searchcraft-popover-form-modal-wrapper' }, hAsync("div", { class: 'searchcraft-popover-form-input searchcraft-popover-form-modal-input' }, hAsync("searchcraft-input-form", { onInputFocus: this.handleInputFocus.bind(this), onInputInit: this.handleInputInit.bind(this), searchcraftId: this.searchcraftId, placeholderValue: this.placeholderValue, placeholderBehavior: this.placeholderBehavior }), hAsync("button", { type: 'button', class: 'searchcraft-popover-form-cancel-button searchcraft-popover-form-modal-cancel-button', onClick: this.handleCancelButtonClick.bind(this) }, "Cancel")), hAsync("div", { class: 'searchcraft-popover-form-modal-popover-list-view' }, this.showSummaryBox && this.hasResultsToShow && (hAsync("searchcraft-summary-box", { searchcraftId: this.searchcraftId })), this.hasResultsToShow && (hAsync("searchcraft-popover-list-view", { popoverResultMappings: this.popoverResultMappings, searchClientResponseItems: this.searchClientResponseItems, adClientResponseItems: this.adClientResponseItems, searchResultsPage: this.searchResultsPage, searchResultsPerPage: this.searchResultsPerPage, searchcraftId: this.searchcraftId }))), hAsync("searchcraft-popover-footer", { searchcraftId: this.searchcraftId, sdkVariant: this.sdkVariant, viewAllResultsHref: this.viewAllResultsHref, viewAllResultsLabel: this.resolvedViewAllResultsLabel }))));
+                }) }, hAsync("div", { class: 'searchcraft-popover-form-modal-backdrop', onClick: this.handleModalBackdropClick }), hAsync("div", { class: 'searchcraft-popover-form-modal-wrapper' }, hAsync("div", { class: 'searchcraft-popover-form-input searchcraft-popover-form-modal-input' }, hAsync("searchcraft-input-form", { onInputFocus: this.handleInputFocus.bind(this), onInputInit: this.handleInputInit.bind(this), searchcraftId: this.searchcraftId, placeholderValue: this.placeholderValue, placeholderBehavior: this.placeholderBehavior }), hAsync("button", { type: 'button', class: 'searchcraft-popover-form-cancel-button searchcraft-popover-form-modal-cancel-button', onClick: this.handleCancelButtonClick.bind(this) }, "Cancel")), hAsync("div", { class: 'searchcraft-popover-form-modal-popover-list-view' }, this.showSummaryBox && this.hasResultsToShow && (hAsync("searchcraft-results-summary", { searchcraftId: this.searchcraftId })), this.hasResultsToShow && (hAsync("searchcraft-popover-list-view", { popoverResultMappings: this.popoverResultMappings, searchClientResponseItems: this.searchClientResponseItems, adClientResponseItems: this.adClientResponseItems, searchResultsPage: this.searchResultsPage, searchResultsPerPage: this.searchResultsPerPage, searchcraftId: this.searchcraftId }))), hAsync("searchcraft-popover-footer", { searchcraftId: this.searchcraftId, sdkVariant: this.sdkVariant, viewAllResultsHref: this.viewAllResultsHref, viewAllResultsLabel: this.resolvedViewAllResultsLabel }))));
         }
     }
     renderFullscreenPopover() {
         if (this.isPopoverVisibleInState) {
             return (hAsync("div", { class: classNames('searchcraft-popover-form searchcraft-popover-form-fullscreen', {
                     'searchcraft-popover-form-active': this.hasResultsToShow,
-                }) }, hAsync("div", { class: 'searchcraft-popover-form-input searchcraft-popover-form-fullscreen-input' }, hAsync("searchcraft-input-form", { onInputFocus: this.handleInputFocus.bind(this), onInputInit: this.handleInputInit.bind(this), searchcraftId: this.searchcraftId, placeholderValue: this.placeholderValue, placeholderBehavior: this.placeholderBehavior }), hAsync("button", { type: 'button', class: 'searchcraft-popover-form-cancel-button searchcraft-popover-form-fullscreen-cancel-button', onClick: this.handleCancelButtonClick.bind(this) }, "Cancel")), hAsync("div", { class: 'searchcraft-popover-form-fullscreen-popover-list-view' }, this.showSummaryBox && this.hasResultsToShow && (hAsync("searchcraft-summary-box", { searchcraftId: this.searchcraftId })), this.hasResultsToShow && (hAsync("searchcraft-popover-list-view", { popoverResultMappings: this.popoverResultMappings, searchClientResponseItems: this.searchClientResponseItems, adClientResponseItems: this.adClientResponseItems, searchResultsPage: this.searchResultsPage, searchResultsPerPage: this.searchResultsPerPage, searchcraftId: this.searchcraftId }))), hAsync("searchcraft-popover-footer", { searchcraftId: this.searchcraftId, sdkVariant: this.sdkVariant, viewAllResultsHref: this.viewAllResultsHref, viewAllResultsLabel: this.resolvedViewAllResultsLabel })));
+                }) }, hAsync("div", { class: 'searchcraft-popover-form-input searchcraft-popover-form-fullscreen-input' }, hAsync("searchcraft-input-form", { onInputFocus: this.handleInputFocus.bind(this), onInputInit: this.handleInputInit.bind(this), searchcraftId: this.searchcraftId, placeholderValue: this.placeholderValue, placeholderBehavior: this.placeholderBehavior }), hAsync("button", { type: 'button', class: 'searchcraft-popover-form-cancel-button searchcraft-popover-form-fullscreen-cancel-button', onClick: this.handleCancelButtonClick.bind(this) }, "Cancel")), hAsync("div", { class: 'searchcraft-popover-form-fullscreen-popover-list-view' }, this.showSummaryBox && this.hasResultsToShow && (hAsync("searchcraft-results-summary", { searchcraftId: this.searchcraftId })), this.hasResultsToShow && (hAsync("searchcraft-popover-list-view", { popoverResultMappings: this.popoverResultMappings, searchClientResponseItems: this.searchClientResponseItems, adClientResponseItems: this.adClientResponseItems, searchResultsPage: this.searchResultsPage, searchResultsPerPage: this.searchResultsPerPage, searchcraftId: this.searchcraftId }))), hAsync("searchcraft-popover-footer", { searchcraftId: this.searchcraftId, sdkVariant: this.sdkVariant, viewAllResultsHref: this.viewAllResultsHref, viewAllResultsLabel: this.resolvedViewAllResultsLabel })));
         }
     }
     render() {
@@ -6861,7 +6861,7 @@ class SearchcraftPopoverListItem {
         }
     };
     render() {
-        return (hAsync("div", { key: '119fc0a527160924a22d185ce764202b1d342e9b', class: 'searchcraft-popover-list-item' }, hAsync("a", { key: '95a5db24035c3be7decb2f062710214fa5726f27', class: 'searchcraft-popover-list-item-link', href: this.href, onClick: this.handleLinkClick.bind(this) }, this.imageSource && (hAsync("div", { key: '6a5ddee0b5f03bc7cf5c5dacc5b4a5ee2fcbe511', class: 'searchcraft-popover-list-item-image-wrapper' }, hAsync("img", { key: '3cdae906aee5b6ef7d1f618419476e75af4c4ebe', alt: this.imageAlt, src: this.imageSource, class: 'searchcraft-popover-list-item-image' }))), hAsync("div", { key: 'd0b55113188fb8fafff8ee15d3dc919617852b62', class: 'searchcraft-popover-list-item-content' }, this.title && (hAsync("p", { key: '1482260827b057f03db9eb6e8d7df7f5977fe3dc', class: 'searchcraft-popover-list-item-content-title' }, this.title)), this.subtitle && (hAsync("p", { key: 'c4210cef3c4372ee4f9ce4a41dbea10d0e915175', class: 'searchcraft-popover-list-item-content-subtitle' }, this.subtitle))))));
+        return (hAsync("div", { key: 'd1c9c310b8abc9d2370efb802eac1edf4189519d', class: 'searchcraft-popover-list-item' }, hAsync("a", { key: '30eb1a5076c5b4b95ae43147eaee0bb72ce46179', class: 'searchcraft-popover-list-item-link', href: this.href, onClick: this.handleLinkClick.bind(this) }, this.imageSource && (hAsync("div", { key: 'd18ff55823dc2c61f3786f423936af8b009aeeda', class: 'searchcraft-popover-list-item-image-wrapper' }, hAsync("img", { key: '56f4cc1d472f7da05e64fcf52c560a7ad0cdf7a6', alt: this.imageAlt, src: this.imageSource, class: 'searchcraft-popover-list-item-image' }))), hAsync("div", { key: '78a0f0235d5e71d10076b70ccbaf4b58e0d6fea0', class: 'searchcraft-popover-list-item-content' }, this.title && (hAsync("p", { key: '4489047af56e5aa295cb5f036e970dcad053d3b7', class: 'searchcraft-popover-list-item-content-title' }, this.title)), this.subtitle && (hAsync("p", { key: '4d177c227a1dbf1233022d738403c8eb93ba328d', class: 'searchcraft-popover-list-item-content-subtitle' }, this.subtitle))))));
     }
     static get cmpMeta() { return {
         "$flags$": 768,
@@ -7361,718 +7361,6 @@ class SearchcraftResultsInfo {
             "count": [32],
             "range": [32],
             "responseTime": [32]
-        },
-        "$listeners$": undefined,
-        "$lazyBundleId$": "-",
-        "$attrsToReflect$": []
-    }; }
-}
-
-/**
- * This web component is designed to display detailed information for a single search result. Once a query is submitted, the component formats and presents the result.
- *
- * @internal
- */
-class SearchcraftSearchResult {
-    constructor(hostRef) {
-        registerInstance(this, hostRef);
-    }
-    item;
-    /**
-     * The index.
-     */
-    index;
-    /**
-     * The position in the document. Used with the "document_clicked" measure event.
-     */
-    documentPosition = 0;
-    /**
-     * A callback function responsible for rendering a result.
-     */
-    template;
-    /**
-     * The id of the Searchcraft instance that this component should use.
-     */
-    searchcraftId;
-    templateHtml;
-    get hostElement() { return getElement(this); }
-    core;
-    cleanupCore;
-    onCoreAvailable(core) {
-        this.core = core;
-    }
-    connectedCallback() {
-        this.cleanupCore = registry.useCoreInstance(this.searchcraftId, this.onCoreAvailable.bind(this));
-        if (this.item) {
-            try {
-                this.templateHtml = this.template?.(this.item.document, this.index, {
-                    html: html$1,
-                    source_index: this.item.source_index,
-                });
-            }
-            catch (error) {
-                console.error('Invalid search result template:', error);
-            }
-        }
-    }
-    disconnectedCallback() {
-        this.cleanupCore?.();
-    }
-    handleResultContainerClick = (event) => {
-        if (!event.target) {
-            return;
-        }
-        const target = event.target;
-        const link = target.closest('a');
-        if (!link ||
-            !this.hostElement?.contains(link) ||
-            !this.core ||
-            !this.core.measureClient) {
-            return;
-        }
-        const document_position = this.documentPosition;
-        const search_term = this.core.store.getState().searchTerm;
-        const number_of_documents = this.core.store.getState().searchClientResponseItems.length || 0;
-        this.core.measureClient.sendMeasureEvent('document_clicked', {
-            document_position,
-            number_of_documents,
-            search_term,
-        });
-    };
-    handleKeyDown = () => { };
-    render() {
-        if (!this.item) {
-            return;
-        }
-        if (typeof this.template === 'undefined') {
-            return (hAsync("div", { class: 'searchcraft-search-result searchcraft-search-result-no-template', onClick: this.handleResultContainerClick, onKeyDown: this.handleKeyDown }, Object.entries(this.item.document).map(([key, value]) => (hAsync("p", { key: key }, hAsync("strong", null, key), ": ", value)))));
-        }
-        return (hAsync("div", { class: 'searchcraft-search-result', innerHTML: this.templateHtml, onClick: this.handleResultContainerClick, onKeyDown: this.handleKeyDown }));
-    }
-    static get cmpMeta() { return {
-        "$flags$": 768,
-        "$tagName$": "searchcraft-search-result",
-        "$members$": {
-            "item": [16],
-            "index": [2],
-            "documentPosition": [2, "document-position"],
-            "template": [16],
-            "searchcraftId": [1, "searchcraft-id"],
-            "templateHtml": [32]
-        },
-        "$listeners$": undefined,
-        "$lazyBundleId$": "-",
-        "$attrsToReflect$": []
-    }; }
-}
-
-/**
- * This web component is responsible for displaying the results of a search query. Once a query is submitted, the component formats and presents an ordered list of the results.
- *
- *
- * @react-import
- * ```jsx
- * import { SearchcraftSearchResults } from "@searchcraft/react-sdk";
- * ```
- *
- * @vue-import
- * ```jsx
- * import { SearchcraftSearchResults } from "@searchcraft/vue-sdk";
- * ```
- *
- * @js-example
- * ```html
- * <!-- index.html -->
- * <searchcraft-search-results
- *   ad-interval="4"
- *   place-ad-at-start="true"
- * />
- * ```
- *
- * ```js
- * // index.js
- * const searchResults = document.querySelector('searchcraft-search-results');
- *
- * searchResults.template = (item, index, { html }) => html`
- *  <h2>${item.title}</h2>
- * `;
- * ```
- *
- * @react-example
- * ```jsx
- * <SearchcraftSearchResults
- *   adInterval={4}
- *   placeAdAtState={true}
- *   template={(item, index, { html }) => html`
- *     <h2>${item.title}</h2>
- *   `}
- * />
- * ```
- *
- * @vue-example
- * ```jsx
- * <SearchcraftSearchResults
- *   adInterval={4}
- *   placeAdAtState={true}
- *   :template={(item, index, { html }) => html`
- *     <h2>${item.title}</h2>
- *   `}
- * />
- * ```
- */
-class SearchcraftSearchResults {
-    constructor(hostRef) {
-        registerInstance(this, hostRef);
-    }
-    /**
-     * The id of the Searchcraft instance that this component should use.
-     */
-    searchcraftId;
-    /**
-     * A query that will appears when the component initializes or the search term is ''..
-     */
-    initialQuery;
-    /**
-     * A callback function responsible for rendering a result. Passed to `searchcraft-search-result`.
-     */
-    template;
-    adClientResponseItems = [];
-    config;
-    isSearchInProgress = true;
-    searchClientResponseItems;
-    searchResultsPage;
-    searchResultsPerPage;
-    searchTerm = '';
-    unsubscribe;
-    cleanupCore;
-    onCoreAvailable(core) {
-        const state = core.store.getState();
-        this.handleStateChange(state);
-        this.searchClientResponseItems = state.searchClientResponseItems;
-        this.searchTerm = state.searchTerm;
-        this.config = state.core?.config;
-        this.unsubscribe = core.store.subscribe((state) => this.handleStateChange(state));
-    }
-    connectedCallback() {
-        this.cleanupCore = registry.useCoreInstance(this.searchcraftId, this.onCoreAvailable.bind(this));
-    }
-    disconnectedCallback() {
-        this.unsubscribe?.();
-        this.cleanupCore?.();
-    }
-    handleStateChange(state) {
-        this.adClientResponseItems = [...state.adClientResponseItems];
-        this.config = state.core?.config;
-        this.isSearchInProgress = state.isSearchInProgress;
-        this.searchClientResponseItems = [...state.searchClientResponseItems];
-        this.searchResultsPage = state.searchResultsPage;
-        this.searchResultsPerPage = state.searchResultsPerPage;
-        this.searchTerm = state.searchTerm;
-    }
-    renderEmptyState() {
-        return (hAsync("div", { class: 'searchcraft-search-results-empty-state' }, hAsync("slot", { name: 'empty-search' })));
-    }
-    renderNoResultsFoundState() {
-        return (hAsync("div", { class: 'searchcraft-search-results' }, hAsync("div", { class: 'searchcraft-search-results-error-message' }, hAsync("searchcraft-error-message", null, "No search results found for \"", this.searchTerm, "\" query."))));
-    }
-    renderWithADMAds() {
-        const items = this.searchClientResponseItems || [];
-        return (hAsync("div", { class: 'searchcraft-search-results' }, this.adClientResponseItems?.map((item) => (hAsync("searchcraft-ad", { "searchcraft-id": this.searchcraftId, adSource: 'adMarketplace', adClientResponseItem: item, key: item.id, renderPosition: 'top' }))), items.map((item, index) => (hAsync("searchcraft-search-result", { "searchcraft-id": this.searchcraftId, key: item.id, "document-position": this.searchResultsPerPage * (this.searchResultsPage - 1) + index, index: index, item: item, template: this.template })))));
-    }
-    renderWithCustomAds() {
-        const itemsToRender = [];
-        const interstitialInterval = this.config?.customAdConfig?.adInterstitialInterval || 0;
-        const interstitialQuantity = this.config?.customAdConfig?.adInterstitialQuantity || 1;
-        const adStartQuantity = this.config?.customAdConfig?.adStartQuantity || 0;
-        const adEndQuantity = this.config?.customAdConfig?.adEndQuantity || 0;
-        const items = this.searchClientResponseItems || [];
-        // Renders ads at beginning
-        for (let n = 0; n < adStartQuantity; n++) {
-            itemsToRender.push(hAsync("searchcraft-ad", { "searchcraft-id": this.searchcraftId, adSource: 'Custom', key: `${n}-ad`, renderPosition: 'top' }));
-        }
-        // Renders search results + interstitial ads
-        items.forEach((item, index) => {
-            if (interstitialInterval &&
-                index % interstitialInterval === 0 &&
-                index + interstitialInterval < items.length &&
-                index >= interstitialInterval) {
-                for (let n = 0; n < interstitialQuantity; n++) {
-                    itemsToRender.push(hAsync("searchcraft-ad", { "searchcraft-id": this.searchcraftId, adSource: 'Custom', key: `${item.id}-ad-${n}`, renderPosition: 'interstitial' }));
-                }
-            }
-            itemsToRender.push(hAsync("searchcraft-search-result", { "searchcraft-id": this.searchcraftId, key: item.id, "document-position": this.searchResultsPerPage * (this.searchResultsPage - 1) + index, index: index, item: item, template: this.template }));
-        });
-        // Renders ads at end
-        for (let n = 0; n < adEndQuantity; n++) {
-            itemsToRender.push(hAsync("searchcraft-ad", { "searchcraft-id": this.searchcraftId, adSource: 'Custom', key: `${n}-ad`, renderPosition: 'bottom' }));
-        }
-        return hAsync("div", { class: 'searchcraft-search-results' }, itemsToRender);
-    }
-    renderWithNativoAds() {
-        const itemsToRender = [];
-        const interstitialStartIndex = this.config?.nativoConfig?.adInterstialStartIndex || 0;
-        const interstitialInterval = this.config?.nativoConfig?.adInterstitialInterval || 0;
-        const interstitialQuantity = this.config?.nativoConfig?.adInterstitialQuantity || 1;
-        const adStartQuantity = this.config?.nativoConfig?.adStartQuantity || 0;
-        const adEndQuantity = this.config?.nativoConfig?.adEndQuantity || 0;
-        const items = this.searchClientResponseItems || [];
-        // Renders ads at beginning
-        for (let n = 0; n < adStartQuantity; n++) {
-            itemsToRender.push(hAsync("searchcraft-ad", { "searchcraft-id": this.searchcraftId, adSource: 'Nativo', key: `${n}-ad`, renderPosition: 'top' }));
-        }
-        // Renders search results + interstitial ads
-        items.forEach((item, index) => {
-            if (interstitialInterval &&
-                (index + interstitialStartIndex) % interstitialInterval === 0 &&
-                index + interstitialInterval < items.length &&
-                index >= interstitialInterval) {
-                for (let n = 0; n < interstitialQuantity; n++) {
-                    itemsToRender.push(hAsync("searchcraft-ad", { "searchcraft-id": this.searchcraftId, adSource: 'Nativo', key: `${item.id}-ad-${n}`, renderPosition: 'interstitial' }));
-                }
-            }
-            itemsToRender.push(hAsync("searchcraft-search-result", { "searchcraft-id": this.searchcraftId, key: item.id, "document-position": this.searchResultsPerPage * (this.searchResultsPage - 1) + index, index: index, item: item, template: this.template }));
-        });
-        // Renders ads at end
-        for (let n = 0; n < adEndQuantity; n++) {
-            itemsToRender.push(hAsync("searchcraft-ad", { "searchcraft-id": this.searchcraftId, adSource: 'Nativo', key: `${n}-ad`, renderPosition: 'bottom' }));
-        }
-        return hAsync("div", { class: 'searchcraft-search-results' }, itemsToRender);
-    }
-    renderWithNoAds() {
-        const items = this.searchClientResponseItems || [];
-        return (hAsync("div", { class: 'searchcraft-search-results' }, items.map((item, index) => (hAsync("searchcraft-search-result", { "searchcraft-id": this.searchcraftId, key: item.id, "document-position": this.searchResultsPerPage * (this.searchResultsPage - 1) + index, index: index, item: item, template: this.template })))));
-    }
-    render() {
-        const searchClientResponseItems = this.searchClientResponseItems || [];
-        if (searchClientResponseItems.length === 0 && !this.isSearchInProgress) {
-            return this.renderEmptyState();
-        }
-        if (this.searchTerm.length > 0 &&
-            searchClientResponseItems.length === 0 &&
-            !this.isSearchInProgress) {
-            return this.renderNoResultsFoundState();
-        }
-        if (this.config?.customAdConfig) {
-            return this.renderWithCustomAds();
-        }
-        if (this.config?.admAdConfig) {
-            return this.renderWithNativoAds();
-        }
-        if (this.config?.nativoConfig) {
-            return this.renderWithNativoAds();
-        }
-        return this.renderWithNoAds();
-    }
-    static get cmpMeta() { return {
-        "$flags$": 772,
-        "$tagName$": "searchcraft-search-results",
-        "$members$": {
-            "searchcraftId": [1, "searchcraft-id"],
-            "initialQuery": [1, "initial-query"],
-            "template": [16],
-            "adClientResponseItems": [32],
-            "config": [32],
-            "isSearchInProgress": [32],
-            "searchClientResponseItems": [32],
-            "searchResultsPage": [32],
-            "searchResultsPerPage": [32],
-            "searchTerm": [32]
-        },
-        "$listeners$": undefined,
-        "$lazyBundleId$": "-",
-        "$attrsToReflect$": []
-    }; }
-}
-
-/**
- * This web component is designed to choose the number of search results displayed.
- *
- * @react-import
- * ```jsx
- * import { SearchcraftSearchResultsPerPage } from "@searchcraft/react-sdk";
- * ```
- *
- * @vue-import
- * ```jsx
- * import { SearchcraftSearchResultsPerPage } from "@searchcraft/vue-sdk";
- * ```
- *
- * @js-example
- * ```html
- * <!-- index.html -->
- * <searchcraft-search-results-per-page increment="20" />
- * ```
- *
- * @react-example
- * ```jsx
- * <SearchcraftSearchResultsPerPage increment={20} />
- * ```
- *
- * @vue-example
- * ```jsx
- * <SearchcraftSearchResultsPerPage increment="20" />
- * ```
- */
-class SearchcraftSearchResultsPerPage {
-    constructor(hostRef) {
-        registerInstance(this, hostRef);
-    }
-    /**
-     * The amount the options will increase (e.g. 20 = [20, 40, 60, 80, 100]).
-     * The base value is defined by the `searchResultsPerPage` option in the configuration.
-     */
-    increment = 20;
-    /**
-     * The id of the Searchcraft instance that this component should use.
-     */
-    searchcraftId;
-    // store vars
-    searchTerm;
-    searchResultsPage;
-    searchResultsPerPage;
-    searchResultsCount;
-    searchResultsPagesCount;
-    searchClientRequestProperties;
-    // local vars
-    initialSearchResultsPerPage;
-    // store functions
-    setSearchResultsPerPage = () => { };
-    setSearchResultsPage = () => { };
-    unsubscribe = () => { };
-    cleanupCore;
-    onCoreAvailable(core) {
-        this.unsubscribe = core.store.subscribe((state) => {
-            // store vars
-            this.searchTerm = state.searchTerm;
-            this.searchResultsPerPage = state.searchResultsPerPage;
-            this.searchResultsPage = state.searchResultsPage;
-            this.searchResultsCount = state.searchResultsCount;
-            this.searchClientRequestProperties = state.searchClientRequestProperties;
-            // local vars
-            this.searchResultsPagesCount = Math.ceil(this.searchResultsCount / this.searchResultsPerPage);
-            // store functions
-            this.setSearchResultsPage = state.setSearchResultsPage;
-            this.setSearchResultsPerPage = state.setSearchResultsPerPage;
-        });
-        this.initialSearchResultsPerPage =
-            core.store.getState().searchResultsPerPage;
-    }
-    connectedCallback() {
-        this.cleanupCore = registry.useCoreInstance(this.searchcraftId, this.onCoreAvailable.bind(this));
-    }
-    disconnectedCallback() {
-        this.unsubscribe?.();
-        this.cleanupCore?.();
-    }
-    render() {
-        // Check if this is an initialQuery case (string requestProperties with empty searchTerm)
-        const isInitialQuery = typeof this.searchClientRequestProperties === 'string' &&
-            this.searchTerm.trim() === '';
-        // early return if there isn't a searchTerm (unless it's initialQuery) or there is 1 or fewer pages of results
-        if ((!this.searchTerm && !isInitialQuery) ||
-            this.searchResultsPagesCount <= 1) {
-            return;
-        }
-        return (hAsync("div", { class: 'searchcraft-search-results-per-page' }, hAsync("div", { class: 'searchcraft-search-results-per-page-select' }, hAsync("label", { class: 'searchcraft-search-results-per-page-select-label', htmlFor: 'searchcraft-search-results-per-page-select-input' }, "Results Per Page"), hAsync("div", { class: 'searchcraft-search-results-per-page-select-input' }, hAsync("searchcraft-select", { inputId: 'searchcraft-search-results-per-page-select-input', name: 'results-per-page', options: [...Array(5)].map((_, index) => {
-                const value = this.initialSearchResultsPerPage +
-                    Number(this.increment) * index;
-                return {
-                    label: `${value}`,
-                    value,
-                };
-            }), onSelectChange: (event) => {
-                this.setSearchResultsPerPage(Number(event.detail));
-                this.setSearchResultsPage(1);
-            } })))));
-    }
-    static get cmpMeta() { return {
-        "$flags$": 768,
-        "$tagName$": "searchcraft-search-results-per-page",
-        "$members$": {
-            "increment": [8],
-            "searchcraftId": [1, "searchcraft-id"],
-            "searchTerm": [32],
-            "searchResultsPage": [32],
-            "searchResultsPerPage": [32],
-            "searchResultsCount": [32],
-            "searchResultsPagesCount": [32],
-            "searchClientRequestProperties": [32],
-            "initialSearchResultsPerPage": [32],
-            "setSearchResultsPerPage": [32],
-            "setSearchResultsPage": [32]
-        },
-        "$listeners$": undefined,
-        "$lazyBundleId$": "-",
-        "$attrsToReflect$": []
-    }; }
-}
-
-/**
- * This web component is designed to allow users to select between a group of options.
- *
- * @js-example
- * ```html
- * <!-- index.html -->
- * <searchcraft-select
- *  inputId="searchcraft-select"
- *  name="searchcraft-select"
- *  options="[{ label: 'label', value: 'value' }]"
- * />
- * ```
- *
- * @internal
- */
-class SearchcraftSelect {
-    constructor(hostRef) {
-        registerInstance(this, hostRef);
-        this.selectChange = createEvent(this, "selectChange");
-    }
-    /**
-     * The caption displayed below the select input.
-     */
-    caption;
-    /**
-     * Whether the select input is disabled.
-     */
-    disabled = false;
-    /**
-     * The ID for the select input.
-     */
-    inputId;
-    /**
-     * The label of the select input.
-     */
-    label;
-    /**
-     * The ID for the label of the select input.
-     */
-    labelId;
-    /**
-     * The name of the select input.
-     */
-    name;
-    /**
-     * The options for the select input.
-     */
-    options = [];
-    /**
-     * The event fired when the select is changed.
-     */
-    selectChange;
-    searchResultsPerPage;
-    setSearchResultsPage = () => { };
-    setSearchResultsPerPage = () => { };
-    handleSelectChange = (event) => {
-        this.selectChange.emit(event.target.value);
-    };
-    handleGoToPage(page) {
-        this.setSearchResultsPage(page);
-    }
-    render() {
-        return (hAsync("div", { key: '15ecbf48c824a161cd83bdab99dace8e44f1ab39', class: 'searchcraft-select' }, this.label && (hAsync("label", { key: 'aba433ae9c27c9405099cffcef923c3ad22d7fda', class: 'searchcraft-select-label', id: this.labelId || `${this.inputId}-label`, htmlFor: this.inputId }, this.label)), hAsync("div", { key: '8df8a2ff05924c9c55cdd6e3827cd927cddab82a', class: 'searchcraft-select-input-wrapper' }, hAsync("select", { key: '1d5f492c2255f8ca1b6ea5e04a2726dda2f2c52f', "aria-labelledby": this.label ? this.labelId || `${this.inputId}-label` : undefined, class: 'searchcraft-select-input', disabled: this.disabled, id: this.inputId, name: this.name, onChange: this.handleSelectChange }, (typeof this.options === 'string'
-            ? JSON.parse(this.options)
-            : this.options).map(({ label, value, selected }) => {
-            return (hAsync("option", { key: value, value: value, selected: selected }, label));
-        })), hAsync("svg", { key: '0ec6892b529f2e70027aadea47208582a65a97b7', class: 'searchcraft-select-input-icon', width: '20', height: '20', viewBox: '0 0 20 20', fill: 'none', xmlns: 'http://www.w3.org/2000/svg' }, hAsync("title", { key: 'bced6b62378491d1d1c629b602d7d033d912c761' }, "Select dropdown icon"), hAsync("path", { key: '659f8ebf9129e2e7941da949d29688c41c1472bb', d: 'M5 7.5L10 12.5L15 7.5', stroke: 'currentColor', "stroke-width": '1.5', "stroke-linecap": 'round', "stroke-linejoin": 'round' }))), this.caption && (hAsync("p", { key: '51217d926f68f79b6c3514f5fd769b56549fdce9', class: 'searchcraft-select-caption' }, this.caption))));
-    }
-    static get cmpMeta() { return {
-        "$flags$": 768,
-        "$tagName$": "searchcraft-select",
-        "$members$": {
-            "caption": [1],
-            "disabled": [4],
-            "inputId": [1, "input-id"],
-            "label": [1],
-            "labelId": [1, "label-id"],
-            "name": [1],
-            "options": [1],
-            "searchResultsPerPage": [32],
-            "setSearchResultsPage": [32],
-            "setSearchResultsPerPage": [32]
-        },
-        "$listeners$": undefined,
-        "$lazyBundleId$": "-",
-        "$attrsToReflect$": []
-    }; }
-}
-
-/**
- * Creates a throttled version of the given function that only invokes
- * the original function at most once every specified number of milliseconds.
- *
- * The logic is written in a way that the last invocation is always called, after the
- * throttle cooldown period has ended.
- *
- * @template Arguments - The argument types for the function to throttle
- * @param callback - The function to throttle
- * @param delayInMilliseconds - The number of milliseconds to wait before allowing the next invocation
- * @returns A throttled version of the original function
- */
-function throttle(callback, delayInMilliseconds) {
-    let isThrottleOnCooldown = false;
-    let trailingCallArgs = null;
-    const invokeAction = (args) => {
-        callback(...args);
-        isThrottleOnCooldown = true;
-        setTimeout(() => {
-            isThrottleOnCooldown = false;
-            if (trailingCallArgs) {
-                const nextArgs = trailingCallArgs;
-                trailingCallArgs = null;
-                invokeAction(nextArgs);
-            }
-        }, delayInMilliseconds);
-    };
-    return (...args) => {
-        if (!isThrottleOnCooldown) {
-            invokeAction(args);
-        }
-        else {
-            trailingCallArgs = args;
-        }
-    };
-}
-
-/**
- * This web component is designed to allow users to select a value from a range defined by a minimum and maximum value. The component renders a slider interface, which can be used to visually choose a value between two boundaries.
- *
- * @internal
- */
-class SearchcraftSlider {
-    constructor(hostRef) {
-        registerInstance(this, hostRef);
-        this.rangeChanged = createEvent(this, "rangeChanged");
-    }
-    /**
-     * The maximum value allowed.
-     */
-    max = 100;
-    /**
-     * The minimum value allowed.
-     */
-    min = 0;
-    /**
-     * The step amount for the slider inputs.
-     */
-    step = 1;
-    /** The type of data the sliders are using. */
-    dataType = 'number';
-    /** The date granularity to use. Used to format date labels. */
-    dateGranularity;
-    lowerBound = 0;
-    upperBound = 1;
-    endValue = 0;
-    startValue = 0;
-    lastFocusedHandle = 'max';
-    throttledEmitUpdate = () => { };
-    /**
-     * When the range has changed.
-     * */
-    rangeChanged;
-    connectedCallback() {
-        switch (this.dataType) {
-            case 'number':
-                this.startValue = this.min;
-                this.endValue = this.max;
-                this.lowerBound = this.min;
-                this.upperBound = this.max;
-                break;
-            case 'date': {
-                this.startValue = 0;
-                this.endValue = getDifferenceInUnits(this.dateGranularity || 'year', this.min, this.max);
-                this.lowerBound = 0;
-                this.upperBound = this.endValue;
-                break;
-            }
-        }
-        this.throttledEmitUpdate = throttle(this.emitUpdate, 120);
-    }
-    emitUpdate = async () => {
-        switch (this.dataType) {
-            case 'number':
-                this.rangeChanged?.emit({
-                    startValue: this.startValue,
-                    endValue: this.endValue,
-                });
-                break;
-            case 'date': {
-                const granularity = this.dateGranularity || 'year';
-                const startTimestamp = getStartOf(this.min, granularity, this.lowerBound + this.startValue);
-                const endTimestamp = getStartOf(this.min, granularity, this.lowerBound + this.endValue + 1);
-                this.rangeChanged?.emit({
-                    startValue: startTimestamp,
-                    endValue: endTimestamp,
-                });
-                break;
-            }
-        }
-    };
-    handleStartValueChange = (event) => {
-        const inputElement = event.target;
-        const value = Number.parseInt(inputElement.value, 10);
-        this.lastFocusedHandle = 'min';
-        if (value <= this.endValue) {
-            this.startValue = value;
-            this.throttledEmitUpdate();
-        }
-        else {
-            this.startValue = this.endValue;
-            inputElement.value = `${this.endValue}`;
-        }
-    };
-    handleEndValueChange = (event) => {
-        const inputElement = event.target;
-        const value = Number.parseInt(inputElement.value, 10);
-        this.lastFocusedHandle = 'max';
-        if (value >= this.startValue) {
-            this.endValue = value;
-            this.throttledEmitUpdate();
-        }
-        else {
-            this.endValue = this.startValue;
-            inputElement.value = `${this.startValue}`;
-        }
-    };
-    getLabel = (value) => {
-        switch (this.dataType) {
-            case 'number':
-                return `${this.startValue}`;
-            case 'date': {
-                const granularity = this.dateGranularity || 'year';
-                const dateOffset = this.lowerBound + value;
-                const timestamp = getStartOf(this.min, granularity, dateOffset);
-                return getFormattedDateString(this.dateGranularity || 'year', new Date(timestamp));
-            }
-        }
-    };
-    render() {
-        const startPercent = ((this.startValue - this.lowerBound) /
-            (this.upperBound - this.lowerBound)) *
-            100;
-        const endPercent = ((this.endValue - this.lowerBound) /
-            (this.upperBound - this.lowerBound)) *
-            100;
-        const startLabel = this.getLabel(this.startValue);
-        const endLabel = this.getLabel(this.endValue);
-        return (hAsync("div", { key: '59b07f5c8a14f6cbad8bae6faebf12e9a511bcbb', class: 'searchcraft-slider' }, hAsync("div", { key: '603c0bc39c6fe018016caf17b3b73f5b3c410fba', class: 'searchcraft-slider-range' }, hAsync("div", { key: '31d4097f29aa13d0ab14ec861ecea803e8190ed0', class: 'searchcraft-slider-active-range', style: {
-                left: `${startPercent}%`,
-                width: `${endPercent - startPercent}%`,
-            } }), hAsync("input", { key: '40299fe0d7b973b448151a045b7a7f6c3b8846fd', class: classNames('searchcraft-slider-input', 'searchcraft-slider-input-min-handle'), max: this.upperBound, min: this.lowerBound, onInput: this.handleStartValueChange.bind(this), step: this.step, style: { zIndex: this.lastFocusedHandle === 'min' ? '2' : '1' }, type: 'range', value: this.startValue }), hAsync("input", { key: 'd46ad0cee946b168cd6004f8a2f819f6e46c50e4', class: classNames('searchcraft-slider-input', 'searchcraft-slider-input-max-handle'), max: this.upperBound, min: this.lowerBound, onInput: this.handleEndValueChange.bind(this), step: this.step, style: { zIndex: this.lastFocusedHandle === 'max' ? '2' : '1' }, type: 'range', value: this.endValue })), hAsync("div", { key: 'e65452bc456b0fa69d0dc0dd1276e19b9cf521e6', class: 'searchcraft-slider-label' }, hAsync("span", { key: '2b5aec3e96d9bc9420b047a1d00cce40f361c729', class: 'searchcraft-slider-start-label' }, startLabel), hAsync("span", { key: 'fce2109bd481b3df9ac4beee3731a24c012e4512', class: 'searchcraft-slider-end-label' }, endLabel))));
-    }
-    static get cmpMeta() { return {
-        "$flags$": 768,
-        "$tagName$": "searchcraft-slider",
-        "$members$": {
-            "max": [2],
-            "min": [2],
-            "step": [2],
-            "dataType": [1, "data-type"],
-            "dateGranularity": [1, "date-granularity"],
-            "lowerBound": [32],
-            "upperBound": [32],
-            "endValue": [32],
-            "startValue": [32],
-            "lastFocusedHandle": [32]
         },
         "$listeners$": undefined,
         "$lazyBundleId$": "-",
@@ -10240,6 +9528,829 @@ marked.Hooks = _Hooks;
 marked.parse = marked;
 
 /**
+ * This component renders a results summary for RAG search result summaries.
+ * When the user makes a search, a network call is made to retrieve the summary content, which is then
+ * rendered in this box.
+ *
+ * NOTE: This component requires the usage of a read key that has "SUMMARY" permissions.
+ *
+ * @react-import
+ * ```jsx
+ * import { SearchcraftResultsSummary } from "@searchcraft/react-sdk";
+ * ```
+ *
+ * @vue-import
+ * ```ts
+ * import { SearchcraftResultsSummary } from "@searchcraft/vue-sdk";
+ * ```
+ *
+ * @js-example
+ * ```html
+ * <searchcraft-results-summary />
+ * ```
+ *
+ * @react-example
+ * ```jsx
+ * <SearchcraftResultsSummary />
+ * ```
+ *
+ * @vue-example
+ * ```jsx
+ * <SearchcraftResultsSummary />
+ * ```
+ */
+class SearchcraftResultsSummary {
+    constructor(hostRef) {
+        registerInstance(this, hostRef);
+    }
+    /**
+     * The id of the Searchcraft instance that this component should use.
+     */
+    searchcraftId;
+    summary = '';
+    summaryErrorMessage = '';
+    isLoading = false;
+    isSummaryNotEnabled = false;
+    unsubscribe;
+    cleanupCore;
+    /**
+     * Callback invoked when the Searchcraft core instance is available.
+     */
+    onCoreAvailable(core) {
+        core.store.setState({ hasSummaryBox: true });
+        this.handleStateChange(core.store.getState());
+        this.unsubscribe = core.store.subscribe(this.handleStateChange.bind(this));
+    }
+    connectedCallback() {
+        this.cleanupCore = registry.useCoreInstance(this.searchcraftId, this.onCoreAvailable.bind(this));
+    }
+    disconnectedCallback() {
+        this.unsubscribe?.();
+        this.cleanupCore?.();
+    }
+    /**
+     * Handles state changes from the store and updates component state.
+     */
+    handleStateChange(state) {
+        this.isLoading = state.isSummaryLoading;
+        this.isSummaryNotEnabled = state.isSummaryNotEnabled;
+        this.summaryErrorMessage = state.summaryErrorMessage;
+        this.summary = this.sanitizeMarkdown(state.summary);
+    }
+    /**
+     * Sanitizes and converts markdown to HTML.
+     */
+    sanitizeMarkdown(markdown) {
+        return purify.sanitize(marked.parse(markdown));
+    }
+    /**
+     * Renders the appropriate content based on current state.
+     */
+    renderContent() {
+        if (this.isLoading) {
+            return hAsync("searchcraft-loading", { label: 'LOADING' });
+        }
+        if (this.isSummaryNotEnabled) {
+            return (hAsync("div", { class: 'searchcraft-results-summary-content' }, this.summaryErrorMessage || 'AI summaries are not enabled'));
+        }
+        return (hAsync("div", { class: 'searchcraft-results-summary-content', innerHTML: this.summary, "aria-live": 'polite' }));
+    }
+    render() {
+        return (hAsync("div", { key: 'aca6fe712c108fd3cb886be7dacfb763d2df8a92', class: 'searchcraft-results-summary' }, this.renderContent()));
+    }
+    static get cmpMeta() { return {
+        "$flags$": 768,
+        "$tagName$": "searchcraft-results-summary",
+        "$members$": {
+            "searchcraftId": [1, "searchcraft-id"],
+            "summary": [32],
+            "summaryErrorMessage": [32],
+            "isLoading": [32],
+            "isSummaryNotEnabled": [32]
+        },
+        "$listeners$": undefined,
+        "$lazyBundleId$": "-",
+        "$attrsToReflect$": []
+    }; }
+}
+
+/**
+ * This web component is designed to display detailed information for a single search result. Once a query is submitted, the component formats and presents the result.
+ *
+ * @internal
+ */
+class SearchcraftSearchResult {
+    constructor(hostRef) {
+        registerInstance(this, hostRef);
+    }
+    item;
+    /**
+     * The index.
+     */
+    index;
+    /**
+     * The position in the document. Used with the "document_clicked" measure event.
+     */
+    documentPosition = 0;
+    /**
+     * A callback function responsible for rendering a result.
+     */
+    template;
+    /**
+     * The id of the Searchcraft instance that this component should use.
+     */
+    searchcraftId;
+    templateHtml;
+    get hostElement() { return getElement(this); }
+    core;
+    cleanupCore;
+    onCoreAvailable(core) {
+        this.core = core;
+    }
+    connectedCallback() {
+        this.cleanupCore = registry.useCoreInstance(this.searchcraftId, this.onCoreAvailable.bind(this));
+        if (this.item) {
+            try {
+                this.templateHtml = this.template?.(this.item.document, this.index, {
+                    html: html$1,
+                    source_index: this.item.source_index,
+                });
+            }
+            catch (error) {
+                console.error('Invalid search result template:', error);
+            }
+        }
+    }
+    disconnectedCallback() {
+        this.cleanupCore?.();
+    }
+    handleResultContainerClick = (event) => {
+        if (!event.target) {
+            return;
+        }
+        const target = event.target;
+        const link = target.closest('a');
+        if (!link ||
+            !this.hostElement?.contains(link) ||
+            !this.core ||
+            !this.core.measureClient) {
+            return;
+        }
+        const document_position = this.documentPosition;
+        const search_term = this.core.store.getState().searchTerm;
+        const number_of_documents = this.core.store.getState().searchClientResponseItems.length || 0;
+        this.core.measureClient.sendMeasureEvent('document_clicked', {
+            document_position,
+            number_of_documents,
+            search_term,
+        });
+    };
+    handleKeyDown = () => { };
+    render() {
+        if (!this.item) {
+            return;
+        }
+        if (typeof this.template === 'undefined') {
+            return (hAsync("div", { class: 'searchcraft-search-result searchcraft-search-result-no-template', onClick: this.handleResultContainerClick, onKeyDown: this.handleKeyDown }, Object.entries(this.item.document).map(([key, value]) => (hAsync("p", { key: key }, hAsync("strong", null, key), ": ", value)))));
+        }
+        return (hAsync("div", { class: 'searchcraft-search-result', innerHTML: this.templateHtml, onClick: this.handleResultContainerClick, onKeyDown: this.handleKeyDown }));
+    }
+    static get cmpMeta() { return {
+        "$flags$": 768,
+        "$tagName$": "searchcraft-search-result",
+        "$members$": {
+            "item": [16],
+            "index": [2],
+            "documentPosition": [2, "document-position"],
+            "template": [16],
+            "searchcraftId": [1, "searchcraft-id"],
+            "templateHtml": [32]
+        },
+        "$listeners$": undefined,
+        "$lazyBundleId$": "-",
+        "$attrsToReflect$": []
+    }; }
+}
+
+/**
+ * This web component is responsible for displaying the results of a search query. Once a query is submitted, the component formats and presents an ordered list of the results.
+ *
+ *
+ * @react-import
+ * ```jsx
+ * import { SearchcraftSearchResults } from "@searchcraft/react-sdk";
+ * ```
+ *
+ * @vue-import
+ * ```jsx
+ * import { SearchcraftSearchResults } from "@searchcraft/vue-sdk";
+ * ```
+ *
+ * @js-example
+ * ```html
+ * <!-- index.html -->
+ * <searchcraft-search-results
+ *   ad-interval="4"
+ *   place-ad-at-start="true"
+ * />
+ * ```
+ *
+ * ```js
+ * // index.js
+ * const searchResults = document.querySelector('searchcraft-search-results');
+ *
+ * searchResults.template = (item, index, { html }) => html`
+ *  <h2>${item.title}</h2>
+ * `;
+ * ```
+ *
+ * @react-example
+ * ```jsx
+ * <SearchcraftSearchResults
+ *   adInterval={4}
+ *   placeAdAtState={true}
+ *   template={(item, index, { html }) => html`
+ *     <h2>${item.title}</h2>
+ *   `}
+ * />
+ * ```
+ *
+ * @vue-example
+ * ```jsx
+ * <SearchcraftSearchResults
+ *   adInterval={4}
+ *   placeAdAtState={true}
+ *   :template={(item, index, { html }) => html`
+ *     <h2>${item.title}</h2>
+ *   `}
+ * />
+ * ```
+ */
+class SearchcraftSearchResults {
+    constructor(hostRef) {
+        registerInstance(this, hostRef);
+    }
+    /**
+     * The id of the Searchcraft instance that this component should use.
+     */
+    searchcraftId;
+    /**
+     * A query that will appears when the component initializes or the search term is ''..
+     */
+    initialQuery;
+    /**
+     * A callback function responsible for rendering a result. Passed to `searchcraft-search-result`.
+     */
+    template;
+    adClientResponseItems = [];
+    config;
+    isSearchInProgress = true;
+    searchClientResponseItems;
+    searchResultsPage;
+    searchResultsPerPage;
+    searchTerm = '';
+    unsubscribe;
+    cleanupCore;
+    onCoreAvailable(core) {
+        const state = core.store.getState();
+        this.handleStateChange(state);
+        this.searchClientResponseItems = state.searchClientResponseItems;
+        this.searchTerm = state.searchTerm;
+        this.config = state.core?.config;
+        this.unsubscribe = core.store.subscribe((state) => this.handleStateChange(state));
+    }
+    connectedCallback() {
+        this.cleanupCore = registry.useCoreInstance(this.searchcraftId, this.onCoreAvailable.bind(this));
+    }
+    disconnectedCallback() {
+        this.unsubscribe?.();
+        this.cleanupCore?.();
+    }
+    handleStateChange(state) {
+        this.adClientResponseItems = [...state.adClientResponseItems];
+        this.config = state.core?.config;
+        this.isSearchInProgress = state.isSearchInProgress;
+        this.searchClientResponseItems = [...state.searchClientResponseItems];
+        this.searchResultsPage = state.searchResultsPage;
+        this.searchResultsPerPage = state.searchResultsPerPage;
+        this.searchTerm = state.searchTerm;
+    }
+    renderEmptyState() {
+        return (hAsync("div", { class: 'searchcraft-search-results-empty-state' }, hAsync("slot", { name: 'empty-search' })));
+    }
+    renderNoResultsFoundState() {
+        return (hAsync("div", { class: 'searchcraft-search-results' }, hAsync("div", { class: 'searchcraft-search-results-error-message' }, hAsync("searchcraft-error-message", null, "No search results found for \"", this.searchTerm, "\" query."))));
+    }
+    renderWithADMAds() {
+        const items = this.searchClientResponseItems || [];
+        return (hAsync("div", { class: 'searchcraft-search-results' }, this.adClientResponseItems?.map((item) => (hAsync("searchcraft-ad", { "searchcraft-id": this.searchcraftId, adSource: 'adMarketplace', adClientResponseItem: item, key: item.id, renderPosition: 'top' }))), items.map((item, index) => (hAsync("searchcraft-search-result", { "searchcraft-id": this.searchcraftId, key: item.id, "document-position": this.searchResultsPerPage * (this.searchResultsPage - 1) + index, index: index, item: item, template: this.template })))));
+    }
+    renderWithCustomAds() {
+        const itemsToRender = [];
+        const interstitialInterval = this.config?.customAdConfig?.adInterstitialInterval || 0;
+        const interstitialQuantity = this.config?.customAdConfig?.adInterstitialQuantity || 1;
+        const adStartQuantity = this.config?.customAdConfig?.adStartQuantity || 0;
+        const adEndQuantity = this.config?.customAdConfig?.adEndQuantity || 0;
+        const items = this.searchClientResponseItems || [];
+        // Renders ads at beginning
+        for (let n = 0; n < adStartQuantity; n++) {
+            itemsToRender.push(hAsync("searchcraft-ad", { "searchcraft-id": this.searchcraftId, adSource: 'Custom', key: `${n}-ad`, renderPosition: 'top' }));
+        }
+        // Renders search results + interstitial ads
+        items.forEach((item, index) => {
+            if (interstitialInterval &&
+                index % interstitialInterval === 0 &&
+                index + interstitialInterval < items.length &&
+                index >= interstitialInterval) {
+                for (let n = 0; n < interstitialQuantity; n++) {
+                    itemsToRender.push(hAsync("searchcraft-ad", { "searchcraft-id": this.searchcraftId, adSource: 'Custom', key: `${item.id}-ad-${n}`, renderPosition: 'interstitial' }));
+                }
+            }
+            itemsToRender.push(hAsync("searchcraft-search-result", { "searchcraft-id": this.searchcraftId, key: item.id, "document-position": this.searchResultsPerPage * (this.searchResultsPage - 1) + index, index: index, item: item, template: this.template }));
+        });
+        // Renders ads at end
+        for (let n = 0; n < adEndQuantity; n++) {
+            itemsToRender.push(hAsync("searchcraft-ad", { "searchcraft-id": this.searchcraftId, adSource: 'Custom', key: `${n}-ad`, renderPosition: 'bottom' }));
+        }
+        return hAsync("div", { class: 'searchcraft-search-results' }, itemsToRender);
+    }
+    renderWithNativoAds() {
+        const itemsToRender = [];
+        const interstitialStartIndex = this.config?.nativoConfig?.adInterstialStartIndex || 0;
+        const interstitialInterval = this.config?.nativoConfig?.adInterstitialInterval || 0;
+        const interstitialQuantity = this.config?.nativoConfig?.adInterstitialQuantity || 1;
+        const adStartQuantity = this.config?.nativoConfig?.adStartQuantity || 0;
+        const adEndQuantity = this.config?.nativoConfig?.adEndQuantity || 0;
+        const items = this.searchClientResponseItems || [];
+        // Renders ads at beginning
+        for (let n = 0; n < adStartQuantity; n++) {
+            itemsToRender.push(hAsync("searchcraft-ad", { "searchcraft-id": this.searchcraftId, adSource: 'Nativo', key: `${n}-ad`, renderPosition: 'top' }));
+        }
+        // Renders search results + interstitial ads
+        items.forEach((item, index) => {
+            if (interstitialInterval &&
+                (index + interstitialStartIndex) % interstitialInterval === 0 &&
+                index + interstitialInterval < items.length &&
+                index >= interstitialInterval) {
+                for (let n = 0; n < interstitialQuantity; n++) {
+                    itemsToRender.push(hAsync("searchcraft-ad", { "searchcraft-id": this.searchcraftId, adSource: 'Nativo', key: `${item.id}-ad-${n}`, renderPosition: 'interstitial' }));
+                }
+            }
+            itemsToRender.push(hAsync("searchcraft-search-result", { "searchcraft-id": this.searchcraftId, key: item.id, "document-position": this.searchResultsPerPage * (this.searchResultsPage - 1) + index, index: index, item: item, template: this.template }));
+        });
+        // Renders ads at end
+        for (let n = 0; n < adEndQuantity; n++) {
+            itemsToRender.push(hAsync("searchcraft-ad", { "searchcraft-id": this.searchcraftId, adSource: 'Nativo', key: `${n}-ad`, renderPosition: 'bottom' }));
+        }
+        return hAsync("div", { class: 'searchcraft-search-results' }, itemsToRender);
+    }
+    renderWithNoAds() {
+        const items = this.searchClientResponseItems || [];
+        return (hAsync("div", { class: 'searchcraft-search-results' }, items.map((item, index) => (hAsync("searchcraft-search-result", { "searchcraft-id": this.searchcraftId, key: item.id, "document-position": this.searchResultsPerPage * (this.searchResultsPage - 1) + index, index: index, item: item, template: this.template })))));
+    }
+    render() {
+        const searchClientResponseItems = this.searchClientResponseItems || [];
+        if (searchClientResponseItems.length === 0 && !this.isSearchInProgress) {
+            return this.renderEmptyState();
+        }
+        if (this.searchTerm.length > 0 &&
+            searchClientResponseItems.length === 0 &&
+            !this.isSearchInProgress) {
+            return this.renderNoResultsFoundState();
+        }
+        if (this.config?.customAdConfig) {
+            return this.renderWithCustomAds();
+        }
+        if (this.config?.admAdConfig) {
+            return this.renderWithNativoAds();
+        }
+        if (this.config?.nativoConfig) {
+            return this.renderWithNativoAds();
+        }
+        return this.renderWithNoAds();
+    }
+    static get cmpMeta() { return {
+        "$flags$": 772,
+        "$tagName$": "searchcraft-search-results",
+        "$members$": {
+            "searchcraftId": [1, "searchcraft-id"],
+            "initialQuery": [1, "initial-query"],
+            "template": [16],
+            "adClientResponseItems": [32],
+            "config": [32],
+            "isSearchInProgress": [32],
+            "searchClientResponseItems": [32],
+            "searchResultsPage": [32],
+            "searchResultsPerPage": [32],
+            "searchTerm": [32]
+        },
+        "$listeners$": undefined,
+        "$lazyBundleId$": "-",
+        "$attrsToReflect$": []
+    }; }
+}
+
+/**
+ * This web component is designed to choose the number of search results displayed.
+ *
+ * @react-import
+ * ```jsx
+ * import { SearchcraftSearchResultsPerPage } from "@searchcraft/react-sdk";
+ * ```
+ *
+ * @vue-import
+ * ```jsx
+ * import { SearchcraftSearchResultsPerPage } from "@searchcraft/vue-sdk";
+ * ```
+ *
+ * @js-example
+ * ```html
+ * <!-- index.html -->
+ * <searchcraft-search-results-per-page increment="20" />
+ * ```
+ *
+ * @react-example
+ * ```jsx
+ * <SearchcraftSearchResultsPerPage increment={20} />
+ * ```
+ *
+ * @vue-example
+ * ```jsx
+ * <SearchcraftSearchResultsPerPage increment="20" />
+ * ```
+ */
+class SearchcraftSearchResultsPerPage {
+    constructor(hostRef) {
+        registerInstance(this, hostRef);
+    }
+    /**
+     * The amount the options will increase (e.g. 20 = [20, 40, 60, 80, 100]).
+     * The base value is defined by the `searchResultsPerPage` option in the configuration.
+     */
+    increment = 20;
+    /**
+     * The id of the Searchcraft instance that this component should use.
+     */
+    searchcraftId;
+    // store vars
+    searchTerm;
+    searchResultsPage;
+    searchResultsPerPage;
+    searchResultsCount;
+    searchResultsPagesCount;
+    searchClientRequestProperties;
+    // local vars
+    initialSearchResultsPerPage;
+    // store functions
+    setSearchResultsPerPage = () => { };
+    setSearchResultsPage = () => { };
+    unsubscribe = () => { };
+    cleanupCore;
+    onCoreAvailable(core) {
+        this.unsubscribe = core.store.subscribe((state) => {
+            // store vars
+            this.searchTerm = state.searchTerm;
+            this.searchResultsPerPage = state.searchResultsPerPage;
+            this.searchResultsPage = state.searchResultsPage;
+            this.searchResultsCount = state.searchResultsCount;
+            this.searchClientRequestProperties = state.searchClientRequestProperties;
+            // local vars
+            this.searchResultsPagesCount = Math.ceil(this.searchResultsCount / this.searchResultsPerPage);
+            // store functions
+            this.setSearchResultsPage = state.setSearchResultsPage;
+            this.setSearchResultsPerPage = state.setSearchResultsPerPage;
+        });
+        this.initialSearchResultsPerPage =
+            core.store.getState().searchResultsPerPage;
+    }
+    connectedCallback() {
+        this.cleanupCore = registry.useCoreInstance(this.searchcraftId, this.onCoreAvailable.bind(this));
+    }
+    disconnectedCallback() {
+        this.unsubscribe?.();
+        this.cleanupCore?.();
+    }
+    render() {
+        // Check if this is an initialQuery case (string requestProperties with empty searchTerm)
+        const isInitialQuery = typeof this.searchClientRequestProperties === 'string' &&
+            this.searchTerm.trim() === '';
+        // early return if there isn't a searchTerm (unless it's initialQuery) or there is 1 or fewer pages of results
+        if ((!this.searchTerm && !isInitialQuery) ||
+            this.searchResultsPagesCount <= 1) {
+            return;
+        }
+        return (hAsync("div", { class: 'searchcraft-search-results-per-page' }, hAsync("div", { class: 'searchcraft-search-results-per-page-select' }, hAsync("label", { class: 'searchcraft-search-results-per-page-select-label', htmlFor: 'searchcraft-search-results-per-page-select-input' }, "Results Per Page"), hAsync("div", { class: 'searchcraft-search-results-per-page-select-input' }, hAsync("searchcraft-select", { inputId: 'searchcraft-search-results-per-page-select-input', name: 'results-per-page', options: [...Array(5)].map((_, index) => {
+                const value = this.initialSearchResultsPerPage +
+                    Number(this.increment) * index;
+                return {
+                    label: `${value}`,
+                    value,
+                };
+            }), onSelectChange: (event) => {
+                this.setSearchResultsPerPage(Number(event.detail));
+                this.setSearchResultsPage(1);
+            } })))));
+    }
+    static get cmpMeta() { return {
+        "$flags$": 768,
+        "$tagName$": "searchcraft-search-results-per-page",
+        "$members$": {
+            "increment": [8],
+            "searchcraftId": [1, "searchcraft-id"],
+            "searchTerm": [32],
+            "searchResultsPage": [32],
+            "searchResultsPerPage": [32],
+            "searchResultsCount": [32],
+            "searchResultsPagesCount": [32],
+            "searchClientRequestProperties": [32],
+            "initialSearchResultsPerPage": [32],
+            "setSearchResultsPerPage": [32],
+            "setSearchResultsPage": [32]
+        },
+        "$listeners$": undefined,
+        "$lazyBundleId$": "-",
+        "$attrsToReflect$": []
+    }; }
+}
+
+/**
+ * This web component is designed to allow users to select between a group of options.
+ *
+ * @js-example
+ * ```html
+ * <!-- index.html -->
+ * <searchcraft-select
+ *  inputId="searchcraft-select"
+ *  name="searchcraft-select"
+ *  options="[{ label: 'label', value: 'value' }]"
+ * />
+ * ```
+ *
+ * @internal
+ */
+class SearchcraftSelect {
+    constructor(hostRef) {
+        registerInstance(this, hostRef);
+        this.selectChange = createEvent(this, "selectChange");
+    }
+    /**
+     * The caption displayed below the select input.
+     */
+    caption;
+    /**
+     * Whether the select input is disabled.
+     */
+    disabled = false;
+    /**
+     * The ID for the select input.
+     */
+    inputId;
+    /**
+     * The label of the select input.
+     */
+    label;
+    /**
+     * The ID for the label of the select input.
+     */
+    labelId;
+    /**
+     * The name of the select input.
+     */
+    name;
+    /**
+     * The options for the select input.
+     */
+    options = [];
+    /**
+     * The event fired when the select is changed.
+     */
+    selectChange;
+    searchResultsPerPage;
+    setSearchResultsPage = () => { };
+    setSearchResultsPerPage = () => { };
+    handleSelectChange = (event) => {
+        this.selectChange.emit(event.target.value);
+    };
+    handleGoToPage(page) {
+        this.setSearchResultsPage(page);
+    }
+    render() {
+        return (hAsync("div", { key: '15ecbf48c824a161cd83bdab99dace8e44f1ab39', class: 'searchcraft-select' }, this.label && (hAsync("label", { key: 'aba433ae9c27c9405099cffcef923c3ad22d7fda', class: 'searchcraft-select-label', id: this.labelId || `${this.inputId}-label`, htmlFor: this.inputId }, this.label)), hAsync("div", { key: '8df8a2ff05924c9c55cdd6e3827cd927cddab82a', class: 'searchcraft-select-input-wrapper' }, hAsync("select", { key: '1d5f492c2255f8ca1b6ea5e04a2726dda2f2c52f', "aria-labelledby": this.label ? this.labelId || `${this.inputId}-label` : undefined, class: 'searchcraft-select-input', disabled: this.disabled, id: this.inputId, name: this.name, onChange: this.handleSelectChange }, (typeof this.options === 'string'
+            ? JSON.parse(this.options)
+            : this.options).map(({ label, value, selected }) => {
+            return (hAsync("option", { key: value, value: value, selected: selected }, label));
+        })), hAsync("svg", { key: '0ec6892b529f2e70027aadea47208582a65a97b7', class: 'searchcraft-select-input-icon', width: '20', height: '20', viewBox: '0 0 20 20', fill: 'none', xmlns: 'http://www.w3.org/2000/svg' }, hAsync("title", { key: 'bced6b62378491d1d1c629b602d7d033d912c761' }, "Select dropdown icon"), hAsync("path", { key: '659f8ebf9129e2e7941da949d29688c41c1472bb', d: 'M5 7.5L10 12.5L15 7.5', stroke: 'currentColor', "stroke-width": '1.5', "stroke-linecap": 'round', "stroke-linejoin": 'round' }))), this.caption && (hAsync("p", { key: '51217d926f68f79b6c3514f5fd769b56549fdce9', class: 'searchcraft-select-caption' }, this.caption))));
+    }
+    static get cmpMeta() { return {
+        "$flags$": 768,
+        "$tagName$": "searchcraft-select",
+        "$members$": {
+            "caption": [1],
+            "disabled": [4],
+            "inputId": [1, "input-id"],
+            "label": [1],
+            "labelId": [1, "label-id"],
+            "name": [1],
+            "options": [1],
+            "searchResultsPerPage": [32],
+            "setSearchResultsPage": [32],
+            "setSearchResultsPerPage": [32]
+        },
+        "$listeners$": undefined,
+        "$lazyBundleId$": "-",
+        "$attrsToReflect$": []
+    }; }
+}
+
+/**
+ * Creates a throttled version of the given function that only invokes
+ * the original function at most once every specified number of milliseconds.
+ *
+ * The logic is written in a way that the last invocation is always called, after the
+ * throttle cooldown period has ended.
+ *
+ * @template Arguments - The argument types for the function to throttle
+ * @param callback - The function to throttle
+ * @param delayInMilliseconds - The number of milliseconds to wait before allowing the next invocation
+ * @returns A throttled version of the original function
+ */
+function throttle(callback, delayInMilliseconds) {
+    let isThrottleOnCooldown = false;
+    let trailingCallArgs = null;
+    const invokeAction = (args) => {
+        callback(...args);
+        isThrottleOnCooldown = true;
+        setTimeout(() => {
+            isThrottleOnCooldown = false;
+            if (trailingCallArgs) {
+                const nextArgs = trailingCallArgs;
+                trailingCallArgs = null;
+                invokeAction(nextArgs);
+            }
+        }, delayInMilliseconds);
+    };
+    return (...args) => {
+        if (!isThrottleOnCooldown) {
+            invokeAction(args);
+        }
+        else {
+            trailingCallArgs = args;
+        }
+    };
+}
+
+/**
+ * This web component is designed to allow users to select a value from a range defined by a minimum and maximum value. The component renders a slider interface, which can be used to visually choose a value between two boundaries.
+ *
+ * @internal
+ */
+class SearchcraftSlider {
+    constructor(hostRef) {
+        registerInstance(this, hostRef);
+        this.rangeChanged = createEvent(this, "rangeChanged");
+    }
+    /**
+     * The maximum value allowed.
+     */
+    max = 100;
+    /**
+     * The minimum value allowed.
+     */
+    min = 0;
+    /**
+     * The step amount for the slider inputs.
+     */
+    step = 1;
+    /** The type of data the sliders are using. */
+    dataType = 'number';
+    /** The date granularity to use. Used to format date labels. */
+    dateGranularity;
+    lowerBound = 0;
+    upperBound = 1;
+    endValue = 0;
+    startValue = 0;
+    lastFocusedHandle = 'max';
+    throttledEmitUpdate = () => { };
+    /**
+     * When the range has changed.
+     * */
+    rangeChanged;
+    connectedCallback() {
+        switch (this.dataType) {
+            case 'number':
+                this.startValue = this.min;
+                this.endValue = this.max;
+                this.lowerBound = this.min;
+                this.upperBound = this.max;
+                break;
+            case 'date': {
+                this.startValue = 0;
+                this.endValue = getDifferenceInUnits(this.dateGranularity || 'year', this.min, this.max);
+                this.lowerBound = 0;
+                this.upperBound = this.endValue;
+                break;
+            }
+        }
+        this.throttledEmitUpdate = throttle(this.emitUpdate, 120);
+    }
+    emitUpdate = async () => {
+        switch (this.dataType) {
+            case 'number':
+                this.rangeChanged?.emit({
+                    startValue: this.startValue,
+                    endValue: this.endValue,
+                });
+                break;
+            case 'date': {
+                const granularity = this.dateGranularity || 'year';
+                const startTimestamp = getStartOf(this.min, granularity, this.lowerBound + this.startValue);
+                const endTimestamp = getStartOf(this.min, granularity, this.lowerBound + this.endValue + 1);
+                this.rangeChanged?.emit({
+                    startValue: startTimestamp,
+                    endValue: endTimestamp,
+                });
+                break;
+            }
+        }
+    };
+    handleStartValueChange = (event) => {
+        const inputElement = event.target;
+        const value = Number.parseInt(inputElement.value, 10);
+        this.lastFocusedHandle = 'min';
+        if (value <= this.endValue) {
+            this.startValue = value;
+            this.throttledEmitUpdate();
+        }
+        else {
+            this.startValue = this.endValue;
+            inputElement.value = `${this.endValue}`;
+        }
+    };
+    handleEndValueChange = (event) => {
+        const inputElement = event.target;
+        const value = Number.parseInt(inputElement.value, 10);
+        this.lastFocusedHandle = 'max';
+        if (value >= this.startValue) {
+            this.endValue = value;
+            this.throttledEmitUpdate();
+        }
+        else {
+            this.endValue = this.startValue;
+            inputElement.value = `${this.startValue}`;
+        }
+    };
+    getLabel = (value) => {
+        switch (this.dataType) {
+            case 'number':
+                return `${this.startValue}`;
+            case 'date': {
+                const granularity = this.dateGranularity || 'year';
+                const dateOffset = this.lowerBound + value;
+                const timestamp = getStartOf(this.min, granularity, dateOffset);
+                return getFormattedDateString(this.dateGranularity || 'year', new Date(timestamp));
+            }
+        }
+    };
+    render() {
+        const startPercent = ((this.startValue - this.lowerBound) /
+            (this.upperBound - this.lowerBound)) *
+            100;
+        const endPercent = ((this.endValue - this.lowerBound) /
+            (this.upperBound - this.lowerBound)) *
+            100;
+        const startLabel = this.getLabel(this.startValue);
+        const endLabel = this.getLabel(this.endValue);
+        return (hAsync("div", { key: '2c72254f52151edd2e2fa89c092fc788db0b5562', class: 'searchcraft-slider' }, hAsync("div", { key: '98c25badf2c9386d7173ea552e510dcc168e7fc7', class: 'searchcraft-slider-range' }, hAsync("div", { key: '50774db2253e34b1bce68acc0a40b2706cab542d', class: 'searchcraft-slider-active-range', style: {
+                left: `${startPercent}%`,
+                width: `${endPercent - startPercent}%`,
+            } }), hAsync("input", { key: '229afedc1318a63cbd75806805210cf4f5695e6e', class: classNames('searchcraft-slider-input', 'searchcraft-slider-input-min-handle'), max: this.upperBound, min: this.lowerBound, onInput: this.handleStartValueChange.bind(this), step: this.step, style: { zIndex: this.lastFocusedHandle === 'min' ? '2' : '1' }, type: 'range', value: this.startValue }), hAsync("input", { key: '6aa038b01daaba86f501ebbbec30fc6720b549b3', class: classNames('searchcraft-slider-input', 'searchcraft-slider-input-max-handle'), max: this.upperBound, min: this.lowerBound, onInput: this.handleEndValueChange.bind(this), step: this.step, style: { zIndex: this.lastFocusedHandle === 'max' ? '2' : '1' }, type: 'range', value: this.endValue })), hAsync("div", { key: 'f70501538635c3b08ad1e6ac101d0b3192ef8e04', class: 'searchcraft-slider-label' }, hAsync("span", { key: 'ddd539b86774f8900771d77d5ef7eb3a67c98d59', class: 'searchcraft-slider-start-label' }, startLabel), hAsync("span", { key: 'b754a9c8d284e0623032cee6b92f9df88873ec04', class: 'searchcraft-slider-end-label' }, endLabel))));
+    }
+    static get cmpMeta() { return {
+        "$flags$": 768,
+        "$tagName$": "searchcraft-slider",
+        "$members$": {
+            "max": [2],
+            "min": [2],
+            "step": [2],
+            "dataType": [1, "data-type"],
+            "dateGranularity": [1, "date-granularity"],
+            "lowerBound": [32],
+            "upperBound": [32],
+            "endValue": [32],
+            "startValue": [32],
+            "lastFocusedHandle": [32]
+        },
+        "$listeners$": undefined,
+        "$lazyBundleId$": "-",
+        "$attrsToReflect$": []
+    }; }
+}
+
+/**
+ * @deprecated Use `searchcraft-results-summary` instead.
+ * This component is deprecated and will be removed in a future version.
+ * Please update to use `searchcraft-results-summary` which has the same functionality.
+ *
  * This component renders a summary box for RAG search result summaries.
  * When the user makes a search, a network call is made to retrieve the summary content, which is then
  * rendered in this box.
@@ -10280,9 +10391,9 @@ class SearchcraftSummaryBox {
      */
     searchcraftId;
     summary = '';
+    summaryErrorMessage = '';
     isLoading = false;
     isSummaryNotEnabled = false;
-    get hostElement() { return getElement(this); }
     unsubscribe;
     cleanupCore;
     onCoreAvailable(core) {
@@ -10302,24 +10413,14 @@ class SearchcraftSummaryBox {
     handleStateChange(state) {
         this.isLoading = state.isSummaryLoading;
         this.isSummaryNotEnabled = state.isSummaryNotEnabled;
+        this.summaryErrorMessage = state.summaryErrorMessage;
         this.summary = this.sanitizeMarkdown(state.summary);
-        // Update DOM directly for performance (avoids re-render)
-        this.updateContentElement(state.summary);
     }
     /**
      * Sanitizes and converts markdown to HTML.
      */
     sanitizeMarkdown(markdown) {
         return purify.sanitize(marked.parse(markdown));
-    }
-    /**
-     * Updates the content element directly without triggering a re-render.
-     */
-    updateContentElement(markdown) {
-        const contentElement = this.hostElement?.querySelector('.searchcraft-summary-box-content');
-        if (contentElement) {
-            contentElement.innerHTML = this.sanitizeMarkdown(markdown);
-        }
     }
     /**
      * Renders the appropriate content based on current state.
@@ -10329,12 +10430,12 @@ class SearchcraftSummaryBox {
             return hAsync("searchcraft-loading", { label: 'LOADING' });
         }
         if (this.isSummaryNotEnabled) {
-            return (hAsync("div", { class: 'searchcraft-summary-box-content' }, "AI summaries are not enabled"));
+            return (hAsync("div", { class: 'searchcraft-summary-box-content' }, this.summaryErrorMessage || 'AI summaries are not enabled'));
         }
-        return hAsync("div", { class: 'searchcraft-summary-box-content' }, this.summary);
+        return (hAsync("div", { class: 'searchcraft-summary-box-content', innerHTML: this.summary }));
     }
     render() {
-        return hAsync("div", { key: '82fe97172c3299643ba0ac303031166502c4101a', class: 'searchcraft-summary-box' }, this.renderContent());
+        return hAsync("div", { key: 'a33091962cfbbcf0399e9e15e8346590511090e1', class: 'searchcraft-summary-box' }, this.renderContent());
     }
     static get cmpMeta() { return {
         "$flags$": 768,
@@ -10342,6 +10443,7 @@ class SearchcraftSummaryBox {
         "$members$": {
             "searchcraftId": [1, "searchcraft-id"],
             "summary": [32],
+            "summaryErrorMessage": [32],
             "isLoading": [32],
             "isSummaryNotEnabled": [32]
         },
@@ -10351,7 +10453,7 @@ class SearchcraftSummaryBox {
     }; }
 }
 
-var styles = `﻿[class*=searchcraft-],[class*=searchcraft-] *,[class*=searchcraft-]::before,[class*=searchcraft-]::after,[class*=searchcraft-] *,::before,[class*=searchcraft-] *,::after{box-sizing:border-box;padding:0;margin:0}:root{--sc-text-base-size: 1em;--sc-text-scale-ratio: 1.1;--sc-font-family: sans-serif;--sc-font-bold: 700;--sc-font-normal: 400;--sc-heading-1-font-size: calc( var(--sc-text-base-size) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) );--sc-heading-2-font-size: calc( var(--sc-text-base-size) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) );--sc-heading-3-font-size: calc( var(--sc-text-base-size) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) );--sc-heading-4-font-size: calc( var(--sc-text-base-size) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) );--sc-heading-5-font-size: calc( var(--sc-text-base-size) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) );--sc-heading-6-font-size: calc( var(--sc-text-base-size) / ( var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) ) );--sc-body-font-size: calc(var(--sc-text-base-size));--sc-body-small-font-size: calc( var(--sc-text-base-size) / ( var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) ) )}:root{--sc-border-radius: 8px;--sc-border-radius-sm: calc(var(--sc-border-radius) / 2);--sc-border-radius-lg: calc(var(--sc-border-radius) * 2);--sc-border-radius-xl: calc(var(--sc-border-radius) * 3);--sc-border-radius-2xl: calc(var(--sc-border-radius) * 4);--sc-border-radius-full: 9999px}:root{--sc-breakpoint-sm: 576px;--sc-breakpoint-md: 768px;--sc-breakpoint-lg: 992px}:root{--sc-surface-neutral-primary: var(--sc-color-background, #ffffff);--sc-color-background-hover-computed: hsl( from var(--sc-color-background) h s clamp(10, calc(l + 5), 95) );--sc-surface-neutral-primary-hover: var( --sc-color-background-hover, var(--sc-color-background-hover-computed, #fafafa) );--sc-color-background-active-computed: hsl( from var(--sc-color-background) h s clamp(5, calc(l - 5), 90) );--sc-surface-neutral-primary-active: var( --sc-color-background-active, var(--sc-color-background-active-computed, #f7f7f7) );--sc-surface-neutral-secondary: var( --sc-color-background-secondary, var(--sc-color-background, #f3f3f3) );--sc-color-background-secondary-hover-computed: hsl( from var(--sc-color-background-secondary) h s clamp(10, calc(l + 5), 95) );--sc-surface-neutral-secondary-hover: var( --sc-color-background-hover, var(--sc-color-background-hover-computed, #e6e6e6) );--sc-color-background-secondary-active-computed: hsl( from var(--sc-color-background-secondary) h s clamp(5, calc(l - 5), 90) );--sc-surface-neutral-secondary-active: var( --sc-color-background-secondary-active, var(--sc-color-background-active-computed, #e0e0e0) );--sc-surface-neutral-light: #ffffff;--sc-content-neutral-primary: var(--sc-color-foreground, #292929);--sc-color-foreground-secondary-computed: hsl( from var(--sc-color-foreground) h s clamp(10, calc(l + 5), 90) );--sc-content-neutral-secondary: var( --sc-color-foreground-secondary, var(--sc-color-foreground-secondary-computed, #404040) );--sc-border-neutral: var(--sc-color-border, rgba(0, 0, 0, 0.1));--sc-surface-brand-primary: var(--sc-color-brand, #000000);--sc-color-brand-hover-computed: hsl( from var(--sc-color-brand) h s clamp(20, calc(l + 5), 95) );--sc-surface-brand-primary-hover: var( --sc-color-brand-hover, var(--sc-color-brand-hover-computed, #2e2e2e) );--sc-color-brand-active-computed: hsl( from var(--sc-color-brand) h s clamp(10, calc(l - 5), 85) );--sc-surface-brand-primary-active: var( --sc-color-brand-active, var(--sc-color-brand-active-computed, #292929) );--sc-surface-brand-secondary: var( --sc-color-brand-secondary, var(--sc-color-brand, #e6e6e6) );--sc-color-brand-secondary-hover-computed: hsl( from var(--sc-color-brand-secondary) h s clamp(10, calc(l + 5), 95) );--sc-surface-brand-secondary-hover: var( --sc-color-background-hover, var(--sc-color-background-hover-computed, #ebebeb) );--sc-color-brand-secondary-active-computed: hsl( from var(--sc-color-brand-secondary) h s clamp(5, calc(l - 5), 90) );--sc-surface-brand-secondary-active: var( --sc-color-brand-secondary-active, var(--sc-color-brand-active-computed, #e0e0e0) );--sc-content-brand: var( --sc-color-brand-text, var(--sc-surface-brand-primary) );--sc-content-brand-on-primary: #ffffff;--sc-border-brand: var(--sc-surface-brand-primary);--sc-surface-success-primary: var(--sc-color-success, #008000);--sc-color-success-primary-hover-computed: hsl( from var(--sc-color-success) h s 30 );--sc-surface-success-primary-hover: var( --sc-color-success-primary-hover, var(--sc-color-success-primary-hover-computed, #009900) );--sc-color-success-primary-active-computed: hsl( from var(--sc-color-success) h s 20 );--sc-surface-success-primary-active: var( --sc-color-success-primary-active, var(--sc-color-success-primary-active-computed, #006600) );--sc-color-success-secondary-computed: hsl( from var(--sc-color-success) h s 90 );--sc-surface-success-secondary: var( --sc-color-success-secondary, var(--sc-color-success-secondary-computed, #ccffcc) );--sc-color-success-secondary-hover-computed: hsl( from var(--sc-color-success-secondary) h s 95 );--sc-surface-success-secondary-hover: var( --sc-color-success-secondary-hover, var(--sc-color-success-secondary-hover-computed, #e6ffe6) );--sc-color-success-secondary-active-computed: hsl( from var(--sc-color-success-secondary) h s 85 );--sc-surface-success-secondary-active: var( --sc-color-success-secondary-active, var(--sc-color-success-secondary-active-computed, #b2ffb2) );--sc-content-success: var( --sc-color-brand-text, hsl(from var(--sc-surface-success-primary) h s 30) );--sc-content-success-on-primary: #ffffff;--sc-border-success: var(--sc-surface-success-primary);--sc-surface-caution-primary: var(--sc-color-caution, #cc6600);--sc-color-caution-primary-hover-computed: hsl( from var(--sc-color-caution) h s 30 );--sc-surface-caution-primary-hover: var( --sc-color-caution-primary-hover, var(--sc-color-caution-primary-hover-computed, #e57300) );--sc-color-caution-primary-active-computed: hsl( from var(--sc-color-caution) h s 20 );--sc-surface-caution-primary-active: var( --sc-color-caution-primary-active, var(--sc-color-caution-primary-active-computed, #b25a00) );--sc-color-caution-secondary-computed: hsl( from var(--sc-color-caution) h s 90 );--sc-surface-caution-secondary: var( --sc-color-caution-secondary, var(--sc-color-caution-secondary-computed, #ffd9b3) );--sc-color-caution-secondary-hover-computed: hsl( from var(--sc-color-caution-secondary) h s 95 );--sc-surface-caution-secondary-hover: var( --sc-color-caution-secondary-hover, var(--sc-color-caution-secondary-hover-computed, #ffe5cc) );--sc-color-caution-secondary-active-computed: hsl( from var(--sc-color-caution-secondary) h s 85 );--sc-surface-caution-secondary-active: var( --sc-color-caution-secondary-active, var(--sc-color-caution-secondary-active-computed, #ffcc99) );--sc-content-caution: var( --sc-color-caution-text, hsl(from var(--sc-surface-caution-primary) h s 30) );--sc-content-caution-on-primary: #ffffff;--sc-border-caution: var(--sc-surface-caution-primary);--sc-surface-danger-primary: var(--sc-color-danger, #cc0000);--sc-color-danger-primary-hover-computed: hsl( from var(--sc-color-danger) h s 30 );--sc-surface-danger-primary-hover: var( --sc-color-danger-primary-hover, var(--sc-color-danger-primary-hover-computed, #e50000) );--sc-color-danger-primary-active-computed: hsl( from var(--sc-color-danger) h s 20 );--sc-surface-danger-primary-active: var( --sc-color-danger-primary-active, var(--sc-color-danger-primary-active-computed, #b30000) );--sc-color-danger-secondary-computed: hsl(from var(--sc-color-danger) h s 90);--sc-surface-danger-secondary: var( --sc-color-danger-secondary, var(--sc-color-danger-secondary-computed, #ffcccc) );--sc-color-danger-secondary-hover-computed: hsl( from var(--sc-color-danger-secondary) h s 95 );--sc-surface-danger-secondary-hover: var( --sc-color-danger-secondary-hover, var(--sc-color-danger-secondary-hover-computed, #ffe7e7) );--sc-color-danger-secondary-active-computed: hsl( from var(--sc-color-danger-secondary) h s 85 );--sc-surface-danger-secondary-active: var( --sc-color-danger-secondary-active, var(--sc-color-danger-secondary-active-computed, #ffb3b3) );--sc-content-danger: var( --sc-color-caution-text, hsl(from var(--sc-surface-danger-primary) h s 30) );--sc-content-danger-on-primary: #ffffff;--sc-border-danger: var(--sc-surface-danger-primary);--sc-color-disabled: hsl(from var(--sc-color-page-primary) h s calc(l * 0.5));--sc-surface-disabled: var(--sc-color-disabled, #d9d9d9);--sc-color-disabled-text: hsl( from var(--sc-color-text-primary) h s calc(l * 0.5) );--sc-content-disabled: var(--sc-color-disabled-text, #737373);--sc-content-disabled-on-disabled: var(--sc-color-disabled-text, #737373)}@supports(hanging-punctuation: first) and (font: -apple-system-body) and (-webkit-appearance: none){:root{--sc-color-background-hover-computed: hsl( from var(--sc-color-background) h s clamp(10%, calc(l + 5%), 95%) );--sc-color-background-active-computed: hsl( from var(--sc-color-background) h s clamp(5%, calc(l - 5%), 90%) );--sc-color-foreground-secondary-computed: hsl( from var(--sc-color-foreground) h s clamp(10%, calc(l + 5%), 90%) );--sc-color-brand-hover-computed: hsl( from var(--sc-color-brand) h s clamp(20%, calc(l + 5%), 95%) );--sc-color-brand-active-computed: hsl( from var(--sc-color-brand) h s clamp(10%, calc(l - 5%), 85%) );--sc-color-success-primary-hover-computed: hsl( from var(--sc-color-success) h s 30% );--sc-color-success-primary-active-computed: hsl( from var(--sc-color-success) h s 20% );--sc-color-success-secondary-computed: hsl( from var(--sc-color-success) h s 90% );--sc-color-success-secondary-hover-computed: hsl( from var(--sc-color-success-secondary) h s 95% );--sc-color-success-secondary-active-computed: hsl( from var(--sc-color-success-secondary) h s 85% );--sc-content-success: var( --sc-color-brand-text, hsl(from var(--sc-surface-success-primary) h s 30%) );--sc-color-caution-primary-hover-computed: hsl( from var(--sc-color-caution) h s 30% );--sc-color-caution-primary-active-computed: hsl( from var(--sc-color-caution) h s 20% );--sc-color-caution-secondary-computed: hsl( from var(--sc-color-caution) h s 90% );--sc-color-caution-secondary-hover-computed: hsl( from var(--sc-color-caution-secondary) h s 95% );--sc-color-caution-secondary-active-computed: hsl( from var(--sc-color-caution-secondary) h s 85% );--sc-content-caution: var( --sc-color-caution-text, hsl(from var(--sc-surface-caution-primary) h s 30%) );--sc-color-danger-primary-hover-computed: hsl( from var(--sc-color-danger) h s 30% );--sc-color-danger-primary-active-computed: hsl( from var(--sc-color-danger) h s 20% );--sc-color-danger-secondary-computed: hsl( from var(--sc-color-danger) h s 90% );--sc-color-danger-secondary-hover-computed: hsl( from var(--sc-color-danger-secondary) h s 95% );--sc-color-danger-secondary-active-computed: hsl( from var(--sc-color-danger-secondary) h s 85% );--sc-content-danger: var( --sc-color-caution-text, hsl(from var(--sc-surface-danger-primary) h s 30%) )}}.searchcraft-ad{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased}.searchcraft-ad-no-template{display:flex;flex-direction:column;font-size:.875rem}.searchcraft-ad-no-template>p{margin:0}.searchcraft-adm-ad{display:flex;flex-direction:column;justify-content:center;gap:16px}.searchcraft-search-result{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased}.searchcraft-search-result-no-template{display:flex;flex-direction:column;font-size:.875rem}.searchcraft-search-result-no-template>p{margin:0}.searchcraft-search-results{display:flex;flex-direction:column;justify-content:center;gap:16px}.searchcraft-search-results-empty-state{text-align:center}.searchcraft-search-results-error-message{text-align:center}.searchcraft-button{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal);background:none;border:2px solid rgba(0,0,0,0);border-radius:var(--sc-border-radius);cursor:pointer;display:flex;gap:4px;padding:12px;position:relative}.searchcraft-button.searchcraft-button-disabled{cursor:not-allowed}.searchcraft-button-primary{background-color:var(--sc-surface-brand-primary);color:var(--sc-content-brand-on-primary);font-weight:var(--sc-font-bold)}.searchcraft-button-primary:hover{background-color:var(--sc-surface-brand-primary-hover)}.searchcraft-button-primary:focus{border-color:var(--sc-border-primary)}.searchcraft-button-primary:active{background-color:var(--sc-surface-brand-primary-active)}.searchcraft-button-primary.searchcraft-button-disabled,.searchcraft-button-primary.searchcraft-button-disabled:hover,.searchcraft-button-primary.searchcraft-button-disabled:focus,.searchcraft-button-primary.searchcraft-button-disabled:active{background-color:var(--sc-surface-disabled);border-color:rgba(0,0,0,0);color:var(--sc-content-disabled)}.searchcraft-button-tertiary{background-color:var(--sc-surface-neutral-primary);color:var(--sc-content-brand);font-weight:var(--sc-font-normal)}.searchcraft-button-tertiary:hover{background-color:var(--sc-surface-brand-secondary-hover)}.searchcraft-button-tertiary:focus{background-color:var(--sc-surface-neutral-light);border-color:var(--sc-border-primary)}.searchcraft-button-tertiary:active{background-color:var(--sc-surface-brand-secondary-active)}.searchcraft-button-tertiary.searchcraft-button-disabled,.searchcraft-button-tertiary.searchcraft-button-disabled:hover,.searchcraft-button-tertiary.searchcraft-button-disabled:focus,.searchcraft-button-tertiary.searchcraft-button-disabled:active{background-color:var(--sc-surface-neutral-light);border-color:rgba(0,0,0,0);color:var(--sc-content-disabled)}.searchcraft-button-icon{fill:none}.searchcraft-error-message{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-small-font-size);font-weight:var(--sc-font-normal);color:var(--sc-content-danger);margin:0}.searchcraft-facet-list{display:flex;flex-direction:column;gap:8px;width:100%}.searchcraft-facet-list-checkbox-label{align-items:center;color:var(--sc-content-neutral-primary);display:flex;font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal);gap:8px;position:relative;-webkit-font-smoothing:antialiased}.searchcraft-facet-list-checkbox-input-wrapper{position:relative}.searchcraft-facet-list-checkbox-input{align-items:center;appearance:none;background-color:var(--sc-surface-neutral-secondary);border:1px solid var(--sc-surface-disabled);border-radius:var(--sc-border-radius);cursor:pointer;display:flex;height:24px;justify-content:center;width:24px;margin:0}.searchcraft-facet-list-checkbox-input:focus{outline:2px solid var(--sc-surface-brand-primary);outline-offset:2px}.searchcraft-facet-list-checkbox-input:checked{background-color:var(--sc-surface-brand-primary);position:relative}.searchcraft-facet-list-checkbox-input:checked+.searchcraft-facet-list-checkbox-input-check-icon{display:flex}.searchcraft-facet-list-checkbox-input:checked+.searchcraft-facet-list-checkbox-input-dash-icon{display:flex}.searchcraft-facet-child-list{display:flex;flex-direction:column;gap:6px}.searchcraft-facet-child-list-checkbox-label{margin-left:24px}.searchcraft-facet-child-list-checkbox-label:first-child{margin-top:6px}.searchcraft-facet-list-checkbox-input-check-icon{display:none;height:16px;left:50%;position:absolute;margin-top:2px;top:50%;transform:translate(-50%, -50%);width:16px}.searchcraft-facet-list-checkbox-input-dash-icon{display:none;height:3px;left:50%;position:absolute;top:50%;transform:translate(-50%, -50%);width:14px}.searchcraft-facet-list-message{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-small-font-size);font-weight:var(--sc-font-normal);color:var(--sc-content-disabled);text-align:center}.searchcraft-facet-list-wrapper{display:flex;flex-direction:column;width:100%;min-height:0}.searchcraft-facet-list-content{display:flex;flex-direction:column;gap:8px;min-height:0;flex-shrink:0}.searchcraft-facet-list-view-more{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal);background:none;border:none;color:var(--sc-content-brand);cursor:pointer;padding:8px 0;text-align:left;text-decoration:underline}.searchcraft-facet-list-view-more:hover{color:var(--sc-surface-brand-primary-hover)}.searchcraft-facet-list-view-more:focus{outline:2px solid var(--sc-surface-brand-primary);outline-offset:2px}.searchcraft-filter-panel{display:flex;flex-direction:column;gap:16px}.searchcraft-filter-panel-section{display:flex;flex-direction:column;gap:8px}.searchcraft-filter-panel-label{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-small-font-size);font-weight:var(--sc-font-normal);font-weight:var(--sc-font-bold)}[data-toggle-facet-section]{cursor:pointer;display:flex;align-items:center;justify-content:space-between;width:100%;position:relative}[data-toggle-facet-section]::after{content:"›";display:inline-block;font-size:1.5em;line-height:1;margin-left:auto;flex-shrink:0;transition:transform .2s ease;transform-origin:center}[data-toggle-facet-section][data-facet-section-collapsed]::after{transform:rotate(90deg)}[data-toggle-facet-section][data-facet-section-expanded]::after{transform:rotate(-90deg)}@media(max-width: 767px){[data-toggle-filter-panel]{cursor:pointer;display:flex !important;align-items:center;justify-content:space-between;width:100%}[data-toggle-filter-panel]::after{content:"›";display:inline-block;font-size:1.5em;line-height:1;margin-left:auto;flex-shrink:0;transition:transform .2s ease;transform-origin:center}[data-toggle-filter-panel][data-filter-panel-collapsed]::after{transform:rotate(90deg)}[data-toggle-filter-panel][data-filter-panel-expanded]::after{transform:rotate(-90deg)}}@media(min-width: 768px){[data-toggle-filter-panel]{cursor:default}[data-toggle-filter-panel]::after{display:none}}:root{--sc-input-form-border-radius: var(--sc-border-radius);--sc-input-form-search-icon-size: 20px;--sc-input-form-clear-icon-size: 20px}.searchcraft-input-form-grid{display:grid;gap:4px 8px}.searchcraft-input-form-grid-button-left{grid-template-rows:repeat(3, auto);grid-template-columns:auto 1fr}.searchcraft-input-form-grid-button-left .searchcraft-input-form-button{grid-column:1/span 1;grid-row:2/span 1}.searchcraft-input-form-grid-button-left .searchcraft-input-form-label{grid-column:2/span 1;grid-row:1/span 1}.searchcraft-input-form-grid-button-left .searchcraft-input-form-error-message{grid-column:2/span 1;grid-row:3/span 1}.searchcraft-input-form-grid-button-left .searchcraft-input-form-input-wrapper{grid-column:2/span 1;grid-row:2/span 1}.searchcraft-input-form-grid-button-right{grid-template-rows:repeat(3, auto);grid-template-columns:1fr auto}.searchcraft-input-form-grid-button-right .searchcraft-input-form-button{grid-column:2/span 1;grid-row:2/span 1}.searchcraft-input-form-grid-button-right .searchcraft-input-form-label{grid-column:1/span 1;grid-row:1/span 1}.searchcraft-input-form-grid-button-right .searchcraft-input-form-error-message{grid-column:1/span 1;grid-row:3/span 1}.searchcraft-input-form-grid-button-right .searchcraft-input-form-input-wrapper{grid-column:1/span 1;grid-row:2/span 1}.searchcraft-input-form-grid-button-none{grid-template-rows:repeat(3, auto);grid-template-columns:auto}.searchcraft-input-form-grid-button-none .searchcraft-input-form-button{display:none}.searchcraft-input-form-grid-button-none .searchcraft-input-form-label{grid-column:1/span 1;grid-row:1/span 1}.searchcraft-input-form-grid-button-none .searchcraft-input-form-error-message{grid-column:1/span 1;grid-row:3/span 1}.searchcraft-input-form-grid-button-none .searchcraft-input-form-input-wrapper{grid-column:1/span 1;grid-row:2/span 1}.searchcraft-input-form-input-wrapper{display:flex;position:relative}.searchcraft-input-form-input{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal);background-color:var(--sc-surface-neutral-secondary);border-radius:var(--sc-input-form-border-radius);border:none;color:var(--sc-content-neutral-primary);flex:1;outline:none;padding:12px 44px}.searchcraft-input-form-input::placeholder{color:var(--sc-content-disabled)}.searchcraft-input-form-input:focus{outline:var(--sc-border-brand) solid 2px;outline-offset:-1px}.searchcraft-input-form-input.searchcraft-placeholder-hide-on-focus:focus::placeholder{opacity:0}.searchcraft-input-form-error{color:var(--sc-content-danger);outline:var(--sc-border-danger) solid 2px}.searchcraft-input-form-error:focus{outline:var(--sc-border-danger) solid 2px}.searchcraft-input-form-input-icon{align-items:center;bottom:0;display:flex;justify-content:center;left:0;position:absolute;pointer-events:none;top:0;width:44px}.searchcraft-input-form-input-search-icon{color:var(--sc-content-neutral-secondary);fill:none;height:var(--sc-input-form-search-icon-size);pointer-events:none;width:var(--sc-input-form-search-icon-size)}.searchcraft-input-form-clear-button{all:unset;align-items:center;bottom:0;border:none;cursor:pointer;display:flex;justify-content:center;outline:none;position:absolute;right:0;top:0;width:44px}.searchcraft-input-form-clear-icon{color:var(--sc-content-brand);fill:none;height:var(--sc-input-form-clear-icon-size);width:var(--sc-input-form-clear-icon-size)}.searchcraft-input-label{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-small-font-size);font-weight:var(--sc-font-normal);color:var(--sc-content-neutral-primary);font-weight:var(--sc-font-bold);margin-top:4px;margin-bottom:4px}:root{--sc-popover-button-border-radius: var(--sc-border-radius)}@media(min-width: 576px){:root{--sc-popover-button-border-radius: var(--sc-border-radius-lg)}}.searchcraft-popover-button{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal);cursor:pointer}.searchcraft-popover-button-skeuomorphic{appearance:none;background:none;border:none;color:var(--sc-content-neutral-primary);display:block;width:100%}.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-wrapper{border:1px solid var(--sc-border-neutral);border-radius:var(--sc-popover-button-border-radius);box-shadow:0 1px 1px rgb(from var(--sc-content-neutral-secondary) r g b/10%) inset,0 2px 4px rgb(from var(--sc-content-neutral-secondary) r g b/5%) inset;display:flex;gap:24px;height:40px;justify-content:space-between;line-height:1;padding:4px 5px 4px 10px;background:var(--sc-surface-neutral-primary)}@media(min-width: 576px){.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-wrapper{box-shadow:0 1px 1px rgb(from var(--sc-content-neutral-secondary) r g b/10%) inset,0 2px 2px rgb(from var(--sc-content-neutral-secondary) r g b/5%) inset,0 4px 4px rgb(from var(--sc-content-neutral-secondary) r g b/5%) inset;height:63px;padding:8px 10px 8px 16px}}.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-input{align-items:center;display:flex;gap:4px}@media(min-width: 576px){.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-input{gap:8px}}.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-keycaps{color:var(--sc-content-neutral-secondary);display:flex;gap:4px;font-size:20px;font-weight:500}@media(min-width: 576px){.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-keycaps{gap:8px}}.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-keycaps-keycap{border-radius:calc(var(--sc-popover-button-border-radius) - 3px);border-radius:calc(var(var(--sc-popover-button-border-radius)) - 3px);background-color:var(--sc-surface-neutral-primary);box-shadow:0 3px hsl(from var(--sc-surface-neutral-secondary) h s calc(l - 5)),0 1px 2px rgb(from var(--sc-content-neutral-secondary) r g b/10%),0 6px 4px rgb(from var(--sc-content-neutral-secondary) r g b/5%);height:calc(100% - 2px);position:relative}@media(min-width: 576px){.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-keycaps-keycap{border-radius:calc(var(--sc-popover-button-border-radius) - 8px);border-radius:calc(var(var(--sc-popover-button-border-radius)) - 8px);box-shadow:0 4px hsl(from var(--sc-surface-neutral-secondary) h s calc(l - 5)),0 1px 2px rgb(from var(--sc-content-neutral-secondary) r g b/15%),0 6px 1px rgb(from var(--sc-content-neutral-secondary) r g b/20%),0 7px 2px rgb(from var(--sc-content-neutral-secondary) r g b/15%),0 9px 4px rgb(from var(--sc-content-neutral-secondary) r g b/10%),0 13px 8px rgb(from var(--sc-content-neutral-secondary) r g b/5%);height:calc(100% - 5px)}}.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-keycaps-keycap::before,.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-keycaps-keycap::after{content:"";display:block}.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-keycaps-keycap::before{border-radius:calc(var(--sc-popover-button-border-radius) - 4px);border-radius:calc(var(var(--sc-popover-button-border-radius)) - 4px);background:linear-gradient(340deg, rgb(from var(--sc-surface-neutral-secondary) r g b/2%) 0%, var(--sc-surface-neutral-secondary) 100%);inset:2px;position:absolute}@media(min-width: 576px){.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-keycaps-keycap::before{border-radius:calc(var(--sc-popover-button-border-radius) - 12px);border-radius:calc(var(var(--sc-popover-button-border-radius)) - 12px);inset:4px}}.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-keycaps-keycap::after{aspect-ratio:1/1;height:100%}.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-keycaps-keycap>span{display:flex;line-height:1;left:50%;margin-top:2%;position:absolute;top:50%;transform:translate(-50%, -50%)}.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-input-search-icon{height:60%;width:auto}@media(min-width: 576px){.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-input-search-icon{height:50%}}:root{--sc-popover-list-view-height: 600px;--sc-popover-modal-max-width: 800px}.searchcraft-popover-form{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal);display:flex;flex:1;flex-direction:column}.searchcraft-popover-form searchcraft-input-form,.searchcraft-popover-form searchcraft-popover-footer{width:100%}.searchcraft-popover-form.searchcraft-popover-form-active .searchcraft-popover-form-input{padding-bottom:1px}.searchcraft-popover-form searchcraft-popover-list-view{flex-shrink:1;height:100%;min-height:0;overflow:auto;padding:0 24px}.searchcraft-popover-form searchcraft-summary-box{margin-bottom:16px}.searchcraft-popover-form-input{display:flex;flex-direction:row;gap:12px}.searchcraft-popover-form-input .searchcraft-input-form-input{background-color:var(--sc-surface-neutral-primary);border:1px solid var(--sc-border-neutral);border-radius:var(--sc-border-radius-lg);box-shadow:0 1px 1px rgb(from var(--sc-content-neutral-primary) r g b/10%) inset,0 2px 2px rgb(from var(--sc-content-neutral-primary) r g b/5%) inset,0 4px 4px rgb(from var(--sc-content-neutral-primary) r g b/5%) inset;width:0}.searchcraft-popover-form-cancel-button{background:none;border:none;cursor:pointer;font-size:14px}.searchcraft-popover-form-modal-input,.searchcraft-popover-form-fullscreen-input{padding:24px}.searchcraft-popover-form-modal-popover-list-view,.searchcraft-popover-form-fullscreen-popover-list-view{flex-grow:1;flex-shrink:1;min-height:0;overflow:auto;padding:0 24px}.searchcraft-popover-form-modal-popover-list-view searchcraft-summary-box,.searchcraft-popover-form-fullscreen-popover-list-view searchcraft-summary-box{padding:20px 0;margin-bottom:0;border-bottom:1px solid var(--sc-border-neutral-subtle)}.searchcraft-popover-form-inline{background-color:var(--sc-surface-neutral-primary);border:1px solid rgba(0,0,0,0);border-radius:var(--sc-border-radius-xl);padding:12px;position:relative}.searchcraft-popover-form-inline.searchcraft-popover-form-active{border:1px solid var(--sc-border-neutral);border-bottom:none;border-bottom-left-radius:0;border-bottom-right-radius:0;padding-bottom:1px}.searchcraft-popover-form-inline searchcraft-popover-list-view{padding:0 12px}.searchcraft-popover-form-inline .searchcraft-input-form-input,.searchcraft-popover-form-inline .searchcraft-popover-list-item-link,.searchcraft-popover-form-inline .searchcraft-adm-ad-link{border-radius:calc(--sc-border-radius-xl - 12px);border-radius:calc(var(--sc-border-radius-xl) - 12px)}.searchcraft-popover-form-inline-wrapper{background-color:var(--sc-surface-neutral-primary);border:1px solid var(--sc-border-neutral);border-top:none;border-bottom-left-radius:var(--sc-border-radius-xl);border-bottom-right-radius:var(--sc-border-radius-xl);display:flex;flex-direction:column;left:-1px;max-height:var(--sc-popover-list-view-height);overflow:hidden;position:absolute;right:-1px;top:100%}.searchcraft-popover-form-inline-wrapper searchcraft-summary-box{padding:16px 12px;margin-bottom:0;border-bottom:1px solid var(--sc-border-neutral-subtle)}.searchcraft-popover-form-modal{align-items:center;display:flex;inset:0;position:fixed;z-index:1000}.searchcraft-popover-form-modal .searchcraft-input-form-input,.searchcraft-popover-form-modal .searchcraft-popover-list-item-link,.searchcraft-popover-form-modal .searchcraft-adm-ad-link{border-radius:calc(--sc-border-radius-2xl - 20px);border-radius:calc(var(--sc-border-radius-2xl) - 20px)}.searchcraft-popover-form-modal-backdrop{background-color:rgb(from var(--sc-content-neutral-primary) r g b/50%);display:none;inset:0;position:fixed}@media(min-width: 576px){.searchcraft-popover-form-modal-backdrop{display:block}}.searchcraft-popover-form-modal-wrapper{background-color:var(--sc-surface-neutral-primary);box-shadow:1px 2px rgb(from var(--sc-content-neutral-primary) r g b/7%),0 2px 4px rgb(from var(--sc-content-neutral-primary) r g b/7%),0 4px 8px rgb(from var(--sc-content-neutral-primary) r g b/7%),0 8px 16px rgb(from var(--sc-content-neutral-primary) r g b/7%),0 16px 32px rgb(from var(--sc-content-neutral-primary) r g b/7%),0 32px 64px rgb(from var(--sc-content-neutral-primary) r g b/7%);display:flex;flex-direction:column;inset:0;max-width:var(--sc-popover-modal-max-width);overflow:hidden;position:absolute;width:100%;z-index:1001}@media(min-width: 576px){.searchcraft-popover-form-modal-wrapper{border-radius:var(--sc-border-radius-2xl);inset:0;margin-top:100px;max-height:var(--sc-popover-list-view-height);max-width:var(--sc-popover-modal-max-width);position:relative}}.searchcraft-popover-form-modal-cancel-button{border-radius:calc(--sc-border-radius-2xl - 20px);border-radius:calc(var(--sc-border-radius-2xl) - 20px);padding:8px}@media(min-width: 576px){.searchcraft-popover-form-modal-cancel-button{padding:8px 12px}}.searchcraft-popover-form-fullscreen{background-color:var(--sc-surface-neutral-primary);display:flex;flex-direction:column;justify-content:space-between;inset:0;position:fixed;z-index:1000}.searchcraft-popover-form-fullscreen .searchcraft-popover-list-item-link,.searchcraft-popover-form-fullscreen .searchcraft-adm-ad-link{border-radius:var(--sc-border-radius-lg)}.searchcraft-popover-form-fullscreen-cancel-button{border-radius:var(--sc-border-radius-lg);padding:8px}@media(min-width: 576px){.searchcraft-popover-form-fullscreen-cancel-button{padding:8px 12px}}.searchcraft-popover-footer{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;background-color:var(--sc-surface-neutral-secondary);box-shadow:0 1px 1px rgb(from var(--sc-content-neutral-primary) r g b/10%) inset,0 2px 2px rgb(from var(--sc-content-neutral-primary) r g b/5%) inset,0 4px 4px rgb(from var(--sc-content-neutral-primary) r g b/5%) inset;display:flex;gap:8px;justify-content:space-between;line-height:1;padding:20px 24px}@media(min-width: 576px){.searchcraft-popover-footer{padding:20px 32px}}.searchcraft-popover-footer-results-info{margin:0}.searchcraft-popover-footer-link{align-items:center;color:var(--sc-content-neutral-primary);display:flex;max-width:160px;padding-top:6px;width:100%}.searchcraft-popover-footer-results{align-items:center;display:flex;gap:8px}.searchcraft-popover-footer-view-all{align-items:center;border-radius:999px;border:1px solid var(--sc-border-neutral-strong);color:var(--sc-content-neutral-primary);display:inline-flex;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-bold);gap:6px;line-height:1;padding:6px 10px;text-decoration:none}.searchcraft-popover-footer-view-all-shortcut{display:inline-flex;gap:2px}.searchcraft-popover-footer-view-all-shortcut kbd{background-color:var(--sc-surface-neutral-primary);border-radius:4px;border:1px solid var(--sc-border-neutral-subtle);line-height:1;padding:1px 4px}:root{--sc-popover-list-item-image-fit: contain}.searchcraft-popover-list-item{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;border-bottom:1px solid var(--sc-border-neutral);padding:12px 0}searchcraft-popover-list-item:last-child .searchcraft-popover-list-item{border-bottom:none}.searchcraft-popover-list-item-link{align-items:flex-start;color:var(--sc-content-neutral-primary);display:flex;gap:24px;padding:12px;text-decoration:none}.searchcraft-popover-list-item-link:focus,.searchcraft-popover-list-item-link:active{background-color:var(--sc-surface-neutral-primary-active)}.searchcraft-popover-list-item-link:hover{background-color:var(--sc-surface-neutral-primary-hover)}.searchcraft-popover-list-item-image-wrapper{align-items:center;aspect-ratio:16/9;display:flex;flex-shrink:0;justify-content:center;width:160px}.searchcraft-popover-list-item-image{height:100%;object-fit:var(--sc-popover-list-item-image-fit);width:100%}.searchcraft-popover-list-item-content{display:flex;flex-direction:column;flex-grow:1;gap:4px;justify-content:center}.searchcraft-popover-list-item-content-title,.searchcraft-popover-list-item-content-subtitle{display:-webkit-box;line-clamp:2;margin:0;overflow:hidden;-webkit-line-clamp:2;-webkit-box-orient:vertical}.searchcraft-popover-list-item-content-title{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-heading-5-font-size);font-weight:var(--sc-font-bold)}.searchcraft-popover-list-item-content-subtitle{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal)}.searchcraft-popover-list-view{display:flex;flex-direction:column}.searchcraft-results-info{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal);color:var(--sc-content-primary);margin:0}.searchcraft-slider{align-items:center;display:flex;flex-direction:column;gap:10px;width:100%;margin-top:4px}.searchcraft-slider-range{align-items:center;background-color:var(--sc-surface-disabled);border-radius:999px;display:flex;position:relative;height:4px;width:100%}.searchcraft-slider-range::-webkit-slider-runnable-track{pointer-events:none}.searchcraft-slider-range .searchcraft-slider-active-range{background-color:var(--sc-surface-brand-primary);border-radius:2px;height:4px;position:absolute;top:50%;transform:translateY(-50%);z-index:0}.searchcraft-slider-range .searchcraft-slider-active-range::-webkit-slider-runnable-track{pointer-events:none}.searchcraft-slider-range .searchcraft-slider-active-range::-moz-range-track{pointer-events:none}.searchcraft-slider-range .searchcraft-slider-input{appearance:none;background:rgba(0,0,0,0);border-radius:2px;height:4px;margin:0;outline:none;pointer-events:none;position:absolute;width:100%;-webkit-appearance:none}.searchcraft-slider-range .searchcraft-slider-input::-webkit-slider-thumb{background-color:var(--sc-surface-neutral-light);border-radius:50%;border:1px solid var(--sc-border-neutral);cursor:pointer;height:18px;pointer-events:all;width:18px;-webkit-appearance:none}.searchcraft-slider-range .searchcraft-slider-input::-moz-range-thumb{background-color:var(--sc-surface-neutral-light);border-radius:50%;border:1px solid var(--sc-border-neutral);cursor:pointer;height:18px;pointer-events:all;width:18px}.searchcraft-slider-range .searchcraft-slider-input:focus::-webkit-slider-thumb{outline:2px solid var(--sc-surface-brand-primary)}.searchcraft-slider-range .searchcraft-slider-input:focus::-moz-range-thumb{outline:2px solid var(--sc-surface-brand-primary)}.searchcraft-slider-label{color:var(--sc-content-primary);display:flex;font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-small-font-size);font-weight:var(--sc-font-normal);justify-content:space-between;margin-top:4px;width:100%}.searchcraft-slider-start-label,.searchcraft-slider-end-label{min-width:30px;text-align:center}.searchcraft-toggle-button{align-items:flex-start;display:flex;gap:10px;justify-content:space-between}.searchcraft-toggle-button-label{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal);color:var(--sc-content-neutral-primary);margin:0}.searchcraft-toggle-button-sub-label{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-small-font-size);font-weight:var(--sc-font-normal);color:var(--sc-content-neutral-secondary);margin:0}.searchcraft-toggle-button-background{background:var(--sc-surface-disabled);border-radius:var(--sc-border-radius-full);border:none;cursor:pointer;flex-shrink:0;height:26px;position:relative;transition:background-color .2s;width:44px}.searchcraft-toggle-button-handle{background:var(--sc-surface-neutral-light);border-radius:50%;height:18px;left:4px;position:absolute;top:calc(50% - 9px);transition:transform .3s ease;width:18px}.searchcraft-toggle-button-active .searchcraft-toggle-button-background{background:var(--sc-surface-brand-primary);box-shadow:0px 0px 0px 1px rgba(0,0,0,.05)}.searchcraft-toggle-button-active .searchcraft-toggle-button-handle{transform:translateX(16px)}.searchcraft-pagination{display:inline-grid;gap:16px;grid-template-columns:repeat(3, auto);grid-template-rows:1fr}.searchcraft-pagination-list{border:1px solid var(--sc-border-neutral);border-radius:var(--sc-border-radius);display:flex;list-style-type:none;margin:0;overflow:hidden;padding:0;width:auto}.searchcraft-pagination-list li{border-right:1px solid var(--sc-border-neutral);height:100%;min-height:44px;width:44px}.searchcraft-pagination-list li:last-child{border-right:none}.searchcraft-pagination-item{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal);align-items:center;background-color:var(--sc-surface-neutral-primary);border:none;display:flex;height:100%;justify-content:center;width:100%}.searchcraft-pagination-item-active{background-color:var(--sc-surface-brand-secondary);font-weight:var(--sc-font-bold)}.searchcraft-pagination-control{border:1px solid var(--sc-border-neutral);border-radius:var(--sc-border-radius)}.searchcraft-pagination-range{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal);align-items:center;display:flex}.searchcraft-select{display:flex;flex-direction:column;gap:4px}.searchcraft-select-label{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-small-font-size);font-weight:var(--sc-font-normal);font-weight:var(--sc-font-bold)}.searchcraft-select-input-wrapper{position:relative}.searchcraft-select-input{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal);appearance:none;background-color:var(--sc-surface-neutral-secondary);border:2px solid rgba(0,0,0,0);border-radius:var(--sc-border-radius);cursor:pointer;height:44px;padding:0 44px 0 16px;width:100%}.searchcraft-select-input:hover{background-color:var(--sc-surface-neutral-secondary-hover)}.searchcraft-select-input:active{background-color:var(--sc-surface-neutral-secondary-active)}.searchcraft-select-input:focus{border-color:var(--sc-border-brand);outline:none}.searchcraft-select-input-icon{fill:none;pointer-events:none;position:absolute;right:12px;top:50%;transform:translateY(-50%)}.searchcraft-select-caption{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-small-font-size);font-weight:var(--sc-font-normal)}.searchcraft-search-results-per-page{display:flex}.searchcraft-search-results-per-page-select{align-items:center;display:flex;gap:12px}.searchcraft-search-results-per-page-select-label{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal)}.searchcraft-search-results-per-page-select-input{min-width:120px}.searchcraft-summary-box{padding:20px;border-radius:var(--sc-border-radius);background-color:var(--sc-surface-neutral-secondary);position:relative;min-height:200px;color:var(--sc-content-neutral-primary);font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal)}.searchcraft-summary-box h1,.searchcraft-summary-box h2,.searchcraft-summary-box h3,.searchcraft-summary-box h4,.searchcraft-summary-box h5{padding-top:10px;padding-bottom:10px}.searchcraft-summary-box p{padding-bottom:10px}.searchcraft-summary-box img{max-width:200px}.searchcraft-summary-box ol,.searchcraft-summary-box ul{padding-left:1em;padding-bottom:10px}.searchcraft-summary-box a{color:var(--sc-content-brand)}.searchcraft-loading{display:flex;flex-direction:column;align-items:center;gap:12px;position:absolute;top:50%;left:50%;transform:translateY(-50%) translateX(-50%)}.searchcraft-loading-dots{display:flex;gap:8px;align-items:center;height:40px}.searchcraft-loading-dots>div{width:10px;height:10px;border-radius:50%;background-color:var(--sc-surface-brand-primary);animation:searchcraft-jump .6s ease-in-out infinite}.searchcraft-loading-dots .searchcraft-loading-dot-2{animation-delay:.15s}.searchcraft-loading-dots .searchcraft-loading-dot-3{animation-delay:.3s}.searchcraft-loading-label{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-small-font-size);font-weight:var(--sc-font-normal);letter-spacing:2px;color:#828282;margin:0}@keyframes searchcraft-jump{0%{transform:translateY(0);animation-timing-function:cubic-bezier(0.33, 1, 0.68, 1)}50%{transform:translateY(-20px);animation-timing-function:cubic-bezier(0.32, 0, 0.67, 0)}100%{transform:translateY(0)}}/*# sourceMappingURL=hologram.css.map */
+var styles = `﻿[class*=searchcraft-],[class*=searchcraft-] *,[class*=searchcraft-]::before,[class*=searchcraft-]::after,[class*=searchcraft-] *,::before,[class*=searchcraft-] *,::after{box-sizing:border-box;padding:0;margin:0}:root{--sc-text-base-size: 1em;--sc-text-scale-ratio: 1.1;--sc-font-family: sans-serif;--sc-font-bold: 700;--sc-font-normal: 400;--sc-heading-1-font-size: calc( var(--sc-text-base-size) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) );--sc-heading-2-font-size: calc( var(--sc-text-base-size) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) );--sc-heading-3-font-size: calc( var(--sc-text-base-size) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) );--sc-heading-4-font-size: calc( var(--sc-text-base-size) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) );--sc-heading-5-font-size: calc( var(--sc-text-base-size) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) );--sc-heading-6-font-size: calc( var(--sc-text-base-size) / ( var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) ) );--sc-body-font-size: calc(var(--sc-text-base-size));--sc-body-small-font-size: calc( var(--sc-text-base-size) / ( var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) ) )}:root{--sc-border-radius: 8px;--sc-border-radius-sm: calc(var(--sc-border-radius) / 2);--sc-border-radius-lg: calc(var(--sc-border-radius) * 2);--sc-border-radius-xl: calc(var(--sc-border-radius) * 3);--sc-border-radius-2xl: calc(var(--sc-border-radius) * 4);--sc-border-radius-full: 9999px}:root{--sc-breakpoint-sm: 576px;--sc-breakpoint-md: 768px;--sc-breakpoint-lg: 992px}:root{--sc-surface-neutral-primary: var(--sc-color-background, #ffffff);--sc-color-background-hover-computed: hsl( from var(--sc-color-background) h s clamp(10, calc(l + 5), 95) );--sc-surface-neutral-primary-hover: var( --sc-color-background-hover, var(--sc-color-background-hover-computed, #fafafa) );--sc-color-background-active-computed: hsl( from var(--sc-color-background) h s clamp(5, calc(l - 5), 90) );--sc-surface-neutral-primary-active: var( --sc-color-background-active, var(--sc-color-background-active-computed, #f7f7f7) );--sc-surface-neutral-secondary: var( --sc-color-background-secondary, var(--sc-color-background, #f3f3f3) );--sc-color-background-secondary-hover-computed: hsl( from var(--sc-color-background-secondary) h s clamp(10, calc(l + 5), 95) );--sc-surface-neutral-secondary-hover: var( --sc-color-background-hover, var(--sc-color-background-hover-computed, #e6e6e6) );--sc-color-background-secondary-active-computed: hsl( from var(--sc-color-background-secondary) h s clamp(5, calc(l - 5), 90) );--sc-surface-neutral-secondary-active: var( --sc-color-background-secondary-active, var(--sc-color-background-active-computed, #e0e0e0) );--sc-surface-neutral-light: #ffffff;--sc-content-neutral-primary: var(--sc-color-foreground, #292929);--sc-color-foreground-secondary-computed: hsl( from var(--sc-color-foreground) h s clamp(10, calc(l + 5), 90) );--sc-content-neutral-secondary: var( --sc-color-foreground-secondary, var(--sc-color-foreground-secondary-computed, #404040) );--sc-border-neutral: var(--sc-color-border, rgba(0, 0, 0, 0.1));--sc-surface-brand-primary: var(--sc-color-brand, #000000);--sc-color-brand-hover-computed: hsl( from var(--sc-color-brand) h s clamp(20, calc(l + 5), 95) );--sc-surface-brand-primary-hover: var( --sc-color-brand-hover, var(--sc-color-brand-hover-computed, #2e2e2e) );--sc-color-brand-active-computed: hsl( from var(--sc-color-brand) h s clamp(10, calc(l - 5), 85) );--sc-surface-brand-primary-active: var( --sc-color-brand-active, var(--sc-color-brand-active-computed, #292929) );--sc-surface-brand-secondary: var( --sc-color-brand-secondary, var(--sc-color-brand, #e6e6e6) );--sc-color-brand-secondary-hover-computed: hsl( from var(--sc-color-brand-secondary) h s clamp(10, calc(l + 5), 95) );--sc-surface-brand-secondary-hover: var( --sc-color-background-hover, var(--sc-color-background-hover-computed, #ebebeb) );--sc-color-brand-secondary-active-computed: hsl( from var(--sc-color-brand-secondary) h s clamp(5, calc(l - 5), 90) );--sc-surface-brand-secondary-active: var( --sc-color-brand-secondary-active, var(--sc-color-brand-active-computed, #e0e0e0) );--sc-content-brand: var( --sc-color-brand-text, var(--sc-surface-brand-primary) );--sc-content-brand-on-primary: #ffffff;--sc-border-brand: var(--sc-surface-brand-primary);--sc-surface-success-primary: var(--sc-color-success, #008000);--sc-color-success-primary-hover-computed: hsl( from var(--sc-color-success) h s 30 );--sc-surface-success-primary-hover: var( --sc-color-success-primary-hover, var(--sc-color-success-primary-hover-computed, #009900) );--sc-color-success-primary-active-computed: hsl( from var(--sc-color-success) h s 20 );--sc-surface-success-primary-active: var( --sc-color-success-primary-active, var(--sc-color-success-primary-active-computed, #006600) );--sc-color-success-secondary-computed: hsl( from var(--sc-color-success) h s 90 );--sc-surface-success-secondary: var( --sc-color-success-secondary, var(--sc-color-success-secondary-computed, #ccffcc) );--sc-color-success-secondary-hover-computed: hsl( from var(--sc-color-success-secondary) h s 95 );--sc-surface-success-secondary-hover: var( --sc-color-success-secondary-hover, var(--sc-color-success-secondary-hover-computed, #e6ffe6) );--sc-color-success-secondary-active-computed: hsl( from var(--sc-color-success-secondary) h s 85 );--sc-surface-success-secondary-active: var( --sc-color-success-secondary-active, var(--sc-color-success-secondary-active-computed, #b2ffb2) );--sc-content-success: var( --sc-color-brand-text, hsl(from var(--sc-surface-success-primary) h s 30) );--sc-content-success-on-primary: #ffffff;--sc-border-success: var(--sc-surface-success-primary);--sc-surface-caution-primary: var(--sc-color-caution, #cc6600);--sc-color-caution-primary-hover-computed: hsl( from var(--sc-color-caution) h s 30 );--sc-surface-caution-primary-hover: var( --sc-color-caution-primary-hover, var(--sc-color-caution-primary-hover-computed, #e57300) );--sc-color-caution-primary-active-computed: hsl( from var(--sc-color-caution) h s 20 );--sc-surface-caution-primary-active: var( --sc-color-caution-primary-active, var(--sc-color-caution-primary-active-computed, #b25a00) );--sc-color-caution-secondary-computed: hsl( from var(--sc-color-caution) h s 90 );--sc-surface-caution-secondary: var( --sc-color-caution-secondary, var(--sc-color-caution-secondary-computed, #ffd9b3) );--sc-color-caution-secondary-hover-computed: hsl( from var(--sc-color-caution-secondary) h s 95 );--sc-surface-caution-secondary-hover: var( --sc-color-caution-secondary-hover, var(--sc-color-caution-secondary-hover-computed, #ffe5cc) );--sc-color-caution-secondary-active-computed: hsl( from var(--sc-color-caution-secondary) h s 85 );--sc-surface-caution-secondary-active: var( --sc-color-caution-secondary-active, var(--sc-color-caution-secondary-active-computed, #ffcc99) );--sc-content-caution: var( --sc-color-caution-text, hsl(from var(--sc-surface-caution-primary) h s 30) );--sc-content-caution-on-primary: #ffffff;--sc-border-caution: var(--sc-surface-caution-primary);--sc-surface-danger-primary: var(--sc-color-danger, #cc0000);--sc-color-danger-primary-hover-computed: hsl( from var(--sc-color-danger) h s 30 );--sc-surface-danger-primary-hover: var( --sc-color-danger-primary-hover, var(--sc-color-danger-primary-hover-computed, #e50000) );--sc-color-danger-primary-active-computed: hsl( from var(--sc-color-danger) h s 20 );--sc-surface-danger-primary-active: var( --sc-color-danger-primary-active, var(--sc-color-danger-primary-active-computed, #b30000) );--sc-color-danger-secondary-computed: hsl(from var(--sc-color-danger) h s 90);--sc-surface-danger-secondary: var( --sc-color-danger-secondary, var(--sc-color-danger-secondary-computed, #ffcccc) );--sc-color-danger-secondary-hover-computed: hsl( from var(--sc-color-danger-secondary) h s 95 );--sc-surface-danger-secondary-hover: var( --sc-color-danger-secondary-hover, var(--sc-color-danger-secondary-hover-computed, #ffe7e7) );--sc-color-danger-secondary-active-computed: hsl( from var(--sc-color-danger-secondary) h s 85 );--sc-surface-danger-secondary-active: var( --sc-color-danger-secondary-active, var(--sc-color-danger-secondary-active-computed, #ffb3b3) );--sc-content-danger: var( --sc-color-caution-text, hsl(from var(--sc-surface-danger-primary) h s 30) );--sc-content-danger-on-primary: #ffffff;--sc-border-danger: var(--sc-surface-danger-primary);--sc-color-disabled: hsl(from var(--sc-color-page-primary) h s calc(l * 0.5));--sc-surface-disabled: var(--sc-color-disabled, #d9d9d9);--sc-color-disabled-text: hsl( from var(--sc-color-text-primary) h s calc(l * 0.5) );--sc-content-disabled: var(--sc-color-disabled-text, #737373);--sc-content-disabled-on-disabled: var(--sc-color-disabled-text, #737373)}@supports(hanging-punctuation: first) and (font: -apple-system-body) and (-webkit-appearance: none){:root{--sc-color-background-hover-computed: hsl( from var(--sc-color-background) h s clamp(10%, calc(l + 5%), 95%) );--sc-color-background-active-computed: hsl( from var(--sc-color-background) h s clamp(5%, calc(l - 5%), 90%) );--sc-color-foreground-secondary-computed: hsl( from var(--sc-color-foreground) h s clamp(10%, calc(l + 5%), 90%) );--sc-color-brand-hover-computed: hsl( from var(--sc-color-brand) h s clamp(20%, calc(l + 5%), 95%) );--sc-color-brand-active-computed: hsl( from var(--sc-color-brand) h s clamp(10%, calc(l - 5%), 85%) );--sc-color-success-primary-hover-computed: hsl( from var(--sc-color-success) h s 30% );--sc-color-success-primary-active-computed: hsl( from var(--sc-color-success) h s 20% );--sc-color-success-secondary-computed: hsl( from var(--sc-color-success) h s 90% );--sc-color-success-secondary-hover-computed: hsl( from var(--sc-color-success-secondary) h s 95% );--sc-color-success-secondary-active-computed: hsl( from var(--sc-color-success-secondary) h s 85% );--sc-content-success: var( --sc-color-brand-text, hsl(from var(--sc-surface-success-primary) h s 30%) );--sc-color-caution-primary-hover-computed: hsl( from var(--sc-color-caution) h s 30% );--sc-color-caution-primary-active-computed: hsl( from var(--sc-color-caution) h s 20% );--sc-color-caution-secondary-computed: hsl( from var(--sc-color-caution) h s 90% );--sc-color-caution-secondary-hover-computed: hsl( from var(--sc-color-caution-secondary) h s 95% );--sc-color-caution-secondary-active-computed: hsl( from var(--sc-color-caution-secondary) h s 85% );--sc-content-caution: var( --sc-color-caution-text, hsl(from var(--sc-surface-caution-primary) h s 30%) );--sc-color-danger-primary-hover-computed: hsl( from var(--sc-color-danger) h s 30% );--sc-color-danger-primary-active-computed: hsl( from var(--sc-color-danger) h s 20% );--sc-color-danger-secondary-computed: hsl( from var(--sc-color-danger) h s 90% );--sc-color-danger-secondary-hover-computed: hsl( from var(--sc-color-danger-secondary) h s 95% );--sc-color-danger-secondary-active-computed: hsl( from var(--sc-color-danger-secondary) h s 85% );--sc-content-danger: var( --sc-color-caution-text, hsl(from var(--sc-surface-danger-primary) h s 30%) )}}.searchcraft-ad{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased}.searchcraft-ad-no-template{display:flex;flex-direction:column;font-size:.875rem}.searchcraft-ad-no-template>p{margin:0}.searchcraft-adm-ad{display:flex;flex-direction:column;justify-content:center;gap:16px}.searchcraft-search-result{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased}.searchcraft-search-result-no-template{display:flex;flex-direction:column;font-size:.875rem}.searchcraft-search-result-no-template>p{margin:0}.searchcraft-search-results{display:flex;flex-direction:column;justify-content:center;gap:16px}.searchcraft-search-results-empty-state{text-align:center}.searchcraft-search-results-error-message{text-align:center}.searchcraft-button{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal);background:none;border:2px solid rgba(0,0,0,0);border-radius:var(--sc-border-radius);cursor:pointer;display:flex;gap:4px;padding:12px;position:relative}.searchcraft-button.searchcraft-button-disabled{cursor:not-allowed}.searchcraft-button-primary{background-color:var(--sc-surface-brand-primary);color:var(--sc-content-brand-on-primary);font-weight:var(--sc-font-bold)}.searchcraft-button-primary:hover{background-color:var(--sc-surface-brand-primary-hover)}.searchcraft-button-primary:focus{border-color:var(--sc-border-primary)}.searchcraft-button-primary:active{background-color:var(--sc-surface-brand-primary-active)}.searchcraft-button-primary.searchcraft-button-disabled,.searchcraft-button-primary.searchcraft-button-disabled:hover,.searchcraft-button-primary.searchcraft-button-disabled:focus,.searchcraft-button-primary.searchcraft-button-disabled:active{background-color:var(--sc-surface-disabled);border-color:rgba(0,0,0,0);color:var(--sc-content-disabled)}.searchcraft-button-tertiary{background-color:var(--sc-surface-neutral-primary);color:var(--sc-content-brand);font-weight:var(--sc-font-normal)}.searchcraft-button-tertiary:hover{background-color:var(--sc-surface-brand-secondary-hover)}.searchcraft-button-tertiary:focus{background-color:var(--sc-surface-neutral-light);border-color:var(--sc-border-primary)}.searchcraft-button-tertiary:active{background-color:var(--sc-surface-brand-secondary-active)}.searchcraft-button-tertiary.searchcraft-button-disabled,.searchcraft-button-tertiary.searchcraft-button-disabled:hover,.searchcraft-button-tertiary.searchcraft-button-disabled:focus,.searchcraft-button-tertiary.searchcraft-button-disabled:active{background-color:var(--sc-surface-neutral-light);border-color:rgba(0,0,0,0);color:var(--sc-content-disabled)}.searchcraft-button-icon{fill:none}.searchcraft-error-message{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-small-font-size);font-weight:var(--sc-font-normal);color:var(--sc-content-danger);margin:0}.searchcraft-facet-list{display:flex;flex-direction:column;gap:8px;width:100%}.searchcraft-facet-list-checkbox-label{align-items:center;color:var(--sc-content-neutral-primary);display:flex;font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal);gap:8px;position:relative;-webkit-font-smoothing:antialiased}.searchcraft-facet-list-checkbox-input-wrapper{position:relative}.searchcraft-facet-list-checkbox-input{align-items:center;appearance:none;background-color:var(--sc-surface-neutral-secondary);border:1px solid var(--sc-surface-disabled);border-radius:var(--sc-border-radius);cursor:pointer;display:flex;height:24px;justify-content:center;width:24px;margin:0}.searchcraft-facet-list-checkbox-input:focus{outline:2px solid var(--sc-surface-brand-primary);outline-offset:2px}.searchcraft-facet-list-checkbox-input:checked{background-color:var(--sc-surface-brand-primary);position:relative}.searchcraft-facet-list-checkbox-input:checked+.searchcraft-facet-list-checkbox-input-check-icon{display:flex}.searchcraft-facet-list-checkbox-input:checked+.searchcraft-facet-list-checkbox-input-dash-icon{display:flex}.searchcraft-facet-child-list{display:flex;flex-direction:column;gap:6px}.searchcraft-facet-child-list-checkbox-label{margin-left:24px}.searchcraft-facet-child-list-checkbox-label:first-child{margin-top:6px}.searchcraft-facet-list-checkbox-input-check-icon{display:none;height:16px;left:50%;position:absolute;margin-top:2px;top:50%;transform:translate(-50%, -50%);width:16px}.searchcraft-facet-list-checkbox-input-dash-icon{display:none;height:3px;left:50%;position:absolute;top:50%;transform:translate(-50%, -50%);width:14px}.searchcraft-facet-list-message{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-small-font-size);font-weight:var(--sc-font-normal);color:var(--sc-content-disabled);text-align:center}.searchcraft-facet-list-wrapper{display:flex;flex-direction:column;width:100%;min-height:0}.searchcraft-facet-list-content{display:flex;flex-direction:column;gap:8px;min-height:0;flex-shrink:0}.searchcraft-facet-list-view-more{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal);background:none;border:none;color:var(--sc-content-brand);cursor:pointer;padding:8px 0;text-align:left;text-decoration:underline}.searchcraft-facet-list-view-more:hover{color:var(--sc-surface-brand-primary-hover)}.searchcraft-facet-list-view-more:focus{outline:2px solid var(--sc-surface-brand-primary);outline-offset:2px}.searchcraft-filter-panel{display:flex;flex-direction:column;gap:16px}.searchcraft-filter-panel-section{display:flex;flex-direction:column;gap:8px}.searchcraft-filter-panel-label{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-small-font-size);font-weight:var(--sc-font-normal);font-weight:var(--sc-font-bold)}[data-toggle-facet-section]{cursor:pointer;display:flex;align-items:center;justify-content:space-between;width:100%;position:relative}[data-toggle-facet-section]::after{content:"›";display:inline-block;font-size:1.5em;line-height:1;margin-left:auto;flex-shrink:0;transition:transform .2s ease;transform-origin:center}[data-toggle-facet-section][data-facet-section-collapsed]::after{transform:rotate(90deg)}[data-toggle-facet-section][data-facet-section-expanded]::after{transform:rotate(-90deg)}@media(max-width: 767px){[data-toggle-filter-panel]{cursor:pointer;display:flex !important;align-items:center;justify-content:space-between;width:100%}[data-toggle-filter-panel]::after{content:"›";display:inline-block;font-size:1.5em;line-height:1;margin-left:auto;flex-shrink:0;transition:transform .2s ease;transform-origin:center}[data-toggle-filter-panel][data-filter-panel-collapsed]::after{transform:rotate(90deg)}[data-toggle-filter-panel][data-filter-panel-expanded]::after{transform:rotate(-90deg)}}@media(min-width: 768px){[data-toggle-filter-panel]{cursor:default}[data-toggle-filter-panel]::after{display:none}}:root{--sc-input-form-border-radius: var(--sc-border-radius);--sc-input-form-search-icon-size: 20px;--sc-input-form-clear-icon-size: 20px}.searchcraft-input-form-grid{display:grid;gap:4px 8px}.searchcraft-input-form-grid-button-left{grid-template-rows:repeat(3, auto);grid-template-columns:auto 1fr}.searchcraft-input-form-grid-button-left .searchcraft-input-form-button{grid-column:1/span 1;grid-row:2/span 1}.searchcraft-input-form-grid-button-left .searchcraft-input-form-label{grid-column:2/span 1;grid-row:1/span 1}.searchcraft-input-form-grid-button-left .searchcraft-input-form-error-message{grid-column:2/span 1;grid-row:3/span 1}.searchcraft-input-form-grid-button-left .searchcraft-input-form-input-wrapper{grid-column:2/span 1;grid-row:2/span 1}.searchcraft-input-form-grid-button-right{grid-template-rows:repeat(3, auto);grid-template-columns:1fr auto}.searchcraft-input-form-grid-button-right .searchcraft-input-form-button{grid-column:2/span 1;grid-row:2/span 1}.searchcraft-input-form-grid-button-right .searchcraft-input-form-label{grid-column:1/span 1;grid-row:1/span 1}.searchcraft-input-form-grid-button-right .searchcraft-input-form-error-message{grid-column:1/span 1;grid-row:3/span 1}.searchcraft-input-form-grid-button-right .searchcraft-input-form-input-wrapper{grid-column:1/span 1;grid-row:2/span 1}.searchcraft-input-form-grid-button-none{grid-template-rows:repeat(3, auto);grid-template-columns:auto}.searchcraft-input-form-grid-button-none .searchcraft-input-form-button{display:none}.searchcraft-input-form-grid-button-none .searchcraft-input-form-label{grid-column:1/span 1;grid-row:1/span 1}.searchcraft-input-form-grid-button-none .searchcraft-input-form-error-message{grid-column:1/span 1;grid-row:3/span 1}.searchcraft-input-form-grid-button-none .searchcraft-input-form-input-wrapper{grid-column:1/span 1;grid-row:2/span 1}.searchcraft-input-form-input-wrapper{display:flex;position:relative}.searchcraft-input-form-input{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal);background-color:var(--sc-surface-neutral-secondary);border-radius:var(--sc-input-form-border-radius);border:none;color:var(--sc-content-neutral-primary);flex:1;outline:none;padding:12px 44px}.searchcraft-input-form-input::placeholder{color:var(--sc-content-disabled)}.searchcraft-input-form-input:focus{outline:var(--sc-border-brand) solid 2px;outline-offset:-1px}.searchcraft-input-form-input.searchcraft-placeholder-hide-on-focus:focus::placeholder{opacity:0}.searchcraft-input-form-error{color:var(--sc-content-danger);outline:var(--sc-border-danger) solid 2px}.searchcraft-input-form-error:focus{outline:var(--sc-border-danger) solid 2px}.searchcraft-input-form-input-icon{align-items:center;bottom:0;display:flex;justify-content:center;left:0;position:absolute;pointer-events:none;top:0;width:44px}.searchcraft-input-form-input-search-icon{color:var(--sc-content-neutral-secondary);fill:none;height:var(--sc-input-form-search-icon-size);pointer-events:none;width:var(--sc-input-form-search-icon-size)}.searchcraft-input-form-clear-button{all:unset;align-items:center;bottom:0;border:none;cursor:pointer;display:flex;justify-content:center;outline:none;position:absolute;right:0;top:0;width:44px}.searchcraft-input-form-clear-icon{color:var(--sc-content-brand);fill:none;height:var(--sc-input-form-clear-icon-size);width:var(--sc-input-form-clear-icon-size)}.searchcraft-input-label{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-small-font-size);font-weight:var(--sc-font-normal);color:var(--sc-content-neutral-primary);font-weight:var(--sc-font-bold);margin-top:4px;margin-bottom:4px}:root{--sc-popover-button-border-radius: var(--sc-border-radius)}@media(min-width: 576px){:root{--sc-popover-button-border-radius: var(--sc-border-radius-lg)}}.searchcraft-popover-button{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal);cursor:pointer}.searchcraft-popover-button-skeuomorphic{appearance:none;background:none;border:none;color:var(--sc-content-neutral-primary);display:block;width:100%}.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-wrapper{border:1px solid var(--sc-border-neutral);border-radius:var(--sc-popover-button-border-radius);box-shadow:0 1px 1px rgb(from var(--sc-content-neutral-secondary) r g b/10%) inset,0 2px 4px rgb(from var(--sc-content-neutral-secondary) r g b/5%) inset;display:flex;gap:24px;height:40px;justify-content:space-between;line-height:1;padding:4px 5px 4px 10px;background:var(--sc-surface-neutral-primary)}@media(min-width: 576px){.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-wrapper{box-shadow:0 1px 1px rgb(from var(--sc-content-neutral-secondary) r g b/10%) inset,0 2px 2px rgb(from var(--sc-content-neutral-secondary) r g b/5%) inset,0 4px 4px rgb(from var(--sc-content-neutral-secondary) r g b/5%) inset;height:63px;padding:8px 10px 8px 16px}}.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-input{align-items:center;display:flex;gap:4px}@media(min-width: 576px){.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-input{gap:8px}}.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-keycaps{color:var(--sc-content-neutral-secondary);display:flex;gap:4px;font-size:20px;font-weight:500}@media(min-width: 576px){.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-keycaps{gap:8px}}.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-keycaps-keycap{border-radius:calc(var(--sc-popover-button-border-radius) - 3px);border-radius:calc(var(var(--sc-popover-button-border-radius)) - 3px);background-color:var(--sc-surface-neutral-primary);box-shadow:0 3px hsl(from var(--sc-surface-neutral-secondary) h s calc(l - 5)),0 1px 2px rgb(from var(--sc-content-neutral-secondary) r g b/10%),0 6px 4px rgb(from var(--sc-content-neutral-secondary) r g b/5%);height:calc(100% - 2px);position:relative}@media(min-width: 576px){.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-keycaps-keycap{border-radius:calc(var(--sc-popover-button-border-radius) - 8px);border-radius:calc(var(var(--sc-popover-button-border-radius)) - 8px);box-shadow:0 4px hsl(from var(--sc-surface-neutral-secondary) h s calc(l - 5)),0 1px 2px rgb(from var(--sc-content-neutral-secondary) r g b/15%),0 6px 1px rgb(from var(--sc-content-neutral-secondary) r g b/20%),0 7px 2px rgb(from var(--sc-content-neutral-secondary) r g b/15%),0 9px 4px rgb(from var(--sc-content-neutral-secondary) r g b/10%),0 13px 8px rgb(from var(--sc-content-neutral-secondary) r g b/5%);height:calc(100% - 5px)}}.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-keycaps-keycap::before,.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-keycaps-keycap::after{content:"";display:block}.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-keycaps-keycap::before{border-radius:calc(var(--sc-popover-button-border-radius) - 4px);border-radius:calc(var(var(--sc-popover-button-border-radius)) - 4px);background:linear-gradient(340deg, rgb(from var(--sc-surface-neutral-secondary) r g b/2%) 0%, var(--sc-surface-neutral-secondary) 100%);inset:2px;position:absolute}@media(min-width: 576px){.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-keycaps-keycap::before{border-radius:calc(var(--sc-popover-button-border-radius) - 12px);border-radius:calc(var(var(--sc-popover-button-border-radius)) - 12px);inset:4px}}.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-keycaps-keycap::after{aspect-ratio:1/1;height:100%}.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-keycaps-keycap>span{display:flex;line-height:1;left:50%;margin-top:2%;position:absolute;top:50%;transform:translate(-50%, -50%)}.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-input-search-icon{height:60%;width:auto}@media(min-width: 576px){.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-input-search-icon{height:50%}}:root{--sc-popover-button-magnifying-glass-icon-size: 20px;--sc-popover-button-magnifying-glass-icon-color: var(--sc-content-neutral-secondary);--sc-popover-button-magnifying-glass-icon-color-hover: var(--sc-content-brand);--sc-popover-button-magnifying-glass-padding: 12px}@media(min-width: 576px){:root{--sc-popover-button-magnifying-glass-padding: 16px}}.searchcraft-popover-button-magnifying-glass{appearance:none;background:none;border:none;color:var(--sc-content-neutral-primary);cursor:pointer;display:flex;align-items:center;justify-content:center}.searchcraft-popover-button-magnifying-glass .searchcraft-popover-button-input{display:flex;align-items:center;justify-content:center;padding:var(--sc-popover-button-magnifying-glass-padding)}.searchcraft-popover-button-magnifying-glass .searchcraft-popover-button-input-search-icon{color:var(--sc-popover-button-magnifying-glass-icon-color);display:block;fill:none;stroke:currentcolor;stroke-width:1.5;width:var(--sc-popover-button-magnifying-glass-icon-size);height:var(--sc-popover-button-magnifying-glass-icon-size);transition:color .2s ease}.searchcraft-popover-button-magnifying-glass:hover .searchcraft-popover-button-input-search-icon{color:var(--sc-popover-button-magnifying-glass-icon-color-hover)}:root{--sc-popover-list-view-height: 600px;--sc-popover-modal-max-width: 800px}.searchcraft-popover-form{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal);display:flex;flex:1;flex-direction:column}.searchcraft-popover-form searchcraft-input-form,.searchcraft-popover-form searchcraft-popover-footer{width:100%}.searchcraft-popover-form.searchcraft-popover-form-active .searchcraft-popover-form-input{padding-bottom:1px}.searchcraft-popover-form searchcraft-popover-list-view{flex-shrink:1;height:100%;min-height:0;overflow:auto;padding:0 24px}.searchcraft-popover-form searchcraft-results-summary,.searchcraft-popover-form searchcraft-summary-box{margin-bottom:16px}.searchcraft-popover-form-input{display:flex;flex-direction:row;gap:12px}.searchcraft-popover-form-input .searchcraft-input-form-input{background-color:var(--sc-surface-neutral-primary);border:1px solid var(--sc-border-neutral);border-radius:var(--sc-border-radius-lg);width:0}.searchcraft-popover-form-cancel-button{background:none;border:none;cursor:pointer;font-size:14px}.searchcraft-popover-form-modal-input,.searchcraft-popover-form-fullscreen-input{padding:24px}.searchcraft-popover-form-modal-popover-list-view,.searchcraft-popover-form-fullscreen-popover-list-view{flex-grow:1;flex-shrink:1;min-height:0;overflow:auto;padding:0 24px}.searchcraft-popover-form-modal-popover-list-view searchcraft-results-summary,.searchcraft-popover-form-modal-popover-list-view searchcraft-summary-box,.searchcraft-popover-form-fullscreen-popover-list-view searchcraft-results-summary,.searchcraft-popover-form-fullscreen-popover-list-view searchcraft-summary-box{padding:20px 0;margin-bottom:0;border-bottom:1px solid var(--sc-border-neutral-subtle)}.searchcraft-popover-form-modal-popover-list-view searchcraft-popover-list-view,.searchcraft-popover-form-fullscreen-popover-list-view searchcraft-popover-list-view{overflow:visible;height:auto}.searchcraft-popover-form-inline{border:1px solid rgba(0,0,0,0);border-radius:var(--sc-border-radius-xl);padding:12px;position:relative}.searchcraft-popover-form-inline.searchcraft-popover-form-active{background-color:var(--sc-surface-neutral-primary);border:1px solid var(--sc-border-neutral);border-bottom:none;border-bottom-left-radius:0;border-bottom-right-radius:0;padding-bottom:1px}.searchcraft-popover-form-inline searchcraft-popover-list-view{padding:0 12px}.searchcraft-popover-form-inline .searchcraft-input-form-input,.searchcraft-popover-form-inline .searchcraft-popover-list-item-link,.searchcraft-popover-form-inline .searchcraft-adm-ad-link{border-radius:calc(--sc-border-radius-xl - 12px);border-radius:calc(var(--sc-border-radius-xl) - 12px)}.searchcraft-popover-form-inline-wrapper{background-color:var(--sc-surface-neutral-primary);border:1px solid var(--sc-border-neutral);border-top:none;border-bottom-left-radius:var(--sc-border-radius-xl);border-bottom-right-radius:var(--sc-border-radius-xl);display:flex;flex-direction:column;left:-1px;max-height:var(--sc-popover-list-view-height);overflow:hidden;position:absolute;right:-1px;top:100%}.searchcraft-popover-form-inline-wrapper searchcraft-results-summary,.searchcraft-popover-form-inline-wrapper searchcraft-summary-box{padding:16px 12px;margin-bottom:0;border-bottom:1px solid var(--sc-border-neutral-subtle)}.searchcraft-popover-form-inline-scroll-area{flex:1;min-height:0;overflow:auto;padding:0 12px}.searchcraft-popover-form-inline-scroll-area searchcraft-popover-list-view{overflow:visible;height:auto;padding:0}.searchcraft-popover-form-modal{align-items:center;display:flex;inset:0;position:fixed;z-index:1000}.searchcraft-popover-form-modal .searchcraft-input-form-input,.searchcraft-popover-form-modal .searchcraft-popover-list-item-link,.searchcraft-popover-form-modal .searchcraft-adm-ad-link{border-radius:calc(--sc-border-radius-2xl - 20px);border-radius:calc(var(--sc-border-radius-2xl) - 20px)}.searchcraft-popover-form-modal-backdrop{background-color:rgb(from var(--sc-content-neutral-primary) r g b/50%);display:none;inset:0;position:fixed}@media(min-width: 576px){.searchcraft-popover-form-modal-backdrop{display:block}}.searchcraft-popover-form-modal-wrapper{background-color:var(--sc-surface-neutral-primary);box-shadow:1px 2px rgb(from var(--sc-content-neutral-primary) r g b/7%),0 2px 4px rgb(from var(--sc-content-neutral-primary) r g b/7%),0 4px 8px rgb(from var(--sc-content-neutral-primary) r g b/7%),0 8px 16px rgb(from var(--sc-content-neutral-primary) r g b/7%),0 16px 32px rgb(from var(--sc-content-neutral-primary) r g b/7%),0 32px 64px rgb(from var(--sc-content-neutral-primary) r g b/7%);display:flex;flex-direction:column;inset:0;max-width:var(--sc-popover-modal-max-width);overflow:hidden;position:absolute;width:100%;z-index:1001}@media(min-width: 576px){.searchcraft-popover-form-modal-wrapper{border-radius:var(--sc-border-radius-2xl);inset:0;margin-top:100px;max-height:var(--sc-popover-list-view-height);max-width:var(--sc-popover-modal-max-width);position:relative}}.searchcraft-popover-form-modal-cancel-button{border-radius:calc(--sc-border-radius-2xl - 20px);border-radius:calc(var(--sc-border-radius-2xl) - 20px);padding:8px}@media(min-width: 576px){.searchcraft-popover-form-modal-cancel-button{padding:8px 12px}}.searchcraft-popover-form-fullscreen{background-color:var(--sc-surface-neutral-primary);display:flex;flex-direction:column;justify-content:space-between;inset:0;position:fixed;z-index:1000}.searchcraft-popover-form-fullscreen .searchcraft-popover-list-item-link,.searchcraft-popover-form-fullscreen .searchcraft-adm-ad-link{border-radius:var(--sc-border-radius-lg)}.searchcraft-popover-form-fullscreen-cancel-button{border-radius:var(--sc-border-radius-lg);padding:8px}@media(min-width: 576px){.searchcraft-popover-form-fullscreen-cancel-button{padding:8px 12px}}.searchcraft-popover-footer{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:1rem;align-items:center;background-color:var(--sc-surface-neutral-secondary);display:flex;gap:.5rem;justify-content:space-between;line-height:1;padding:1.25rem 1.5rem}@media(min-width: 576px){.searchcraft-popover-footer{padding:1.25rem 2rem}}.searchcraft-popover-footer-results-info{margin:0}.searchcraft-popover-footer-results-found{display:none}@media(min-width: 576px){.searchcraft-popover-footer-results-found{display:inline}}.searchcraft-popover-footer-link{align-items:center;color:var(--sc-content-neutral-primary);display:flex;font-weight:var(--sc-font-bold);text-decoration:none;white-space:nowrap}.searchcraft-popover-footer-link-prefix{display:none;font-weight:var(--sc-font-normal)}@media(min-width: 576px){.searchcraft-popover-footer-link-prefix{display:inline}}.searchcraft-popover-footer-results{align-items:center;display:flex;gap:.5rem}.searchcraft-popover-footer-view-all{align-items:center;border-radius:999px;border:.0625rem solid var(--sc-border-neutral-strong);color:var(--sc-content-neutral-primary);display:inline-flex;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-bold);gap:.375rem;line-height:1;padding:.375rem .625rem;text-decoration:none}.searchcraft-popover-footer-view-all-shortcut{display:none}@media(min-width: 576px){.searchcraft-popover-footer-view-all-shortcut{display:inline-flex;gap:.125rem}.searchcraft-popover-footer-view-all-shortcut kbd{align-items:center;border-radius:.25rem;border:1px solid var(--sc-content-neutral-primary);display:flex;font-family:Helvetica,Arial,sans-serif;font-size:.75rem;font-style:normal;font-weight:400;height:1.5rem;justify-content:center;line-height:1rem;width:1.5rem}}:root{--sc-popover-list-item-image-fit: contain}.searchcraft-popover-list-item{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;border-bottom:1px solid var(--sc-border-neutral);padding:12px 0}searchcraft-popover-list-item:last-child .searchcraft-popover-list-item{border-bottom:none}.searchcraft-popover-list-item-link{align-items:flex-start;color:var(--sc-content-neutral-primary);display:flex;gap:24px;padding:12px 0;text-decoration:none}.searchcraft-popover-list-item-link:focus,.searchcraft-popover-list-item-link:active{background-color:var(--sc-surface-neutral-primary-active)}.searchcraft-popover-list-item-link:hover{background-color:var(--sc-surface-neutral-primary-hover)}.searchcraft-popover-list-item-image-wrapper{align-items:center;aspect-ratio:16/9;display:flex;flex-shrink:0;justify-content:center;width:160px}.searchcraft-popover-list-item-image{height:100%;object-fit:var(--sc-popover-list-item-image-fit);width:100%}.searchcraft-popover-list-item-content{display:flex;flex-direction:column;flex-grow:1;gap:4px;justify-content:center}.searchcraft-popover-list-item-content-title,.searchcraft-popover-list-item-content-subtitle{display:-webkit-box;line-clamp:2;margin:0;overflow:hidden;-webkit-line-clamp:2;-webkit-box-orient:vertical}.searchcraft-popover-list-item-content-title{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-heading-5-font-size);font-weight:var(--sc-font-bold)}.searchcraft-popover-list-item-content-subtitle{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal)}.searchcraft-popover-list-view{display:flex;flex-direction:column}.searchcraft-results-info{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal);color:var(--sc-content-primary);margin:0}.searchcraft-slider{align-items:center;display:flex;flex-direction:column;gap:10px;width:100%;margin-top:4px}.searchcraft-slider-range{align-items:center;background-color:var(--sc-surface-disabled);border-radius:999px;display:flex;position:relative;height:4px;width:100%}.searchcraft-slider-range::-webkit-slider-runnable-track{pointer-events:none}.searchcraft-slider-range .searchcraft-slider-active-range{background-color:var(--sc-surface-brand-primary);border-radius:2px;height:4px;position:absolute;top:50%;transform:translateY(-50%);z-index:0}.searchcraft-slider-range .searchcraft-slider-active-range::-webkit-slider-runnable-track{pointer-events:none}.searchcraft-slider-range .searchcraft-slider-active-range::-moz-range-track{pointer-events:none}.searchcraft-slider-range .searchcraft-slider-input{appearance:none;background:rgba(0,0,0,0);border-radius:2px;height:4px;margin:0;outline:none;pointer-events:none;position:absolute;width:100%;-webkit-appearance:none}.searchcraft-slider-range .searchcraft-slider-input::-webkit-slider-thumb{background-color:var(--sc-surface-neutral-light);border-radius:50%;border:1px solid var(--sc-border-neutral);cursor:pointer;height:18px;pointer-events:all;width:18px;-webkit-appearance:none}.searchcraft-slider-range .searchcraft-slider-input::-moz-range-thumb{background-color:var(--sc-surface-neutral-light);border-radius:50%;border:1px solid var(--sc-border-neutral);cursor:pointer;height:18px;pointer-events:all;width:18px}.searchcraft-slider-range .searchcraft-slider-input:focus::-webkit-slider-thumb{outline:2px solid var(--sc-surface-brand-primary)}.searchcraft-slider-range .searchcraft-slider-input:focus::-moz-range-thumb{outline:2px solid var(--sc-surface-brand-primary)}.searchcraft-slider-label{color:var(--sc-content-primary);display:flex;font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-small-font-size);font-weight:var(--sc-font-normal);justify-content:space-between;margin-top:4px;width:100%}.searchcraft-slider-start-label,.searchcraft-slider-end-label{min-width:30px;text-align:center}.searchcraft-toggle-button{align-items:flex-start;display:flex;gap:10px;justify-content:space-between}.searchcraft-toggle-button-label{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal);color:var(--sc-content-neutral-primary);margin:0}.searchcraft-toggle-button-sub-label{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-small-font-size);font-weight:var(--sc-font-normal);color:var(--sc-content-neutral-secondary);margin:0}.searchcraft-toggle-button-background{background:var(--sc-surface-disabled);border-radius:var(--sc-border-radius-full);border:none;cursor:pointer;flex-shrink:0;height:26px;position:relative;transition:background-color .2s;width:44px}.searchcraft-toggle-button-handle{background:var(--sc-surface-neutral-light);border-radius:50%;height:18px;left:4px;position:absolute;top:calc(50% - 9px);transition:transform .3s ease;width:18px}.searchcraft-toggle-button-active .searchcraft-toggle-button-background{background:var(--sc-surface-brand-primary);box-shadow:0px 0px 0px 1px rgba(0,0,0,.05)}.searchcraft-toggle-button-active .searchcraft-toggle-button-handle{transform:translateX(16px)}.searchcraft-pagination{display:inline-grid;gap:16px;grid-template-columns:repeat(3, auto);grid-template-rows:1fr}.searchcraft-pagination-list{border:1px solid var(--sc-border-neutral);border-radius:var(--sc-border-radius);display:flex;list-style-type:none;margin:0;overflow:hidden;padding:0;width:auto}.searchcraft-pagination-list li{border-right:1px solid var(--sc-border-neutral);height:100%;min-height:44px;width:44px}.searchcraft-pagination-list li:last-child{border-right:none}.searchcraft-pagination-item{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal);align-items:center;background-color:var(--sc-surface-neutral-primary);border:none;display:flex;height:100%;justify-content:center;width:100%}.searchcraft-pagination-item-active{background-color:var(--sc-surface-brand-secondary);font-weight:var(--sc-font-bold)}.searchcraft-pagination-control{border:1px solid var(--sc-border-neutral);border-radius:var(--sc-border-radius)}.searchcraft-pagination-range{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal);align-items:center;display:flex}.searchcraft-select{display:flex;flex-direction:column;gap:4px}.searchcraft-select-label{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-small-font-size);font-weight:var(--sc-font-normal);font-weight:var(--sc-font-bold)}.searchcraft-select-input-wrapper{position:relative}.searchcraft-select-input{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal);appearance:none;background-color:var(--sc-surface-neutral-secondary);border:2px solid rgba(0,0,0,0);border-radius:var(--sc-border-radius);cursor:pointer;height:44px;padding:0 44px 0 16px;width:100%}.searchcraft-select-input:hover{background-color:var(--sc-surface-neutral-secondary-hover)}.searchcraft-select-input:active{background-color:var(--sc-surface-neutral-secondary-active)}.searchcraft-select-input:focus{border-color:var(--sc-border-brand);outline:none}.searchcraft-select-input-icon{fill:none;pointer-events:none;position:absolute;right:12px;top:50%;transform:translateY(-50%)}.searchcraft-select-caption{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-small-font-size);font-weight:var(--sc-font-normal)}.searchcraft-search-results-per-page{display:flex}.searchcraft-search-results-per-page-select{align-items:center;display:flex;gap:12px}.searchcraft-search-results-per-page-select-label{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal)}.searchcraft-search-results-per-page-select-input{min-width:120px}.searchcraft-results-summary{padding:20px;border-radius:var(--sc-border-radius);background-color:var(--sc-surface-neutral-secondary);position:relative;min-height:200px;color:var(--sc-content-neutral-primary);font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal)}.searchcraft-results-summary h1,.searchcraft-results-summary h2,.searchcraft-results-summary h3,.searchcraft-results-summary h4,.searchcraft-results-summary h5{padding-top:10px;padding-bottom:10px}.searchcraft-results-summary p{padding-bottom:10px}.searchcraft-results-summary img{max-width:200px}.searchcraft-results-summary ol,.searchcraft-results-summary ul{padding-left:1em;padding-bottom:10px}.searchcraft-results-summary a{color:var(--sc-content-brand)}.searchcraft-summary-box{padding:20px;border-radius:var(--sc-border-radius);background-color:var(--sc-surface-neutral-secondary);position:relative;min-height:200px;color:var(--sc-content-neutral-primary);font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal)}.searchcraft-summary-box h1,.searchcraft-summary-box h2,.searchcraft-summary-box h3,.searchcraft-summary-box h4,.searchcraft-summary-box h5{padding-top:10px;padding-bottom:10px}.searchcraft-summary-box p{padding-bottom:10px}.searchcraft-summary-box img{max-width:200px}.searchcraft-summary-box ol,.searchcraft-summary-box ul{padding-left:1em;padding-bottom:10px}.searchcraft-summary-box a{color:var(--sc-content-brand)}.searchcraft-loading{display:flex;flex-direction:column;align-items:center;gap:12px;position:absolute;top:50%;left:50%;transform:translateY(-50%) translateX(-50%)}.searchcraft-loading-dots{display:flex;gap:8px;align-items:center;height:40px}.searchcraft-loading-dots>div{width:10px;height:10px;border-radius:50%;background-color:var(--sc-surface-brand-primary);animation:searchcraft-jump .6s ease-in-out infinite}.searchcraft-loading-dots .searchcraft-loading-dot-2{animation-delay:.15s}.searchcraft-loading-dots .searchcraft-loading-dot-3{animation-delay:.3s}.searchcraft-loading-label{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-small-font-size);font-weight:var(--sc-font-normal);letter-spacing:2px;color:#828282;margin:0}@keyframes searchcraft-jump{0%{transform:translateY(0);animation-timing-function:cubic-bezier(0.33, 1, 0.68, 1)}50%{transform:translateY(-20px);animation-timing-function:cubic-bezier(0.32, 0, 0.67, 0)}100%{transform:translateY(0)}}/*# sourceMappingURL=hologram.css.map */
 `;
 
 /**
@@ -10387,7 +10489,7 @@ class SearchcraftTheme {
         registerInstance(this, hostRef);
     }
     render() {
-        return hAsync("style", { key: 'e4b7c8e8d20a108df303156af5f9fcb4a19bbbe6' }, styles);
+        return hAsync("style", { key: 'ef26626cdfa4fa98d516802d71443c49a9c6ecf9' }, styles);
     }
     static get cmpMeta() { return {
         "$flags$": 256,
@@ -10451,9 +10553,9 @@ class SearchcraftToggleButton {
         this.cleanupCore?.();
     }
     render() {
-        return (hAsync("div", { key: '27d05b370fcb2a4ca440abc3ef777c264f6139a6', class: classNames('searchcraft-toggle-button', {
+        return (hAsync("div", { key: 'ab1d5ee21c7aaa28af1c405edc986556858366e8', class: classNames('searchcraft-toggle-button', {
                 'searchcraft-toggle-button-active': this.isActive,
-            }) }, hAsync("div", { key: 'e3079a80acf706576a36efb04c52c84bda90be8a' }, hAsync("p", { key: 'cbd732b19bd408e9b3dc3602b16a47060603e4f6', class: 'searchcraft-toggle-button-label' }, this.label), this.subLabel && (hAsync("p", { key: '7b68d0c50b9498e9f64968987b0d433b6bdf6327', class: 'searchcraft-toggle-button-sub-label' }, this.subLabel))), hAsync("button", { key: '05366d9f252746d4860909de37b01e908f85f2fb', class: 'searchcraft-toggle-button-background', onClick: this.handleToggle, type: 'button' }, hAsync("div", { key: '26d3ab13df50e18e6f7ec76da55089feed6d53b9', class: 'searchcraft-toggle-button-handle' }))));
+            }) }, hAsync("div", { key: '44f86a16d796d448bdb2fb3af72d4d8e1484364b' }, hAsync("p", { key: '9fedb38795d6379cae56dc005ab8e4a944b4261b', class: 'searchcraft-toggle-button-label' }, this.label), this.subLabel && (hAsync("p", { key: '44f3d17175184032275fec89a4cfe7f8266b7014', class: 'searchcraft-toggle-button-sub-label' }, this.subLabel))), hAsync("button", { key: '15fc18906ff2fb21fe646a4e3a8a2ace4a37cae2', class: 'searchcraft-toggle-button-background', onClick: this.handleToggle, type: 'button' }, hAsync("div", { key: '716d29c65a199f63f5fd294dc3e3ad2ea4d53aa3', class: 'searchcraft-toggle-button-handle' }))));
     }
     static get cmpMeta() { return {
         "$flags$": 768,
@@ -10487,6 +10589,7 @@ registerComponents([
   SearchcraftPopoverListItemAd,
   SearchcraftPopoverListView,
   SearchcraftResultsInfo,
+  SearchcraftResultsSummary,
   SearchcraftSearchResult,
   SearchcraftSearchResults,
   SearchcraftSearchResultsPerPage,

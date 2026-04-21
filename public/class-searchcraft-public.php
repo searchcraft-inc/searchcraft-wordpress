@@ -184,10 +184,20 @@ class Searchcraft_Public {
 			true
 		);
 
-		// Prepare and localize script data.
+		// Prepare and inject script data.
+		// NOTE: We intentionally use wp_add_inline_script + wp_json_encode here
+		// instead of wp_localize_script because the payload contains captured HTML
+		// templates. wp_localize_script runs html_entity_decode on every scalar
+		// value, which corrupts entity-encoded attribute values (e.g. a search
+		// query like "hello" renders as value="&quot;hello&quot;" and becomes
+		// value=""hello"" after decoding — breaking the SDK input form).
 		$script_data = $this->prepare_script_data();
 		if ( $script_data ) {
-			wp_localize_script( 'searchcraft-sdk-settings', 'searchcraftSettings', $script_data );
+			wp_add_inline_script(
+				'searchcraft-sdk-settings',
+				'var searchcraftSettings = ' . wp_json_encode( $script_data ) . ';',
+				'before'
+			);
 		}
 	}
 
@@ -219,9 +229,6 @@ class Searchcraft_Public {
 		// AI summary settings.
 		$enable_ai_summary            = get_option( 'searchcraft_enable_ai_summary', false );
 		$js_config['enableAiSummary'] = (bool) $enable_ai_summary;
-		if ( $enable_ai_summary && ! empty( $config['cortex_url'] ) ) {
-			$js_config['cortexURL'] = $config['cortex_url'];
-		}
 		$js_config['summaryBackgroundColor'] = get_option( 'searchcraft_summary_background_color', '#F5F5F5' );
 		$js_config['summaryBoxBorderRadius'] = get_option( 'searchcraft_summary_box_border_radius', '' );
 
