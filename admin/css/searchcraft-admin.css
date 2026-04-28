@@ -838,14 +838,15 @@ table.searchcraft-synonyms-table td:nth-child(3) {
 	gap: 0.5rem;
 }
 
-/* ======== Overview ======== */
-.searchcraft-overview, .searchcraft-layout {
+/* ======== Overview / Documents ======== */
+.searchcraft-overview, .searchcraft-layout, .searchcraft-documents {
 	display: flex;
 	flex-direction: column;
 	gap: 1rem;
 }
 
-.searchcraft-overview .submit {
+.searchcraft-overview .submit,
+.searchcraft-documents .submit {
 	margin: 0;
 	text-align: right;
 }
@@ -862,6 +863,7 @@ table.searchcraft-synonyms-table td:nth-child(3) {
 }
 
 .searchcraft-overview .searchcraft-overview-index-management > h2,
+.searchcraft-documents .searchcraft-overview-index-management > h2,
 .searchcraft-overview .searchcraft-overview-organization-details > p,
 .searchcraft-overview .searchcraft-overview-plan-details > p {
 	border-bottom: 1px solid var(--scwp-gray-10);
@@ -872,7 +874,22 @@ table.searchcraft-synonyms-table td:nth-child(3) {
 .searchcraft-index-stats, .searchcraft-overview-search-results-config .results-description {
 	padding-left: 1rem;
 }
-.searchcraft-overview .searchcraft-overview-index-management > p {
+.searchcraft-overview .searchcraft-overview-index-management > p,
+.searchcraft-documents .searchcraft-overview-index-management > p {
+	padding: 1rem;
+}
+
+.searchcraft-doc-count-widget {
+	background: var(--scwp-white);
+	border: 1px solid var(--scwp-gray-10);
+	box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+}
+
+.searchcraft-doc-count-value {
+	font-size: 2.5rem;
+	font-weight: 700;
+	line-height: 1;
+	margin: 0;
 	padding: 1rem;
 }
 
