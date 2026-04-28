@@ -957,6 +957,8 @@ class Searchcraft_Admin {
 		try {
 			$this->searchcraft_delete_all_documents();
 
+			do_action( 'searchcraft_after_delete_all' );
+
 			// Show success message.
 			add_action(
 				'admin_notices',
@@ -987,6 +989,8 @@ class Searchcraft_Admin {
 	private function searchcraft_on_reindex_all_documents_request() {
 		try {
 			$this->searchcraft_add_all_documents();
+
+			do_action( 'searchcraft_after_reindex_all' );
 
 			// Show success message.
 			add_action(
