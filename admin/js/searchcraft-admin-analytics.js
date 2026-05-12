@@ -94,7 +94,7 @@
 		return wrap;
 	}
 
-	function fetchAnalyticsSum() {
+	function fetchAnalyticsSum( range ) {
 		if ( typeof scAnalytics === 'undefined' ) {
 			return;
 		}
@@ -143,7 +143,7 @@
 		const params =
 			'action=searchcraft_analytics_sum' +
 			'&nonce=' + encodeURIComponent( scAnalytics.nonce ) +
-			'&range=' + encodeURIComponent( scAnalytics.defaultRange );
+			'&range=' + encodeURIComponent( range || scCurrentRange );
 
 		xhr.send( params );
 	}
@@ -246,6 +246,10 @@
 
 				scCurrentRange = range;
 				fetchChartData( range, false );
+
+				const popularWrapper = document.getElementById( 'sc-popular-terms-wrapper' );
+				if ( popularWrapper ) { setState( popularWrapper, 'loading' ); }
+				fetchAnalyticsSum( range );
 			} );
 		}
 
@@ -534,7 +538,7 @@
 				return;
 			}
 
-			window.scAnalyticsHelpers.fetchAnalyticsSum();
+			window.scAnalyticsHelpers.fetchAnalyticsSum( window.scAnalyticsHelpers.getCurrentRange() );
 			window.scAnalyticsHelpers.fetchChartData( window.scAnalyticsHelpers.getCurrentRange(), true );
 
 			const newTs = resp.data && resp.data.timestamp
@@ -587,7 +591,7 @@
 				e.preventDefault();
 				const wrapper = document.getElementById( 'sc-popular-terms-wrapper' );
 				if ( wrapper ) { setState( wrapper, 'loading' ); }
-				fetchAnalyticsSum();
+				fetchAnalyticsSum( scCurrentRange );
 			}
 		} );
 	}

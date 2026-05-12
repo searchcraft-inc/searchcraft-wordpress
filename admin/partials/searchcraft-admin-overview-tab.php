@@ -86,7 +86,7 @@ if ( $is_configured && $index_stats && isset( $index_stats['document_count'] ) )
 				</span>
 			</p>
 			<p class="sc-metric-label"><?php esc_html_e( 'Daily Active Users', 'searchcraft' ); ?></p>
-			<p class="sc-metric-empty-text"><?php esc_html_e( "We'll start counting once searches come in.", 'searchcraft' ); ?></p>
+			<p class="sc-metric-empty-text"><?php esc_html_e( 'Once there are more searches this will update.', 'searchcraft' ); ?></p>
 			<p class="sc-metric-error" role="alert">
 				<span class="sc-metric-error-text"></span>
 				<a href="#" class="sc-metric-retry" data-metric="dau"><?php esc_html_e( 'Retry', 'searchcraft' ); ?></a>
@@ -105,7 +105,7 @@ if ( $is_configured && $index_stats && isset( $index_stats['document_count'] ) )
 				</span>
 			</p>
 			<p class="sc-metric-label"><?php esc_html_e( 'Monthly Active Users', 'searchcraft' ); ?></p>
-			<p class="sc-metric-empty-text"><?php esc_html_e( "We'll start counting once searches come in.", 'searchcraft' ); ?></p>
+			<p class="sc-metric-empty-text"><?php esc_html_e( 'Once there are more searches this will update.', 'searchcraft' ); ?></p>
 			<p class="sc-metric-error" role="alert">
 				<span class="sc-metric-error-text"></span>
 				<a href="#" class="sc-metric-retry" data-metric="mau"><?php esc_html_e( 'Retry', 'searchcraft' ); ?></a>
