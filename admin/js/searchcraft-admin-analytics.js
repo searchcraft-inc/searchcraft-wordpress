@@ -3,8 +3,7 @@
  *
  * IMPORTANT: innerHTML is BANNED in this file.
  * All user-visible string values must go through setText() which sets
- * textContent only. This contract prevents XSS — especially for
- * popular_terms[].term values populated in Story 6.
+ * textContent only. This contract prevents XSS.
  *
  * @package Searchcraft
  * @since   1.5.0
@@ -13,10 +12,6 @@
 /* global ajaxurl, scAnalytics, Chart */
 ( function () {
 	'use strict';
-
-	// =========================================================================
-	// Story 7 — State machine helpers
-	// =========================================================================
 
 	/**
 	 * Set data-state on an element.
@@ -42,10 +37,6 @@
 			node.textContent = value;
 		}
 	}
-
-	// =========================================================================
-	// Story 7 — Notice helper
-	// =========================================================================
 
 	/**
 	 * Render a WP-style admin notice into the page.
@@ -103,10 +94,6 @@
 		return wrap;
 	}
 
-	// =========================================================================
-	// Story 3 — Analytics summary (DAU / MAU) cards
-	// =========================================================================
-
 	function fetchAnalyticsSum() {
 		if ( typeof scAnalytics === 'undefined' ) {
 			return;
@@ -146,6 +133,7 @@
 			if ( mauCard ) {
 				applyMetricValue( mauCard, parseInt( data.monthly_active_users, 10 ) );
 			}
+			renderPopularTerms( data.popular_terms || [] );
 		};
 
 		xhr.onerror = function () {
@@ -181,11 +169,47 @@
 			setText( mauCard.querySelector( '.sc-metric-error-text' ), msg );
 			setState( mauCard, 'error' );
 		}
+		setPopularTermsError();
 	}
 
-	// =========================================================================
-	// Story 4 — Search Volume chart
-	// =========================================================================
+	function renderPopularTerms( terms ) {
+		const wrapper = document.getElementById( 'sc-popular-terms-wrapper' );
+		if ( ! wrapper ) {
+			return;
+		}
+		if ( ! Array.isArray( terms ) || 0 === terms.length ) {
+			setState( wrapper, 'empty' );
+			return;
+		}
+		const tbody = document.getElementById( 'sc-popular-terms-tbody' );
+		if ( tbody ) {
+			while ( tbody.firstChild ) {
+				tbody.removeChild( tbody.firstChild );
+			}
+			terms.forEach( function ( item ) {
+				const tr      = document.createElement( 'tr' );
+				const tdTerm  = document.createElement( 'td' );
+				const tdCount = document.createElement( 'td' );
+				tdTerm.setAttribute( 'data-colname', 'Search Term' );
+				tdCount.setAttribute( 'data-colname', 'Count' );
+				setText( tdTerm, item.term || '' );
+				setText( tdCount, ( item.count || 0 ).toLocaleString() );
+				tr.appendChild( tdTerm );
+				tr.appendChild( tdCount );
+				tbody.appendChild( tr );
+			} );
+		}
+		setState( wrapper, 'ready' );
+	}
+
+	function setPopularTermsError() {
+		const wrapper = document.getElementById( 'sc-popular-terms-wrapper' );
+		if ( ! wrapper ) {
+			return;
+		}
+		setText( wrapper.querySelector( '.sc-popular-terms-error-text' ), 'Could not load popular search terms.' );
+		setState( wrapper, 'error' );
+	}
 
 	let scChart        = null;
 	let scCurrentRange = 'defaultRange' in ( window.scAnalytics || {} )
@@ -199,10 +223,8 @@
 			return;
 		}
 
-		// Initial data load.
 		fetchChartData( scCurrentRange, true );
 
-		// Range tab clicks.
 		const tabList = document.querySelector( '.sc-range-tabs' );
 		if ( tabList ) {
 			tabList.addEventListener( 'click', function ( e ) {
@@ -215,7 +237,6 @@
 					return;
 				}
 
-				// Update active tab state.
 				tabList.querySelectorAll( '.sc-range-tab' ).forEach( function ( t ) {
 					t.setAttribute( 'aria-selected', 'false' );
 					t.classList.remove( 'sc-range-tab-active' );
@@ -228,7 +249,6 @@
 			} );
 		}
 
-		// Chart retry.
 		chartWrapper.addEventListener( 'click', function ( e ) {
 			const btn = e.target.closest( '.sc-chart-retry' );
 			if ( ! btn ) {
@@ -258,7 +278,6 @@
 		if ( isInitial ) {
 			setState( chartWrapper, 'loading' );
 		} else {
-			// is-loading: stale chart stays visible, canvas dims.
 			if ( chartCard ) {
 				chartCard.classList.add( 'is-loading' );
 			}
@@ -317,12 +336,11 @@
 	}
 
 	function renderChart( data, isInitial, chartWrapper ) {
-		const totalSearches   = parseInt( data.total_searches, 10 ) || 0;
-		const series          = Array.isArray( data.chart_series ) ? data.chart_series : [];
-		const totalEl         = document.getElementById( 'sc-total-searches-value' );
-		const totalWrapper    = document.querySelector( '.sc-total-searches' );
+		const totalSearches = parseInt( data.total_searches, 10 ) || 0;
+		const series        = Array.isArray( data.chart_series ) ? data.chart_series : [];
+		const totalEl       = document.getElementById( 'sc-total-searches-value' );
+		const totalWrapper  = document.querySelector( '.sc-total-searches' );
 
-		// Update Total Searches headline.
 		if ( totalEl && totalWrapper ) {
 			if ( totalSearches === 0 ) {
 				setText( totalEl, '—' );
@@ -333,13 +351,11 @@
 			}
 		}
 
-		// Empty state: no series data.
 		if ( series.length === 0 ) {
 			setState( chartWrapper, 'empty' );
 			return;
 		}
 
-		// Convert [[timestamp_str, count]] to Chart.js labels + values.
 		const labels = series.map( function ( point ) {
 			const ms = parseInt( point[ 0 ], 10 ) * 1000;
 			return new Date( ms ).toLocaleDateString( undefined, { month: 'short', day: 'numeric' } );
@@ -355,15 +371,13 @@
 			return;
 		}
 
-		// Update accessible label.
 		canvas.setAttribute(
 			'aria-label',
 			'Search volume: ' + totalSearches.toLocaleString() + ' total searches'
 		);
 
 		if ( scChart && ! isInitial ) {
-			// In-place update — no destroy/recreate.
-			scChart.data.labels            = labels;
+			scChart.data.labels             = labels;
 			scChart.data.datasets[ 0 ].data = values;
 			scChart.update( 'none' );
 		} else {
@@ -378,13 +392,13 @@
 						data:        values,
 						borderColor: '#2271b1',
 						backgroundColor: function ( context ) {
-							var chart    = context.chart;
-							var ctx      = chart.ctx;
-							var area     = chart.chartArea;
+							const chart    = context.chart;
+							const ctx      = chart.ctx;
+							const area     = chart.chartArea;
 							if ( ! area ) {
 								return 'rgba(34,113,177,0)';
 							}
-							var gradient = ctx.createLinearGradient( 0, area.top, 0, area.bottom );
+							const gradient = ctx.createLinearGradient( 0, area.top, 0, area.bottom );
 							gradient.addColorStop( 0, 'rgba(34,113,177,0.15)' );
 							gradient.addColorStop( 1, 'rgba(34,113,177,0)' );
 							return gradient;
@@ -424,39 +438,168 @@
 			setText( errText, 'Could not load chart data.' );
 			setState( chartWrapper, 'error' );
 		}
-		// If not initial and we have existing chart, leave stale data visible.
 	}
 
-	// =========================================================================
-	// Retry handlers (metric cards — event delegation)
-	// =========================================================================
+	let scLastRefreshedTs = 0;
+	let scRefreshInterval = null;
+	const MIN_SPIN_MS     = 800;
+
+	function initRefreshButton() {
+		const btn = document.getElementById( 'sc-refresh-btn' );
+		if ( ! btn ) {
+			return;
+		}
+
+		updateLastRefreshedLabel();
+
+		if ( scLastRefreshedTs > 0 ) {
+			scRefreshInterval = setInterval( updateLastRefreshedLabel, 30000 );
+		}
+
+		btn.addEventListener( 'click', function () {
+			if ( btn.disabled ) {
+				return;
+			}
+			doRefresh( btn );
+		} );
+	}
+
+	function updateLastRefreshedLabel() {
+		const label = document.getElementById( 'sc-last-refreshed' );
+		if ( ! label ) {
+			return;
+		}
+		if ( ! scLastRefreshedTs ) {
+			label.style.display = 'none';
+			return;
+		}
+		const diffMs  = Date.now() - ( scLastRefreshedTs * 1000 );
+		const diffMin = Math.floor( diffMs / 60000 );
+		let text;
+		if ( diffMin < 1 ) {
+			text = 'Last refreshed just now';
+		} else if ( 1 === diffMin ) {
+			text = 'Last refreshed 1m ago';
+		} else if ( diffMin < 60 ) {
+			text = 'Last refreshed ' + diffMin + 'm ago';
+		} else {
+			const diffHr = Math.floor( diffMin / 60 );
+			text = 1 === diffHr ? 'Last refreshed 1h ago' : 'Last refreshed ' + diffHr + 'h ago';
+		}
+		setText( label, text );
+		label.style.display = '';
+	}
+
+	function doRefresh( btn ) {
+		if ( typeof scAnalytics === 'undefined' ) {
+			return;
+		}
+
+		const spinStart = Date.now();
+		btn.disabled = true;
+		btn.classList.add( 'is-spinning' );
+
+		const xhr = new XMLHttpRequest();
+		xhr.open( 'POST', ajaxurl, true );
+		xhr.setRequestHeader( 'Content-Type', 'application/x-www-form-urlencoded' );
+
+		xhr.onload = function () {
+			const remaining = Math.max( 0, MIN_SPIN_MS - ( Date.now() - spinStart ) );
+
+			if ( xhr.status !== 200 ) {
+				setTimeout( function () {
+					btn.disabled = false;
+					btn.classList.remove( 'is-spinning' );
+					renderNotice( 'error', 'Analytics refresh failed. Cached data is still shown.' );
+				}, remaining );
+				return;
+			}
+			let resp;
+			try {
+				resp = JSON.parse( xhr.responseText );
+			} catch ( e ) {
+				setTimeout( function () {
+					btn.disabled = false;
+					btn.classList.remove( 'is-spinning' );
+					renderNotice( 'error', 'Analytics refresh failed. Cached data is still shown.' );
+				}, remaining );
+				return;
+			}
+			if ( ! resp.success ) {
+				setTimeout( function () {
+					btn.disabled = false;
+					btn.classList.remove( 'is-spinning' );
+					renderNotice( 'error', 'Analytics refresh failed. Cached data is still shown.' );
+				}, remaining );
+				return;
+			}
+
+			window.scAnalyticsHelpers.fetchAnalyticsSum();
+			window.scAnalyticsHelpers.fetchChartData( window.scAnalyticsHelpers.getCurrentRange(), true );
+
+			const newTs = resp.data && resp.data.timestamp
+				? parseInt( resp.data.timestamp, 10 )
+				: Math.floor( Date.now() / 1000 );
+
+			setTimeout( function () {
+				btn.disabled = false;
+				btn.classList.remove( 'is-spinning' );
+				scLastRefreshedTs = newTs;
+				updateLastRefreshedLabel();
+				if ( ! scRefreshInterval ) {
+					scRefreshInterval = setInterval( updateLastRefreshedLabel, 30000 );
+				}
+				renderNotice( 'success', 'Analytics refreshed — data was already current.', { autoDismissMs: 4000 } );
+			}, remaining );
+		};
+
+		xhr.onerror = function () {
+			const remaining = Math.max( 0, MIN_SPIN_MS - ( Date.now() - spinStart ) );
+			setTimeout( function () {
+				btn.disabled = false;
+				btn.classList.remove( 'is-spinning' );
+				renderNotice( 'error', 'Analytics refresh failed. Cached data is still shown.' );
+			}, remaining );
+		};
+
+		const params =
+			'action=searchcraft_refresh_analytics' +
+			'&nonce=' + encodeURIComponent( scAnalytics.nonce );
+
+		xhr.send( params );
+	}
 
 	function initRetryHandlers() {
 		document.addEventListener( 'click', function ( e ) {
-			const btn = e.target.closest( '.sc-metric-retry' );
-			if ( ! btn ) {
-				return;
-			}
-			e.preventDefault();
-			const metric = btn.getAttribute( 'data-metric' );
-			if ( metric === 'dau' || metric === 'mau' ) {
-				const dauCard = document.getElementById( 'sc-metric-card-dau' );
-				const mauCard = document.getElementById( 'sc-metric-card-mau' );
-				if ( dauCard ) { setState( dauCard, 'loading' ); }
-				if ( mauCard ) { setState( mauCard, 'loading' ); }
+			const metricBtn  = e.target.closest( '.sc-metric-retry' );
+			const popularBtn = e.target.closest( '.sc-popular-terms-retry' );
+			if ( metricBtn ) {
+				e.preventDefault();
+				const metric = metricBtn.getAttribute( 'data-metric' );
+				if ( metric === 'dau' || metric === 'mau' ) {
+					const dauCard = document.getElementById( 'sc-metric-card-dau' );
+					const mauCard = document.getElementById( 'sc-metric-card-mau' );
+					if ( dauCard ) { setState( dauCard, 'loading' ); }
+					if ( mauCard ) { setState( mauCard, 'loading' ); }
+					fetchAnalyticsSum();
+				}
+			} else if ( popularBtn ) {
+				e.preventDefault();
+				const wrapper = document.getElementById( 'sc-popular-terms-wrapper' );
+				if ( wrapper ) { setState( wrapper, 'loading' ); }
 				fetchAnalyticsSum();
 			}
 		} );
 	}
 
-	// =========================================================================
-	// DOM-ready bootstrap
-	// =========================================================================
-
 	function boot() {
+		scLastRefreshedTs = ( typeof scAnalytics !== 'undefined' && scAnalytics.lastRefresh )
+			? parseInt( scAnalytics.lastRefresh, 10 )
+			: 0;
 		fetchAnalyticsSum();
 		initSearchVolumeChart();
 		initRetryHandlers();
+		initRefreshButton();
 	}
 
 	if ( document.readyState === 'loading' ) {
@@ -465,17 +608,22 @@
 		boot();
 	}
 
-	// Expose helpers for Story 5 (refresh button) and Story 6 (popular terms).
 	window.scAnalyticsHelpers = {
-		setState:         setState,
-		setText:          setText,
-		renderNotice:     renderNotice,
+		setState:          setState,
+		setText:           setText,
+		renderNotice:      renderNotice,
 		fetchAnalyticsSum: fetchAnalyticsSum,
-		fetchChartData:   function ( range, isInitial ) {
+		fetchChartData:    function ( range, isInitial ) {
 			return fetchChartData( range || scCurrentRange, isInitial !== false );
 		},
 		getCurrentRange: function () {
 			return scCurrentRange;
+		},
+		doRefresh: function () {
+			const btn = document.getElementById( 'sc-refresh-btn' );
+			if ( btn && ! btn.disabled ) {
+				doRefresh( btn );
+			}
 		},
 	};
 }() );

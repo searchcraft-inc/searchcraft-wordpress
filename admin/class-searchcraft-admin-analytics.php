@@ -45,12 +45,12 @@ class Searchcraft_Admin_Analytics {
 	const CACHE_SCHEMA_VERSION = 'v1';
 
 	/**
-	 * Cache TTL for sum and chart families (5 minutes).
+	 * Cache TTL for sum and chart families (10 minutes).
 	 *
 	 * @since 1.5.0
 	 * @var int
 	 */
-	const CACHE_TTL = 300;
+	const CACHE_TTL = 600;
 
 	/**
 	 * Cache TTL for 5xx negative-cache sentinel (30 seconds).
@@ -694,7 +694,7 @@ class Searchcraft_Admin_Analytics {
 	 * Extract chart series from an API summary data array.
 	 *
 	 * Returns searches_chart.series[0].data as an array of [timestamp, count]
-	 * pairs, which Chart.js consumes directly in Story 4.
+	 * pairs, which the chart consumes directly.
 	 *
 	 * @since 1.5.0
 	 * @param array $data Raw 'data' payload from the API response.

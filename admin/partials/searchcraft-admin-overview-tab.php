@@ -43,34 +43,34 @@ if ( $is_configured && $index_stats && isset( $index_stats['document_count'] ) )
 		</div>
 	<?php endif; ?>
 	<?php if ( $is_configured ) : ?>
-	<h2 class="searchcraft-section-heading">Welcome Aboard Pilot!</h2>
-	<div class="searchcraft-overview-getting-started">
-		<p>Getting Started</p>
-		<div>
-			<p>As you create pages and posts, they will automatically be added to search unless you mark "exclude from search" on the edit screen.</p>
-			<?php if ( $index_stats && isset( $index_stats['document_count'] ) && 0 === (int) $index_stats['document_count'] ) : ?>
-				<p>On first activation, we need to sync your existing content.</p>
-				<form method="post" class="searchcraft-form" id="searchcraft-initial-reindex-form">
-					<?php wp_nonce_field( 'searchcraft_settings', 'searchcraft_nonce' ); ?>
-					<input
-						type="hidden"
-						name="searchcraft_action"
-						value="reindex_all_documents"
-					/>
-					<div class="searchcraft-button-with-spinner">
-						<?php submit_button( 'Sync All Documents Now', 'primary', 'searchcraft_reindex_all_documents', false, array( 'id' => 'searchcraft-reindex-button' ) ); ?>
-						<span class="searchcraft-spinner" id="searchcraft-reindex-spinner" style="display: none;">
-							<span class="spinner is-active"></span>
-							<span class="searchcraft-spinner-text">Syncing documents...</span>
-						</span>
-					</div>
-				</form>
-			<?php endif; ?>
-			<p>
-				Having issues? Join our <a href="https://discord.com/invite/y3zUHkBk6e">community Discord </a>.
-			</p>
-		</div>
+	<div class="sc-welcome">
+		<h2 class="searchcraft-section-heading"><?php esc_html_e( 'Welcome aboard, Pilot!', 'searchcraft' ); ?></h2>
+		<p class="sc-welcome-text">
+			<?php
+			printf(
+				/* translators: %s: Discord server link */
+				esc_html__( 'Congratulations! You are now part of the most advanced and most performant content discovery platform in the universe. New features are added regularly. Check for updates and get help from the Searchcraft crew on our %s.', 'searchcraft' ),
+				'<a href="https://discord.com/invite/y3zUHkBk6e">' . esc_html__( 'public Discord server', 'searchcraft' ) . '</a>'
+			);
+			?>
+		</p>
 	</div>
+		<?php if ( $index_stats && isset( $index_stats['document_count'] ) && 0 === (int) $index_stats['document_count'] ) : ?>
+	<div class="sc-first-sync">
+		<p><?php esc_html_e( 'On first activation, we need to sync your existing content.', 'searchcraft' ); ?></p>
+		<form method="post" class="searchcraft-form" id="searchcraft-initial-reindex-form">
+			<?php wp_nonce_field( 'searchcraft_settings', 'searchcraft_nonce' ); ?>
+			<input type="hidden" name="searchcraft_action" value="reindex_all_documents" />
+			<div class="searchcraft-button-with-spinner">
+				<?php submit_button( 'Sync All Documents Now', 'primary', 'searchcraft_reindex_all_documents', false, array( 'id' => 'searchcraft-reindex-button' ) ); ?>
+				<span class="searchcraft-spinner" id="searchcraft-reindex-spinner" style="display: none;">
+					<span class="spinner is-active"></span>
+					<span class="searchcraft-spinner-text"><?php esc_html_e( 'Syncing documents...', 'searchcraft' ); ?></span>
+				</span>
+			</div>
+		</form>
+	</div>
+	<?php endif; ?>
 
 	<div class="sc-analytics-metric-cards" id="sc-analytics-metric-cards">
 
@@ -135,7 +135,17 @@ if ( $is_configured && $index_stats && isset( $index_stats['document_count'] ) )
 	<div class="sc-card sc-chart-card" id="sc-chart-card">
 		<div class="sc-card-header">
 			<p class="sc-card-title"><?php esc_html_e( 'Search Volume', 'searchcraft' ); ?></p>
-			<span class="sc-card-spinner spinner is-active" aria-hidden="true"></span>
+			<span class="sc-card-header-actions">
+				<span class="sc-card-spinner spinner" aria-hidden="true"></span>
+				<button
+					type="button"
+					id="sc-refresh-btn"
+					class="sc-refresh-icon-btn"
+					title="<?php esc_attr_e( 'Refresh analytics data (cached up to 5 minutes).', 'searchcraft' ); ?>">
+					<span class="dashicons dashicons-update" aria-hidden="true"></span>
+					<span class="screen-reader-text"><?php esc_html_e( 'Refresh analytics data', 'searchcraft' ); ?></span>
+				</button>
+			</span>
 		</div>
 		<div class="sc-card-body">
 
@@ -169,6 +179,36 @@ if ( $is_configured && $index_stats && isset( $index_stats['document_count'] ) )
 				</p>
 			</div>
 
+		</div>
+	</div>
+
+	<div class="sc-card" id="sc-popular-terms-card">
+		<div class="sc-card-header">
+			<p class="sc-card-title"><?php esc_html_e( 'Popular Search Terms', 'searchcraft' ); ?></p>
+		</div>
+		<div class="sc-popular-terms-wrapper" id="sc-popular-terms-wrapper" data-state="loading">
+			<div class="sc-table-skeleton" aria-hidden="true">
+				<?php for ( $i = 0; $i < 5; $i++ ) : ?>
+				<div class="sc-table-skeleton-row">
+					<span class="sc-skeleton sc-skeleton--term"></span>
+					<span class="sc-skeleton sc-skeleton--count"></span>
+				</div>
+				<?php endfor; ?>
+			</div>
+			<table class="sc-popular-terms-table">
+				<thead>
+					<tr>
+						<th scope="col"><?php esc_html_e( 'Term', 'searchcraft' ); ?></th>
+						<th scope="col" class="sc-terms-col-count"><?php esc_html_e( 'Occurences', 'searchcraft' ); ?></th>
+					</tr>
+				</thead>
+				<tbody id="sc-popular-terms-tbody"></tbody>
+			</table>
+			<p class="sc-popular-terms-empty"><?php esc_html_e( 'No searches yet. Run a test search from your site to see this fill in.', 'searchcraft' ); ?></p>
+			<p class="sc-popular-terms-error" role="alert">
+				<span class="sc-popular-terms-error-text"></span>
+				<a href="#" class="sc-popular-terms-retry"><?php esc_html_e( 'Retry', 'searchcraft' ); ?></a>
+			</p>
 		</div>
 	</div>
 	<?php endif; ?>

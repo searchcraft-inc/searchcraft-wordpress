@@ -6,6 +6,73 @@
  * @since      1.5.0
  */
 
+/* ======== Welcome section ======== */
+
+.sc-welcome {
+	margin-bottom: 20px;
+}
+
+.sc-welcome-text {
+	font-size: 1rem;
+	margin: 0;
+	line-height: 1.5;
+	color: var(--scwp-gray-70);
+}
+
+.sc-first-sync {
+	margin-bottom: 20px;
+}
+
+/* ======== Refresh icon button (chart card header) ======== */
+
+.sc-card-header-actions {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+}
+
+.sc-refresh-icon-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 26px;
+	height: 26px;
+	padding: 0;
+	background: none;
+	border: 1px solid transparent;
+	border-radius: var(--scwp-rounded-sm);
+	cursor: pointer;
+	color: var(--scwp-gray-40);
+	line-height: 1;
+}
+
+.sc-refresh-icon-btn:hover:not(:disabled) {
+	color: var(--scwp-gray-90);
+	background: var(--scwp-gray-2);
+	border-color: var(--scwp-gray-10);
+}
+
+.sc-refresh-icon-btn:disabled {
+	cursor: not-allowed;
+	opacity: 0.5;
+}
+
+.sc-refresh-icon-btn .dashicons {
+	font-size: 16px;
+	width: 16px;
+	height: 16px;
+	line-height: 1;
+}
+
+@keyframes sc-spin {
+	from { transform: rotate(0deg); }
+	to   { transform: rotate(360deg); }
+}
+
+.sc-refresh-icon-btn.is-spinning .dashicons {
+	animation: sc-spin 0.8s linear infinite;
+}
+
 /* ======== Skeleton shimmer ======== */
 
 @keyframes sc-shimmer {
@@ -147,7 +214,8 @@
 }
 
 .sc-card-spinner {
-	display: none;
+	display: inline-block; /* always in flow — prevents button shift on tab change */
+	visibility: hidden;
 }
 
 .sc-card-body {
@@ -248,7 +316,7 @@
 }
 
 .sc-chart-card.is-loading .sc-card-spinner {
-	display: inline-block;
+	visibility: visible;
 }
 
 /* ---- Chart empty/error text ---- */
@@ -268,6 +336,94 @@
 }
 
 .sc-chart-retry {
+	display: inline-block;
+	margin-top: 4px;
+}
+
+/* ======== Popular Search Terms table ======== */
+
+.sc-popular-terms-wrapper {
+	padding: 20px;
+}
+
+.sc-table-skeleton {
+	display: none;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.sc-table-skeleton-row {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+
+.sc-skeleton--term {
+	flex: 1;
+	height: 1.25rem;
+	width: auto;
+	margin: 0;
+}
+
+.sc-skeleton--count {
+	width: 48px;
+	height: 1.25rem;
+	margin: 0;
+}
+
+.sc-popular-terms-table {
+	display: none;
+	width: 100%;
+	border-collapse: collapse;
+}
+
+.sc-popular-terms-table th {
+	font-size: 0.875rem;
+	font-weight: 600;
+	line-height: 1.2;
+	text-align: left;
+	padding: 0 0 12px;
+	border: none;
+	background: none;
+	box-shadow: none;
+}
+
+.sc-popular-terms-table td {
+	font-size: 0.875rem;
+	line-height: 1.2;
+	padding: 8px 0 12px;
+	border-bottom: 1px solid #f0f0f1;
+	background: none;
+	box-shadow: none;
+}
+
+.sc-terms-col-count,
+.sc-popular-terms-table th:last-child,
+.sc-popular-terms-table td:last-child {
+	text-align: right;
+}
+
+.sc-popular-terms-empty { display: none; }
+.sc-popular-terms-error { display: none; }
+
+[data-state="loading"].sc-popular-terms-wrapper .sc-table-skeleton    { display: flex; }
+[data-state="ready"].sc-popular-terms-wrapper .sc-popular-terms-table { display: table; }
+[data-state="empty"].sc-popular-terms-wrapper .sc-popular-terms-empty { display: block; }
+[data-state="error"].sc-popular-terms-wrapper .sc-popular-terms-error { display: block; }
+
+.sc-popular-terms-empty,
+.sc-popular-terms-error {
+	font-size: 0.8125rem;
+	text-align: center;
+	margin: 0;
+	color: var(--scwp-gray-50);
+}
+
+.sc-popular-terms-error {
+	color: var(--scwp-red-50);
+}
+
+.sc-popular-terms-retry {
 	display: inline-block;
 	margin-top: 4px;
 }

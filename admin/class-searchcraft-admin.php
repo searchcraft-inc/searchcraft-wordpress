@@ -235,12 +235,16 @@ class Searchcraft_Admin {
 				$this->plugin_version,
 				true
 			);
+			$sc_index_id     = Searchcraft_Config::get_index_id();
+			$sc_idx_hash     = empty( $sc_index_id ) ? 'default' : substr( md5( $sc_index_id ), 0, 32 );
+			$sc_last_refresh = (int) get_option( 'searchcraft_analytics_last_refresh_' . $sc_idx_hash, 0 );
 			wp_localize_script(
 				$this->plugin_name . '-analytics-js',
 				'scAnalytics',
 				array(
 					'nonce'        => wp_create_nonce( 'searchcraft_analytics' ),
 					'defaultRange' => '1w',
+					'lastRefresh'  => $sc_last_refresh,
 				)
 			);
 		}
