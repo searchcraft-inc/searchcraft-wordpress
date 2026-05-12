@@ -200,7 +200,7 @@ class Searchcraft_Admin_Analytics {
 				header( 'X-Searchcraft-Cache: BYPASS' );
 		}
 
-		$client = $this->get_read_client();
+		$client = $this->get_measure_client();
 		if ( null === $client ) {
 			wp_send_json_error( array( 'code' => 'not_configured' ), 503 );
 			return;
@@ -318,7 +318,7 @@ class Searchcraft_Admin_Analytics {
 				header( 'X-Searchcraft-Cache: BYPASS' );
 		}
 
-		$client = $this->get_read_client();
+		$client = $this->get_measure_client();
 		if ( null === $client ) {
 			wp_send_json_error( array( 'code' => 'not_configured' ), 503 );
 			return;
@@ -483,9 +483,9 @@ class Searchcraft_Admin_Analytics {
 	 * Flush all cache when critical config fields change.
 	 *
 	 * Index_id and endpoint_url are stored plaintext — compared directly.
-	 * read_key is stored encrypted — any change in ciphertext means a new key
+	 * ingest_key is stored encrypted — any change in ciphertext means a new key
 	 * was submitted (different IV each encryption), so we flush.
-	 * If read_key is left empty on the config form, the existing ciphertext is
+	 * If ingest_key is left empty on the config form, the existing ciphertext is
 	 * preserved and the values are equal, so no flush occurs.
 	 *
 	 * @since 1.5.0
@@ -496,7 +496,7 @@ class Searchcraft_Admin_Analytics {
 		if ( ! is_array( $old_value ) || ! is_array( $new_value ) ) {
 			return;
 		}
-		foreach ( array( 'index_id', 'endpoint_url', 'read_key' ) as $key ) {
+		foreach ( array( 'index_id', 'endpoint_url', 'ingest_key' ) as $key ) {
 			$old = isset( $old_value[ $key ] ) ? $old_value[ $key ] : '';
 			$new = isset( $new_value[ $key ] ) ? $new_value[ $key ] : '';
 			if ( $old !== $new ) {
@@ -569,14 +569,14 @@ class Searchcraft_Admin_Analytics {
 	 * @since 1.5.0
 	 * @return object|null Client instance, or null if credentials are missing.
 	 */
-	private function get_read_client() {
-		$read_key     = Searchcraft_Config::get_read_key();
+	private function get_measure_client() {
+		$ingest_key   = Searchcraft_Config::get_ingest_key();
 		$endpoint_url = Searchcraft_Config::get_endpoint_url();
-		if ( empty( $read_key ) || empty( $endpoint_url ) ) {
+		if ( empty( $ingest_key ) || empty( $endpoint_url ) ) {
 			return null;
 		}
 		try {
-			return new SearchcraftPhpClient( $read_key, SearchcraftPhpClient::KEY_TYPE_READ, $endpoint_url );
+			return new SearchcraftPhpClient( $ingest_key, SearchcraftPhpClient::KEY_TYPE_INGEST, $endpoint_url );
 		} catch ( \Exception $e ) {
 			return null;
 		}

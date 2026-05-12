@@ -1,0 +1,273 @@
+/**
+ * Analytics UI styles for the Searchcraft admin.
+ *
+ * @package    Searchcraft
+ * @subpackage Searchcraft/admin/css
+ * @since      1.5.0
+ */
+
+/* ======== Skeleton shimmer ======== */
+
+@keyframes sc-shimmer {
+	0%   { background-position: -400px 0; }
+	100% { background-position:  400px 0; }
+}
+
+.sc-skeleton {
+	display: block;
+	height: 2.5rem;
+	width: 60%;
+	margin: 0 auto;
+	border-radius: var(--scwp-rounded-sm);
+	background: linear-gradient(
+		90deg,
+		var(--scwp-gray-2)  25%,
+		var(--scwp-gray-5)  50%,
+		var(--scwp-gray-2)  75%
+	);
+	background-size: 400px 100%;
+	animation: sc-shimmer 1.4s ease-in-out infinite;
+}
+
+/* ======== Metric card state machine ======== */
+
+/*
+ * Default: nothing is shown until data-state is set.
+ * state=loading  → skeleton visible, value/empty/error hidden
+ * state=ready    → value-text visible, everything else hidden
+ * state=empty    → value-text visible ("—"), empty-text visible, rest hidden
+ * state=error    → error visible, everything else hidden
+ */
+
+.sc-metric-value-text { display: none; }
+.sc-metric-empty-text { display: none; }
+.sc-metric-error      { display: none; }
+
+[data-state="loading"] .sc-skeleton           { display: block; }
+[data-state="loading"] .sc-metric-value-text  { display: none; }
+[data-state="loading"] .sc-metric-empty-text  { display: none; }
+[data-state="loading"] .sc-metric-error       { display: none; }
+
+[data-state="ready"] .sc-skeleton             { display: none; }
+[data-state="ready"] .sc-metric-value-text    { display: inline; }
+[data-state="ready"] .sc-metric-empty-text    { display: none; }
+[data-state="ready"] .sc-metric-error         { display: none; }
+
+[data-state="empty"] .sc-skeleton             { display: none; }
+[data-state="empty"] .sc-metric-value-text    { display: inline; }
+[data-state="empty"] .sc-metric-empty-text    { display: block; }
+[data-state="empty"] .sc-metric-error         { display: none; }
+
+[data-state="error"] .sc-skeleton             { display: none; }
+[data-state="error"] .sc-metric-value-text    { display: none; }
+[data-state="error"] .sc-metric-empty-text    { display: none; }
+[data-state="error"] .sc-metric-error         { display: block; }
+
+/* ======== Metric cards layout ======== */
+
+.sc-analytics-metric-cards {
+	display: flex;
+	gap: 20px;
+	margin-bottom: 20px;
+}
+
+.sc-metric-card {
+	flex: 1;
+	min-width: 0;
+	background: var(--scwp-white);
+	border: 1px solid var(--scwp-gray-10);
+	padding: 20px 8px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 4px;
+}
+
+.sc-metric-value {
+	font-size: 2.5rem;
+	line-height: 1.2;
+	margin: 0;
+}
+
+/* Center value only inside the stat cards, not in the Total Searches row. */
+.sc-metric-card .sc-metric-value {
+	text-align: center;
+	width: 100%;
+}
+
+.sc-metric-label {
+	font-size: 0.875rem;
+	font-weight: 600;
+	margin: 0;
+	text-align: center;
+}
+
+.sc-metric-empty-text {
+	font-size: 0.75rem;
+	color: var(--scwp-gray-30);
+	margin: 4px 0 0;
+	text-align: center;
+}
+
+.sc-metric-error {
+	font-size: 0.75rem;
+	color: var(--scwp-red-50);
+	margin: 4px 0 0;
+	text-align: center;
+}
+
+.sc-metric-retry {
+	display: inline-block;
+	margin-top: 4px;
+}
+
+/* ======== Search Volume card ======== */
+
+.sc-card {
+	background: var(--scwp-white);
+	border: 1px solid var(--scwp-gray-10);
+	margin-bottom: 20px;
+}
+
+.sc-card-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	border-bottom: 1px solid var(--scwp-gray-10);
+	padding: 8px 12px;
+	min-height: 36px;
+}
+
+.sc-card-title {
+	font-size: 0.875rem;
+	font-weight: 600;
+	margin: 0;
+	line-height: 1.2;
+}
+
+.sc-card-spinner {
+	display: none;
+}
+
+.sc-card-body {
+	padding: 20px;
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+/* ---- Range tabs ---- */
+
+.sc-range-tabs {
+	display: flex;
+	border: 1px solid var(--scwp-gray-10);
+}
+
+.sc-range-tab {
+	flex: 1;
+	padding: 8px;
+	background: var(--scwp-white);
+	border: none;
+	border-right: 1px solid var(--scwp-gray-10);
+	font-size: 0.875rem;
+	font-weight: 600;
+	line-height: 1.2;
+	cursor: pointer;
+	text-align: center;
+	color: var(--scwp-gray-90);
+}
+
+.sc-range-tab:last-child {
+	border-right: none;
+}
+
+.sc-range-tab.sc-range-tab-active {
+	background: var(--scwp-gray-2);
+}
+
+.sc-range-tab:disabled,
+.sc-range-tabs[aria-busy="true"] .sc-range-tab {
+	cursor: not-allowed;
+	opacity: 0.6;
+}
+
+/* ---- Total searches headline ---- */
+
+.sc-total-searches {
+	display: flex;
+	align-items: baseline;
+	gap: 8px;
+}
+
+.sc-total-searches-label {
+	font-size: 0.875rem;
+	font-weight: 600;
+}
+
+/* ---- Chart wrapper ---- */
+
+.sc-chart-wrapper {
+	position: relative;
+	min-height: 240px;
+}
+
+.sc-chart-wrapper canvas {
+	width: 100% !important;
+	height: 240px !important;
+}
+
+.sc-chart-empty,
+.sc-chart-error {
+	display: none;
+}
+
+/* loading: canvas hidden, skeleton visible via parent metric-value */
+[data-state="loading"].sc-chart-wrapper canvas { display: none; }
+
+/* ready: canvas visible */
+[data-state="ready"].sc-chart-wrapper canvas  { display: block; }
+[data-state="ready"].sc-chart-wrapper .sc-chart-empty { display: none; }
+[data-state="ready"].sc-chart-wrapper .sc-chart-error { display: none; }
+
+/* empty: no canvas, show empty text */
+[data-state="empty"].sc-chart-wrapper canvas     { display: none; }
+[data-state="empty"].sc-chart-wrapper .sc-chart-empty { display: block; }
+[data-state="empty"].sc-chart-wrapper .sc-chart-error { display: none; }
+
+/* error: no canvas, show error */
+[data-state="error"].sc-chart-wrapper canvas    { display: none; }
+[data-state="error"].sc-chart-wrapper .sc-chart-error { display: block; }
+[data-state="error"].sc-chart-wrapper .sc-chart-empty { display: none; }
+
+/* ---- is-loading (tab-change fetch: stale data preserved, canvas dims) ---- */
+
+.sc-chart-card.is-loading canvas {
+	opacity: 0.5;
+	pointer-events: none;
+}
+
+.sc-chart-card.is-loading .sc-card-spinner {
+	display: inline-block;
+}
+
+/* ---- Chart empty/error text ---- */
+
+.sc-chart-empty {
+	font-size: 0.8125rem;
+	color: var(--scwp-gray-50);
+	padding: 40px 0;
+	text-align: center;
+}
+
+.sc-chart-error {
+	font-size: 0.8125rem;
+	color: var(--scwp-red-50);
+	padding: 40px 0;
+	text-align: center;
+}
+
+.sc-chart-retry {
+	display: inline-block;
+	margin-top: 4px;
+}
