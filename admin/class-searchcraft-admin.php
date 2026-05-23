@@ -242,9 +242,10 @@ class Searchcraft_Admin {
 				$this->plugin_name . '-analytics-js',
 				'scAnalytics',
 				array(
-					'nonce'        => wp_create_nonce( 'searchcraft_analytics' ),
-					'defaultRange' => '1w',
-					'lastRefresh'  => $sc_last_refresh,
+					'nonce'          => wp_create_nonce( 'searchcraft_analytics' ),
+					'defaultRange'   => '1w',
+					'lastRefresh'    => $sc_last_refresh,
+					'measureEnabled' => Searchcraft_Admin_Analytics::is_measure_enabled() ? '1' : '0',
 				)
 			);
 		}

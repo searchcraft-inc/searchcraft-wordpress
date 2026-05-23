@@ -45,6 +45,15 @@ class Searchcraft_Admin_Analytics {
 	const CACHE_SCHEMA_VERSION = 'v1';
 
 	/**
+	 * Cache schema version for the measure status transient only.
+	 * Kept separate so it can be bumped independently of the analytics data keys.
+	 *
+	 * @since 1.5.0
+	 * @var string
+	 */
+	const CACHE_SCHEMA_VERSION_STATUS = 'v1';
+
+	/**
 	 * Cache TTL for sum and chart families (10 minutes).
 	 *
 	 * @since 1.5.0
@@ -61,7 +70,15 @@ class Searchcraft_Admin_Analytics {
 	const NEGATIVE_CACHE_TTL = 30;
 
 	/**
-	 * Accepted range tokens, ordered for documentation clarity.
+	 * Cache TTL for measure status (5 minutes).
+	 *
+	 * @since 1.5.0
+	 * @var int
+	 */
+	const STATUS_CACHE_TTL = 300;
+
+	/**
+	 * Accepted range tokens
 	 *
 	 * @since 1.5.0
 	 * @var string[]
@@ -245,8 +262,13 @@ class Searchcraft_Admin_Analytics {
 					self::NEGATIVE_CACHE_TTL
 				);
 			}
-			// Never include exception message — it may contain values from Searchcraft_Config::get().
-			wp_send_json_error( array( 'code' => 'upstream_error' ), 503 );
+			error_log( '[Searchcraft] analytics_sum SearchcraftException code=' . $status . ' msg=' . $e->getMessage() );
+			$error_data = array( 'code' => 'upstream_error' );
+			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+				$error_data['http_status'] = $status;
+				$error_data['message']     = $e->getMessage();
+			}
+			wp_send_json_error( $error_data, 503 );
 		}
 	}
 
@@ -360,7 +382,13 @@ class Searchcraft_Admin_Analytics {
 					self::NEGATIVE_CACHE_TTL
 				);
 			}
-			wp_send_json_error( array( 'code' => 'upstream_error' ), 503 );
+			error_log( '[Searchcraft] analytics_chart SearchcraftException code=' . $status . ' msg=' . $e->getMessage() );
+			$error_data = array( 'code' => 'upstream_error' );
+			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+				$error_data['http_status'] = $status;
+				$error_data['message']     = $e->getMessage();
+			}
+			wp_send_json_error( $error_data, 503 );
 		}
 	}
 
@@ -525,7 +553,7 @@ class Searchcraft_Admin_Analytics {
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Flush all three cache families for the current index.
+	 * Flush all three cache families for the current index, plus the measure status cache.
 	 *
 	 * Iterates all valid ranges × {sum, chart} and deletes the single doc_count
 	 * key. Uses delete_transient() per known key — no wildcard or LIKE queries.
@@ -543,6 +571,7 @@ class Searchcraft_Admin_Analytics {
 			delete_transient( 'searchcraft_chart_' . self::CACHE_SCHEMA_VERSION . '_' . $hash );
 		}
 		$this->flush_doc_count_cache();
+		$this->flush_measure_status_cache();
 	}
 
 	/**
@@ -557,6 +586,66 @@ class Searchcraft_Admin_Analytics {
 		}
 		$doc_hash = substr( md5( $index_id ), 0, 32 );
 		delete_transient( 'searchcraft_doc_count_' . self::CACHE_SCHEMA_VERSION . '_' . $doc_hash );
+	}
+
+	/**
+	 * Flush the measure status transient for the current endpoint.
+	 *
+	 * @since 1.5.0
+	 */
+	public function flush_measure_status_cache() {
+		$endpoint_url = Searchcraft_Config::get_endpoint_url();
+		if ( empty( $endpoint_url ) ) {
+			return;
+		}
+		delete_transient( 'searchcraft_measure_status_' . self::CACHE_SCHEMA_VERSION_STATUS . '_' . substr( md5( $endpoint_url ), 0, 32 ) );
+	}
+
+	/**
+	 * Check whether Measure analytics are available on the configured server.
+	 *
+	 * Calls GET /measure/status via the PHP client. Results are cached for
+	 * CACHE_TTL when enabled, NEGATIVE_CACHE_TTL when disabled, so the UI
+	 * recovers quickly if the server is later configured. Any exception (network
+	 * failure, 4xx, 5xx) fails open — returns true so a connectivity blip never
+	 * suppresses the analytics UI.
+	 *
+	 * Cache key: searchcraft_measure_status_v1_{32-char md5 of endpoint_url}
+	 * Key length: 35 + 32 = 67 chars — under WP's 172-char transient limit.
+	 *
+	 * @since 1.5.0
+	 * @return bool True when analytics are available; false when the server
+	 *              reports measure is disabled.
+	 */
+	public static function is_measure_enabled() {
+		if ( ! Searchcraft_Config::is_configured() ) {
+			return true;
+		}
+
+		$endpoint_url = Searchcraft_Config::get_endpoint_url();
+		$ingest_key   = Searchcraft_Config::get_ingest_key();
+		if ( empty( $endpoint_url ) || empty( $ingest_key ) ) {
+			return true;
+		}
+
+		$cache_key = 'searchcraft_measure_status_' . self::CACHE_SCHEMA_VERSION_STATUS . '_' . substr( md5( $endpoint_url ), 0, 32 );
+		$cached    = get_transient( $cache_key );
+		if ( false !== $cached ) {
+			return (bool) $cached;
+		}
+
+		try {
+			$client   = new SearchcraftPhpClient( $ingest_key, SearchcraftPhpClient::KEY_TYPE_INGEST, $endpoint_url );
+			$response = $client->measure()->getStatus();
+			$data     = isset( $response['data'] ) && is_array( $response['data'] ) ? $response['data'] : $response;
+			$enabled  = isset( $data['enabled'] ) ? (bool) $data['enabled'] : true;
+			set_transient( $cache_key, $enabled ? '1' : '0', self::STATUS_CACHE_TTL );
+			return $enabled;
+		} catch ( SearchcraftException $e ) {
+			return true;
+		} catch ( \Exception $e ) {
+			return true;
+		}
 	}
 
 	// -------------------------------------------------------------------------

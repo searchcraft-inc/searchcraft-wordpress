@@ -3,8 +3,8 @@ Donate link: https://searchcraft.io/
 Contributors: searchcraft
 Tags:         search, fuzzy search, better search, instant search, custom search
 Requires at least: 5.3
-Tested up to: 6.9
-Stable tag:   1.4.0
+Tested up to: 7.0
+Stable tag:   1.5.0
 License:      Apache 2.0
 License URI:  LICENSE.txt
 
@@ -75,6 +75,12 @@ If you would like to report an issue or suggest an enhancement you may contact t
 Searchcraft Cloud customers may also reach out via our Discord server for assistance or to request a custom feature.
 
 == Changelog ==
+
+= 1.5.0 =
+* New Feature - Analytics Overview tab with Daily Active Users, Monthly Active Users, Total Articles, Search Volume chart, and Popular Search Terms table.
+* New Feature - Re-sync all and delete all index management controls moved to dedicated Documents tab.
+* Searchraft PHP client upgraded to 0.8.1
+* WordPress 7.0 compatibility
 
 = 1.4.0 =
 * Updated internal JavaScript SDK usage to 0.15.1.

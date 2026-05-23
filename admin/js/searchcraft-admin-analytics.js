@@ -451,6 +451,12 @@
 		scLastRefreshedTs = typeof scAnalytics !== 'undefined' && scAnalytics.lastRefresh
 			? parseInt( scAnalytics.lastRefresh, 10 )
 			: 0;
+
+		// Analytics sections are not rendered server-side when measure is disabled.
+		if ( typeof scAnalytics !== 'undefined' && scAnalytics.measureEnabled === '0' ) {
+			return;
+		}
+
 		fetchAnalyticsSum();
 		initSearchVolumeChart();
 		initRetryHandlers();
@@ -463,16 +469,4 @@
 		boot();
 	}
 
-	window.scAnalyticsHelpers = {
-		setState,
-		setText,
-		renderNotice,
-		fetchAnalyticsSum,
-		fetchChartData:  ( range, isInitial ) => fetchChartData( range ?? scCurrentRange, isInitial !== false ),
-		getCurrentRange: () => scCurrentRange,
-		doRefresh:       () => {
-			const btn = document.getElementById( 'sc-refresh-btn' );
-			if ( btn && ! btn.disabled ) doRefresh( btn );
-		},
-	};
 }() );

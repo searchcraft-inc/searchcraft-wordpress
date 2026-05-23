@@ -13,7 +13,8 @@
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
-$is_configured = Searchcraft_Config::is_configured();
+$is_configured   = Searchcraft_Config::is_configured();
+$measure_enabled = $is_configured ? Searchcraft_Admin_Analytics::is_measure_enabled() : true;
 
 // Get index statistics if configured.
 $index_stats = null;
@@ -55,7 +56,14 @@ if ( $is_configured && $index_stats && isset( $index_stats['document_count'] ) )
 			?>
 		</p>
 	</div>
-		<?php if ( $index_stats && isset( $index_stats['document_count'] ) && 0 === (int) $index_stats['document_count'] ) : ?>
+
+	<?php if ( ! $measure_enabled ) : ?>
+	<div class="notice notice-warning">
+		<p><?php esc_html_e( 'Analytics are not available with your Searchcraft instance.', 'searchcraft' ); ?></p>
+	</div>
+	<?php endif; ?>
+
+	<?php if ( $index_stats && isset( $index_stats['document_count'] ) && 0 === (int) $index_stats['document_count'] ) : ?>
 	<div class="sc-first-sync">
 		<p><?php esc_html_e( 'On first activation, we need to sync your existing content.', 'searchcraft' ); ?></p>
 		<form method="post" class="searchcraft-form" id="searchcraft-initial-reindex-form">
@@ -71,6 +79,8 @@ if ( $is_configured && $index_stats && isset( $index_stats['document_count'] ) )
 		</form>
 	</div>
 	<?php endif; ?>
+
+	<?php if ( $measure_enabled ) : ?>
 
 	<div class="sc-analytics-metric-cards" id="sc-analytics-metric-cards">
 
@@ -211,6 +221,7 @@ if ( $is_configured && $index_stats && isset( $index_stats['document_count'] ) )
 			</p>
 		</div>
 	</div>
-	<?php endif; ?>
+
+	<?php endif; // measure_enabled ?>
+	<?php endif; // is_configured ?>
 </div>
-<?php
