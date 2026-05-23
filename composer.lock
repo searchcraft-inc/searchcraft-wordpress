@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "b669de4199c119555f9e7f7bb13d7750",
+    "content-hash": "1b675390e7fc4df12597c1bf1d7e1247",
     "packages": [
         {
             "name": "cjstroud/classnames-php",
@@ -714,16 +714,16 @@
         },
         {
             "name": "searchcraft/searchcraft-php",
-            "version": "v0.8.0",
+            "version": "v0.8.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/searchcraft-inc/searchcraft-client-php.git",
-                "reference": "628f2a6dd6f41babb648800121ebf7247a89a96d"
+                "reference": "212ffa28078755918ff4a23ba14687cc75ee563b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/searchcraft-inc/searchcraft-client-php/zipball/628f2a6dd6f41babb648800121ebf7247a89a96d",
-                "reference": "628f2a6dd6f41babb648800121ebf7247a89a96d",
+                "url": "https://api.github.com/repos/searchcraft-inc/searchcraft-client-php/zipball/212ffa28078755918ff4a23ba14687cc75ee563b",
+                "reference": "212ffa28078755918ff4a23ba14687cc75ee563b",
                 "shasum": ""
             },
             "require": {
@@ -772,7 +772,7 @@
                 "issues": "https://github.com/searchcraft-inc/searchcraft-issues",
                 "source": "https://github.com/searchcraft-inc/searchcraft-client-php"
             },
-            "time": "2026-04-21T02:42:38+00:00"
+            "time": "2026-05-13T04:51:57+00:00"
         },
         {
             "name": "symfony/deprecation-contracts",
