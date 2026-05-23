@@ -98,6 +98,11 @@ class Searchcraft {
 		require_once plugin_dir_path( __DIR__ ) . 'admin/class-searchcraft-admin.php';
 
 		/**
+		 * The class responsible for analytics data fetching and caching.
+		 */
+		require_once plugin_dir_path( __DIR__ ) . 'admin/class-searchcraft-admin-analytics.php';
+
+		/**
 		 * The class responsible for defining all actions that occur in the public-facing
 		 * side of the site, including SDK integration.
 		 */
@@ -115,6 +120,10 @@ class Searchcraft {
 	private function init_components() {
 		// Initialize admin functionality.
 		new Searchcraft_Admin( $this->get_plugin_name(), $this->get_plugin_version() );
+
+		if ( is_admin() ) {
+			new Searchcraft_Admin_Analytics( $this->get_plugin_name(), $this->get_plugin_version() );
+		}
 
 		// Initialize public-facing functionality.
 		new Searchcraft_Public( $this->get_plugin_name(), $this->get_plugin_version() );
