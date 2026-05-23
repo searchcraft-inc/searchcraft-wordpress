@@ -209,7 +209,7 @@ if ( $is_configured && $index_stats && isset( $index_stats['document_count'] ) )
 				<thead>
 					<tr>
 						<th scope="col"><?php esc_html_e( 'Term', 'searchcraft' ); ?></th>
-						<th scope="col" class="sc-terms-col-count"><?php esc_html_e( 'Occurences', 'searchcraft' ); ?></th>
+						<th scope="col" class="sc-terms-col-count"><?php esc_html_e( 'Occurrences', 'searchcraft' ); ?></th>
 					</tr>
 				</thead>
 				<tbody id="sc-popular-terms-tbody"></tbody>
