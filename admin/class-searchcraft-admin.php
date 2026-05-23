@@ -726,9 +726,15 @@ class Searchcraft_Admin {
 					$this->searchcraft_on_config_request( $config_data, $reset_flag, $save_flag );
 					break;
 				case 'reindex_all_documents':
+					if ( ! current_user_can( 'edit_posts' ) ) {
+						wp_die( 'You do not have permission to perform this action.' );
+					}
 					$this->searchcraft_on_reindex_all_documents_request();
 					break;
 				case 'delete_all_documents':
+					if ( ! current_user_can( 'edit_posts' ) ) {
+						wp_die( 'You do not have permission to perform this action.' );
+					}
 					$this->searchcraft_on_delete_all_documents_request();
 					break;
 				case 'layout_settings_config':

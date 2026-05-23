@@ -79,7 +79,7 @@ Searchcraft Cloud customers may also reach out via our Discord server for assist
 = 1.5.0 =
 * New Feature - Analytics Overview tab with Daily Active Users, Monthly Active Users, Total Articles, Search Volume chart, and Popular Search Terms table.
 * New Feature - Re-sync all and delete all index management controls moved to dedicated Documents tab.
-* Searchraft PHP client upgraded to 0.8.1
+* Searchcraft PHP client upgraded to 0.8.1
 * WordPress 7.0 compatibility
 
 = 1.4.0 =
