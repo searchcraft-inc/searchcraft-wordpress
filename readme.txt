@@ -81,6 +81,7 @@ Searchcraft Cloud customers may also reach out via our Discord server for assist
 * New Feature - Re-sync all and delete all index management controls moved to dedicated Documents tab.
 * Searchcraft PHP client upgraded to 0.8.1
 * WordPress 7.0 compatibility
+* Bugfix - Allow access to import/export settings tab when an install is unconfigured.
 
 = 1.4.0 =
 * Updated internal JavaScript SDK usage to 0.15.1.
