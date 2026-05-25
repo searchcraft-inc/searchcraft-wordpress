@@ -18,7 +18,10 @@ $is_configured = Searchcraft_Config::is_configured();
 $allowed_tabs  = array( 'overview', 'documents', 'config', 'layout', 'import-export' );
 $requested_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['tab'] ) ) : 'overview'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 $active_tab    = ( in_array( $requested_tab, $allowed_tabs, true ) ? $requested_tab : 'overview' );
-if ( ! $is_configured ) {
+// Before the plugin is configured, only the configuration and import/export
+// tabs are navigable; configuration remains the default landing tab.
+$unconfigured_tabs = array( 'config', 'import-export' );
+if ( ! $is_configured && ! in_array( $active_tab, $unconfigured_tabs, true ) ) {
 	$active_tab = 'config';
 }
 ?>
