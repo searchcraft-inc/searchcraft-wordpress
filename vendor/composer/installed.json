@@ -1072,17 +1072,17 @@
         },
         {
             "name": "searchcraft/searchcraft-php",
-            "version": "v0.8.0",
-            "version_normalized": "0.8.0.0",
+            "version": "v0.8.1",
+            "version_normalized": "0.8.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/searchcraft-inc/searchcraft-client-php.git",
-                "reference": "628f2a6dd6f41babb648800121ebf7247a89a96d"
+                "reference": "212ffa28078755918ff4a23ba14687cc75ee563b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/searchcraft-inc/searchcraft-client-php/zipball/628f2a6dd6f41babb648800121ebf7247a89a96d",
-                "reference": "628f2a6dd6f41babb648800121ebf7247a89a96d",
+                "url": "https://api.github.com/repos/searchcraft-inc/searchcraft-client-php/zipball/212ffa28078755918ff4a23ba14687cc75ee563b",
+                "reference": "212ffa28078755918ff4a23ba14687cc75ee563b",
                 "shasum": ""
             },
             "require": {
@@ -1102,7 +1102,7 @@
                 "guzzlehttp/guzzle": "Use Guzzle ^7 as HTTP client",
                 "http-interop/http-factory-guzzle": "Factory for guzzlehttp/guzzle"
             },
-            "time": "2026-04-21T02:42:38+00:00",
+            "time": "2026-05-13T04:51:57+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {

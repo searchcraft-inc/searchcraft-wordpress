@@ -15,10 +15,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 $is_configured = Searchcraft_Config::is_configured();
-$allowed_tabs  = array( 'overview', 'config', 'layout', 'import-export' );
+$allowed_tabs  = array( 'overview', 'documents', 'config', 'layout', 'import-export' );
 $requested_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['tab'] ) ) : 'overview'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 $active_tab    = ( in_array( $requested_tab, $allowed_tabs, true ) ? $requested_tab : 'overview' );
-if ( ! $is_configured ) {
+// Before the plugin is configured, only the configuration and import/export
+// tabs are navigable; configuration remains the default landing tab.
+$unconfigured_tabs = array( 'config', 'import-export' );
+if ( ! $is_configured && ! in_array( $active_tab, $unconfigured_tabs, true ) ) {
 	$active_tab = 'config';
 }
 ?>
@@ -31,6 +34,12 @@ if ( ! $is_configured ) {
 				class="<?php echo esc_attr( classNames( 'nav-tab', array( 'nav-tab-active' => 'overview' === $active_tab ) ) ); ?>"
 			>
 				<?php esc_html_e( 'Overview', 'searchcraft' ); ?>
+			</a>
+			<a
+				href="?page=searchcraft&tab=documents"
+				class="<?php echo esc_attr( classNames( 'nav-tab', array( 'nav-tab-active' => 'documents' === $active_tab ) ) ); ?>"
+			>
+				<?php esc_html_e( 'Documents', 'searchcraft' ); ?>
 			</a>
 			<a
 				href="?page=searchcraft&tab=layout"
@@ -55,6 +64,8 @@ if ( ! $is_configured ) {
 			<?php
 			if ( 'overview' === $active_tab ) {
 				include_once 'searchcraft-admin-overview-tab.php';
+			} elseif ( 'documents' === $active_tab ) {
+				include_once 'searchcraft-admin-documents-tab.php';
 			} elseif ( 'config' === $active_tab ) {
 				include_once 'searchcraft-admin-config-tab.php';
 			} elseif ( 'layout' === $active_tab ) {

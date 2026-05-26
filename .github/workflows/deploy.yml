@@ -35,7 +35,13 @@ jobs:
           mkdir -p /tmp/wordpress-svn
           svn checkout https://plugins.svn.wordpress.org/searchcraft/ /tmp/wordpress-svn
 
-          # Sync plugin code to trunk (excluding assets and dev files)
+          # Sync plugin code to trunk (excluding assets and dev files).
+          #
+          # IMPORTANT: do NOT add public/vendor to the excludes list.
+          # public/vendor/ contains vendored front-end assets (e.g. Chart.js at
+          # public/vendor/chartjs/chart.umd.min.js) that are committed to the repo
+          # and must ship in the WordPress.org payload. Excluding it would silently
+          # break the analytics chart on every install.
           rsync -av --delete \
             --exclude='.git' \
             --exclude='.github' \
@@ -60,6 +66,16 @@ jobs:
               assets/ /tmp/wordpress-svn/assets/
             echo "✓ Assets synced to SVN assets directory"
           fi
+
+      - name: Verify vendored assets are present in payload
+        run: |
+          CHART_JS="/tmp/wordpress-svn/trunk/public/vendor/chartjs/chart.umd.min.js"
+          if [ ! -f "$CHART_JS" ]; then
+            echo "Error: $CHART_JS is missing from the deploy payload."
+            echo "public/vendor/ must not appear in the rsync --exclude list."
+            exit 1
+          fi
+          echo "✓ Chart.js vendored asset present: $CHART_JS"
 
       - name: Get plugin version
         id: get_version

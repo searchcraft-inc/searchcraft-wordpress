@@ -8,3 +8,7 @@ vendor/dealerdirect/
 vendor/squizlabs/
 vendor/phpcsstandards/
 vendor/php-stubs/
+.agents/*
+.claude/*
+_bmad/*
+_bmad-output/*

@@ -204,6 +204,10 @@ class Searchcraft_Admin {
 	 */
 	public function enqueue_styles() {
 		wp_enqueue_style( $this->plugin_name . '-admin-styles', plugin_dir_url( __FILE__ ) . 'css/searchcraft-admin.css', array(), $this->plugin_version, 'all' );
+
+		if ( $this->is_overview_tab() ) {
+			wp_enqueue_style( $this->plugin_name . '-analytics-styles', plugin_dir_url( __FILE__ ) . 'css/searchcraft-admin-analytics.css', array(), $this->plugin_version, 'all' );
+		}
 	}
 
 	/**
@@ -213,6 +217,38 @@ class Searchcraft_Admin {
 	 */
 	public function enqueue_scripts() {
 		wp_enqueue_script( $this->plugin_name . '-admin-js', plugin_dir_url( __FILE__ ) . 'js/searchcraft-admin.js', array(), $this->plugin_version, false );
+
+		if ( $this->is_overview_tab() ) {
+			wp_enqueue_script(
+				$this->plugin_name . '-chartjs',
+				plugin_dir_url( __DIR__ ) . 'public/vendor/chartjs/chart.umd.min.js',
+				array(),
+				'4.4.4',
+				true
+			);
+			add_filter( 'script_loader_tag', array( $this, 'add_chartjs_integrity_attr' ), 10, 2 );
+
+			wp_enqueue_script(
+				$this->plugin_name . '-analytics-js',
+				plugin_dir_url( __FILE__ ) . 'js/searchcraft-admin-analytics.js',
+				array( $this->plugin_name . '-chartjs' ),
+				$this->plugin_version,
+				true
+			);
+			$sc_index_id     = Searchcraft_Config::get_index_id();
+			$sc_idx_hash     = empty( $sc_index_id ) ? 'default' : substr( md5( $sc_index_id ), 0, 32 );
+			$sc_last_refresh = (int) get_option( 'searchcraft_analytics_last_refresh_' . $sc_idx_hash, 0 );
+			wp_localize_script(
+				$this->plugin_name . '-analytics-js',
+				'scAnalytics',
+				array(
+					'nonce'          => wp_create_nonce( 'searchcraft_analytics' ),
+					'defaultRange'   => '1w',
+					'lastRefresh'    => $sc_last_refresh,
+					'measureEnabled' => Searchcraft_Admin_Analytics::is_measure_enabled() ? '1' : '0',
+				)
+			);
+		}
 
 		// Enqueue block editor error notices script on post edit screens.
 		$screen = get_current_screen();
@@ -225,6 +261,53 @@ class Searchcraft_Admin {
 				true
 			);
 		}
+	}
+
+	/**
+	 * Return true when the current request is the Overview tab.
+	 *
+	 * Used to gate analytics asset enqueue to that page only.
+	 *
+	 * @since 1.5.0
+	 * @return bool
+	 */
+	/**
+	 * Inject the SRI integrity attribute onto the vendored Chart.js script tag.
+	 *
+	 * SHA-256 recorded in THIRD-PARTY-NOTICES.md. Update both files together
+	 * whenever Chart.js is bumped (see bump procedure in that file).
+	 *
+	 * @since 1.5.0
+	 * @param string $tag    Script HTML tag.
+	 * @param string $handle Registered script handle.
+	 * @return string Modified tag with integrity attribute, or original tag.
+	 */
+	public function add_chartjs_integrity_attr( $tag, $handle ) {
+		if ( $this->plugin_name . '-chartjs' !== $handle ) {
+			return $tag;
+		}
+		return str_replace(
+			' src=',
+			' integrity="sha256-s4B2di9zY7yekStouOA0gmeY213ya7YfAA7C56MTe8c=" src=',
+			$tag
+		);
+	}
+
+	/**
+	 * Return true when the current request is the Overview tab.
+	 *
+	 * Used to gate analytics asset enqueue to that page only.
+	 *
+	 * @since 1.5.0
+	 * @return bool
+	 */
+	private function is_overview_tab() {
+		$screen = get_current_screen();
+		if ( ! $screen || 'toplevel_page_searchcraft' !== $screen->id ) {
+			return false;
+		}
+		$tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['tab'] ) ) : 'overview'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		return 'overview' === $tab;
 	}
 
 	/**
@@ -643,9 +726,15 @@ class Searchcraft_Admin {
 					$this->searchcraft_on_config_request( $config_data, $reset_flag, $save_flag );
 					break;
 				case 'reindex_all_documents':
+					if ( ! current_user_can( 'edit_posts' ) ) {
+						wp_die( 'You do not have permission to perform this action.' );
+					}
 					$this->searchcraft_on_reindex_all_documents_request();
 					break;
 				case 'delete_all_documents':
+					if ( ! current_user_can( 'edit_posts' ) ) {
+						wp_die( 'You do not have permission to perform this action.' );
+					}
 					$this->searchcraft_on_delete_all_documents_request();
 					break;
 				case 'layout_settings_config':
@@ -957,6 +1046,8 @@ class Searchcraft_Admin {
 		try {
 			$this->searchcraft_delete_all_documents();
 
+			do_action( 'searchcraft_after_delete_all' );
+
 			// Show success message.
 			add_action(
 				'admin_notices',
@@ -987,6 +1078,8 @@ class Searchcraft_Admin {
 	private function searchcraft_on_reindex_all_documents_request() {
 		try {
 			$this->searchcraft_add_all_documents();
+
+			do_action( 'searchcraft_after_reindex_all' );
 
 			// Show success message.
 			add_action(
