@@ -474,6 +474,29 @@ class Searchcraft_Public {
 			$this->version,
 			'all'
 		);
+
+		add_filter( 'style_loader_tag', array( $this, 'preload_searchcraft_styles' ), 10, 2 );
+	}
+
+	/**
+	 * Convert Searchcraft stylesheets to non-render-blocking preload links.
+	 *
+	 * @param string $tag    The link tag HTML.
+	 * @param string $handle The style handle.
+	 * @return string Modified tag using rel="preload".
+	 */
+	public function preload_searchcraft_styles( $tag, $handle ) {
+		$handles = array(
+			$this->plugin_name . '-sdk-hologram-styles',
+			$this->plugin_name . '-sdk-styles',
+		);
+
+		if ( ! in_array( $handle, $handles, true ) ) {
+			return $tag;
+		}
+
+		$preload = preg_replace( "/rel=(['\"])stylesheet\\1/", "rel='preload' as='style'", $tag );
+		return $preload . '<noscript>' . $tag . '</noscript>';
 	}
 
 	/**
