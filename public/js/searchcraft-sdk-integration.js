@@ -10,6 +10,15 @@
 (function() {
     'use strict';
 
+    // Swap preloaded Searchcraft stylesheets to active stylesheets.
+    // CSS was output as rel="preload" to avoid render-blocking; this script
+    // runs in the footer (after <head> is parsed) so the swap is safe here.
+    document.querySelectorAll('link[rel="preload"][as="style"]').forEach(function(link) {
+        if (link.href.includes('hologram.css') || link.href.includes('searchcraft-sdk.css')) {
+            link.rel = 'stylesheet';
+        }
+    });
+
     /**
      * Initialize Searchcraft SDK when DOM is ready
      */
