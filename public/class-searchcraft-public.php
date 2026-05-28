@@ -495,7 +495,7 @@ class Searchcraft_Public {
 			return $tag;
 		}
 
-		$preload = str_replace( "rel='stylesheet'", "rel='preload' as='style'", $tag );
+		$preload = preg_replace( "/rel=(['\"])stylesheet\\1/", "rel='preload' as='style'", $tag );
 		return $preload . '<noscript>' . $tag . '</noscript>';
 	}
 
