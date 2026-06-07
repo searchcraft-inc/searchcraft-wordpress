@@ -924,6 +924,15 @@ table.searchcraft-synonyms-table td:nth-child(3) {
 	margin-top: 0;
 }
 
+.searchcraft-footer {
+	margin-top: 2rem;
+	padding-top: 1rem;
+	border-top: 1px solid #dcdcde;
+	color: #646970;
+	font-size: 12px;
+	text-align: right;
+}
+
 /* ======== Custom meta boxes ========  */
 .edit-post-meta-boxes-area
 	#poststuff

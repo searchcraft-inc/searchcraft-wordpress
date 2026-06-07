@@ -104,6 +104,15 @@ if ( ! $is_configured && ! in_array( $active_tab, $unconfigured_tabs, true ) ) {
 
 			?>
 		</div>
+		<footer class="searchcraft-footer">
+			<?php
+			printf(
+				/* translators: %s: plugin version number. */
+				esc_html__( 'Searchcraft plugin version %s', 'searchcraft' ),
+				esc_html( SEARCHCRAFT_VERSION )
+			);
+			?>
+		</footer>
 	</div>
 </div>
 <?php
