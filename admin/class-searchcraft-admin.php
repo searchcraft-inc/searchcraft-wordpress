@@ -1926,10 +1926,11 @@ class Searchcraft_Admin {
 	 * Update the index schema to include custom post type fields.
 	 *
 	 * This function:
-	 * 1. Adds a 'type' text field to the schema
-	 * 2. For each custom post type with fields enabled, adds custom field definitions
-	 * 3. Updates the index schema via updateIndex()
-	 * 4. Re-indexes all documents if any exist
+	 * 1. For each custom post type with fields enabled, adds custom field definitions
+	 * 2. Updates the index schema via updateIndex()
+	 * 3. Re-indexes all documents if any exist
+	 *
+	 * The post_type field is handled separately by searchcraft_ensure_post_type_field().
 	 *
 	 * @since 1.0.0
 	 * @param array $selected_custom_post_types Array of selected custom post type names.
@@ -1970,20 +1971,6 @@ class Searchcraft_Admin {
 
 			// Start with current fields.
 			$updated_fields = $current_fields;
-
-			// Add 'type' field if custom post types are selected.
-			if ( ! empty( $selected_custom_post_types ) ) {
-				$updated_fields['type'] = array(
-					'type'     => 'facet',
-					'stored'   => true,
-					'indexed'  => true,
-					'required' => false,
-					'multi'    => false,
-				);
-			} else {
-				// Remove 'type' field if no custom post types are selected.
-				unset( $updated_fields['type'] );
-			}
 
 			// Get all custom field names that are currently in the schema.
 			// We'll track these to remove fields that are no longer needed.
@@ -2087,11 +2074,13 @@ class Searchcraft_Admin {
 	/**
 	 * Ensure the index schema includes the post_type facet field.
 	 *
-	 * Adds the post_type field when the index does not already have one. If the
-	 * schema changes and the index already holds documents, all documents are
-	 * re-indexed (posts excluded from the index are skipped) so they pick up the
-	 * new field. Pass $reindex = false to skip the re-index and handle it in the
-	 * caller instead; 'needs_reindex' reports whether one is required.
+	 * Adds the post_type field when the index does not already have one, and
+	 * removes the legacy 'type' facet that earlier versions added for custom
+	 * post types. If the schema changes and the index already holds documents,
+	 * all documents are re-indexed (posts excluded from the index are skipped)
+	 * so they pick up the new field. Pass $reindex = false to skip the re-index
+	 * and handle it in the caller instead; 'needs_reindex' reports whether one
+	 * is required.
 	 *
 	 * @since 1.6.0
 	 * @param bool $reindex Whether to re-index documents after updating the schema.
@@ -2126,20 +2115,28 @@ class Searchcraft_Admin {
 			$current_index  = $response['data'] ?? $response;
 			$current_fields = $current_index['fields'] ?? array();
 
+			// Earlier versions stored the post type in a 'type' facet, and only when custom post types were selected.
+			$has_legacy_type_field = isset( $current_fields['type']['type'] ) && 'facet' === $current_fields['type']['type'];
+
 			// Leave an existing post_type field alone, even if it has been customized.
-			if ( isset( $current_fields['post_type'] ) ) {
+			if ( isset( $current_fields['post_type'] ) && ! $has_legacy_type_field ) {
 				$result['success'] = true;
 				return $result;
 			}
 
-			$updated_fields              = $current_fields;
-			$updated_fields['post_type'] = array(
-				'type'     => 'facet',
-				'stored'   => true,
-				'indexed'  => true,
-				'required' => false,
-				'multi'    => false,
-			);
+			$updated_fields = $current_fields;
+			if ( ! isset( $updated_fields['post_type'] ) ) {
+				$updated_fields['post_type'] = array(
+					'type'     => 'facet',
+					'stored'   => true,
+					'indexed'  => true,
+					'required' => false,
+					'multi'    => false,
+				);
+			}
+			if ( $has_legacy_type_field ) {
+				unset( $updated_fields['type'] );
+			}
 
 			// Check if documents exist in the index.
 			$stats          = $this->searchcraft_get_index_stats();
@@ -2433,7 +2430,6 @@ class Searchcraft_Admin {
 			// Create document.
 			$document = array(
 				'id'                    => (string) $post->ID,
-				'type'                  => '/' . $post->post_type,
 				'post_type'             => '/' . $post->post_type, // Facet values are paths, e.g. /post, /page, /product.
 				'post_title'            => $this->searchcraft_strip_html_preserve_text( $post->post_title ),
 				'post_excerpt'          => $this->searchcraft_strip_html_preserve_text( $post_excerpt ),

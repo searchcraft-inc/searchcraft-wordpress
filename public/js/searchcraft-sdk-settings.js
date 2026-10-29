@@ -137,7 +137,7 @@
                     },
                     'post_type': {
                         type: 'facets',
-                        fieldName: 'type',
+                        fieldName: 'post_type',
                         label: 'Content Type',
                         options: {
                             showSublevel: false,
