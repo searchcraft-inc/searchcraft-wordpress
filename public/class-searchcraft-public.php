@@ -318,8 +318,11 @@ class Searchcraft_Public {
 		$oldest_post_year            = $admin_instance->get_oldest_post_year();
 		$js_config['oldestPostYear'] = $oldest_post_year;
 
-		$js_config['resultsPerPage']        = intval( get_option( 'searchcraft_results_per_page', 10 ) );
-		$js_config['overlayResultsPerPage'] = intval( get_option( 'searchcraft_overlay_results_per_page', 5 ) );
+		$js_config['resultsPerPage'] = intval( get_option( 'searchcraft_results_per_page', 10 ) );
+		// The overlay results count only applies to the modal and inline experiences ('popover' is the legacy value).
+		if ( in_array( get_option( 'searchcraft_search_experience', 'full' ), array( 'modal', 'inline', 'popover' ), true ) ) {
+			$js_config['overlayResultsPerPage'] = intval( get_option( 'searchcraft_overlay_results_per_page', 5 ) );
+		}
 
 		// Filter taxonomies.
 		$filter_taxonomies = get_option( 'searchcraft_filter_taxonomies', array() );
