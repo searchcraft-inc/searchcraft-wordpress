@@ -228,6 +228,8 @@
         };
 
         popoverForms.forEach((form) => {
+            // The template renders the results; the mappings are only used if no template is set.
+            form.template = eventDetail.popoverResultTemplate;
             form.popoverResultMappings = popoverResultMappings;
 
             // Inherit text styles from parent
