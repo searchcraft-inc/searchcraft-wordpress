@@ -1151,10 +1151,11 @@ class Searchcraft_Admin {
 		$template = trim( $template );
 		// Remove dangerous patterns from the JavaScript callback.
 		$template = preg_replace( '/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/mi', '', $template );
-		// Remove potential XSS vectors while preserving template literal HTML.
+		// Remove potential XSS vectors while preserving template literal HTML. The word boundaries keep
+		// identifiers such as contentType and retrieval() intact.
 		$template = preg_replace( '/javascript\s*:/i', '', $template );
-		$template = preg_replace( '/on\w+\s*=/i', '', $template );
-		$template = preg_replace( '/eval\s*\(/i', '', $template );
+		$template = preg_replace( '/\bon\w+\s*=/i', '', $template );
+		$template = preg_replace( '/\beval\s*\(/i', '', $template );
 		return $template;
 	}
 
@@ -1572,8 +1573,11 @@ class Searchcraft_Admin {
 			$updated_settings['custom_css'] = true;
 		}
 
+		// Template callbacks run as JavaScript on every page, so only users who may post unfiltered HTML can change them.
+		$can_edit_templates = current_user_can( 'unfiltered_html' );
+
 		// Handle result template callback function setting.
-		if ( isset( $request['searchcraft_result_template'] ) ) {
+		if ( $can_edit_templates && isset( $request['searchcraft_result_template'] ) ) {
 			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Sanitized by searchcraft_sanitize_template_callback().
 			$result_template = $this->searchcraft_sanitize_template_callback( wp_unslash( $request['searchcraft_result_template'] ) );
 			update_option( 'searchcraft_result_template', $result_template );
@@ -1581,7 +1585,7 @@ class Searchcraft_Admin {
 		}
 
 		// Handle modal and inline result template callback function setting.
-		if ( isset( $request['searchcraft_popover_result_template'] ) ) {
+		if ( $can_edit_templates && isset( $request['searchcraft_popover_result_template'] ) ) {
 			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Sanitized by searchcraft_sanitize_template_callback().
 			$popover_result_template = $this->searchcraft_sanitize_template_callback( wp_unslash( $request['searchcraft_popover_result_template'] ) );
 			update_option( 'searchcraft_popover_result_template', $popover_result_template );

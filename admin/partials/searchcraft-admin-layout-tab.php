@@ -816,6 +816,7 @@ if ( ! is_array( $filter_panel_order ) || empty( $filter_panel_order ) ) {
 											id="searchcraft_result_template"
 											class="large-text code searchcraft-template-editor"
 											rows="15"
+											<?php disabled( ! current_user_can( 'unfiltered_html' ) ); ?>
 											placeholder="// Enter your custom result template callback function here&#10;(item, index, { html }) => {&#10;    const postDate = item.post_date ? new Date(item.post_date).toLocaleDateString() : '';&#10;    return html`&#10;        &lt;a class=&quot;searchcraft-result-item&quot; href=&quot;${item.permalink}&quot;&gt;&#10;            &lt;h3&gt;${item.post_title}&lt;/h3&gt;&#10;            &lt;p&gt;${item.post_excerpt}&lt;/p&gt;&#10;            ${postDate ? html`&lt;p&gt;${postDate}&lt;/p&gt;` : ''}&#10;        &lt;/a&gt;&#10;    `;&#10;}"
 										><?php echo esc_textarea( get_option( 'searchcraft_result_template', '' ) ); ?></textarea>
 										<p class="description">
@@ -823,6 +824,9 @@ if ( ! is_array( $filter_panel_order ) || empty( $filter_panel_order ) ) {
 											<br/>
 											For more details on custom templates refer to <a href="https://docs.searchcraft.io/sdks/javascript/working-with-templates/" target="_blank">the documentation</a>.
 										</p>
+										<?php if ( ! current_user_can( 'unfiltered_html' ) ) : ?>
+											<p class="description">Only users who can post unfiltered HTML, such as administrators, can edit result template callback functions.</p>
+										<?php endif; ?>
 									</td>
 								</tr>
 								<tr class="searchcraft-popover-only">
@@ -835,11 +839,15 @@ if ( ! is_array( $filter_panel_order ) || empty( $filter_panel_order ) ) {
 											id="searchcraft_popover_result_template"
 											class="large-text code searchcraft-template-editor"
 											rows="15"
+											<?php disabled( ! current_user_can( 'unfiltered_html' ) ); ?>
 											placeholder="// Enter your custom modal and inline result template callback function here&#10;(item, index, { html }) => {&#10;    return html`&#10;        &lt;a class=&quot;searchcraft-popover-list-item-link&quot; href=&quot;${item.permalink}&quot;&gt;&#10;            &lt;div class=&quot;searchcraft-popover-list-item-content&quot;&gt;&#10;                &lt;p class=&quot;searchcraft-popover-list-item-content-title&quot;&gt;${item.post_title}&lt;/p&gt;&#10;                &lt;p class=&quot;searchcraft-popover-list-item-content-subtitle&quot;&gt;${item.post_excerpt}&lt;/p&gt;&#10;            &lt;/div&gt;&#10;        &lt;/a&gt;&#10;    `;&#10;}"
 										><?php echo esc_textarea( get_option( 'searchcraft_popover_result_template', '' ) ); ?></textarea>
 										<p class="description">
 											Write a JavaScript callback function to customize how results are displayed in the modal and inline search experiences, separately from the result template above. It takes the same <code>(item, index, { html })</code> parameters and item properties. Use the <code>searchcraft-popover-list-item-link</code> class on the result link to keep the default popover link styling. Leave empty to use the default template, which follows the result layout options above except result orientation.
 										</p>
+										<?php if ( ! current_user_can( 'unfiltered_html' ) ) : ?>
+											<p class="description">Only users who can post unfiltered HTML, such as administrators, can edit result template callback functions.</p>
+										<?php endif; ?>
 									</td>
 								</tr>
 								<tr class="searchcraft-popover-only">
