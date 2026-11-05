@@ -246,6 +246,8 @@ class Searchcraft_Public {
 		$js_config['displayPostDate']        = (bool) get_option( 'searchcraft_display_post_date', false );
 		$js_config['displayAuthorName']      = (bool) get_option( 'searchcraft_display_author_name', true );
 		$js_config['imageAlignment']         = get_option( 'searchcraft_image_alignment', 'left' );
+		// The modal and inline experiences don't use result orientation, so they keep the saved alignment.
+		$js_config['popoverImageAlignment'] = $js_config['imageAlignment'];
 		if ( 'grid' === $js_config['orientation'] ) {
 			$js_config['imageAlignment'] = 'left';
 		}

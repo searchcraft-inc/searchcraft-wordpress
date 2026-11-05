@@ -173,7 +173,7 @@
 
                 return html`
                 <a class="searchcraft-popover-list-item-link${typeClass}" href="${item.permalink}" ${dataAttribute}>
-                    ${searchcraft_config.imageAlignment === 'left' ? image : ''}
+                    ${searchcraft_config.popoverImageAlignment === 'left' ? image : ''}
                     <div class="searchcraft-popover-list-item-content" ${dataAttribute}>
                         ${(item.primary_category_name && searchcraft_config.displayPrimaryCategory) ? html`<h4 class="searchcraft-result-primary-category">${item.primary_category_name}</h4>` : ''}
                         <p class="searchcraft-popover-list-item-content-title" ${dataAttribute}>${item.post_title}</p>
@@ -183,7 +183,7 @@
                             ${(author_name && searchcraft_config.displayAuthorName) ? html`<span class="searchcraft-result-author-name">${by}${author_name}</span>` : ''}
                         </div>
                     </div>
-                    ${searchcraft_config.imageAlignment === 'right' ? image : ''}
+                    ${searchcraft_config.popoverImageAlignment === 'right' ? image : ''}
                 </a>
                 `;
             };
