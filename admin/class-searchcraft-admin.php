@@ -1728,6 +1728,23 @@ class Searchcraft_Admin {
 	}
 
 	/**
+	 * Builds an updateIndex() payload from the current index configuration.
+	 *
+	 * The ingest key can't change ai_enabled, and Searchcraft 0.11 rejects an
+	 * index replacement from an ingest key that includes it, so it is left out
+	 * and the engine keeps its stored value. The ai config stays in: 0.11
+	 * replaces it with what is sent, and later versions keep the stored config.
+	 *
+	 * @since 1.6.0
+	 * @param array $current_index The index configuration returned by getIndex().
+	 * @return array The payload to send to updateIndex().
+	 */
+	private function searchcraft_index_update_payload( $current_index ) {
+		unset( $current_index['ai_enabled'] );
+		return $current_index;
+	}
+
+	/**
 	 * Update the index schema to include taxonomy fields.
 	 *
 	 * @since 1.0.0
@@ -1892,7 +1909,7 @@ class Searchcraft_Admin {
 
 			// Update the index with new fields, search_fields, and weight_multipliers.
 			// Start with the current index configuration and update what changed.
-			$update_payload = $current_index;
+			$update_payload = $this->searchcraft_index_update_payload( $current_index );
 			$update_payload['fields'] = $updated_fields;
 			$update_payload['search_fields'] = $updated_search_fields;
 			$update_payload['weight_multipliers'] = $updated_weight_multipliers;
@@ -2043,7 +2060,7 @@ class Searchcraft_Admin {
 			// Start with the current index configuration and only update the fields.
 			// This preserves all other index properties (language, search_fields, weight_multipliers, etc.)
 			// without having to explicitly list them, making this future-proof.
-			$update_payload           = $current_index;
+			$update_payload           = $this->searchcraft_index_update_payload( $current_index );
 			$update_payload['fields'] = $updated_fields;
 
 			$ingest_client->index()->updateIndex( $index_id, $update_payload );
@@ -2143,7 +2160,7 @@ class Searchcraft_Admin {
 			$document_count = isset( $stats['document_count'] ) ? (int) $stats['document_count'] : 0;
 
 			// Start with the current index configuration and only update the fields.
-			$update_payload           = $current_index;
+			$update_payload           = $this->searchcraft_index_update_payload( $current_index );
 			$update_payload['fields'] = $updated_fields;
 
 			$ingest_client->index()->updateIndex( $index_id, $update_payload );
