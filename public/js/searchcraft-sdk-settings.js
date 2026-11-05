@@ -50,6 +50,14 @@
             if (settings.searchExperience === 'full' && settings.resultsContent) {
                 injectSearchResults(settings.resultsContent, '');
             }
+            // A popover container set to be replaced (often the theme's search toggle) is still
+            // cleared, so it doesn't show next to the shortcode with an empty search form.
+            if (isPopover && settings.popoverContainerId && settings.popoverInsertBehavior === 'replace') {
+                const popoverContainer = findPopoverContainer(settings.popoverContainerId);
+                if (popoverContainer) {
+                    popoverContainer.innerHTML = '';
+                }
+            }
         }
         // On search page with modal/inline, always inject full header + results
         else if (isSearchPage && isPopover) {
@@ -348,6 +356,17 @@
     }
 
     /**
+     * Find the popover container element by ID, or by class if no element has that ID
+     *
+     * @param {string} popoverContainerId - The container ID or class name
+     * @returns {Element|null} The container element, if found
+     */
+    function findPopoverContainer(popoverContainerId) {
+        return document.getElementById(popoverContainerId)
+            || document.querySelector(`[class="${popoverContainerId}"]`);
+    }
+
+    /**
      * Inject popover content into specified container
      *
      * @param {string} popoverContent - The HTML content for the popover
@@ -355,21 +374,7 @@
      * @param {string} insertBehavior - 'replace' or 'prepend'
      */
     function injectPopoverContent(popoverContent, popoverContainerId, insertBehavior) {
-        let targetElement = null;
-
-        // Try to find by ID first
-        const customPopoverContainerById = document.getElementById(popoverContainerId);
-        if (customPopoverContainerById) {
-            targetElement = customPopoverContainerById;
-        }
-
-        // If not found by ID, try by class
-        if (!targetElement) {
-            const customPopoverContainerByClass = document.querySelector(`[class="${popoverContainerId}"]`);
-            if (customPopoverContainerByClass) {
-                targetElement = customPopoverContainerByClass;
-            }
-        }
+        const targetElement = findPopoverContainer(popoverContainerId);
 
         if (targetElement) {
             if (insertBehavior === 'replace') {
