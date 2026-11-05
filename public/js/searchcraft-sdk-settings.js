@@ -41,8 +41,18 @@
             || settings.searchExperience === 'popover';
 
         const isSearchPage = settings.isSearchPage == 1;
+        // The [searchcraft] shortcode places the search experience itself, so the automatic placement
+        // and the container element ID settings are skipped. The search results page keeps its layout.
+        const shortcodeContainers = document.querySelectorAll('.searchcraft-shortcode-container');
+        if (shortcodeContainers.length > 0 && !isSearchPage) {
+            injectShortcodeContent(settings.headerContent, shortcodeContainers);
+            // Full experience results follow the first shortcode's search input.
+            if (settings.searchExperience === 'full' && settings.resultsContent) {
+                injectSearchResults(settings.resultsContent, '');
+            }
+        }
         // On search page with modal/inline, always inject full header + results
-        if (isSearchPage && isPopover) {
+        else if (isSearchPage && isPopover) {
             injectSearchHeader(settings.headerContent, settings.inputContainerId);
             if (settings.resultsContent) {
                 injectSearchResults(settings.resultsContent, settings.resultsContainerId);
@@ -300,6 +310,20 @@
             // Fallback: if no header found, append to body
             document.body.insertBefore(searchHeaderDiv, document.body.firstChild);
         }
+    }
+
+    /**
+     * Inject the search header into each [searchcraft] shortcode container
+     *
+     * @param {string} headerContent - The HTML content for the search header
+     * @param {NodeList} containers - The shortcode container elements
+     */
+    function injectShortcodeContent(headerContent, containers) {
+        containers.forEach((container) => {
+            const searchHeaderDiv = document.createElement('div');
+            searchHeaderDiv.innerHTML = headerContent;
+            container.appendChild(searchHeaderDiv);
+        });
     }
 
     /**

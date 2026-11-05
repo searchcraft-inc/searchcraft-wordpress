@@ -68,6 +68,9 @@ class Searchcraft_Public {
 	 * @since 1.0.0
 	 */
 	private function init_hooks() {
+		// Register the shortcode even when the SDK isn't ready so the tag never shows as text.
+		add_shortcode( 'searchcraft', array( $this, 'render_shortcode' ) );
+
 		// Only initialize frontend features if SDK is ready.
 		if ( ! $this->is_sdk_ready() ) {
 			return;
@@ -503,6 +506,24 @@ class Searchcraft_Public {
 
 		$preload = preg_replace( "/rel=(['\"])stylesheet\\1/", "rel='preload' as='style'", $tag );
 		return $preload . '<noscript>' . $tag . '</noscript>';
+	}
+
+	/**
+	 * Render the [searchcraft] shortcode.
+	 *
+	 * Outputs a container that searchcraft-sdk-settings.js fills with the configured search
+	 * experience. Pages with the shortcode place the search experience there instead of
+	 * attaching it automatically.
+	 *
+	 * @since 1.6.0
+	 * @return string The shortcode container, or an empty string if the SDK isn't ready.
+	 */
+	public function render_shortcode() {
+		if ( ! $this->is_sdk_ready() ) {
+			return '';
+		}
+
+		return '<div class="searchcraft-shortcode-container"></div>';
 	}
 
 	/**
