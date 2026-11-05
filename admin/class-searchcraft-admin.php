@@ -2167,8 +2167,9 @@ class Searchcraft_Admin {
 				$ingest_client->index()->updateIndex( $index_id, $update_payload );
 				delete_transient( 'searchcraft_index' );
 
-				$result['updated']       = true;
-				$result['needs_reindex'] = $document_count > 0;
+				$result['updated'] = true;
+				// If the document count is unavailable, assume documents exist so the re-index isn't skipped.
+				$result['needs_reindex'] = null === $stats || $document_count > 0;
 
 				// searchcraft_add_all_documents() clears this once a full re-index completes.
 				if ( $result['needs_reindex'] ) {
