@@ -13,7 +13,7 @@ const SearchcraftPopoverListItem = /*@__PURE__*/ proxyCustomElement(class Search
     item;
     popoverResultMappings;
     /**
-     * A callback function responsible for rendering the result. When provided, it is used instead of `popoverResultMappings`.
+     * A callback function responsible for rendering the result. When provided, it is used instead of `popoverResultMappings`, which are still used if the template throws.
      */
     template;
     /**
@@ -42,26 +42,33 @@ const SearchcraftPopoverListItem = /*@__PURE__*/ proxyCustomElement(class Search
         this.imageSource = getDocumentValueFromSearchResultMapping(document, this.popoverResultMappings?.imageSource);
         this.imageAlt = getDocumentValueFromSearchResultMapping(document, this.popoverResultMappings?.imageAlt);
     }
+    /**
+     * Maps the document values and renders the template, if there is one. The mapped values are
+     * always kept so the result can fall back to them if the template throws or is removed.
+     */
+    updateRenderedValues() {
+        this.templateHtml = undefined;
+        if (!this.item) {
+            return;
+        }
+        this.mapValuesFromDocument(this.item.document);
+        if (this.template) {
+            try {
+                this.templateHtml = this.template(this.item.document, this.index, {
+                    html,
+                    source_index: this.item.source_index,
+                });
+            }
+            catch (error) {
+                console.error('Invalid popover result template:', error);
+            }
+        }
+    }
     onCoreAvailable(core) {
         this.core = core;
     }
     connectedCallback() {
-        if (this.item) {
-            if (this.template) {
-                try {
-                    this.templateHtml = this.template(this.item.document, this.index, {
-                        html,
-                        source_index: this.item.source_index,
-                    });
-                }
-                catch (error) {
-                    console.error('Invalid popover result template:', error);
-                }
-            }
-            else {
-                this.mapValuesFromDocument(this.item.document);
-            }
-        }
+        this.updateRenderedValues();
         this.cleanupCore = registry.useCoreInstance(this.searchcraftId, this.onCoreAvailable.bind(this));
     }
     disconnectedCallback() {
@@ -93,11 +100,17 @@ const SearchcraftPopoverListItem = /*@__PURE__*/ proxyCustomElement(class Search
     };
     handleKeyDown = () => { };
     render() {
-        if (this.template) {
+        if (this.template && typeof this.templateHtml === 'string') {
             return (h("div", { class: 'searchcraft-popover-list-item searchcraft-popover-list-item-template', innerHTML: this.templateHtml, onClick: this.handleTemplateClick, onKeyDown: this.handleKeyDown }));
         }
         return (h("div", { class: 'searchcraft-popover-list-item' }, h("a", { class: 'searchcraft-popover-list-item-link', href: this.href, onClick: this.handleLinkClick.bind(this) }, this.imageSource && (h("div", { class: 'searchcraft-popover-list-item-image-wrapper' }, h("img", { alt: this.imageAlt, src: this.imageSource, class: 'searchcraft-popover-list-item-image' }))), h("div", { class: 'searchcraft-popover-list-item-content' }, this.title && (h("p", { class: 'searchcraft-popover-list-item-content-title' }, this.title)), this.subtitle && (h("p", { class: 'searchcraft-popover-list-item-content-subtitle' }, this.subtitle))))));
     }
+    static get watchers() { return {
+        "item": ["updateRenderedValues"],
+        "popoverResultMappings": ["updateRenderedValues"],
+        "template": ["updateRenderedValues"],
+        "index": ["updateRenderedValues"]
+    }; }
 }, [768, "searchcraft-popover-list-item", {
         "item": [16],
         "popoverResultMappings": [16],
@@ -111,6 +124,11 @@ const SearchcraftPopoverListItem = /*@__PURE__*/ proxyCustomElement(class Search
         "imageSource": [32],
         "imageAlt": [32],
         "templateHtml": [32]
+    }, undefined, {
+        "item": ["updateRenderedValues"],
+        "popoverResultMappings": ["updateRenderedValues"],
+        "template": ["updateRenderedValues"],
+        "index": ["updateRenderedValues"]
     }]);
 function defineCustomElement() {
     if (typeof customElements === "undefined") {

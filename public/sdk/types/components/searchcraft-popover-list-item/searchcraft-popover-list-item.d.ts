@@ -9,7 +9,7 @@ export declare class SearchcraftPopoverListItem {
     item: SearchClientResponseItem | undefined;
     popoverResultMappings: PopoverResultMappings | undefined;
     /**
-     * A callback function responsible for rendering the result. When provided, it is used instead of `popoverResultMappings`.
+     * A callback function responsible for rendering the result. When provided, it is used instead of `popoverResultMappings`, which are still used if the template throws.
      */
     template?: SearchResultTemplate<SearchResultTemplateData>;
     /**
@@ -32,6 +32,11 @@ export declare class SearchcraftPopoverListItem {
     core?: SearchcraftCore;
     private cleanupCore?;
     mapValuesFromDocument(document: SearchDocument): void;
+    /**
+     * Maps the document values and renders the template, if there is one. The mapped values are
+     * always kept so the result can fall back to them if the template throws or is removed.
+     */
+    updateRenderedValues(): void;
     onCoreAvailable(core: SearchcraftCore): void;
     connectedCallback(): void;
     disconnectedCallback(): void;

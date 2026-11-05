@@ -6703,11 +6703,17 @@ class SearchcraftPopoverForm {
      * @param direction
      */
     focusOnNextListItem(direction) {
-        // The first link in each list item, so results rendered by a `template` are included.
-        const listItems = Array.from(document.querySelectorAll('.searchcraft-popover-list-item'))
-            .map((listItem) => listItem.querySelector('a'))
-            .filter((el) => !!el && !el.hasAttribute('disabled') && el.offsetParent !== null);
-        const currentIndex = listItems.indexOf(document.activeElement);
+        // Results rendered by a `template` are reached through the first link in the template.
+        const links = Array.from(document.querySelectorAll('.searchcraft-popover-list-item-link, .searchcraft-popover-list-item-template')).map((el) => el.classList.contains('searchcraft-popover-list-item-template')
+            ? el.querySelector('a')
+            : el);
+        const listItems = Array.from(new Set(links)).filter((el) => !!el && !el.hasAttribute('disabled') && el.offsetParent !== null);
+        // Focus may be on another link inside a templated result, so match on the result too.
+        const activeElement = document.activeElement;
+        const currentIndex = listItems.findIndex((el) => el === activeElement ||
+            !!el
+                .closest('.searchcraft-popover-list-item-template')
+                ?.contains(activeElement));
         if (direction === 'ArrowDown') {
             listItems[(currentIndex + 1) % listItems.length]?.focus();
         }
@@ -6831,7 +6837,7 @@ class SearchcraftPopoverListItem {
     item;
     popoverResultMappings;
     /**
-     * A callback function responsible for rendering the result. When provided, it is used instead of `popoverResultMappings`.
+     * A callback function responsible for rendering the result. When provided, it is used instead of `popoverResultMappings`, which are still used if the template throws.
      */
     template;
     /**
@@ -6860,26 +6866,33 @@ class SearchcraftPopoverListItem {
         this.imageSource = getDocumentValueFromSearchResultMapping(document, this.popoverResultMappings?.imageSource);
         this.imageAlt = getDocumentValueFromSearchResultMapping(document, this.popoverResultMappings?.imageAlt);
     }
+    /**
+     * Maps the document values and renders the template, if there is one. The mapped values are
+     * always kept so the result can fall back to them if the template throws or is removed.
+     */
+    updateRenderedValues() {
+        this.templateHtml = undefined;
+        if (!this.item) {
+            return;
+        }
+        this.mapValuesFromDocument(this.item.document);
+        if (this.template) {
+            try {
+                this.templateHtml = this.template(this.item.document, this.index, {
+                    html: html$1,
+                    source_index: this.item.source_index,
+                });
+            }
+            catch (error) {
+                console.error('Invalid popover result template:', error);
+            }
+        }
+    }
     onCoreAvailable(core) {
         this.core = core;
     }
     connectedCallback() {
-        if (this.item) {
-            if (this.template) {
-                try {
-                    this.templateHtml = this.template(this.item.document, this.index, {
-                        html: html$1,
-                        source_index: this.item.source_index,
-                    });
-                }
-                catch (error) {
-                    console.error('Invalid popover result template:', error);
-                }
-            }
-            else {
-                this.mapValuesFromDocument(this.item.document);
-            }
-        }
+        this.updateRenderedValues();
         this.cleanupCore = registry.useCoreInstance(this.searchcraftId, this.onCoreAvailable.bind(this));
     }
     disconnectedCallback() {
@@ -6911,11 +6924,17 @@ class SearchcraftPopoverListItem {
     };
     handleKeyDown = () => { };
     render() {
-        if (this.template) {
+        if (this.template && typeof this.templateHtml === 'string') {
             return (hAsync("div", { class: 'searchcraft-popover-list-item searchcraft-popover-list-item-template', innerHTML: this.templateHtml, onClick: this.handleTemplateClick, onKeyDown: this.handleKeyDown }));
         }
         return (hAsync("div", { class: 'searchcraft-popover-list-item' }, hAsync("a", { class: 'searchcraft-popover-list-item-link', href: this.href, onClick: this.handleLinkClick.bind(this) }, this.imageSource && (hAsync("div", { class: 'searchcraft-popover-list-item-image-wrapper' }, hAsync("img", { alt: this.imageAlt, src: this.imageSource, class: 'searchcraft-popover-list-item-image' }))), hAsync("div", { class: 'searchcraft-popover-list-item-content' }, this.title && (hAsync("p", { class: 'searchcraft-popover-list-item-content-title' }, this.title)), this.subtitle && (hAsync("p", { class: 'searchcraft-popover-list-item-content-subtitle' }, this.subtitle))))));
     }
+    static get watchers() { return {
+        "item": ["updateRenderedValues"],
+        "popoverResultMappings": ["updateRenderedValues"],
+        "template": ["updateRenderedValues"],
+        "index": ["updateRenderedValues"]
+    }; }
     static get cmpMeta() { return {
         "$flags$": 768,
         "$tagName$": "searchcraft-popover-list-item",

@@ -489,7 +489,7 @@ export namespace Components {
          */
         "searchcraftId"?: string;
         /**
-          * A callback function responsible for rendering the result. When provided, it is used instead of `popoverResultMappings`.
+          * A callback function responsible for rendering the result. When provided, it is used instead of `popoverResultMappings`, which are still used if the template throws.
          */
         "template"?: SearchResultTemplate<SearchResultTemplateData>;
     }
@@ -1959,7 +1959,7 @@ declare namespace LocalJSX {
          */
         "searchcraftId"?: string;
         /**
-          * A callback function responsible for rendering the result. When provided, it is used instead of `popoverResultMappings`.
+          * A callback function responsible for rendering the result. When provided, it is used instead of `popoverResultMappings`, which are still used if the template throws.
          */
         "template"?: SearchResultTemplate<SearchResultTemplateData>;
     }

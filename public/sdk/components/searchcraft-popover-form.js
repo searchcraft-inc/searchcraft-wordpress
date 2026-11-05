@@ -245,11 +245,17 @@ const SearchcraftPopoverForm$1 = /*@__PURE__*/ proxyCustomElement(class Searchcr
      * @param direction
      */
     focusOnNextListItem(direction) {
-        // The first link in each list item, so results rendered by a `template` are included.
-        const listItems = Array.from(document.querySelectorAll('.searchcraft-popover-list-item'))
-            .map((listItem) => listItem.querySelector('a'))
-            .filter((el) => !!el && !el.hasAttribute('disabled') && el.offsetParent !== null);
-        const currentIndex = listItems.indexOf(document.activeElement);
+        // Results rendered by a `template` are reached through the first link in the template.
+        const links = Array.from(document.querySelectorAll('.searchcraft-popover-list-item-link, .searchcraft-popover-list-item-template')).map((el) => el.classList.contains('searchcraft-popover-list-item-template')
+            ? el.querySelector('a')
+            : el);
+        const listItems = Array.from(new Set(links)).filter((el) => !!el && !el.hasAttribute('disabled') && el.offsetParent !== null);
+        // Focus may be on another link inside a templated result, so match on the result too.
+        const activeElement = document.activeElement;
+        const currentIndex = listItems.findIndex((el) => el === activeElement ||
+            !!el
+                .closest('.searchcraft-popover-list-item-template')
+                ?.contains(activeElement));
         if (direction === 'ArrowDown') {
             listItems[(currentIndex + 1) % listItems.length]?.focus();
         }
