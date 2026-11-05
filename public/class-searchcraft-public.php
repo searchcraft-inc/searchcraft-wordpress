@@ -516,10 +516,17 @@ class Searchcraft_Public {
 	 * attaching it automatically.
 	 *
 	 * @since 1.6.0
-	 * @return string The shortcode container, or an empty string if the SDK isn't ready.
+	 * @return string The shortcode container, or an empty string if the SDK isn't ready or the
+	 *                shortcode is in a feed or post listing.
 	 */
 	public function render_shortcode() {
 		if ( ! $this->is_sdk_ready() ) {
+			return '';
+		}
+
+		// Feeds and listings that show each post's full content (blog index, archives) don't get a
+		// search box per post. Widgets and single posts and pages still render the shortcode.
+		if ( is_feed() || ( in_the_loop() && ! is_singular() ) ) {
 			return '';
 		}
 
