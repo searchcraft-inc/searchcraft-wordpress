@@ -827,6 +827,23 @@ if ( ! is_array( $filter_panel_order ) || empty( $filter_panel_order ) ) {
 								</tr>
 								<tr class="searchcraft-popover-only">
 									<th scope="row">
+										<label for="searchcraft_popover_result_template">Modal and Inline Result Template Callback Function</label>
+									</th>
+									<td>
+										<textarea
+											name="searchcraft_popover_result_template"
+											id="searchcraft_popover_result_template"
+											class="large-text code searchcraft-template-editor"
+											rows="15"
+											placeholder="// Enter your custom modal and inline result template callback function here&#10;(item, index, { html }) => {&#10;    return html`&#10;        &lt;a class=&quot;searchcraft-popover-list-item-link&quot; href=&quot;${item.permalink}&quot;&gt;&#10;            &lt;div class=&quot;searchcraft-popover-list-item-content&quot;&gt;&#10;                &lt;p class=&quot;searchcraft-popover-list-item-content-title&quot;&gt;${item.post_title}&lt;/p&gt;&#10;                &lt;p class=&quot;searchcraft-popover-list-item-content-subtitle&quot;&gt;${item.post_excerpt}&lt;/p&gt;&#10;            &lt;/div&gt;&#10;        &lt;/a&gt;&#10;    `;&#10;}"
+										><?php echo esc_textarea( get_option( 'searchcraft_popover_result_template', '' ) ); ?></textarea>
+										<p class="description">
+											Write a JavaScript callback function to customize how results are displayed in the modal and inline search experiences, separately from the result template above. It takes the same <code>(item, index, { html })</code> parameters and item properties. Use the <code>searchcraft-popover-list-item-link</code> class on the result link to keep the default popover link styling. Leave empty to use the default template, which follows the result layout options above except result orientation.
+										</p>
+									</td>
+								</tr>
+								<tr class="searchcraft-popover-only">
+									<th scope="row">
 										<label for="searchcraft_popover_container_id">Popover Container Element ID</label>
 									</th>
 									<td>

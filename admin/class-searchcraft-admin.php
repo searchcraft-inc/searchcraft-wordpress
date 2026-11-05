@@ -1138,6 +1138,27 @@ class Searchcraft_Admin {
 	}
 
 	/**
+	 * Sanitizes a result template callback function entered in the layout settings.
+	 *
+	 * The callback is JavaScript that returns template literal HTML, so it is not run through
+	 * sanitize_textarea_field(). Script tags and common XSS patterns are removed instead.
+	 *
+	 * @since 1.6.0
+	 * @param string $template The unslashed template callback source.
+	 * @return string The sanitized template callback source.
+	 */
+	private function searchcraft_sanitize_template_callback( $template ) {
+		$template = trim( $template );
+		// Remove dangerous patterns from the JavaScript callback.
+		$template = preg_replace( '/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/mi', '', $template );
+		// Remove potential XSS vectors while preserving template literal HTML.
+		$template = preg_replace( '/javascript\s*:/i', '', $template );
+		$template = preg_replace( '/on\w+\s*=/i', '', $template );
+		$template = preg_replace( '/eval\s*\(/i', '', $template );
+		return $template;
+	}
+
+	/**
 	 * Handles the unified layout settings configuration request.
 	 * This combines all layout-related settings: search form, search results, and advanced settings.
 	 *
@@ -1553,17 +1574,18 @@ class Searchcraft_Admin {
 
 		// Handle result template callback function setting.
 		if ( isset( $request['searchcraft_result_template'] ) ) {
-			// Use wp_unslash and trim without sanitize_textarea_field to preserve HTML/JS.
-			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Custom sanitization below for JavaScript template.
-			$result_template = trim( wp_unslash( $request['searchcraft_result_template'] ) );
-			// Additional sanitization for JavaScript callback - remove dangerous patterns.
-			$result_template = preg_replace( '/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/mi', '', $result_template );
-			// Remove potential XSS vectors while preserving template literal HTML.
-			$result_template = preg_replace( '/javascript\s*:/i', '', $result_template );
-			$result_template = preg_replace( '/on\w+\s*=/i', '', $result_template );
-			$result_template = preg_replace( '/eval\s*\(/i', '', $result_template );
+			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Sanitized by searchcraft_sanitize_template_callback().
+			$result_template = $this->searchcraft_sanitize_template_callback( wp_unslash( $request['searchcraft_result_template'] ) );
 			update_option( 'searchcraft_result_template', $result_template );
 			$updated_settings['result_template'] = true;
+		}
+
+		// Handle modal and inline result template callback function setting.
+		if ( isset( $request['searchcraft_popover_result_template'] ) ) {
+			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Sanitized by searchcraft_sanitize_template_callback().
+			$popover_result_template = $this->searchcraft_sanitize_template_callback( wp_unslash( $request['searchcraft_popover_result_template'] ) );
+			update_option( 'searchcraft_popover_result_template', $popover_result_template );
+			$updated_settings['popover_result_template'] = true;
 		}
 
 		// Handle search input container ID (always save, even if empty).
@@ -3142,6 +3164,7 @@ class Searchcraft_Admin {
 			'searchcraft_image_alignment',
 			'searchcraft_result_orientation',
 			'searchcraft_result_template',
+			'searchcraft_popover_result_template',
 			'searchcraft_custom_css',
 			'searchcraft_filter_taxonomies',
 			'searchcraft_filter_panel_order',
