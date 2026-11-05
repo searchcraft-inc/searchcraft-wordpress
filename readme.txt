@@ -24,6 +24,7 @@ https://www.youtube.com/watch?v=22PixVQpsSU
 * Choose which content is searchable and which to exclude. Supports both posts and pages.
 * Supports custom taxonomy and author plugins.
 * Multiple layout options including full page, modal, and inline search experiences.
+* `[searchcraft]` shortcode to place the search experience anywhere on a page.
 * Highly configurable filter panel with collapsible sections and faceted search.
 * Customizable search fields and weighting.
 * Custom result templates for full control over search result markup.
@@ -77,6 +78,7 @@ Searchcraft Cloud customers may also reach out via our Discord server for assist
 == Changelog ==
 
 = Unreleased =
+* New Feature - Added a `[searchcraft]` shortcode that places the search experience where it is used. Pages with the shortcode skip the automatic placement and the container element ID settings.
 * New Feature - Every indexed document now includes its post type (post, page, or custom type name) in a filterable `post_type` facet field. Existing indexes get the field added automatically after upgrading and are re-indexed, skipping posts excluded from search.
 * Bugfix - The Content Type filter now works on sites that index only posts and pages. Previously it only worked when custom post types were selected.
 * Bugfix - Index schema updates (taxonomy, custom field and post type changes) no longer send the index's `ai_enabled` setting, which the ingest key isn't allowed to change. Searchcraft rejected these updates, so the schema changes weren't applied.
