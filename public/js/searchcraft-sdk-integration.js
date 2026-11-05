@@ -125,8 +125,8 @@
                 let typeClass = '';
                 let contentType = '';
                 let dataAttribute = '';
-                if (item.type && typeof item.type === 'string' && item.type.trim()) {
-                    contentType = item.type
+                if (item.post_type && typeof item.post_type === 'string' && item.post_type.trim()) {
+                    contentType = item.post_type
                         .replace(/^\/+/, '')
                         .replace(/\//g, '_')
                         .replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`)

@@ -33,6 +33,17 @@ use Searchcraft\Exception\SearchcraftException;
  */
 class Searchcraft_Admin {
 	/**
+	 * The index schema version this plugin expects.
+	 *
+	 * Increment this when an upgrade needs to add fields to existing indexes,
+	 * and handle the change in searchcraft_maybe_upgrade_index_schema().
+	 *
+	 * @since 1.6.0
+	 * @var int
+	 */
+	const INDEX_SCHEMA_VERSION = 1;
+
+	/**
 	 * The ID of the plugin.
 	 *
 	 * @since 1.0.0
@@ -97,6 +108,9 @@ class Searchcraft_Admin {
 		if ( is_admin() && ! ( defined( 'WP_INSTALLING' ) && WP_INSTALLING ) ) {
 			// Defer setup to avoid memory issues during activation.
 			add_action( 'admin_init', array( $this, 'searchcraft_setup' ) );
+
+			// Bring existing indexes up to date with schema fields added by plugin upgrades.
+			add_action( 'admin_init', array( $this, 'searchcraft_maybe_upgrade_index_schema' ) );
 		}
 
 		// Clear oldest post year transient when posts are published/updated.
@@ -931,11 +945,25 @@ class Searchcraft_Admin {
 					// Clear cached data since configuration has changed.
 					delete_transient( 'searchcraft_index_stats' );
 					delete_transient( 'searchcraft_index' );
+
+					// Make sure the (possibly newly connected) index has the post_type field, and finish
+					// any post_type re-index that failed earlier. The re-index is deferred so it only
+					// runs once alongside any other schema updates.
+					$post_type_field_result = $this->searchcraft_ensure_post_type_field( false );
+					if ( ! $post_type_field_result['success'] || $post_type_field_result['updated'] || $post_type_field_result['needs_reindex'] ) {
+						$needs_index_update = true;
+					}
+
 					// Update index schema if taxonomies or custom post types changed.
 					if ( $needs_index_update ) {
 						$all_updates_successful = true;
 						$reindex                = false;
 						$error_messages         = array();
+
+						if ( ! $post_type_field_result['success'] ) {
+							$all_updates_successful = false;
+							$error_messages[]       = 'Post type schema update: ' . $post_type_field_result['error'];
+						}
 
 						// Update taxonomy schema if taxonomies changed.
 						if ( $taxonomies_changed ) {
@@ -973,6 +1001,12 @@ class Searchcraft_Admin {
 
 						// Reindex if excerpt field overrides changed.
 						if ( $excerpt_field_overrides_changed && ! $reindex ) {
+							$this->searchcraft_add_all_documents();
+							$reindex = true;
+						}
+
+						// Reindex if the post_type field was added to an index that already has documents.
+						if ( $post_type_field_result['needs_reindex'] && ! $reindex ) {
 							$this->searchcraft_add_all_documents();
 							$reindex = true;
 						}
@@ -1695,6 +1729,23 @@ class Searchcraft_Admin {
 	}
 
 	/**
+	 * Builds an updateIndex() payload from the current index configuration.
+	 *
+	 * The ingest key can't change ai_enabled, and Searchcraft 0.11 rejects an
+	 * index replacement from an ingest key that includes it, so it is left out
+	 * and the engine keeps its stored value. The ai config stays in: 0.11
+	 * replaces it with what is sent, and later versions keep the stored config.
+	 *
+	 * @since 1.6.0
+	 * @param array $current_index The index configuration returned by getIndex().
+	 * @return array The payload to send to updateIndex().
+	 */
+	private function searchcraft_index_update_payload( $current_index ) {
+		unset( $current_index['ai_enabled'] );
+		return $current_index;
+	}
+
+	/**
 	 * Update the index schema to include taxonomy fields.
 	 *
 	 * @since 1.0.0
@@ -1859,7 +1910,7 @@ class Searchcraft_Admin {
 
 			// Update the index with new fields, search_fields, and weight_multipliers.
 			// Start with the current index configuration and update what changed.
-			$update_payload = $current_index;
+			$update_payload = $this->searchcraft_index_update_payload( $current_index );
 			$update_payload['fields'] = $updated_fields;
 			$update_payload['search_fields'] = $updated_search_fields;
 			$update_payload['weight_multipliers'] = $updated_weight_multipliers;
@@ -1893,10 +1944,11 @@ class Searchcraft_Admin {
 	 * Update the index schema to include custom post type fields.
 	 *
 	 * This function:
-	 * 1. Adds a 'type' text field to the schema
-	 * 2. For each custom post type with fields enabled, adds custom field definitions
-	 * 3. Updates the index schema via updateIndex()
-	 * 4. Re-indexes all documents if any exist
+	 * 1. For each custom post type with fields enabled, adds custom field definitions
+	 * 2. Updates the index schema via updateIndex()
+	 * 3. Re-indexes all documents if any exist
+	 *
+	 * The post_type field is handled separately by searchcraft_ensure_post_type_field().
 	 *
 	 * @since 1.0.0
 	 * @param array $selected_custom_post_types Array of selected custom post type names.
@@ -1937,20 +1989,6 @@ class Searchcraft_Admin {
 
 			// Start with current fields.
 			$updated_fields = $current_fields;
-
-			// Add 'type' field if custom post types are selected.
-			if ( ! empty( $selected_custom_post_types ) ) {
-				$updated_fields['type'] = array(
-					'type'     => 'facet',
-					'stored'   => true,
-					'indexed'  => true,
-					'required' => false,
-					'multi'    => false,
-				);
-			} else {
-				// Remove 'type' field if no custom post types are selected.
-				unset( $updated_fields['type'] );
-			}
 
 			// Get all custom field names that are currently in the schema.
 			// We'll track these to remove fields that are no longer needed.
@@ -2023,7 +2061,7 @@ class Searchcraft_Admin {
 			// Start with the current index configuration and only update the fields.
 			// This preserves all other index properties (language, search_fields, weight_multipliers, etc.)
 			// without having to explicitly list them, making this future-proof.
-			$update_payload           = $current_index;
+			$update_payload           = $this->searchcraft_index_update_payload( $current_index );
 			$update_payload['fields'] = $updated_fields;
 
 			$ingest_client->index()->updateIndex( $index_id, $update_payload );
@@ -2049,6 +2087,152 @@ class Searchcraft_Admin {
 		}
 
 		return $result;
+	}
+
+	/**
+	 * Ensure the index schema includes the post_type facet field.
+	 *
+	 * Adds the post_type field when the index does not already have one, and
+	 * removes the legacy 'type' facet that earlier versions added for custom
+	 * post types. If the schema changes and the index already holds documents,
+	 * all documents are re-indexed (posts excluded from the index are skipped)
+	 * so they pick up the new field. A re-index that fails or is cut off stays
+	 * pending and runs on the next call. Pass $reindex = false to skip the
+	 * re-index and handle it in the caller instead; 'needs_reindex' reports
+	 * whether one is required.
+	 *
+	 * @since 1.6.0
+	 * @param bool $reindex Whether to re-index documents after updating the schema.
+	 * @return array Result array with 'success', 'error', 'updated', 'needs_reindex', and 'reindexed' keys.
+	 */
+	private function searchcraft_ensure_post_type_field( $reindex = true ) {
+		$result = array(
+			'success'       => false,
+			'error'         => '',
+			'updated'       => false,
+			'needs_reindex' => false,
+			'reindexed'     => false,
+		);
+
+		// Get the ingest client.
+		$ingest_client = $this->searchcraft_get_ingest_client();
+		if ( ! $ingest_client ) {
+			$result['error'] = 'Unable to get ingest client.';
+			return $result;
+		}
+
+		// Get the index ID.
+		$index_id = Searchcraft_Config::get_index_id();
+		if ( empty( $index_id ) ) {
+			$result['error'] = 'Index ID is not configured.';
+			return $result;
+		}
+
+		try {
+			// Get the current index configuration.
+			$response       = $ingest_client->index()->getIndex( $index_id );
+			$current_index  = $response['data'] ?? $response;
+			$current_fields = $current_index['fields'] ?? array();
+
+			// Earlier versions stored the post type in a 'type' facet, and only when custom post types were selected.
+			$has_legacy_type_field = isset( $current_fields['type']['type'] ) && 'facet' === $current_fields['type']['type'];
+
+			// Leave an existing post_type field alone, even if it has been customized.
+			if ( isset( $current_fields['post_type'] ) && ! $has_legacy_type_field ) {
+				// A re-index that failed or was cut off after the field was added still needs to run.
+				$result['needs_reindex'] = (bool) get_option( 'searchcraft_post_type_reindex_pending', false );
+			} else {
+				$updated_fields = $current_fields;
+				if ( ! isset( $updated_fields['post_type'] ) ) {
+					$updated_fields['post_type'] = array(
+						'type'     => 'facet',
+						'stored'   => true,
+						'indexed'  => true,
+						'required' => false,
+						'multi'    => false,
+					);
+				}
+				if ( $has_legacy_type_field ) {
+					unset( $updated_fields['type'] );
+				}
+
+				// Check if documents exist in the index.
+				$stats          = $this->searchcraft_get_index_stats();
+				$document_count = isset( $stats['document_count'] ) ? (int) $stats['document_count'] : 0;
+
+				// Start with the current index configuration and only update the fields.
+				$update_payload           = $this->searchcraft_index_update_payload( $current_index );
+				$update_payload['fields'] = $updated_fields;
+
+				$ingest_client->index()->updateIndex( $index_id, $update_payload );
+				delete_transient( 'searchcraft_index' );
+
+				$result['updated'] = true;
+				// If the document count is unavailable, assume documents exist so the re-index isn't skipped.
+				$result['needs_reindex'] = null === $stats || $document_count > 0;
+
+				// searchcraft_add_all_documents() clears this once a full re-index completes.
+				if ( $result['needs_reindex'] ) {
+					update_option( 'searchcraft_post_type_reindex_pending', 1, false );
+				}
+			}
+
+			// If documents exist, re-index them to include the post_type data.
+			if ( $reindex && $result['needs_reindex'] ) {
+				try {
+					$this->searchcraft_add_all_documents();
+					$result['reindexed'] = true;
+				} catch ( \Exception $e ) {
+					// Index schema was updated but re-indexing failed.
+					$result['success'] = true;
+					$result['error']   = 'Index schema updated, but re-indexing failed: ' . $e->getMessage();
+					Searchcraft_Helper_Functions::searchcraft_error_log( 'Searchcraft: Re-indexing failed after adding post_type field: ' . $e->getMessage() );
+					return $result;
+				}
+			}
+
+			$result['success'] = true;
+		} catch ( \Exception $e ) {
+			$result['error'] = $e->getMessage();
+			Searchcraft_Helper_Functions::searchcraft_error_log( 'Searchcraft: Failed to add post_type field to index schema: ' . $e->getMessage() );
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Upgrade the schema of an existing index after a plugin update.
+	 *
+	 * Runs once per INDEX_SCHEMA_VERSION on admin page loads. If the upgrade
+	 * fails or is cut off (e.g. the Searchcraft API is unreachable, or PHP times
+	 * out during the re-index) it is retried after an hour rather than on every
+	 * page load.
+	 *
+	 * @since 1.6.0
+	 */
+	public function searchcraft_maybe_upgrade_index_schema() {
+		if ( wp_doing_ajax() || ! current_user_can( 'edit_posts' ) || ! Searchcraft_Config::is_configured() ) {
+			return;
+		}
+
+		if ( (int) get_option( 'searchcraft_index_schema_version', 0 ) >= self::INDEX_SCHEMA_VERSION ) {
+			return;
+		}
+
+		if ( false !== get_transient( 'searchcraft_index_schema_upgrade_retry' ) ) {
+			return;
+		}
+
+		// Set before starting so other admin requests don't run the upgrade at the
+		// same time, and so it isn't restarted on every page load if this one dies.
+		set_transient( 'searchcraft_index_schema_upgrade_retry', 1, HOUR_IN_SECONDS );
+
+		$result = $this->searchcraft_ensure_post_type_field();
+
+		if ( $result['success'] && ! get_option( 'searchcraft_post_type_reindex_pending', false ) ) {
+			update_option( 'searchcraft_index_schema_version', self::INDEX_SCHEMA_VERSION );
+			delete_transient( 'searchcraft_index_schema_upgrade_retry' );
+		}
 	}
 
 	/**
@@ -2275,7 +2459,7 @@ class Searchcraft_Admin {
 			// Create document.
 			$document = array(
 				'id'                    => (string) $post->ID,
-				'type'                  => '/' . $post->post_type,
+				'post_type'             => '/' . $post->post_type, // Facet values are paths, e.g. /post, /page, /product.
 				'post_title'            => $this->searchcraft_strip_html_preserve_text( $post->post_title ),
 				'post_excerpt'          => $this->searchcraft_strip_html_preserve_text( $post_excerpt ),
 				'post_content'          => $clean_content,
@@ -2588,6 +2772,7 @@ class Searchcraft_Admin {
 
 		// If no post types are selected, return early.
 		if ( empty( $post_types_to_index ) ) {
+			delete_option( 'searchcraft_post_type_reindex_pending' );
 			return;
 		}
 
@@ -2654,6 +2839,9 @@ class Searchcraft_Admin {
 				gc_collect_cycles();
 			}
 		}
+
+		// Every document now has the post_type field, so a pending post_type re-index is done.
+		delete_option( 'searchcraft_post_type_reindex_pending' );
 
 		// Log completion.
 		Searchcraft_Helper_Functions::searchcraft_error_log( "Searchcraft: Re-indexing completed. Processed {$total_posts} posts in {$batches} batch(es)." );
