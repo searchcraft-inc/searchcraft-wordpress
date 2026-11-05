@@ -11,7 +11,7 @@ const SearchcraftTheme$1 = /*@__PURE__*/ proxyCustomElement(class SearchcraftThe
         }
     }
     render() {
-        return h("style", { key: 'ef26626cdfa4fa98d516802d71443c49a9c6ecf9' }, styles);
+        return h("style", { key: '42e5fdf41c2c6a9146fb44b2d1aea2e5dfbb92dc' }, styles);
     }
 }, [256, "searchcraft-theme"]);
 function defineCustomElement$1() {

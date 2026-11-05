@@ -1175,6 +1175,10 @@ export namespace Components {
 	 * // index.js
 	 * const popoverForm = document.querySelector('searchcraft-popover-form');
 	 * popoverForm.popoverResultMappings = {};
+	 * // Or render each result with a template instead of `popoverResultMappings`.
+	 * popoverForm.template = (item, index, { html }) => html`
+	 *  <a href="${item.url}">${item.title}</a>
+	 * `;
 	 * ```
 	 * @react-example ```jsx
 	 * <SearchcraftPopoverForm type="inline" popoverResultMappings={[]} />
@@ -1222,6 +1226,10 @@ export namespace Components {
 		 */
 		"showSummaryBox"?: boolean;
 		/**
+		  * A callback function responsible for rendering a result. When provided, it is used instead of `popoverResultMappings`.
+		 */
+		"template"?: SearchResultTemplate<SearchResultTemplateData>;
+		/**
 		  * The type of popover form to render. - `inline` - Renders inline with the rest of the content on the page. The search results pop over the page content. - `fullscreen` - Renders in fullscreen view. Used together with the `searchcraft-popover-button` component. - `modal` - Renders in a modal view. Used together with the `searchcraft-popover-button` component.
 		  * @default 'inline'
 		 */
@@ -1244,12 +1252,21 @@ export namespace Components {
 		  * @default 0
 		 */
 		"documentPosition": number;
+		/**
+		  * The index of the result in the list view. Passed to the `template` callback.
+		  * @default 0
+		 */
+		"index": number;
 		"item": SearchClientResponseItem | undefined;
 		"popoverResultMappings": PopoverResultMappings | undefined;
 		/**
 		  * The id of the Searchcraft instance that this component should use.
 		 */
 		"searchcraftId"?: string;
+		/**
+		  * A callback function responsible for rendering the result. When provided, it is used instead of `popoverResultMappings`.
+		 */
+		"template"?: SearchResultTemplate<SearchResultTemplateData>;
 	}
 	/**
 	 * This web component is designed to display a list of results within a popover interface.
@@ -1274,6 +1291,10 @@ export namespace Components {
 		  * The id of the Searchcraft instance that this component should use.
 		 */
 		"searchcraftId"?: string;
+		/**
+		  * A callback function responsible for rendering a result. Passed to `searchcraft-popover-list-item`.
+		 */
+		"template"?: SearchResultTemplate<SearchResultTemplateData>;
 	}
 	/**
 	 * This web component is designed to display the number of results returned from a search query.
@@ -1898,6 +1919,10 @@ declare global {
 	 * // index.js
 	 * const popoverForm = document.querySelector('searchcraft-popover-form');
 	 * popoverForm.popoverResultMappings = {};
+	 * // Or render each result with a template instead of `popoverResultMappings`.
+	 * popoverForm.template = (item, index, { html }) => html`
+	 *  <a href="${item.url}">${item.title}</a>
+	 * `;
 	 * ```
 	 * @react-example ```jsx
 	 * <SearchcraftPopoverForm type="inline" popoverResultMappings={[]} />
@@ -2634,6 +2659,10 @@ declare namespace LocalJSX {
 	 * // index.js
 	 * const popoverForm = document.querySelector('searchcraft-popover-form');
 	 * popoverForm.popoverResultMappings = {};
+	 * // Or render each result with a template instead of `popoverResultMappings`.
+	 * popoverForm.template = (item, index, { html }) => html`
+	 *  <a href="${item.url}">${item.title}</a>
+	 * `;
 	 * ```
 	 * @react-example ```jsx
 	 * <SearchcraftPopoverForm type="inline" popoverResultMappings={[]} />
@@ -2681,6 +2710,10 @@ declare namespace LocalJSX {
 		 */
 		"showSummaryBox"?: boolean;
 		/**
+		  * A callback function responsible for rendering a result. When provided, it is used instead of `popoverResultMappings`.
+		 */
+		"template"?: SearchResultTemplate<SearchResultTemplateData>;
+		/**
 		  * The type of popover form to render. - `inline` - Renders inline with the rest of the content on the page. The search results pop over the page content. - `fullscreen` - Renders in fullscreen view. Used together with the `searchcraft-popover-button` component. - `modal` - Renders in a modal view. Used together with the `searchcraft-popover-button` component.
 		  * @default 'inline'
 		 */
@@ -2703,12 +2736,21 @@ declare namespace LocalJSX {
 		  * @default 0
 		 */
 		"documentPosition"?: number;
+		/**
+		  * The index of the result in the list view. Passed to the `template` callback.
+		  * @default 0
+		 */
+		"index"?: number;
 		"item"?: SearchClientResponseItem | undefined;
 		"popoverResultMappings"?: PopoverResultMappings | undefined;
 		/**
 		  * The id of the Searchcraft instance that this component should use.
 		 */
 		"searchcraftId"?: string;
+		/**
+		  * A callback function responsible for rendering the result. When provided, it is used instead of `popoverResultMappings`.
+		 */
+		"template"?: SearchResultTemplate<SearchResultTemplateData>;
 	}
 	/**
 	 * This web component is designed to display a list of results within a popover interface.
@@ -2733,6 +2775,10 @@ declare namespace LocalJSX {
 		  * The id of the Searchcraft instance that this component should use.
 		 */
 		"searchcraftId"?: string;
+		/**
+		  * A callback function responsible for rendering a result. Passed to `searchcraft-popover-list-item`.
+		 */
+		"template"?: SearchResultTemplate<SearchResultTemplateData>;
 	}
 	/**
 	 * This web component is designed to display the number of results returned from a search query.
@@ -3281,6 +3327,10 @@ declare module "@stencil/core" {
 			 * // index.js
 			 * const popoverForm = document.querySelector('searchcraft-popover-form');
 			 * popoverForm.popoverResultMappings = {};
+			 * // Or render each result with a template instead of `popoverResultMappings`.
+			 * popoverForm.template = (item, index, { html }) => html`
+			 *  <a href="${item.url}">${item.title}</a>
+			 * `;
 			 * ```
 			 * @react-example ```jsx
 			 * <SearchcraftPopoverForm type="inline" popoverResultMappings={[]} />

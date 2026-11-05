@@ -64,7 +64,7 @@ const SearchcraftResultsSummary = /*@__PURE__*/ proxyCustomElement(class Searchc
         return (h("div", { class: 'searchcraft-results-summary-content', innerHTML: this.summary, "aria-live": 'polite' }));
     }
     render() {
-        return (h("div", { key: 'aca6fe712c108fd3cb886be7dacfb763d2df8a92', class: 'searchcraft-results-summary' }, this.renderContent()));
+        return (h("div", { key: '556f53290003e7e6d8bc57c150ff1bf3581ce365', class: 'searchcraft-results-summary' }, this.renderContent()));
     }
 }, [768, "searchcraft-results-summary", {
         "searchcraftId": [1, "searchcraft-id"],

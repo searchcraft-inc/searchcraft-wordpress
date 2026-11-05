@@ -1,5 +1,5 @@
 import type { SearchcraftCore } from "../../classes/index";
-import type { PopoverResultMappings, SearchClientResponseItem, SearchDocument } from "../../types/index";
+import type { PopoverResultMappings, SearchClientResponseItem, SearchDocument, SearchResultTemplate, SearchResultTemplateData } from "../../types/index";
 /**
  * A single list item rendered in a searchcraft-popover-list-view.
  *
@@ -8,6 +8,14 @@ import type { PopoverResultMappings, SearchClientResponseItem, SearchDocument } 
 export declare class SearchcraftPopoverListItem {
     item: SearchClientResponseItem | undefined;
     popoverResultMappings: PopoverResultMappings | undefined;
+    /**
+     * A callback function responsible for rendering the result. When provided, it is used instead of `popoverResultMappings`.
+     */
+    template?: SearchResultTemplate<SearchResultTemplateData>;
+    /**
+     * The index of the result in the list view. Passed to the `template` callback.
+     */
+    index: number;
     /** The document position relative to the search results (For Measure) */
     documentPosition: number;
     /**
@@ -19,13 +27,21 @@ export declare class SearchcraftPopoverListItem {
     href?: string;
     imageSource?: string;
     imageAlt?: string;
+    templateHtml: string | undefined;
+    hostElement?: HTMLElement;
     core?: SearchcraftCore;
     private cleanupCore?;
     mapValuesFromDocument(document: SearchDocument): void;
     onCoreAvailable(core: SearchcraftCore): void;
     connectedCallback(): void;
     disconnectedCallback(): void;
+    sendDocumentClickedEvent(): void;
     handleLinkClick: () => void;
+    /**
+     * Sends the click event when a link inside the rendered template is clicked.
+     */
+    handleTemplateClick: (event: MouseEvent) => void;
+    handleKeyDown: () => void;
     render(): any;
 }
 //# sourceMappingURL=searchcraft-popover-list-item.d.ts.map

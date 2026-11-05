@@ -1,5 +1,5 @@
 import type { SearchcraftCore } from "../../classes/index";
-import type { AdClientResponseItem, PopoverResultMappings, SearchClientResponseItem } from "../../types/index";
+import type { AdClientResponseItem, PopoverResultMappings, SearchClientResponseItem, SearchResultTemplate, SearchResultTemplateData } from "../../types/index";
 /**
  * This web component is designed to display a list of results within a popover interface.
  * It is consumed within the `searchcraft-popover-form` component.
@@ -21,6 +21,10 @@ export declare class SearchcraftPopoverListView {
      * list-view-item elements.
      */
     popoverResultMappings: PopoverResultMappings | undefined;
+    /**
+     * A callback function responsible for rendering a result. Passed to `searchcraft-popover-list-item`.
+     */
+    template?: SearchResultTemplate<SearchResultTemplateData>;
     /**
      * The items to render in the list view.
      */
