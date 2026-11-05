@@ -1,7 +1,7 @@
 import { p as proxyCustomElement, H, h, t as transformTag } from './index2.js?scv=0.15.1';
 import { r as registry } from './CoreInstanceRegistry.js?scv=0.15.1';
 import { g as getDocumentValueFromSearchResultMapping } from './units.js?scv=0.15.1';
-import './purify.es.js';
+import { h as html } from './html.js?scv=0.15.1';
 
 const SearchcraftPopoverListItem = /*@__PURE__*/ proxyCustomElement(class SearchcraftPopoverListItem extends H {
     constructor(registerHost) {
@@ -12,6 +12,14 @@ const SearchcraftPopoverListItem = /*@__PURE__*/ proxyCustomElement(class Search
     }
     item;
     popoverResultMappings;
+    /**
+     * A callback function responsible for rendering the result. When provided, it is used instead of `popoverResultMappings`, which are still used if the template throws.
+     */
+    template;
+    /**
+     * The index of the result in the list view. Passed to the `template` callback.
+     */
+    index = 0;
     /** The document position relative to the search results (For Measure) */
     documentPosition = 0;
     /**
@@ -23,6 +31,8 @@ const SearchcraftPopoverListItem = /*@__PURE__*/ proxyCustomElement(class Search
     href;
     imageSource;
     imageAlt;
+    templateHtml;
+    get hostElement() { return this; }
     core;
     cleanupCore;
     mapValuesFromDocument(document) {
@@ -32,19 +42,39 @@ const SearchcraftPopoverListItem = /*@__PURE__*/ proxyCustomElement(class Search
         this.imageSource = getDocumentValueFromSearchResultMapping(document, this.popoverResultMappings?.imageSource);
         this.imageAlt = getDocumentValueFromSearchResultMapping(document, this.popoverResultMappings?.imageAlt);
     }
+    /**
+     * Maps the document values and renders the template, if there is one. The mapped values are
+     * always kept so the result can fall back to them if the template throws or is removed.
+     */
+    updateRenderedValues() {
+        this.templateHtml = undefined;
+        if (!this.item) {
+            return;
+        }
+        this.mapValuesFromDocument(this.item.document);
+        if (this.template) {
+            try {
+                this.templateHtml = this.template(this.item.document, this.index, {
+                    html,
+                    source_index: this.item.source_index,
+                });
+            }
+            catch (error) {
+                console.error('Invalid popover result template:', error);
+            }
+        }
+    }
     onCoreAvailable(core) {
         this.core = core;
     }
     connectedCallback() {
-        if (this.item) {
-            this.mapValuesFromDocument(this.item.document);
-        }
+        this.updateRenderedValues();
         this.cleanupCore = registry.useCoreInstance(this.searchcraftId, this.onCoreAvailable.bind(this));
     }
     disconnectedCallback() {
         this.cleanupCore?.();
     }
-    handleLinkClick = () => {
+    sendDocumentClickedEvent() {
         if (this.core) {
             const document_position = this.documentPosition;
             const search_term = this.core.store.getState().searchTerm;
@@ -55,20 +85,50 @@ const SearchcraftPopoverListItem = /*@__PURE__*/ proxyCustomElement(class Search
                 search_term,
             });
         }
-    };
-    render() {
-        return (h("div", { key: 'd1c9c310b8abc9d2370efb802eac1edf4189519d', class: 'searchcraft-popover-list-item' }, h("a", { key: '30eb1a5076c5b4b95ae43147eaee0bb72ce46179', class: 'searchcraft-popover-list-item-link', href: this.href, onClick: this.handleLinkClick.bind(this) }, this.imageSource && (h("div", { key: 'd18ff55823dc2c61f3786f423936af8b009aeeda', class: 'searchcraft-popover-list-item-image-wrapper' }, h("img", { key: '56f4cc1d472f7da05e64fcf52c560a7ad0cdf7a6', alt: this.imageAlt, src: this.imageSource, class: 'searchcraft-popover-list-item-image' }))), h("div", { key: '78a0f0235d5e71d10076b70ccbaf4b58e0d6fea0', class: 'searchcraft-popover-list-item-content' }, this.title && (h("p", { key: '4489047af56e5aa295cb5f036e970dcad053d3b7', class: 'searchcraft-popover-list-item-content-title' }, this.title)), this.subtitle && (h("p", { key: '4d177c227a1dbf1233022d738403c8eb93ba328d', class: 'searchcraft-popover-list-item-content-subtitle' }, this.subtitle))))));
     }
+    handleLinkClick = () => {
+        this.sendDocumentClickedEvent();
+    };
+    /**
+     * Sends the click event when a link inside the rendered template is clicked.
+     */
+    handleTemplateClick = (event) => {
+        const link = event.target?.closest('a');
+        if (link && this.hostElement?.contains(link)) {
+            this.sendDocumentClickedEvent();
+        }
+    };
+    handleKeyDown = () => { };
+    render() {
+        if (this.template && typeof this.templateHtml === 'string') {
+            return (h("div", { class: 'searchcraft-popover-list-item searchcraft-popover-list-item-template', innerHTML: this.templateHtml, onClick: this.handleTemplateClick, onKeyDown: this.handleKeyDown }));
+        }
+        return (h("div", { class: 'searchcraft-popover-list-item' }, h("a", { class: 'searchcraft-popover-list-item-link', href: this.href, onClick: this.handleLinkClick.bind(this) }, this.imageSource && (h("div", { class: 'searchcraft-popover-list-item-image-wrapper' }, h("img", { alt: this.imageAlt, src: this.imageSource, class: 'searchcraft-popover-list-item-image' }))), h("div", { class: 'searchcraft-popover-list-item-content' }, this.title && (h("p", { class: 'searchcraft-popover-list-item-content-title' }, this.title)), this.subtitle && (h("p", { class: 'searchcraft-popover-list-item-content-subtitle' }, this.subtitle))))));
+    }
+    static get watchers() { return {
+        "item": ["updateRenderedValues"],
+        "popoverResultMappings": ["updateRenderedValues"],
+        "template": ["updateRenderedValues"],
+        "index": ["updateRenderedValues"]
+    }; }
 }, [768, "searchcraft-popover-list-item", {
         "item": [16],
         "popoverResultMappings": [16],
+        "template": [16],
+        "index": [2],
         "documentPosition": [2, "document-position"],
         "searchcraftId": [1, "searchcraft-id"],
         "title": [32],
         "subtitle": [32],
         "href": [32],
         "imageSource": [32],
-        "imageAlt": [32]
+        "imageAlt": [32],
+        "templateHtml": [32]
+    }, undefined, {
+        "item": ["updateRenderedValues"],
+        "popoverResultMappings": ["updateRenderedValues"],
+        "template": ["updateRenderedValues"],
+        "index": ["updateRenderedValues"]
     }]);
 function defineCustomElement() {
     if (typeof customElements === "undefined") {

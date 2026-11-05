@@ -109,12 +109,11 @@
 
             const includeFilterPanel = searchcraft_config.includeFilterPanel || false;
 
-            const defaultResultTemplate = (item, index, { html }) => {
+            /**
+             * Values shared by the search results and modal/inline result templates.
+             */
+            const getResultTemplateValues = (item) => {
                 const postDate = item.post_date ? new Date(item.post_date).toLocaleDateString() : '';
-                const image = item?.featured_image_url && item.featured_image_url.length > 0 ? html`
-                    <div class="searchcraft-result-image">
-                        <img src="${item.featured_image_url}" alt="${item.post_title}" />
-                    </div>` : '';
 
                 const author_name = Array.isArray(item.post_author_name)
                     ? item.post_author_name.filter(name => name && name.trim()).join(', ')
@@ -136,6 +135,16 @@
                     dataAttribute = `data-sc-type="${contentType}"`;
                 }
 
+                return { postDate, author_name, by, typeClass, dataAttribute };
+            };
+
+            const defaultResultTemplate = (item, index, { html }) => {
+                const { postDate, author_name, by, typeClass, dataAttribute } = getResultTemplateValues(item);
+                const image = item?.featured_image_url && item.featured_image_url.length > 0 ? html`
+                    <div class="searchcraft-result-image">
+                        <img src="${item.featured_image_url}" alt="${item.post_title}" />
+                    </div>` : '';
+
                 return html`
                 <a class="searchcraft-result-item${typeClass}" href="${item.permalink}" ${dataAttribute}>
                     ${searchcraft_config.imageAlignment === 'left' ? image : ''}
@@ -153,16 +162,59 @@
                 `;
             };
 
-            // Use custom result template callback if provided, otherwise use default
-            let searchcraftResultTemplate = defaultResultTemplate;
-            if (searchcraft_config.resultTemplateCallback) {
-                try {
-                    searchcraftResultTemplate = new Function('return ' + searchcraft_config.resultTemplateCallback)();
-                } catch (error) {
-                    console.warn('Searchcraft: Invalid custom result template callback, using default template', error);
-                    searchcraftResultTemplate = defaultResultTemplate;
+            // The modal and inline experiences use the popover list item classes so results keep the
+            // popover styling. Result orientation does not apply to them.
+            const defaultPopoverResultTemplate = (item, index, { html }) => {
+                const { postDate, author_name, by, typeClass, dataAttribute } = getResultTemplateValues(item);
+                const showDate = postDate && searchcraft_config.displayPostDate;
+                const showAuthor = author_name && searchcraft_config.displayAuthorName;
+                const image = item?.featured_image_url && item.featured_image_url.length > 0 ? html`
+                    <div class="searchcraft-popover-list-item-image-wrapper">
+                        <img class="searchcraft-popover-list-item-image" src="${item.featured_image_url}" alt="${item.post_title}" />
+                    </div>` : '';
+
+                return html`
+                <a class="searchcraft-popover-list-item-link${typeClass}" href="${item.permalink}" ${dataAttribute}>
+                    ${searchcraft_config.popoverImageAlignment === 'left' ? image : ''}
+                    <div class="searchcraft-popover-list-item-content" ${dataAttribute}>
+                        ${(item.primary_category_name && searchcraft_config.displayPrimaryCategory) ? html`<h4 class="searchcraft-result-primary-category">${item.primary_category_name}</h4>` : ''}
+                        <p class="searchcraft-popover-list-item-content-title" ${dataAttribute}>${item.post_title}</p>
+                        ${item.post_excerpt ? html`<p class="searchcraft-popover-list-item-content-subtitle" ${dataAttribute}>${item.post_excerpt}</p>` : ''}
+                        ${(showDate || showAuthor) ? html`<div class="searchcraft-result-meta flex">
+                            ${showDate ? html`<time class="searchcraft-result-date">${postDate}</time>` : ''}${(showDate && showAuthor) ? ' • ' : ''}
+                            ${showAuthor ? html`<span class="searchcraft-result-author-name">${by}${author_name}</span>` : ''}
+                        </div>` : ''}
+                    </div>
+                    ${searchcraft_config.popoverImageAlignment === 'right' ? image : ''}
+                </a>
+                `;
+            };
+
+            // Use a custom template callback if one is provided, otherwise use the default template.
+            const resolveResultTemplate = (templateCallback, defaultTemplate) => {
+                if (!templateCallback) {
+                    return defaultTemplate;
                 }
-            }
+                let template;
+                try {
+                    // Wrapped in parentheses so a leading comment line doesn't end the return statement.
+                    template = new Function('return (\n' + templateCallback.trim().replace(/;+$/, '') + '\n)')();
+                } catch (wrappedError) {
+                    try {
+                        template = new Function('return ' + templateCallback)();
+                    } catch (error) {
+                        console.warn('Searchcraft: Invalid custom result template callback, using default template', error);
+                        return defaultTemplate;
+                    }
+                }
+                if (typeof template !== 'function') {
+                    console.warn('Searchcraft: Custom result template callback is not a function, using default template');
+                    return defaultTemplate;
+                }
+                return template;
+            };
+            const searchcraftResultTemplate = resolveResultTemplate(searchcraft_config.resultTemplateCallback, defaultResultTemplate);
+            const searchcraftPopoverResultTemplate = resolveResultTemplate(searchcraft_config.popoverResultTemplateCallback, defaultPopoverResultTemplate);
 
             const searchcraft = new Searchcraft(config);
 
@@ -180,6 +232,7 @@
                         searchcraft: window.searchcraft,
                         config: searchcraft_config,
                         resultTemplate: searchcraftResultTemplate,
+                        popoverResultTemplate: searchcraftPopoverResultTemplate,
                         includeFilterPanel: includeFilterPanel
                     }
                 });

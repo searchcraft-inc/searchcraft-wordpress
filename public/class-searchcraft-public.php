@@ -238,10 +238,16 @@ class Searchcraft_Public {
 		if ( ! empty( $result_template ) ) {
 			$js_config['resultTemplateCallback'] = $result_template;
 		}
+		$popover_result_template = get_option( 'searchcraft_popover_result_template', '' );
+		if ( ! empty( $popover_result_template ) ) {
+			$js_config['popoverResultTemplateCallback'] = $popover_result_template;
+		}
 		$js_config['orientation']            = get_option( 'searchcraft_result_orientation', 'column' );
 		$js_config['displayPostDate']        = (bool) get_option( 'searchcraft_display_post_date', false );
 		$js_config['displayAuthorName']      = (bool) get_option( 'searchcraft_display_author_name', true );
 		$js_config['imageAlignment']         = get_option( 'searchcraft_image_alignment', 'left' );
+		// The modal and inline experiences don't use result orientation, so they keep the saved alignment.
+		$js_config['popoverImageAlignment'] = $js_config['imageAlignment'];
 		if ( 'grid' === $js_config['orientation'] ) {
 			$js_config['imageAlignment'] = 'left';
 		}

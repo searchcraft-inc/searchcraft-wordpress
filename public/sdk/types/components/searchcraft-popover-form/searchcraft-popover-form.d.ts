@@ -1,5 +1,5 @@
 import type { SearchcraftCore } from "../../classes/index";
-import type { AdClientResponseItem, PopoverResultMappings, SearchClientResponseItem } from "../../types/index";
+import type { AdClientResponseItem, PopoverResultMappings, SearchClientResponseItem, SearchResultTemplate, SearchResultTemplateData } from "../../types/index";
 /**
  * This web component is designed to display search results in a popover container that dynamically appears when the user interacts with a search input field, or when a popover-button is pressed.
  *
@@ -24,6 +24,11 @@ import type { AdClientResponseItem, PopoverResultMappings, SearchClientResponseI
  * const popoverForm = document.querySelector('searchcraft-popover-form');
  *
  * popoverForm.popoverResultMappings = {};
+ *
+ * // Or render each result with a template instead of `popoverResultMappings`.
+ * popoverForm.template = (item, index, { html }) => html`
+ *  <a href="${item.url}">${item.title}</a>
+ * `;
  * ```
  *
  * @react-example
@@ -49,6 +54,10 @@ export declare class SearchcraftPopoverForm {
      * Formats the content rendered for each result.
      */
     popoverResultMappings?: PopoverResultMappings;
+    /**
+     * A callback function responsible for rendering a result. When provided, it is used instead of `popoverResultMappings`.
+     */
+    template?: SearchResultTemplate<SearchResultTemplateData>;
     /**
      * The hotkey that activates the popover.
      */
