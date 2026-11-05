@@ -115,6 +115,9 @@ if ( ! is_array( $filter_panel_order ) || empty( $filter_panel_order ) ) {
 								<p class="description">
 									Choose how you want search to be presented to your users. The full experience provides deep filtering controls, while Modal and Inline offer a compact popover experience.
 								</p>
+								<p class="description">
+									To choose where search appears, add the <code>[searchcraft]</code> shortcode to a post, page or widget. On pages with the shortcode, search appears there instead of in its automatic location or the container element ID settings under Advanced. The search results page keeps its usual layout.
+								</p>
 							</td>
 						</tr>
 						<tr>
