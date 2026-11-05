@@ -78,7 +78,7 @@ Searchcraft Cloud customers may also reach out via our Discord server for assist
 == Changelog ==
 
 = Unreleased =
-* New Feature - Added a `[searchcraft]` shortcode that places the search experience where it is used. Pages with the shortcode skip the automatic placement and the container element ID settings.
+* New Feature - Added a `[searchcraft]` shortcode that places the search experience where it is used. Pages with the shortcode, other than the search results page, skip the automatic placement and the container element ID settings.
 * New Feature - Every indexed document now includes its post type (post, page, or custom type name) in a filterable `post_type` facet field. Existing indexes get the field added automatically after upgrading and are re-indexed, skipping posts excluded from search.
 * Bugfix - The full search experience now shows the Results Per Page setting's number of results on every page. Pages other than the search results page used the modal and inline Results in Overlay setting instead.
 * Bugfix - The Content Type filter now works on sites that index only posts and pages. Previously it only worked when custom post types were selected.
