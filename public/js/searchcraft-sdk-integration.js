@@ -163,9 +163,11 @@
             };
 
             // The modal and inline experiences use the popover list item classes so results keep the
-            // popover styling and keyboard navigation. Result orientation does not apply to them.
+            // popover styling. Result orientation does not apply to them.
             const defaultPopoverResultTemplate = (item, index, { html }) => {
                 const { postDate, author_name, by, typeClass, dataAttribute } = getResultTemplateValues(item);
+                const showDate = postDate && searchcraft_config.displayPostDate;
+                const showAuthor = author_name && searchcraft_config.displayAuthorName;
                 const image = item?.featured_image_url && item.featured_image_url.length > 0 ? html`
                     <div class="searchcraft-popover-list-item-image-wrapper">
                         <img class="searchcraft-popover-list-item-image" src="${item.featured_image_url}" alt="${item.post_title}" />
@@ -177,11 +179,11 @@
                     <div class="searchcraft-popover-list-item-content" ${dataAttribute}>
                         ${(item.primary_category_name && searchcraft_config.displayPrimaryCategory) ? html`<h4 class="searchcraft-result-primary-category">${item.primary_category_name}</h4>` : ''}
                         <p class="searchcraft-popover-list-item-content-title" ${dataAttribute}>${item.post_title}</p>
-                        <p class="searchcraft-popover-list-item-content-subtitle" ${dataAttribute}>${item.post_excerpt}</p>
-                        <div class="searchcraft-result-meta flex">
-                            ${(postDate && searchcraft_config.displayPostDate) ? html`<time class="searchcraft-result-date">${postDate}</time> • ` : ''}
-                            ${(author_name && searchcraft_config.displayAuthorName) ? html`<span class="searchcraft-result-author-name">${by}${author_name}</span>` : ''}
-                        </div>
+                        ${item.post_excerpt ? html`<p class="searchcraft-popover-list-item-content-subtitle" ${dataAttribute}>${item.post_excerpt}</p>` : ''}
+                        ${(showDate || showAuthor) ? html`<div class="searchcraft-result-meta flex">
+                            ${showDate ? html`<time class="searchcraft-result-date">${postDate}</time>` : ''}${(showDate && showAuthor) ? ' • ' : ''}
+                            ${showAuthor ? html`<span class="searchcraft-result-author-name">${by}${author_name}</span>` : ''}
+                        </div>` : ''}
                     </div>
                     ${searchcraft_config.popoverImageAlignment === 'right' ? image : ''}
                 </a>
@@ -193,12 +195,23 @@
                 if (!templateCallback) {
                     return defaultTemplate;
                 }
+                let template;
                 try {
-                    return new Function('return ' + templateCallback)();
-                } catch (error) {
-                    console.warn('Searchcraft: Invalid custom result template callback, using default template', error);
+                    // Wrapped in parentheses so a leading comment line doesn't end the return statement.
+                    template = new Function('return (\n' + templateCallback.trim().replace(/;+$/, '') + '\n)')();
+                } catch (wrappedError) {
+                    try {
+                        template = new Function('return ' + templateCallback)();
+                    } catch (error) {
+                        console.warn('Searchcraft: Invalid custom result template callback, using default template', error);
+                        return defaultTemplate;
+                    }
+                }
+                if (typeof template !== 'function') {
+                    console.warn('Searchcraft: Custom result template callback is not a function, using default template');
                     return defaultTemplate;
                 }
+                return template;
             };
             const searchcraftResultTemplate = resolveResultTemplate(searchcraft_config.resultTemplateCallback, defaultResultTemplate);
             const searchcraftPopoverResultTemplate = resolveResultTemplate(searchcraft_config.popoverResultTemplateCallback, defaultPopoverResultTemplate);
