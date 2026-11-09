@@ -1,10 +1,10 @@
-import { p as proxyCustomElement, H, h, t as transformTag } from './index2.js?scv=0.15.1';
-import { r as registry } from './CoreInstanceRegistry.js?scv=0.15.1';
-import { f as formatNumberWithCommas } from './units.js?scv=0.15.1';
+import { p as proxyCustomElement, H, h, t as transformTag } from './index2.js?scv=0.16.0';
+import { r as registry } from './CoreInstanceRegistry.js?scv=0.16.0';
+import { f as formatNumberWithCommas } from './units.js?scv=0.16.0';
 import './purify.es.js';
 
 const name = "@searchcraft/javascript-sdk";
-const version = "0.15.1";
+const version = "0.16.0";
 
 const SearchcraftPopoverFooter = /*@__PURE__*/ proxyCustomElement(class SearchcraftPopoverFooter extends H {
     constructor(registerHost) {

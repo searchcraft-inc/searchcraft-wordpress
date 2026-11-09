@@ -80,6 +80,7 @@ Searchcraft Cloud customers may also reach out via our Discord server for assist
 * New Feature - Every indexed document now includes its post type (post, page, or custom type name) in a filterable `post_type` facet field. Existing indexes get the field added automatically after upgrading and are re-indexed, skipping posts excluded from search.
 * Bugfix - The Content Type filter now works on sites that index only posts and pages. Previously it only worked when custom post types were selected.
 * Bugfix - Index schema updates (taxonomy, custom field and post type changes) no longer send the index's `ai_enabled` setting, which the ingest key isn't allowed to change. Searchcraft rejected these updates, so the schema changes weren't applied.
+* Improvement - The modal and inline search experiences now follow the Display Primary Category, Display Author Name, Display Post Date and Image Alignment settings, and can use their own result template callback under Advanced Customization.
 * Improvement - The Content Type filter and the per-result content type CSS classes now read the `post_type` field. The legacy `type` field is removed from the index schema. Custom result templates that read `item.type` should switch to `item.post_type`.
 
 = 1.5.1 =

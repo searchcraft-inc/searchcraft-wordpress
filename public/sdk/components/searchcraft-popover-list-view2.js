@@ -1,7 +1,7 @@
-import { p as proxyCustomElement, H, h, t as transformTag } from './index2.js?scv=0.15.1';
-import { r as registry } from './CoreInstanceRegistry.js?scv=0.15.1';
-import { d as defineCustomElement$2 } from './searchcraft-ad2.js?scv=0.15.1';
-import { d as defineCustomElement$1 } from './searchcraft-popover-list-item2.js?scv=0.15.1';
+import { p as proxyCustomElement, H, h, t as transformTag } from './index2.js?scv=0.16.0';
+import { r as registry } from './CoreInstanceRegistry.js?scv=0.16.0';
+import { d as defineCustomElement$2 } from './searchcraft-ad2.js?scv=0.16.0';
+import { d as defineCustomElement$1 } from './searchcraft-popover-list-item2.js?scv=0.16.0';
 
 const SearchcraftPopoverListView = /*@__PURE__*/ proxyCustomElement(class SearchcraftPopoverListView extends H {
     constructor(registerHost) {
@@ -19,6 +19,10 @@ const SearchcraftPopoverListView = /*@__PURE__*/ proxyCustomElement(class Search
      * list-view-item elements.
      */
     popoverResultMappings;
+    /**
+     * A callback function responsible for rendering a result. Passed to `searchcraft-popover-list-item`.
+     */
+    template;
     /**
      * The items to render in the list view.
      */
@@ -38,7 +42,7 @@ const SearchcraftPopoverListView = /*@__PURE__*/ proxyCustomElement(class Search
         this.cleanupCore?.();
     }
     renderWithADMAds() {
-        return (h("div", { class: 'searchcraft-popover-list-view' }, this.adClientResponseItems?.map((item) => (h("searchcraft-ad", { "searchcraft-id": this.searchcraftId, adClientResponseItem: item, adSource: 'adMarketplace', key: item.id, renderPosition: 'top' }))), this.searchClientResponseItems?.map((item, index) => (h("searchcraft-popover-list-item", { "searchcraft-id": this.searchcraftId, item: item, key: item.id, popoverResultMappings: this.popoverResultMappings, documentPosition: this.searchResultsPerPage * (this.searchResultsPage - 1) + index })))));
+        return (h("div", { class: 'searchcraft-popover-list-view' }, this.adClientResponseItems?.map((item) => (h("searchcraft-ad", { "searchcraft-id": this.searchcraftId, adClientResponseItem: item, adSource: 'adMarketplace', key: item.id, renderPosition: 'top' }))), this.searchClientResponseItems?.map((item, index) => (h("searchcraft-popover-list-item", { "searchcraft-id": this.searchcraftId, item: item, key: item.id, popoverResultMappings: this.popoverResultMappings, template: this.template, index: index, documentPosition: this.searchResultsPerPage * (this.searchResultsPage - 1) + index })))));
     }
     renderWithCustomAds() {
         const itemsToRender = [];
@@ -61,7 +65,7 @@ const SearchcraftPopoverListView = /*@__PURE__*/ proxyCustomElement(class Search
                     itemsToRender.push(h("searchcraft-ad", { "searchcraft-id": this.searchcraftId, adSource: 'Custom', key: `${item.id}-ad-${n}`, renderPosition: 'interstitial' }));
                 }
             }
-            itemsToRender.push(h("searchcraft-popover-list-item", { "searchcraft-id": this.searchcraftId, item: item, key: item.id, popoverResultMappings: this.popoverResultMappings, documentPosition: this.searchResultsPerPage * (this.searchResultsPage - 1) + index }));
+            itemsToRender.push(h("searchcraft-popover-list-item", { "searchcraft-id": this.searchcraftId, item: item, key: item.id, popoverResultMappings: this.popoverResultMappings, template: this.template, index: index, documentPosition: this.searchResultsPerPage * (this.searchResultsPage - 1) + index }));
         });
         // Renders ads at end
         for (let n = 0; n < adEndQuantity; n++) {
@@ -91,7 +95,7 @@ const SearchcraftPopoverListView = /*@__PURE__*/ proxyCustomElement(class Search
                     itemsToRender.push(h("searchcraft-ad", { "searchcraft-id": this.searchcraftId, adSource: 'Nativo', key: `${item.id}-ad-${n}`, renderPosition: 'interstitial' }));
                 }
             }
-            itemsToRender.push(h("searchcraft-popover-list-item", { "searchcraft-id": this.searchcraftId, item: item, key: item.id, popoverResultMappings: this.popoverResultMappings, documentPosition: this.searchResultsPerPage * (this.searchResultsPage - 1) + index }));
+            itemsToRender.push(h("searchcraft-popover-list-item", { "searchcraft-id": this.searchcraftId, item: item, key: item.id, popoverResultMappings: this.popoverResultMappings, template: this.template, index: index, documentPosition: this.searchResultsPerPage * (this.searchResultsPage - 1) + index }));
         });
         // Renders ads at end
         for (let n = 0; n < adEndQuantity; n++) {
@@ -100,7 +104,7 @@ const SearchcraftPopoverListView = /*@__PURE__*/ proxyCustomElement(class Search
         return h("div", { class: 'searchcraft-popover-list-view' }, itemsToRender);
     }
     renderWithNoAds() {
-        return (h("div", { class: 'searchcraft-popover-list-view' }, this.searchClientResponseItems?.map((item, index) => (h("searchcraft-popover-list-item", { "searchcraft-id": this.searchcraftId, item: item, key: item.id, popoverResultMappings: this.popoverResultMappings, documentPosition: this.searchResultsPerPage * (this.searchResultsPage - 1) + index })))));
+        return (h("div", { class: 'searchcraft-popover-list-view' }, this.searchClientResponseItems?.map((item, index) => (h("searchcraft-popover-list-item", { "searchcraft-id": this.searchcraftId, item: item, key: item.id, popoverResultMappings: this.popoverResultMappings, template: this.template, index: index, documentPosition: this.searchResultsPerPage * (this.searchResultsPage - 1) + index })))));
     }
     render() {
         if (this.config?.customAdConfig) {
@@ -117,6 +121,7 @@ const SearchcraftPopoverListView = /*@__PURE__*/ proxyCustomElement(class Search
 }, [768, "searchcraft-popover-list-view", {
         "searchcraftId": [1, "searchcraft-id"],
         "popoverResultMappings": [16],
+        "template": [16],
         "searchClientResponseItems": [16],
         "adClientResponseItems": [16],
         "searchResultsPage": [2, "search-results-page"],

@@ -381,10 +381,12 @@ function toggleAiSummaryLayout() {
 
 /**
  * Toggle column orientation options visibility
- * Hides options when grid is selected, shows them when column is selected
+ * Hides options when grid is selected, shows them when column is selected.
+ * The modal and inline experiences don't use result orientation, so the options stay visible for them.
  */
 function toggleResultOrientationOptions() {
 	const columnRadio = document.querySelector('input[name="searchcraft_result_orientation"][value="column"]');
+	const fullRadio = document.querySelector('input[name="searchcraft_search_experience"][value="full"]');
 	const columnOrientationOptions = document.querySelectorAll('.searchcraft-column-orientation-option');
 
 	if (!columnRadio || !columnOrientationOptions.length) {
@@ -392,9 +394,10 @@ function toggleResultOrientationOptions() {
 	}
 
 	const isColumnSelected = columnRadio.checked;
+	const isPopoverSelected = fullRadio ? !fullRadio.checked : false;
 
 	columnOrientationOptions.forEach((element) => {
-		element.style.display = isColumnSelected ? '' : 'none';
+		element.style.display = isColumnSelected || isPopoverSelected ? '' : 'none';
 	});
 }
 
@@ -738,6 +741,9 @@ document.addEventListener('DOMContentLoaded', () => {
 			// Add event listeners
 			columnRadio.addEventListener('change', toggleResultOrientationOptions);
 			gridRadio.addEventListener('change', toggleResultOrientationOptions);
+			document.querySelectorAll('input[name="searchcraft_search_experience"]').forEach((radio) => {
+				radio.addEventListener('change', toggleResultOrientationOptions);
+			});
 		}
 
 		// Initialize drag and drop for filter panel items

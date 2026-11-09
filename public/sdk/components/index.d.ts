@@ -231,8 +231,40 @@ export interface MostRecentToggleFilterItem extends FilterItem {
 	};
 }
 export type TemplateHtml = (strings: TemplateStringsArray, ...values: (string | number | undefined)[]) => string;
-export type SearchResultTemplate<T> = (data: T, index: number, utils: {
+/**
+ * Options for the `safeUrl` template helper.
+ */
+export type SafeUrlOptions = {
+	/**
+	 * More URL schemes to allow, such as an app's own scheme (`['myapp']`). A link with such a
+	 * scheme must be written in the template's own markup. If its markup is placed as a value in
+	 * the text of another `html` call, DOMPurify removes the URL.
+	 */
+	schemes?: string[];
+};
+/**
+ * Returns `url` unchanged when it is safe to place in an `href` or `src` attribute, and `#` when
+ * it is not. Relative URLs, `http:`, `https:`, `mailto:`, `tel:`, `sms:` and `data:image/` URLs
+ * are safe, along with any scheme passed in `options.schemes`.
+ */
+export type SafeUrl = (url: unknown, options?: SafeUrlOptions) => string;
+/**
+ * The helpers passed to every template.
+ */
+export type TemplateUtils = {
+	/**
+	 * Builds the template's markup. Values in text are sanitized, and values in attributes are
+	 * escaped so they stay inside their attribute. Values in event handler attributes such as
+	 * `onclick`, or in `style`, are not made safe, so never place result values there.
+	 */
 	html: TemplateHtml;
+	/**
+	 * Checks a URL before it is placed in an `href` or `src`. Returns `#` for unsafe URLs,
+	 * such as `javascript:` URLs.
+	 */
+	safeUrl: SafeUrl;
+};
+export type SearchResultTemplate<T> = (data: T, index: number, utils: TemplateUtils & {
 	source_index?: string;
 }) => string;
 export type SearchResultTemplateData = any;
@@ -243,23 +275,18 @@ export type ResultsInfoTemplate = (data: {
 	];
 	count: number;
 	responseTime: string;
-}, utils: {
-	html: TemplateHtml;
-}) => string;
+}, utils: TemplateUtils) => string;
 export type CustomAdTemplate = (data: {
 	adContainerId: string;
 	searchTerm: string;
-}, utils: {
-	html: TemplateHtml;
-}) => string;
+}, utils: TemplateUtils) => string;
 export type PopoverButtonTemplate = (data: {
 	isPopoverVisible: boolean;
-}, utils: {
-	html: TemplateHtml;
-}) => string;
-export type ADMAdTemplate = (data: ADMAd, utils: {
-	html: TemplateHtml;
-}) => string;
+}, utils: TemplateUtils) => string;
+export type PopoverNoResultsTemplate = (data: {
+	searchTerm: string;
+}, utils: TemplateUtils) => string;
+export type ADMAdTemplate = (data: ADMAd, utils: TemplateUtils) => string;
 export interface CustomAdConfig {
 	/**
 	 * The amount of debounce delay to add before calling the ad_container_rendered event
@@ -1125,6 +1152,11 @@ export namespace Components {
 	 */
 	interface SearchcraftPopoverButton {
 		/**
+		  * The placeholder text shown in the `skeuomorphic` button, and the accessible label of the `magnifying-glass` button. Set it to the same value as the `placeholderValue` of `searchcraft-popover-form` so the button matches the form it opens. When it is blank, the `magnifying-glass` button is labeled "Search".
+		  * @default 'Search'
+		 */
+		"placeholderValue"?: string;
+		/**
 		  * The id of the Searchcraft instance that this component should use.
 		 */
 		"searchcraftId"?: string;
@@ -1175,6 +1207,14 @@ export namespace Components {
 	 * // index.js
 	 * const popoverForm = document.querySelector('searchcraft-popover-form');
 	 * popoverForm.popoverResultMappings = {};
+	 * // Or render each result with a template instead of `popoverResultMappings`.
+	 * popoverForm.template = (item, index, { html, safeUrl }) => html`
+	 *  <a href="${safeUrl(item.url)}">${item.title}</a>
+	 * `;
+	 * // Change the message shown when a search returns no results.
+	 * popoverForm.noResultsTemplate = ({ searchTerm }, { html }) => html`
+	 *  <p>Nothing matched "${searchTerm}".</p>
+	 * `;
 	 * ```
 	 * @react-example ```jsx
 	 * <SearchcraftPopoverForm type="inline" popoverResultMappings={[]} />
@@ -1194,6 +1234,10 @@ export namespace Components {
 		  * @default 'meta'
 		 */
 		"hotkeyModifier"?: "ctrl" | "meta" | "alt" | "option";
+		/**
+		  * A callback function responsible for rendering the message shown when a search returns no results. When it is not provided, the popover shows `No results found for "<search term>".` The returned markup is sanitized with DOMPurify, which removes scripts, event handler attributes such as `onclick`, and links with schemes it does not allow, such as an app's own scheme.
+		 */
+		"noResultsTemplate"?: PopoverNoResultsTemplate;
 		/**
 		  * The placeholder's render behavior. 'hide-on-focus' - Hide the placeholder text immediately when the input form gains focus. 'hide-on-text-entered' - Only hide the placeholder when the input form has text entered into it.
 		 */
@@ -1222,6 +1266,10 @@ export namespace Components {
 		 */
 		"showSummaryBox"?: boolean;
 		/**
+		  * A callback function responsible for rendering a result. When provided, it is used instead of `popoverResultMappings`. Pass URLs from the result through the `safeUrl` helper before placing them in an `href` or `src`. Never place result values in event handler attributes such as `onclick`, or in `style`.
+		 */
+		"template"?: SearchResultTemplate<SearchResultTemplateData>;
+		/**
 		  * The type of popover form to render. - `inline` - Renders inline with the rest of the content on the page. The search results pop over the page content. - `fullscreen` - Renders in fullscreen view. Used together with the `searchcraft-popover-button` component. - `modal` - Renders in a modal view. Used together with the `searchcraft-popover-button` component.
 		  * @default 'inline'
 		 */
@@ -1244,12 +1292,21 @@ export namespace Components {
 		  * @default 0
 		 */
 		"documentPosition": number;
+		/**
+		  * The index of the result in the list view. Passed to the `template` callback.
+		  * @default 0
+		 */
+		"index": number;
 		"item": SearchClientResponseItem | undefined;
 		"popoverResultMappings": PopoverResultMappings | undefined;
 		/**
 		  * The id of the Searchcraft instance that this component should use.
 		 */
 		"searchcraftId"?: string;
+		/**
+		  * A callback function responsible for rendering the result. When provided, it is used instead of `popoverResultMappings`, which are still used if the template throws.
+		 */
+		"template"?: SearchResultTemplate<SearchResultTemplateData>;
 	}
 	/**
 	 * This web component is designed to display a list of results within a popover interface.
@@ -1274,6 +1331,10 @@ export namespace Components {
 		  * The id of the Searchcraft instance that this component should use.
 		 */
 		"searchcraftId"?: string;
+		/**
+		  * A callback function responsible for rendering a result. Passed to `searchcraft-popover-list-item`.
+		 */
+		"template"?: SearchResultTemplate<SearchResultTemplateData>;
 	}
 	/**
 	 * This web component is designed to display the number of results returned from a search query.
@@ -1379,10 +1440,7 @@ export namespace Components {
 	 * ```
 	 * @js-example ```html
 	 * <!-- index.html -->
-	 * <searchcraft-search-results
-	 *   ad-interval="4"
-	 *   place-ad-at-start="true"
-	 * />
+	 * <searchcraft-search-results></searchcraft-search-results>
 	 * ```
 	 * ```js
 	 * // index.js
@@ -1393,8 +1451,6 @@ export namespace Components {
 	 * ```
 	 * @react-example ```jsx
 	 * <SearchcraftSearchResults
-	 *   adInterval={4}
-	 *   placeAdAtState={true}
 	 *   template={(item, index, { html }) => html`
 	 *     <h2>${item.title}</h2>
 	 *   `}
@@ -1402,8 +1458,6 @@ export namespace Components {
 	 * ```
 	 * @vue-example ```jsx
 	 * <SearchcraftSearchResults
-	 *   adInterval={4}
-	 *   placeAdAtState={true}
 	 *   :template={(item, index, { html }) => html`
 	 *     <h2>${item.title}</h2>
 	 *   `}
@@ -1420,7 +1474,7 @@ export namespace Components {
 		 */
 		"searchcraftId"?: string;
 		/**
-		  * A callback function responsible for rendering a result. Passed to `searchcraft-search-result`.
+		  * A callback function responsible for rendering a result. Passed to `searchcraft-search-result`. Pass URLs from the result through the `safeUrl` helper before placing them in an `href` or `src`. Never place result values in event handler attributes such as `onclick`, or in `style`.
 		 */
 		"template"?: SearchResultTemplate<SearchResultTemplateData>;
 	}
@@ -1898,6 +1952,14 @@ declare global {
 	 * // index.js
 	 * const popoverForm = document.querySelector('searchcraft-popover-form');
 	 * popoverForm.popoverResultMappings = {};
+	 * // Or render each result with a template instead of `popoverResultMappings`.
+	 * popoverForm.template = (item, index, { html, safeUrl }) => html`
+	 *  <a href="${safeUrl(item.url)}">${item.title}</a>
+	 * `;
+	 * // Change the message shown when a search returns no results.
+	 * popoverForm.noResultsTemplate = ({ searchTerm }, { html }) => html`
+	 *  <p>Nothing matched "${searchTerm}".</p>
+	 * `;
 	 * ```
 	 * @react-example ```jsx
 	 * <SearchcraftPopoverForm type="inline" popoverResultMappings={[]} />
@@ -2020,10 +2082,7 @@ declare global {
 	 * ```
 	 * @js-example ```html
 	 * <!-- index.html -->
-	 * <searchcraft-search-results
-	 *   ad-interval="4"
-	 *   place-ad-at-start="true"
-	 * />
+	 * <searchcraft-search-results></searchcraft-search-results>
 	 * ```
 	 * ```js
 	 * // index.js
@@ -2034,8 +2093,6 @@ declare global {
 	 * ```
 	 * @react-example ```jsx
 	 * <SearchcraftSearchResults
-	 *   adInterval={4}
-	 *   placeAdAtState={true}
 	 *   template={(item, index, { html }) => html`
 	 *     <h2>${item.title}</h2>
 	 *   `}
@@ -2043,8 +2100,6 @@ declare global {
 	 * ```
 	 * @vue-example ```jsx
 	 * <SearchcraftSearchResults
-	 *   adInterval={4}
-	 *   placeAdAtState={true}
 	 *   :template={(item, index, { html }) => html`
 	 *     <h2>${item.title}</h2>
 	 *   `}
@@ -2584,6 +2639,11 @@ declare namespace LocalJSX {
 	 */
 	interface SearchcraftPopoverButton {
 		/**
+		  * The placeholder text shown in the `skeuomorphic` button, and the accessible label of the `magnifying-glass` button. Set it to the same value as the `placeholderValue` of `searchcraft-popover-form` so the button matches the form it opens. When it is blank, the `magnifying-glass` button is labeled "Search".
+		  * @default 'Search'
+		 */
+		"placeholderValue"?: string;
+		/**
 		  * The id of the Searchcraft instance that this component should use.
 		 */
 		"searchcraftId"?: string;
@@ -2634,6 +2694,14 @@ declare namespace LocalJSX {
 	 * // index.js
 	 * const popoverForm = document.querySelector('searchcraft-popover-form');
 	 * popoverForm.popoverResultMappings = {};
+	 * // Or render each result with a template instead of `popoverResultMappings`.
+	 * popoverForm.template = (item, index, { html, safeUrl }) => html`
+	 *  <a href="${safeUrl(item.url)}">${item.title}</a>
+	 * `;
+	 * // Change the message shown when a search returns no results.
+	 * popoverForm.noResultsTemplate = ({ searchTerm }, { html }) => html`
+	 *  <p>Nothing matched "${searchTerm}".</p>
+	 * `;
 	 * ```
 	 * @react-example ```jsx
 	 * <SearchcraftPopoverForm type="inline" popoverResultMappings={[]} />
@@ -2653,6 +2721,10 @@ declare namespace LocalJSX {
 		  * @default 'meta'
 		 */
 		"hotkeyModifier"?: "ctrl" | "meta" | "alt" | "option";
+		/**
+		  * A callback function responsible for rendering the message shown when a search returns no results. When it is not provided, the popover shows `No results found for "<search term>".` The returned markup is sanitized with DOMPurify, which removes scripts, event handler attributes such as `onclick`, and links with schemes it does not allow, such as an app's own scheme.
+		 */
+		"noResultsTemplate"?: PopoverNoResultsTemplate;
 		/**
 		  * The placeholder's render behavior. 'hide-on-focus' - Hide the placeholder text immediately when the input form gains focus. 'hide-on-text-entered' - Only hide the placeholder when the input form has text entered into it.
 		 */
@@ -2681,6 +2753,10 @@ declare namespace LocalJSX {
 		 */
 		"showSummaryBox"?: boolean;
 		/**
+		  * A callback function responsible for rendering a result. When provided, it is used instead of `popoverResultMappings`. Pass URLs from the result through the `safeUrl` helper before placing them in an `href` or `src`. Never place result values in event handler attributes such as `onclick`, or in `style`.
+		 */
+		"template"?: SearchResultTemplate<SearchResultTemplateData>;
+		/**
 		  * The type of popover form to render. - `inline` - Renders inline with the rest of the content on the page. The search results pop over the page content. - `fullscreen` - Renders in fullscreen view. Used together with the `searchcraft-popover-button` component. - `modal` - Renders in a modal view. Used together with the `searchcraft-popover-button` component.
 		  * @default 'inline'
 		 */
@@ -2703,12 +2779,21 @@ declare namespace LocalJSX {
 		  * @default 0
 		 */
 		"documentPosition"?: number;
+		/**
+		  * The index of the result in the list view. Passed to the `template` callback.
+		  * @default 0
+		 */
+		"index"?: number;
 		"item"?: SearchClientResponseItem | undefined;
 		"popoverResultMappings"?: PopoverResultMappings | undefined;
 		/**
 		  * The id of the Searchcraft instance that this component should use.
 		 */
 		"searchcraftId"?: string;
+		/**
+		  * A callback function responsible for rendering the result. When provided, it is used instead of `popoverResultMappings`, which are still used if the template throws.
+		 */
+		"template"?: SearchResultTemplate<SearchResultTemplateData>;
 	}
 	/**
 	 * This web component is designed to display a list of results within a popover interface.
@@ -2733,6 +2818,10 @@ declare namespace LocalJSX {
 		  * The id of the Searchcraft instance that this component should use.
 		 */
 		"searchcraftId"?: string;
+		/**
+		  * A callback function responsible for rendering a result. Passed to `searchcraft-popover-list-item`.
+		 */
+		"template"?: SearchResultTemplate<SearchResultTemplateData>;
 	}
 	/**
 	 * This web component is designed to display the number of results returned from a search query.
@@ -2838,10 +2927,7 @@ declare namespace LocalJSX {
 	 * ```
 	 * @js-example ```html
 	 * <!-- index.html -->
-	 * <searchcraft-search-results
-	 *   ad-interval="4"
-	 *   place-ad-at-start="true"
-	 * />
+	 * <searchcraft-search-results></searchcraft-search-results>
 	 * ```
 	 * ```js
 	 * // index.js
@@ -2852,8 +2938,6 @@ declare namespace LocalJSX {
 	 * ```
 	 * @react-example ```jsx
 	 * <SearchcraftSearchResults
-	 *   adInterval={4}
-	 *   placeAdAtState={true}
 	 *   template={(item, index, { html }) => html`
 	 *     <h2>${item.title}</h2>
 	 *   `}
@@ -2861,8 +2945,6 @@ declare namespace LocalJSX {
 	 * ```
 	 * @vue-example ```jsx
 	 * <SearchcraftSearchResults
-	 *   adInterval={4}
-	 *   placeAdAtState={true}
 	 *   :template={(item, index, { html }) => html`
 	 *     <h2>${item.title}</h2>
 	 *   `}
@@ -2879,7 +2961,7 @@ declare namespace LocalJSX {
 		 */
 		"searchcraftId"?: string;
 		/**
-		  * A callback function responsible for rendering a result. Passed to `searchcraft-search-result`.
+		  * A callback function responsible for rendering a result. Passed to `searchcraft-search-result`. Pass URLs from the result through the `safeUrl` helper before placing them in an `href` or `src`. Never place result values in event handler attributes such as `onclick`, or in `style`.
 		 */
 		"template"?: SearchResultTemplate<SearchResultTemplateData>;
 	}
@@ -3281,6 +3363,14 @@ declare module "@stencil/core" {
 			 * // index.js
 			 * const popoverForm = document.querySelector('searchcraft-popover-form');
 			 * popoverForm.popoverResultMappings = {};
+			 * // Or render each result with a template instead of `popoverResultMappings`.
+			 * popoverForm.template = (item, index, { html, safeUrl }) => html`
+			 *  <a href="${safeUrl(item.url)}">${item.title}</a>
+			 * `;
+			 * // Change the message shown when a search returns no results.
+			 * popoverForm.noResultsTemplate = ({ searchTerm }, { html }) => html`
+			 *  <p>Nothing matched "${searchTerm}".</p>
+			 * `;
 			 * ```
 			 * @react-example ```jsx
 			 * <SearchcraftPopoverForm type="inline" popoverResultMappings={[]} />
@@ -3373,10 +3463,7 @@ declare module "@stencil/core" {
 			 * ```
 			 * @js-example ```html
 			 * <!-- index.html -->
-			 * <searchcraft-search-results
-			 *   ad-interval="4"
-			 *   place-ad-at-start="true"
-			 * />
+			 * <searchcraft-search-results></searchcraft-search-results>
 			 * ```
 			 * ```js
 			 * // index.js
@@ -3387,8 +3474,6 @@ declare module "@stencil/core" {
 			 * ```
 			 * @react-example ```jsx
 			 * <SearchcraftSearchResults
-			 *   adInterval={4}
-			 *   placeAdAtState={true}
 			 *   template={(item, index, { html }) => html`
 			 *     <h2>${item.title}</h2>
 			 *   `}
@@ -3396,8 +3481,6 @@ declare module "@stencil/core" {
 			 * ```
 			 * @vue-example ```jsx
 			 * <SearchcraftSearchResults
-			 *   adInterval={4}
-			 *   placeAdAtState={true}
 			 *   :template={(item, index, { html }) => html`
 			 *     <h2>${item.title}</h2>
 			 *   `}

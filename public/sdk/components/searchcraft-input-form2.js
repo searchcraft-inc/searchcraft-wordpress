@@ -1,9 +1,9 @@
-import { p as proxyCustomElement, H, c as createEvent, h, t as transformTag } from './index2.js?scv=0.15.1';
-import { c as classNames } from './index3.js?scv=0.15.1';
-import { r as registry } from './CoreInstanceRegistry.js?scv=0.15.1';
-import { d as defineCustomElement$3 } from './searchcraft-button2.js?scv=0.15.1';
-import { d as defineCustomElement$2 } from './searchcraft-error-message2.js?scv=0.15.1';
-import { d as defineCustomElement$1 } from './searchcraft-input-label2.js?scv=0.15.1';
+import { p as proxyCustomElement, H, c as createEvent, h, t as transformTag } from './index2.js?scv=0.16.0';
+import { c as classNames } from './index3.js?scv=0.16.0';
+import { r as registry } from './CoreInstanceRegistry.js?scv=0.16.0';
+import { d as defineCustomElement$3 } from './searchcraft-button2.js?scv=0.16.0';
+import { d as defineCustomElement$2 } from './searchcraft-error-message2.js?scv=0.16.0';
+import { d as defineCustomElement$1 } from './searchcraft-input-label2.js?scv=0.16.0';
 
 const SearchcraftInputForm = /*@__PURE__*/ proxyCustomElement(class SearchcraftInputForm extends H {
     constructor(registerHost) {
@@ -67,6 +67,7 @@ const SearchcraftInputForm = /*@__PURE__*/ proxyCustomElement(class SearchcraftI
     core;
     unsubscribe;
     cleanupCore;
+    inputElement;
     init() {
         if (this.core) {
             // Initialize inputValue from prop if provided
@@ -139,8 +140,19 @@ const SearchcraftInputForm = /*@__PURE__*/ proxyCustomElement(class SearchcraftI
     };
     handleFormSubmit = async (event) => {
         event.preventDefault();
+        this.dismissOnScreenKeyboard();
         await this.performSearch();
     };
+    /**
+     * Closes the on-screen keyboard after a search is submitted on touch devices,
+     * so it no longer covers the results. Devices with a mouse keep focus in the
+     * input, so the user can keep typing and use the arrow keys.
+     */
+    dismissOnScreenKeyboard() {
+        if (window.matchMedia?.('(hover: none) and (pointer: coarse)').matches) {
+            this.inputElement?.blur();
+        }
+    }
     render() {
         const isShowingClearButton = this.inputValue.length > 0;
         const inputGridClassNames = classNames('searchcraft-input-form-grid', {
@@ -152,11 +164,13 @@ const SearchcraftInputForm = /*@__PURE__*/ proxyCustomElement(class SearchcraftI
         const inputGridStyles = {
             gap: shouldHaveVerticalGap ? '4px 8px' : '0px 8px',
         };
-        return (h("form", { key: '8ba91615394f95c0d5bd26a3006d3e8b454f047e', class: 'searchcraft-input-form', onSubmit: this.handleFormSubmit }, h("div", { key: 'd9025a1c041e3132280b22e5a1b039df0196cea5', class: inputGridClassNames, style: inputGridStyles }, h("div", { key: 'a8c3a80a0ccb718f974902fb1d163d5c3ee6194a', class: 'searchcraft-input-form-button' }, h("searchcraft-button", { key: 'a12ff9a8cdb9a4ce3c3fd54b1c2ae084edd37069', onButtonClick: this.handleFormSubmit, label: this.buttonLabel })), this.inputLabel && (h("div", { key: '866e7162c402524eaca864bb6e950a244245dc48', class: 'searchcraft-input-form-label' }, h("searchcraft-input-label", { key: 'c57217cd5924c827df08e22a728067e3bfc63a26', label: this.inputLabel }))), this.error && (h("div", { key: '4a54728bf366db50de39470cf31860a6307dafea', class: 'searchcraft-input-form-error-message' }, h("searchcraft-error-message", { key: '5fa5b5f5677350338d15c8e6614b0d9f584141b0' }, "Something went wrong."))), h("div", { key: '67be766103a3bca11cff6f83a2a6dea7c6c6f106', class: 'searchcraft-input-form-input-wrapper' }, h("input", { key: '931609a4e8fc55d688077ec6cb04f2bb9b86b5fe', autoComplete: 'off', class: classNames('searchcraft-input-form-input', {
+        return (h("form", { key: 'e375f04aa3062b93d07a24d6d79a63029d463c6d', class: 'searchcraft-input-form', onSubmit: this.handleFormSubmit }, h("div", { key: '9a9020828ba87f1edd7ec01b67575e824ecd03b9', class: inputGridClassNames, style: inputGridStyles }, h("div", { key: 'b79f9c030c8ca57cbd02034430ca518b1f83b868', class: 'searchcraft-input-form-button' }, h("searchcraft-button", { key: '90f23e6543171cb8aaf4c8e3fcb93979eba85dd4', onButtonClick: this.handleFormSubmit, label: this.buttonLabel })), this.inputLabel && (h("div", { key: '9114a59d7fad2b4b982a9f5e46466ac23c84e56f', class: 'searchcraft-input-form-label' }, h("searchcraft-input-label", { key: '9c3adad40480f97178b9054d28f17648c512ad8d', label: this.inputLabel }))), this.error && (h("div", { key: '95f070e32fe45166798913b73ceef26aaf7e68f0', class: 'searchcraft-input-form-error-message' }, h("searchcraft-error-message", { key: 'd507e9c01b9a7447b49b667d2510bf2b4d1237d1' }, "Something went wrong."))), h("div", { key: '3a5057e699b2ebd2af20ed41504e833023834570', class: 'searchcraft-input-form-input-wrapper' }, h("input", { key: '3bc445b52df4aa0392106b6245d8bddce6a7894f', autoComplete: 'off', class: classNames('searchcraft-input-form-input', {
                 'searchcraft-placeholder-hide-on-focus': this.placeholderBehavior === 'hide-on-focus',
-            }), onFocus: () => this.inputFocus?.emit(), onBlur: () => this.inputBlur?.emit(), onInput: (event) => {
+            }), enterkeyhint: 'search', ref: (el) => {
+                this.inputElement = el;
+            }, onFocus: () => this.inputFocus?.emit(), onBlur: () => this.inputBlur?.emit(), onInput: (event) => {
                 this.handleInput(event);
-            }, placeholder: this.placeholderValue, type: 'text', value: this.inputValue }), h("div", { key: '7feb32348b7faec4104137a142ba8150149498a5', class: 'searchcraft-input-form-input-icon' }, h("svg", { key: '8b9abd236d4896b8dbd5c14e06019c116e3675be', class: 'searchcraft-input-form-input-search-icon', viewBox: '0 0 20 20', fill: 'none', xmlns: 'http://www.w3.org/2000/svg', "aria-labelledby": 'searchcraft-title' }, h("title", { key: '4d3b6724f6532920f5531d2e15b28a06f0770688' }, "Search icon"), h("path", { key: '65a46a1916c1f020c9bebffd42aa016b59177376', d: 'M17.5 17.5L13.875 13.875M15.8333 9.16667C15.8333 12.8486 12.8486 15.8333 9.16667 15.8333C5.48477 15.8333 2.5 12.8486 2.5 9.16667C2.5 5.48477 5.48477 2.5 9.16667 2.5C12.8486 2.5 15.8333 5.48477 15.8333 9.16667Z', stroke: 'currentColor', "stroke-width": '1.5', "stroke-linecap": 'round', "stroke-linejoin": 'round' }))), isShowingClearButton && (h("button", { key: '65278eb0ab49415dce79c874adf90adcb5854db5', type: 'button', class: 'searchcraft-input-form-clear-button', onClick: this.handleClearInput }, h("svg", { key: '0016263afe32250ace58cc4b98ff6106d7d9d4a0', class: 'searchcraft-input-form-clear-icon', viewBox: '0 0 22 22', fill: 'none', xmlns: 'http://www.w3.org/2000/svg', "aria-labelledby": 'icon-title' }, h("title", { key: '9b40d806455ab9c19c0cddb4c76101debdb0266c' }, "Clear icon"), h("path", { key: '2954ee1496d6736d6e780755034902c76adb81e9', d: 'M14 8L8 14M8 8L14 14M21 11C21 16.5228 16.5228 21 11 21C5.47715 21 1 16.5228 1 11C1 5.47715 5.47715 1 11 1C16.5228 1 21 5.47715 21 11Z', stroke: 'currentColor', "stroke-width": '1.5', "stroke-linecap": 'round', "stroke-linejoin": 'round' }))))))));
+            }, placeholder: this.placeholderValue, type: 'text', value: this.inputValue }), h("div", { key: '1f15e09d4a1d1c69105c6d3776fa579e2485d074', class: 'searchcraft-input-form-input-icon' }, h("svg", { key: 'c2290c43f4795235a9092ca65843534b476966d3', class: 'searchcraft-input-form-input-search-icon', viewBox: '0 0 20 20', fill: 'none', xmlns: 'http://www.w3.org/2000/svg', "aria-labelledby": 'searchcraft-title' }, h("title", { key: 'd039ba9a93b779aedba28fe8df299698d8d19b8c' }, "Search icon"), h("path", { key: '4206937d1f038dca6effee55ca03e9046377c14c', d: 'M17.5 17.5L13.875 13.875M15.8333 9.16667C15.8333 12.8486 12.8486 15.8333 9.16667 15.8333C5.48477 15.8333 2.5 12.8486 2.5 9.16667C2.5 5.48477 5.48477 2.5 9.16667 2.5C12.8486 2.5 15.8333 5.48477 15.8333 9.16667Z', stroke: 'currentColor', "stroke-width": '1.5', "stroke-linecap": 'round', "stroke-linejoin": 'round' }))), isShowingClearButton && (h("button", { key: '3dfa0dfc5d1b6708f79db2c085bd8b5f18e0b67b', type: 'button', class: 'searchcraft-input-form-clear-button', onClick: this.handleClearInput }, h("svg", { key: '3af9c1768c0e0eed6935cc5267d1169b11f08bb4', class: 'searchcraft-input-form-clear-icon', viewBox: '0 0 22 22', fill: 'none', xmlns: 'http://www.w3.org/2000/svg', "aria-labelledby": 'icon-title' }, h("title", { key: '7eb8530a8b89e387231cb509b3f68b4a3bafde20' }, "Clear icon"), h("path", { key: '83d43b2cf2f2e90e9b340e6fdf7c91cffee23c20', d: 'M14 8L8 14M8 8L14 14M21 11C21 16.5228 16.5228 21 11 21C5.47715 21 1 16.5228 1 11C1 5.47715 5.47715 1 11 1C16.5228 1 21 5.47715 21 11Z', stroke: 'currentColor', "stroke-width": '1.5', "stroke-linecap": 'round', "stroke-linejoin": 'round' }))))))));
     }
     static get watchers() { return {
         "core": ["onCoreChange"],
