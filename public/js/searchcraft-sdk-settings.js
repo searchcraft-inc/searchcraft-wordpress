@@ -41,8 +41,26 @@
             || settings.searchExperience === 'popover';
 
         const isSearchPage = settings.isSearchPage == 1;
+        // The [searchcraft] shortcode places the search experience itself, so the automatic placement
+        // and the container element ID settings are skipped. The search results page keeps its layout.
+        const shortcodeContainers = document.querySelectorAll('.searchcraft-shortcode-container');
+        if (shortcodeContainers.length > 0 && !isSearchPage) {
+            injectShortcodeContent(settings.headerContent, shortcodeContainers);
+            // Full experience results follow the first shortcode's search input.
+            if (settings.searchExperience === 'full' && settings.resultsContent) {
+                injectSearchResults(settings.resultsContent, '');
+            }
+            // A popover container set to be replaced (often the theme's search toggle) is still
+            // cleared, so it doesn't show next to the shortcode with an empty search form.
+            if (isPopover && settings.popoverContainerId && settings.popoverInsertBehavior === 'replace') {
+                const popoverContainer = findPopoverContainer(settings.popoverContainerId);
+                if (popoverContainer) {
+                    popoverContainer.innerHTML = '';
+                }
+            }
+        }
         // On search page with modal/inline, always inject full header + results
-        if (isSearchPage && isPopover) {
+        else if (isSearchPage && isPopover) {
             injectSearchHeader(settings.headerContent, settings.inputContainerId);
             if (settings.resultsContent) {
                 injectSearchResults(settings.resultsContent, settings.resultsContainerId);
@@ -303,6 +321,20 @@
     }
 
     /**
+     * Inject the search header into each [searchcraft] shortcode container
+     *
+     * @param {string} headerContent - The HTML content for the search header
+     * @param {NodeList} containers - The shortcode container elements
+     */
+    function injectShortcodeContent(headerContent, containers) {
+        containers.forEach((container) => {
+            const searchHeaderDiv = document.createElement('div');
+            searchHeaderDiv.innerHTML = headerContent;
+            container.appendChild(searchHeaderDiv);
+        });
+    }
+
+    /**
      * Inject search results content
      *
      * @param {string} resultsContent - The HTML content for search results
@@ -324,6 +356,17 @@
     }
 
     /**
+     * Find the popover container element by ID, or by class if no element has that ID
+     *
+     * @param {string} popoverContainerId - The container ID or class name
+     * @returns {Element|null} The container element, if found
+     */
+    function findPopoverContainer(popoverContainerId) {
+        return document.getElementById(popoverContainerId)
+            || document.querySelector(`[class="${popoverContainerId}"]`);
+    }
+
+    /**
      * Inject popover content into specified container
      *
      * @param {string} popoverContent - The HTML content for the popover
@@ -331,21 +374,7 @@
      * @param {string} insertBehavior - 'replace' or 'prepend'
      */
     function injectPopoverContent(popoverContent, popoverContainerId, insertBehavior) {
-        let targetElement = null;
-
-        // Try to find by ID first
-        const customPopoverContainerById = document.getElementById(popoverContainerId);
-        if (customPopoverContainerById) {
-            targetElement = customPopoverContainerById;
-        }
-
-        // If not found by ID, try by class
-        if (!targetElement) {
-            const customPopoverContainerByClass = document.querySelector(`[class="${popoverContainerId}"]`);
-            if (customPopoverContainerByClass) {
-                targetElement = customPopoverContainerByClass;
-            }
-        }
+        const targetElement = findPopoverContainer(popoverContainerId);
 
         if (targetElement) {
             if (insertBehavior === 'replace') {

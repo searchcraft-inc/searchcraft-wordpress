@@ -115,6 +115,9 @@ if ( ! is_array( $filter_panel_order ) || empty( $filter_panel_order ) ) {
 								<p class="description">
 									Choose how you want search to be presented to your users. The full experience provides deep filtering controls, while Modal and Inline offer a compact popover experience.
 								</p>
+								<p class="description">
+									To choose where search appears, add the <code>[searchcraft]</code> shortcode to a post, page or widget. On pages with the shortcode, search appears where the shortcode is, instead of its automatic location or the elements set in the container element ID settings under Advanced Customization. The full experience needs a wide area, such as the main content column. The search results page keeps its usual layout.
+								</p>
 							</td>
 						</tr>
 						<tr>
@@ -860,7 +863,7 @@ if ( ! is_array( $filter_panel_order ) || empty( $filter_panel_order ) ) {
 										?>
 										<input type="text" name="searchcraft_popover_container_id" id="searchcraft_popover_container_id" value="<?php echo esc_attr( $popover_container_id ); ?>" class="regular-text" />
 										<p class="description">
-											The identifier of the HTML element where popover trigger should reside. Can either be an <a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/id" target="_blank">ID</a> or a <a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/classList" target="_blank">class</a>. If a class is used, the first element with this class will be used. Leave empty to use the default behavior.
+											The identifier of the HTML element where popover trigger should reside. Can either be an <a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/id" target="_blank">ID</a> or a <a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/classList" target="_blank">class</a>. If a class is used, the first element with this class will be used. Leave empty to use the default behavior. Ignored on pages with the <code>[searchcraft]</code> shortcode.
 										</p>
 									</td>
 								</tr>
@@ -915,9 +918,9 @@ if ( ! is_array( $filter_panel_order ) || empty( $filter_panel_order ) ) {
 										</div>
 										<p class="description">
 											<?php if ( 'stand_alone' === $search_behavior ) : ?>
-												If specified, the search box input form will load as the first element inside of the HTML element that matches this <a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/id" target="_blank">ID</a>. <strong>Multiple IDs supported:</strong> When "Submit to Search Page" is selected, you can add multiple element IDs to display the search input in multiple locations. Leave empty to use the default auto-detection behavior.
+												If specified, the search box input form will load as the first element inside of the HTML element that matches this <a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/id" target="_blank">ID</a>. <strong>Multiple IDs supported:</strong> When "Submit to Search Page" is selected, you can add multiple element IDs to display the search input in multiple locations. Leave empty to use the default auto-detection behavior. Ignored on pages with the <code>[searchcraft]</code> shortcode.
 											<?php else : ?>
-												If specified, the search box input form will load as the first element inside of the HTML element that matches this <a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/id" target="_blank">ID</a>. Note: this element must be present on every page you want the search input to appear on. Leave empty to use the default auto-detection behavior.
+												If specified, the search box input form will load as the first element inside of the HTML element that matches this <a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/id" target="_blank">ID</a>. Note: this element must be present on every page you want the search input to appear on. Leave empty to use the default auto-detection behavior. Ignored on pages with the <code>[searchcraft]</code> shortcode.
 											<?php endif; ?>
 										</p>
 									</td>
@@ -932,7 +935,7 @@ if ( ! is_array( $filter_panel_order ) || empty( $filter_panel_order ) ) {
 										?>
 										<input type="text" name="searchcraft_results_container_id" id="searchcraft_results_container_id" value="<?php echo esc_attr( $results_container_id ); ?>" class="regular-text" placeholder="my-results-container" />
 										<p class="description">
-											If specified, the search results will load as the first element inside of the HTML element that matches this <a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/id" target="_blank">ID</a>. Leave empty to use the default behavior.
+											If specified, the search results will load as the first element inside of the HTML element that matches this <a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/id" target="_blank">ID</a>. Leave empty to use the default behavior. Ignored on pages with the <code>[searchcraft]</code> shortcode.
 										</p>
 									</td>
 								</tr>

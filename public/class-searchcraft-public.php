@@ -68,6 +68,9 @@ class Searchcraft_Public {
 	 * @since 1.0.0
 	 */
 	private function init_hooks() {
+		// Register the shortcode even when the SDK isn't ready so the tag never shows as text.
+		add_shortcode( 'searchcraft', array( $this, 'render_shortcode' ) );
+
 		// Only initialize frontend features if SDK is ready.
 		if ( ! $this->is_sdk_ready() ) {
 			return;
@@ -315,8 +318,11 @@ class Searchcraft_Public {
 		$oldest_post_year            = $admin_instance->get_oldest_post_year();
 		$js_config['oldestPostYear'] = $oldest_post_year;
 
-		$js_config['resultsPerPage']        = intval( get_option( 'searchcraft_results_per_page', 10 ) );
-		$js_config['overlayResultsPerPage'] = intval( get_option( 'searchcraft_overlay_results_per_page', 5 ) );
+		$js_config['resultsPerPage'] = intval( get_option( 'searchcraft_results_per_page', 10 ) );
+		// The overlay results count only applies to the modal and inline experiences ('popover' is the legacy value).
+		if ( in_array( get_option( 'searchcraft_search_experience', 'full' ), array( 'modal', 'inline', 'popover' ), true ) ) {
+			$js_config['overlayResultsPerPage'] = intval( get_option( 'searchcraft_overlay_results_per_page', 5 ) );
+		}
 
 		// Filter taxonomies.
 		$filter_taxonomies = get_option( 'searchcraft_filter_taxonomies', array() );
@@ -503,6 +509,31 @@ class Searchcraft_Public {
 
 		$preload = preg_replace( "/rel=(['\"])stylesheet\\1/", "rel='preload' as='style'", $tag );
 		return $preload . '<noscript>' . $tag . '</noscript>';
+	}
+
+	/**
+	 * Render the [searchcraft] shortcode.
+	 *
+	 * Outputs a container that searchcraft-sdk-settings.js fills with the configured search
+	 * experience. Pages with the shortcode place the search experience there instead of
+	 * attaching it automatically.
+	 *
+	 * @since 1.6.0
+	 * @return string The shortcode container, or an empty string if the SDK isn't ready or the
+	 *                shortcode is in a feed or post listing.
+	 */
+	public function render_shortcode() {
+		if ( ! $this->is_sdk_ready() ) {
+			return '';
+		}
+
+		// Feeds and listings that show each post's full content (blog index, archives) don't get a
+		// search box per post. Widgets and single posts and pages still render the shortcode.
+		if ( is_feed() || ( in_the_loop() && ! is_singular() ) ) {
+			return '';
+		}
+
+		return '<div class="searchcraft-shortcode-container"></div>';
 	}
 
 	/**
