@@ -3,7 +3,7 @@ Donate link: https://searchcraft.io/
 Contributors: searchcraft
 Tags:         search, fuzzy search, better search, instant search, custom search
 Requires at least: 5.3
-Tested up to: 7.0
+Tested up to: 7.1
 Stable tag:   1.6.0
 License:      Apache 2.0
 License URI:  LICENSE.txt
