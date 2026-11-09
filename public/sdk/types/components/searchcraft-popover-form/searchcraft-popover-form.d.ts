@@ -1,5 +1,5 @@
 import type { SearchcraftCore } from "../../classes/index";
-import type { AdClientResponseItem, PopoverResultMappings, SearchClientResponseItem, SearchResultTemplate, SearchResultTemplateData } from "../../types/index";
+import type { AdClientResponseItem, PopoverNoResultsTemplate, PopoverResultMappings, SearchClientResponseItem, SearchResultTemplate, SearchResultTemplateData } from "../../types/index";
 /**
  * This web component is designed to display search results in a popover container that dynamically appears when the user interacts with a search input field, or when a popover-button is pressed.
  *
@@ -26,8 +26,13 @@ import type { AdClientResponseItem, PopoverResultMappings, SearchClientResponseI
  * popoverForm.popoverResultMappings = {};
  *
  * // Or render each result with a template instead of `popoverResultMappings`.
- * popoverForm.template = (item, index, { html }) => html`
- *  <a href="${item.url}">${item.title}</a>
+ * popoverForm.template = (item, index, { html, safeUrl }) => html`
+ *  <a href="${safeUrl(item.url)}">${item.title}</a>
+ * `;
+ *
+ * // Change the message shown when a search returns no results.
+ * popoverForm.noResultsTemplate = ({ searchTerm }, { html }) => html`
+ *  <p>Nothing matched "${searchTerm}".</p>
  * `;
  * ```
  *
@@ -56,8 +61,17 @@ export declare class SearchcraftPopoverForm {
     popoverResultMappings?: PopoverResultMappings;
     /**
      * A callback function responsible for rendering a result. When provided, it is used instead of `popoverResultMappings`.
+     * Pass URLs from the result through the `safeUrl` helper before placing them in an `href` or `src`.
+     * Never place result values in event handler attributes such as `onclick`, or in `style`.
      */
     template?: SearchResultTemplate<SearchResultTemplateData>;
+    /**
+     * A callback function responsible for rendering the message shown when a search returns no results.
+     * When it is not provided, the popover shows `No results found for "<search term>".`
+     * The returned markup is sanitized with DOMPurify, which removes scripts, event handler
+     * attributes such as `onclick`, and links with schemes it does not allow, such as an app's own scheme.
+     */
+    noResultsTemplate?: PopoverNoResultsTemplate;
     /**
      * The hotkey that activates the popover.
      */
@@ -105,6 +119,11 @@ export declare class SearchcraftPopoverForm {
     searchClientResponseItems: SearchClientResponseItem[];
     adClientResponseItems: AdClientResponseItem[];
     searchTerm: string | undefined;
+    isSearchInProgress: boolean;
+    /**
+     * The search term of the most recent search response.
+     */
+    completedSearchTerm: string | undefined;
     isFocused: boolean;
     breakpointSm: number;
     breakpointMd: number;
@@ -134,6 +153,11 @@ export declare class SearchcraftPopoverForm {
      * focusing on the input will open a modal version of the popover form.
      */
     handleInputFocus(): void;
+    /**
+     * Passes result rendering changes on to the fullscreen form created for small viewports,
+     * which only receives these props when it is first created.
+     */
+    syncModalElementResultRendering(): void;
     handleModalBackdropClick(_event: MouseEvent): void;
     /**
      * When a hotkey is pressed, tests if the modifiers also match.
@@ -149,6 +173,11 @@ export declare class SearchcraftPopoverForm {
      */
     focusOnNextListItem(direction: 'ArrowDown' | 'ArrowUp'): void;
     get hasResultsToShow(): boolean | "" | undefined;
+    /**
+     * Whether the search for the current search term finished without results.
+     */
+    get hasNoResultsToShow(): boolean;
+    renderNoResults(): any;
     get viewAllResultsHref(): string | undefined;
     get resolvedViewAllResultsLabel(): string;
     navigateToViewAllResults(): void;

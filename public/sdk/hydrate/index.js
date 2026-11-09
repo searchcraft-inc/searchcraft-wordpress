@@ -4791,15 +4791,375 @@ function createDOMPurify() {
 var purify = createDOMPurify();
 
 /**
+ * States of a small HTML tokenizer, used to find where each value lands in the markup. The
+ * states from `TAG_OPEN` to `AFTER_ATTRIBUTE_NAME` are inside a tag but not in a value.
+ */
+const TEXT = 0;
+const TAG_OPEN = 1;
+const END_TAG_OPEN = 2;
+const TAG_NAME = 3;
+const BEFORE_ATTRIBUTE_NAME = 4;
+const ATTRIBUTE_NAME = 5;
+const AFTER_ATTRIBUTE_NAME = 6;
+const BEFORE_VALUE = 7;
+const DOUBLE_QUOTED_VALUE = 8;
+const SINGLE_QUOTED_VALUE = 9;
+const UNQUOTED_VALUE = 10;
+const MARKUP_DECLARATION = 11;
+const COMMENT = 12;
+const BOGUS_COMMENT = 13;
+const RAW_TEXT = 14;
+/**
+ * Elements whose content is read as text up to their end tag.
+ */
+const RAW_TEXT_ELEMENTS = [
+    'iframe',
+    'noembed',
+    'noframes',
+    'noscript',
+    'script',
+    'style',
+    'textarea',
+    'title',
+    'xmp',
+];
+const SPACE_PATTERN = /[\t\n\f\r ]/;
+const LETTER_PATTERN = /[a-z]/i;
+/**
+ * Characters that cannot appear as is in an unquoted attribute value.
+ */
+const UNQUOTED_VALUE_SPECIAL_PATTERN = /[\s"'=<>`]/g;
+const createTokenizer = (state) => ({
+    state,
+    position: 0,
+    tagName: '',
+    isEndTag: false,
+    commentStart: 0,
+});
+/**
+ * Reads the markup from where the last call stopped, so `tokenizer.state` tells where the next
+ * character lands. It follows the HTML tokenizer closely enough to tell text, tags and
+ * attribute values apart, including after comments and inside elements such as `<style>`.
+ * It does not follow the tree the browser builds, so inside `<svg>` or `<math>`, elements such
+ * as `<style>` and `<title>` are still read as text.
+ */
+const tokenize = (tokenizer, markup) => {
+    while (tokenizer.position < markup.length) {
+        const index = tokenizer.position++;
+        const character = markup.charAt(index);
+        const isSpace = SPACE_PATTERN.test(character);
+        switch (tokenizer.state) {
+            case TEXT:
+                if (character === '<') {
+                    tokenizer.state = TAG_OPEN;
+                }
+                break;
+            case TAG_OPEN:
+            case END_TAG_OPEN:
+                if (LETTER_PATTERN.test(character)) {
+                    tokenizer.isEndTag = tokenizer.state === END_TAG_OPEN;
+                    tokenizer.tagName = character;
+                    tokenizer.state = TAG_NAME;
+                }
+                else if (tokenizer.state === END_TAG_OPEN) {
+                    tokenizer.state = character === '>' ? TEXT : BOGUS_COMMENT;
+                }
+                else if (character === '/') {
+                    tokenizer.state = END_TAG_OPEN;
+                }
+                else if (character === '!') {
+                    tokenizer.state = MARKUP_DECLARATION;
+                }
+                else if (character === '?') {
+                    tokenizer.state = BOGUS_COMMENT;
+                }
+                else {
+                    // The `<` is text, so read this character again as text.
+                    tokenizer.state = TEXT;
+                    tokenizer.position = index;
+                }
+                break;
+            case TAG_NAME:
+                if (isSpace || character === '/') {
+                    tokenizer.state = BEFORE_ATTRIBUTE_NAME;
+                }
+                else if (character === '>') {
+                    endTag(tokenizer);
+                }
+                else {
+                    tokenizer.tagName += character;
+                }
+                break;
+            case BEFORE_ATTRIBUTE_NAME:
+                if (character === '>') {
+                    endTag(tokenizer);
+                }
+                else if (!isSpace && character !== '/') {
+                    tokenizer.state = ATTRIBUTE_NAME;
+                }
+                break;
+            case ATTRIBUTE_NAME:
+            case AFTER_ATTRIBUTE_NAME:
+                if (character === '>') {
+                    endTag(tokenizer);
+                }
+                else if (character === '=') {
+                    tokenizer.state = BEFORE_VALUE;
+                }
+                else if (character === '/') {
+                    tokenizer.state = BEFORE_ATTRIBUTE_NAME;
+                }
+                else if (isSpace) {
+                    tokenizer.state = AFTER_ATTRIBUTE_NAME;
+                }
+                else {
+                    tokenizer.state = ATTRIBUTE_NAME;
+                }
+                break;
+            case BEFORE_VALUE:
+                if (character === '>') {
+                    endTag(tokenizer);
+                }
+                else if (character === '"') {
+                    tokenizer.state = DOUBLE_QUOTED_VALUE;
+                }
+                else if (character === "'") {
+                    tokenizer.state = SINGLE_QUOTED_VALUE;
+                }
+                else if (!isSpace) {
+                    tokenizer.state = UNQUOTED_VALUE;
+                }
+                break;
+            case DOUBLE_QUOTED_VALUE:
+            case SINGLE_QUOTED_VALUE:
+                if (character === (tokenizer.state === DOUBLE_QUOTED_VALUE ? '"' : "'")) {
+                    tokenizer.state = BEFORE_ATTRIBUTE_NAME;
+                }
+                break;
+            case UNQUOTED_VALUE:
+                if (character === '>') {
+                    endTag(tokenizer);
+                }
+                else if (isSpace) {
+                    tokenizer.state = BEFORE_ATTRIBUTE_NAME;
+                }
+                break;
+            case MARKUP_DECLARATION:
+                if (markup.startsWith('--', index)) {
+                    tokenizer.state = COMMENT;
+                    tokenizer.position = index + 2;
+                    tokenizer.commentStart = index + 2;
+                }
+                else {
+                    tokenizer.state = BOGUS_COMMENT;
+                    tokenizer.position = index;
+                }
+                break;
+            case COMMENT: {
+                // A comment ends at `-->` or `--!>`, and `<!-->` and `<!--->` end at once.
+                const comment = markup.slice(Math.max(tokenizer.commentStart, index - 3), index);
+                if (character === '>' &&
+                    (index - tokenizer.commentStart < 2
+                        ? /^-?$/.test(comment)
+                        : /--!?$/.test(comment))) {
+                    tokenizer.state = TEXT;
+                }
+                break;
+            }
+            case BOGUS_COMMENT:
+                if (character === '>') {
+                    tokenizer.state = TEXT;
+                }
+                break;
+            case RAW_TEXT: {
+                const endTagPattern = new RegExp(`</${tokenizer.tagName}[\\t\\n\\f\\r />]`, 'gi');
+                endTagPattern.lastIndex = index;
+                const match = endTagPattern.exec(markup);
+                if (!match) {
+                    // Read the end again next time, in case the end tag is only partly written yet.
+                    tokenizer.position = Math.max(index, markup.length - tokenizer.tagName.length - 2);
+                    return;
+                }
+                tokenizer.state = TAG_NAME;
+                tokenizer.isEndTag = true;
+                tokenizer.position = match.index + tokenizer.tagName.length + 2;
+                break;
+            }
+        }
+    }
+};
+const endTag = (tokenizer) => {
+    const tagName = tokenizer.tagName.toLowerCase();
+    if (!tokenizer.isEndTag && RAW_TEXT_ELEMENTS.includes(tagName)) {
+        tokenizer.state = RAW_TEXT;
+        tokenizer.tagName = tagName;
+    }
+    else {
+        tokenizer.state = TEXT;
+    }
+};
+const encodeCharacter = (character) => `&#${character.charCodeAt(0)};`;
+const isTagState = (state) => state >= TAG_OPEN && state <= AFTER_ATTRIBUTE_NAME;
+const isValueState = (state) => state >= BEFORE_VALUE && state <= UNQUOTED_VALUE;
+/**
+ * Makes a value safe for where it lands in the markup. With more than one state, the markup
+ * may be read in more than one way, so the value is made safe for each of them.
+ */
+const placeValue = (value, states) => {
+    if (states.every(isTagState)) {
+        return value;
+    }
+    if (!states.some(isValueState)) {
+        return value && purify.sanitize(value);
+    }
+    let escaped = value;
+    for (const state of states) {
+        if (state === DOUBLE_QUOTED_VALUE) {
+            escaped = escaped.replace(/"/g, '&quot;');
+        }
+        else if (state === SINGLE_QUOTED_VALUE) {
+            escaped = escaped.replace(/'/g, '&#39;');
+        }
+        else if (isValueState(state)) {
+            escaped = escaped.replace(UNQUOTED_VALUE_SPECIAL_PATTERN, encodeCharacter);
+        }
+    }
+    if (!states.every(isValueState)) {
+        // The value may be read as text too, so it must not start a tag.
+        return escaped.replace(/</g, '&lt;');
+    }
+    // With no value, the next attribute would be read as this attribute's value.
+    return escaped || (states.includes(BEFORE_VALUE) ? '""' : '');
+};
+/**
  * This allows you to parse a template string with a function.
+ *
+ * Each value is made safe for where it lands in the markup:
+ * - In text, the value is sanitized with DOMPurify, so it can contain markup but no scripts.
+ *   DOMPurify also removes URLs it does not allow, so a link with a custom scheme that `safeUrl`
+ *   allowed loses its `href` when its markup is placed as a value in text, as in a list built
+ *   from nested `html` calls. Write such links in the template's own markup instead.
+ * - In a quoted attribute value, the quote that would end the value is escaped. The browser
+ *   decodes it again, so quotes display as given. Character references in the value, such as
+ *   `&amp;`, are decoded by the browser as before.
+ * - In an unquoted attribute value, spaces, quotes and `=<>` are escaped.
+ * - Inside a tag but not in an attribute value, such as `<a ${attributes}>`, the value is placed
+ *   as is. Use this only for attributes the template writes itself, such as the output of a
+ *   nested `html` call, never for indexed data.
+ *
+ * A template can also be a list of attributes, such as `aria-label="${label}"`, that another
+ * template places inside a tag. Until its first tag ends, a value that could be in an attribute
+ * value is escaped for that attribute, and `<` is escaped so it cannot start a tag either.
+ *
+ * Escaping keeps a value inside its attribute but does not make every attribute safe. A value in
+ * an event handler such as `onclick` still runs as script, and a value in `style` still applies
+ * as CSS. URLs from indexed data should go through `safeUrl` before they are placed in an
+ * `href` or `src`.
  */
 const html$1 = (strings, ...values) => {
-    let result = strings[0];
+    const tokenizer = createTokenizer(TEXT);
+    // A template can also be a list of attributes that a parent template places inside a tag,
+    // so until the two readings meet, its values are made safe for both.
+    let attributeTokenizer = createTokenizer(BEFORE_ATTRIBUTE_NAME);
+    let result = strings[0] ?? '';
     for (let i = 0; i < values.length; i++) {
+        const value = values[i];
+        tokenize(tokenizer, result);
+        if (attributeTokenizer) {
+            tokenize(attributeTokenizer, result);
+            if (tokenizer.state === TEXT && attributeTokenizer.state === TEXT) {
+                attributeTokenizer = undefined;
+            }
+        }
         result +=
-            purify.sanitize(values[i] ? String(values[i]) : '') + strings[i + 1];
+            placeValue(value || value === 0 ? String(value) : '', attributeTokenizer
+                ? [tokenizer.state, attributeTokenizer.state]
+                : [tokenizer.state]) + (strings[i + 1] ?? '');
     }
-    return result || '';
+    return result;
+};
+
+/**
+ * Schemes that are always allowed. `data:` URLs are allowed separately, for images only.
+ */
+const ALLOWED_SCHEMES = ['http', 'https', 'mailto', 'tel', 'sms'];
+/**
+ * Returned in place of a URL that is not allowed.
+ */
+const BLOCKED_URL = '#';
+/**
+ * A scheme is only recognized when its `:` comes before any `/`, `?` or `#`.
+ */
+const SCHEME_PATTERN = /^([a-z][a-z\d+.-]*):/i;
+const DATA_IMAGE_PATTERN = /^data:image\//i;
+/**
+ * Character references the browser decodes in an attribute before it reads the URL.
+ * Named references are limited to the ones that can help spell out a scheme.
+ */
+const CHARACTER_REFERENCE_PATTERN = /&#[xX]([\da-fA-F]+);?|&#(\d+);?|&(colon|Tab|NewLine);/g;
+const NAMED_CHARACTER_REFERENCES = {
+    colon: ':',
+    Tab: '\t',
+    NewLine: '\n',
+};
+const fromCodePoint = (codePoint) => codePoint > 0 && codePoint <= 0x10ffff
+    ? String.fromCodePoint(codePoint)
+    : '�';
+const decodeCharacterReferences = (value) => value.replace(CHARACTER_REFERENCE_PATTERN, (_match, hex, decimal, name) => {
+    if (hex) {
+        return fromCodePoint(Number.parseInt(hex, 16));
+    }
+    if (decimal) {
+        return fromCodePoint(Number.parseInt(decimal, 10));
+    }
+    return NAMED_CHARACTER_REFERENCES[name ?? ''] ?? '';
+});
+/**
+ * Reads a URL the way the browser does before it looks for a scheme: character references
+ * are decoded, tabs and newlines are removed, and leading spaces and control characters
+ * are ignored.
+ */
+const normalizeUrl = (value) => {
+    const decoded = decodeCharacterReferences(value).replace(/[\t\n\r]/g, '');
+    let start = 0;
+    while (start < decoded.length && decoded.charCodeAt(start) <= 0x20) {
+        start++;
+    }
+    return decoded.slice(start);
+};
+const normalizeScheme = (scheme) => scheme.trim().toLowerCase().replace(/:$/, '');
+/**
+ * Returns `url` unchanged when it is safe to place in an `href` or `src` attribute, and `#`
+ * when it is not.
+ *
+ * Relative URLs, `http:`, `https:`, `mailto:`, `tel:`, `sms:` and `data:image/` URLs are safe,
+ * along with any scheme passed in `options.schemes`. Every other scheme, such as `javascript:`,
+ * is blocked, including when it is written in mixed case, has leading spaces or contains tabs,
+ * newlines or character references.
+ *
+ * ```js
+ * html`<a href="${safeUrl(item.url)}">${item.title}</a>`;
+ * html`<a href="${safeUrl(item.appUrl, { schemes: ['myapp'] })}">Open in app</a>`;
+ * ```
+ */
+const safeUrl = (url, options) => {
+    if (url === undefined || url === null) {
+        return '';
+    }
+    const value = String(url);
+    const normalizedUrl = normalizeUrl(value);
+    const scheme = normalizedUrl.match(SCHEME_PATTERN)?.[1]?.toLowerCase();
+    if (!scheme) {
+        return value;
+    }
+    if (ALLOWED_SCHEMES.includes(scheme) ||
+        options?.schemes?.some((allowed) => normalizeScheme(allowed) === scheme)) {
+        return value;
+    }
+    if (scheme === 'data' && DATA_IMAGE_PATTERN.test(normalizedUrl)) {
+        return value;
+    }
+    return BLOCKED_URL;
 };
 
 /**
@@ -5699,6 +6059,7 @@ class SearchcraftInputForm {
     core;
     unsubscribe;
     cleanupCore;
+    inputElement;
     init() {
         if (this.core) {
             // Initialize inputValue from prop if provided
@@ -5771,8 +6132,19 @@ class SearchcraftInputForm {
     };
     handleFormSubmit = async (event) => {
         event.preventDefault();
+        this.dismissOnScreenKeyboard();
         await this.performSearch();
     };
+    /**
+     * Closes the on-screen keyboard after a search is submitted on touch devices,
+     * so it no longer covers the results. Devices with a mouse keep focus in the
+     * input, so the user can keep typing and use the arrow keys.
+     */
+    dismissOnScreenKeyboard() {
+        if (window.matchMedia?.('(hover: none) and (pointer: coarse)').matches) {
+            this.inputElement?.blur();
+        }
+    }
     render() {
         const isShowingClearButton = this.inputValue.length > 0;
         const inputGridClassNames = classNames('searchcraft-input-form-grid', {
@@ -5784,11 +6156,13 @@ class SearchcraftInputForm {
         const inputGridStyles = {
             gap: shouldHaveVerticalGap ? '4px 8px' : '0px 8px',
         };
-        return (hAsync("form", { key: '8ba91615394f95c0d5bd26a3006d3e8b454f047e', class: 'searchcraft-input-form', onSubmit: this.handleFormSubmit }, hAsync("div", { key: 'd9025a1c041e3132280b22e5a1b039df0196cea5', class: inputGridClassNames, style: inputGridStyles }, hAsync("div", { key: 'a8c3a80a0ccb718f974902fb1d163d5c3ee6194a', class: 'searchcraft-input-form-button' }, hAsync("searchcraft-button", { key: 'a12ff9a8cdb9a4ce3c3fd54b1c2ae084edd37069', onButtonClick: this.handleFormSubmit, label: this.buttonLabel })), this.inputLabel && (hAsync("div", { key: '866e7162c402524eaca864bb6e950a244245dc48', class: 'searchcraft-input-form-label' }, hAsync("searchcraft-input-label", { key: 'c57217cd5924c827df08e22a728067e3bfc63a26', label: this.inputLabel }))), this.error && (hAsync("div", { key: '4a54728bf366db50de39470cf31860a6307dafea', class: 'searchcraft-input-form-error-message' }, hAsync("searchcraft-error-message", { key: '5fa5b5f5677350338d15c8e6614b0d9f584141b0' }, "Something went wrong."))), hAsync("div", { key: '67be766103a3bca11cff6f83a2a6dea7c6c6f106', class: 'searchcraft-input-form-input-wrapper' }, hAsync("input", { key: '931609a4e8fc55d688077ec6cb04f2bb9b86b5fe', autoComplete: 'off', class: classNames('searchcraft-input-form-input', {
+        return (hAsync("form", { key: 'e375f04aa3062b93d07a24d6d79a63029d463c6d', class: 'searchcraft-input-form', onSubmit: this.handleFormSubmit }, hAsync("div", { key: '9a9020828ba87f1edd7ec01b67575e824ecd03b9', class: inputGridClassNames, style: inputGridStyles }, hAsync("div", { key: 'b79f9c030c8ca57cbd02034430ca518b1f83b868', class: 'searchcraft-input-form-button' }, hAsync("searchcraft-button", { key: '90f23e6543171cb8aaf4c8e3fcb93979eba85dd4', onButtonClick: this.handleFormSubmit, label: this.buttonLabel })), this.inputLabel && (hAsync("div", { key: '9114a59d7fad2b4b982a9f5e46466ac23c84e56f', class: 'searchcraft-input-form-label' }, hAsync("searchcraft-input-label", { key: '9c3adad40480f97178b9054d28f17648c512ad8d', label: this.inputLabel }))), this.error && (hAsync("div", { key: '95f070e32fe45166798913b73ceef26aaf7e68f0', class: 'searchcraft-input-form-error-message' }, hAsync("searchcraft-error-message", { key: 'd507e9c01b9a7447b49b667d2510bf2b4d1237d1' }, "Something went wrong."))), hAsync("div", { key: '3a5057e699b2ebd2af20ed41504e833023834570', class: 'searchcraft-input-form-input-wrapper' }, hAsync("input", { key: '3bc445b52df4aa0392106b6245d8bddce6a7894f', autoComplete: 'off', class: classNames('searchcraft-input-form-input', {
                 'searchcraft-placeholder-hide-on-focus': this.placeholderBehavior === 'hide-on-focus',
-            }), onFocus: () => this.inputFocus?.emit(), onBlur: () => this.inputBlur?.emit(), onInput: (event) => {
+            }), enterkeyhint: 'search', ref: (el) => {
+                this.inputElement = el;
+            }, onFocus: () => this.inputFocus?.emit(), onBlur: () => this.inputBlur?.emit(), onInput: (event) => {
                 this.handleInput(event);
-            }, placeholder: this.placeholderValue, type: 'text', value: this.inputValue }), hAsync("div", { key: '7feb32348b7faec4104137a142ba8150149498a5', class: 'searchcraft-input-form-input-icon' }, hAsync("svg", { key: '8b9abd236d4896b8dbd5c14e06019c116e3675be', class: 'searchcraft-input-form-input-search-icon', viewBox: '0 0 20 20', fill: 'none', xmlns: 'http://www.w3.org/2000/svg', "aria-labelledby": 'searchcraft-title' }, hAsync("title", { key: '4d3b6724f6532920f5531d2e15b28a06f0770688' }, "Search icon"), hAsync("path", { key: '65a46a1916c1f020c9bebffd42aa016b59177376', d: 'M17.5 17.5L13.875 13.875M15.8333 9.16667C15.8333 12.8486 12.8486 15.8333 9.16667 15.8333C5.48477 15.8333 2.5 12.8486 2.5 9.16667C2.5 5.48477 5.48477 2.5 9.16667 2.5C12.8486 2.5 15.8333 5.48477 15.8333 9.16667Z', stroke: 'currentColor', "stroke-width": '1.5', "stroke-linecap": 'round', "stroke-linejoin": 'round' }))), isShowingClearButton && (hAsync("button", { key: '65278eb0ab49415dce79c874adf90adcb5854db5', type: 'button', class: 'searchcraft-input-form-clear-button', onClick: this.handleClearInput }, hAsync("svg", { key: '0016263afe32250ace58cc4b98ff6106d7d9d4a0', class: 'searchcraft-input-form-clear-icon', viewBox: '0 0 22 22', fill: 'none', xmlns: 'http://www.w3.org/2000/svg', "aria-labelledby": 'icon-title' }, hAsync("title", { key: '9b40d806455ab9c19c0cddb4c76101debdb0266c' }, "Clear icon"), hAsync("path", { key: '2954ee1496d6736d6e780755034902c76adb81e9', d: 'M14 8L8 14M8 8L14 14M21 11C21 16.5228 16.5228 21 11 21C5.47715 21 1 16.5228 1 11C1 5.47715 5.47715 1 11 1C16.5228 1 21 5.47715 21 11Z', stroke: 'currentColor', "stroke-width": '1.5', "stroke-linecap": 'round', "stroke-linejoin": 'round' }))))))));
+            }, placeholder: this.placeholderValue, type: 'text', value: this.inputValue }), hAsync("div", { key: '1f15e09d4a1d1c69105c6d3776fa579e2485d074', class: 'searchcraft-input-form-input-icon' }, hAsync("svg", { key: 'c2290c43f4795235a9092ca65843534b476966d3', class: 'searchcraft-input-form-input-search-icon', viewBox: '0 0 20 20', fill: 'none', xmlns: 'http://www.w3.org/2000/svg', "aria-labelledby": 'searchcraft-title' }, hAsync("title", { key: 'd039ba9a93b779aedba28fe8df299698d8d19b8c' }, "Search icon"), hAsync("path", { key: '4206937d1f038dca6effee55ca03e9046377c14c', d: 'M17.5 17.5L13.875 13.875M15.8333 9.16667C15.8333 12.8486 12.8486 15.8333 9.16667 15.8333C5.48477 15.8333 2.5 12.8486 2.5 9.16667C2.5 5.48477 5.48477 2.5 9.16667 2.5C12.8486 2.5 15.8333 5.48477 15.8333 9.16667Z', stroke: 'currentColor', "stroke-width": '1.5', "stroke-linecap": 'round', "stroke-linejoin": 'round' }))), isShowingClearButton && (hAsync("button", { key: '3dfa0dfc5d1b6708f79db2c085bd8b5f18e0b67b', type: 'button', class: 'searchcraft-input-form-clear-button', onClick: this.handleClearInput }, hAsync("svg", { key: '3af9c1768c0e0eed6935cc5267d1169b11f08bb4', class: 'searchcraft-input-form-clear-icon', viewBox: '0 0 22 22', fill: 'none', xmlns: 'http://www.w3.org/2000/svg', "aria-labelledby": 'icon-title' }, hAsync("title", { key: '7eb8530a8b89e387231cb509b3f68b4a3bafde20' }, "Clear icon"), hAsync("path", { key: '83d43b2cf2f2e90e9b340e6fdf7c91cffee23c20', d: 'M14 8L8 14M8 8L14 14M21 11C21 16.5228 16.5228 21 11 21C5.47715 21 1 16.5228 1 11C1 5.47715 5.47715 1 11 1C16.5228 1 21 5.47715 21 11Z', stroke: 'currentColor', "stroke-width": '1.5', "stroke-linecap": 'round', "stroke-linejoin": 'round' }))))))));
     }
     static get watchers() { return {
         "core": ["onCoreChange"],
@@ -6229,6 +6603,14 @@ class SearchcraftPopoverButton {
      */
     type;
     /**
+     * The placeholder text shown in the `skeuomorphic` button, and the
+     * accessible label of the `magnifying-glass` button. Set it to the same
+     * value as the `placeholderValue` of `searchcraft-popover-form` so the
+     * button matches the form it opens. When it is blank, the
+     * `magnifying-glass` button is labeled "Search".
+     */
+    placeholderValue = 'Search';
+    /**
      * The id of the Searchcraft instance that this component should use.
      */
     searchcraftId;
@@ -6303,7 +6685,7 @@ class SearchcraftPopoverButton {
         }
     }
     renderSkeuomorphicSlot() {
-        return (hAsync("div", { class: 'searchcraft-popover-button-wrapper' }, hAsync("div", { class: 'searchcraft-popover-button-input' }, hAsync("svg", { class: 'searchcraft-popover-button-input-search-icon', viewBox: '0 0 20 20', fill: 'none', xmlns: 'http://www.w3.org/2000/svg', version: '1.1' }, hAsync("title", null, "Search icon"), hAsync("path", { d: 'M17.5 17.5L13.875 13.875M15.8333 9.16667C15.8333 12.8486 12.8486 15.8333 9.16667 15.8333C5.48477 15.8333 2.5 12.8486 2.5 9.16667C2.5 5.48477 5.48477 2.5 9.16667 2.5C12.8486 2.5 15.8333 5.48477 15.8333 9.16667Z', stroke: 'currentColor', "stroke-width": '1.5', "stroke-linecap": 'round', "stroke-linejoin": 'round' })), hAsync("span", null, "Search")), hAsync("div", { class: 'searchcraft-popover-button-keycaps' }, hAsync("div", { class: 'searchcraft-popover-button-keycaps-keycap searchcraft-popover-button-keycaps-keycap-modifier' }, hAsync("span", null, this.hotkeyModifierSymbol)), hAsync("div", { class: 'searchcraft-popover-button-keycaps-keycap searchcraft-popover-button-keycaps-keycap-key' }, hAsync("span", null, this.hotkey)))));
+        return (hAsync("div", { class: 'searchcraft-popover-button-wrapper' }, hAsync("div", { class: 'searchcraft-popover-button-input' }, hAsync("svg", { class: 'searchcraft-popover-button-input-search-icon', viewBox: '0 0 20 20', fill: 'none', xmlns: 'http://www.w3.org/2000/svg', version: '1.1' }, hAsync("title", null, "Search icon"), hAsync("path", { d: 'M17.5 17.5L13.875 13.875M15.8333 9.16667C15.8333 12.8486 12.8486 15.8333 9.16667 15.8333C5.48477 15.8333 2.5 12.8486 2.5 9.16667C2.5 5.48477 5.48477 2.5 9.16667 2.5C12.8486 2.5 15.8333 5.48477 15.8333 9.16667Z', stroke: 'currentColor', "stroke-width": '1.5', "stroke-linecap": 'round', "stroke-linejoin": 'round' })), hAsync("span", null, this.placeholderValue)), hAsync("div", { class: 'searchcraft-popover-button-keycaps' }, hAsync("div", { class: 'searchcraft-popover-button-keycaps-keycap searchcraft-popover-button-keycaps-keycap-modifier' }, hAsync("span", null, this.hotkeyModifierSymbol)), hAsync("div", { class: 'searchcraft-popover-button-keycaps-keycap searchcraft-popover-button-keycaps-keycap-key' }, hAsync("span", null, this.hotkey)))));
     }
     renderSlot() {
         switch (this.type) {
@@ -6316,8 +6698,10 @@ class SearchcraftPopoverButton {
         }
     }
     render() {
-        return (hAsync("button", { key: '760f4f8d8daddaaadc0367e21b9efe23c4ef7c7d', "aria-label": this.type === 'magnifying-glass' ? 'Search' : undefined, class: `searchcraft-popover-button ${this.type ? ` searchcraft-popover-button-${this.type}` : ''}`, innerHTML: typeof this.template !== 'undefined'
-                ? this.template({ isPopoverVisible: this.isPopoverVisible }, { html: html$1 })
+        return (hAsync("button", { key: '3ff00f71e3057f907a447f87b3a82b6ae57796e7', "aria-label": this.type === 'magnifying-glass'
+                ? this.placeholderValue?.trim() || 'Search'
+                : undefined, class: `searchcraft-popover-button ${this.type ? ` searchcraft-popover-button-${this.type}` : ''}`, innerHTML: typeof this.template !== 'undefined'
+                ? this.template({ isPopoverVisible: this.isPopoverVisible }, { html: html$1, safeUrl })
                 : undefined, onClick: this.handleOnClick.bind(this), type: 'button' }, typeof this.template !== 'undefined'
             ? undefined
             : this.type
@@ -6330,6 +6714,7 @@ class SearchcraftPopoverButton {
         "$members$": {
             "template": [16],
             "type": [1],
+            "placeholderValue": [1, "placeholder-value"],
             "searchcraftId": [1, "searchcraft-id"],
             "hotkey": [32],
             "hotkeyModifier": [32],
@@ -6343,7 +6728,7 @@ class SearchcraftPopoverButton {
     }; }
 }
 
-const version = "0.15.1";
+const version = "0.16.0";
 
 /**
  * Renders the footer for the searchcraft-popover-form.
@@ -6459,8 +6844,13 @@ class SearchcraftPopoverFooter {
  * popoverForm.popoverResultMappings = {};
  *
  * // Or render each result with a template instead of `popoverResultMappings`.
- * popoverForm.template = (item, index, { html }) => html`
- *  <a href="${item.url}">${item.title}</a>
+ * popoverForm.template = (item, index, { html, safeUrl }) => html`
+ *  <a href="${safeUrl(item.url)}">${item.title}</a>
+ * `;
+ *
+ * // Change the message shown when a search returns no results.
+ * popoverForm.noResultsTemplate = ({ searchTerm }, { html }) => html`
+ *  <p>Nothing matched "${searchTerm}".</p>
  * `;
  * ```
  *
@@ -6492,8 +6882,17 @@ class SearchcraftPopoverForm {
     popoverResultMappings;
     /**
      * A callback function responsible for rendering a result. When provided, it is used instead of `popoverResultMappings`.
+     * Pass URLs from the result through the `safeUrl` helper before placing them in an `href` or `src`.
+     * Never place result values in event handler attributes such as `onclick`, or in `style`.
      */
     template;
+    /**
+     * A callback function responsible for rendering the message shown when a search returns no results.
+     * When it is not provided, the popover shows `No results found for "<search term>".`
+     * The returned markup is sanitized with DOMPurify, which removes scripts, event handler
+     * attributes such as `onclick`, and links with schemes it does not allow, such as an app's own scheme.
+     */
+    noResultsTemplate;
     /**
      * The hotkey that activates the popover.
      */
@@ -6541,6 +6940,11 @@ class SearchcraftPopoverForm {
     searchClientResponseItems = [];
     adClientResponseItems = [];
     searchTerm;
+    isSearchInProgress = false;
+    /**
+     * The search term of the most recent search response.
+     */
+    completedSearchTerm;
     isFocused = false;
     breakpointSm = 576;
     breakpointMd = 768;
@@ -6572,6 +6976,12 @@ class SearchcraftPopoverForm {
             this.searchClientResponseItems = [...state.searchClientResponseItems];
             this.adClientResponseItems = [...state.adClientResponseItems];
             this.searchTerm = state.searchTerm;
+            this.isSearchInProgress = state.isSearchInProgress;
+            const requestProperties = state.searchClientRequestProperties;
+            this.completedSearchTerm =
+                requestProperties && typeof requestProperties === 'object'
+                    ? requestProperties.searchTerm
+                    : undefined;
             this.searchResultsPage = state.searchResultsPage;
             this.searchResultsPerPage = state.searchResultsPerPage;
         });
@@ -6654,6 +7064,7 @@ class SearchcraftPopoverForm {
                 this.modalElement = document.createElement('searchcraft-popover-form');
                 this.modalElement.popoverResultMappings = this.popoverResultMappings;
                 this.modalElement.template = this.template;
+                this.modalElement.noResultsTemplate = this.noResultsTemplate;
                 this.modalElement.setAttribute('type', 'fullscreen');
                 this.modalElement.setAttribute('searchcraft-id', this.searchcraftId);
                 if (this.placeholderValue) {
@@ -6670,6 +7081,17 @@ class SearchcraftPopoverForm {
                 }
                 document.body.appendChild(this.modalElement);
             }
+        }
+    }
+    /**
+     * Passes result rendering changes on to the fullscreen form created for small viewports,
+     * which only receives these props when it is first created.
+     */
+    syncModalElementResultRendering() {
+        if (this.modalElement) {
+            this.modalElement.popoverResultMappings = this.popoverResultMappings;
+            this.modalElement.template = this.template;
+            this.modalElement.noResultsTemplate = this.noResultsTemplate;
         }
     }
     handleModalBackdropClick(_event) {
@@ -6740,6 +7162,28 @@ class SearchcraftPopoverForm {
             this.searchTerm?.trim()?.length > 0 &&
             this.searchClientResponseItems.length > 0);
     }
+    /**
+     * Whether the search for the current search term finished without results.
+     */
+    get hasNoResultsToShow() {
+        const searchTerm = this.searchTerm?.trim();
+        return (!!searchTerm &&
+            !this.isSearchInProgress &&
+            this.searchClientResponseItems.length === 0 &&
+            this.completedSearchTerm?.trim() === searchTerm);
+    }
+    renderNoResults() {
+        const searchTerm = this.searchTerm?.trim() || '';
+        if (this.noResultsTemplate) {
+            try {
+                return (hAsync("div", { class: 'searchcraft-popover-form-no-results', innerHTML: purify.sanitize(this.noResultsTemplate({ searchTerm }, { html: html$1, safeUrl })) }));
+            }
+            catch (error) {
+                console.error('Invalid popover no results template:', error);
+            }
+        }
+        return (hAsync("div", { class: 'searchcraft-popover-form-no-results' }, hAsync("p", { class: 'searchcraft-popover-form-no-results-message' }, "No results found for \"", searchTerm, "\".")));
+    }
     get viewAllResultsHref() {
         const baseUrl = this.viewAllResultsBaseUrl;
         if (!baseUrl) {
@@ -6765,22 +7209,24 @@ class SearchcraftPopoverForm {
     }
     renderInlinePopover() {
         const isListViewVisible = this.hasResultsToShow && this.isFocused;
+        const isNoResultsVisible = this.hasNoResultsToShow && this.isFocused;
+        const isDropdownVisible = isListViewVisible || isNoResultsVisible;
         return (hAsync("div", { class: classNames('searchcraft-popover-form searchcraft-popover-form-inline', {
-                'searchcraft-popover-form-active': isListViewVisible,
-            }) }, hAsync("div", { class: 'searchcraft-popover-form-input searchcraft-popover-form-inline-input' }, hAsync("searchcraft-input-form", { onInputFocus: this.handleInputFocus.bind(this), searchcraftId: this.searchcraftId, placeholderValue: this.placeholderValue, placeholderBehavior: this.placeholderBehavior })), isListViewVisible && (hAsync("div", { class: 'searchcraft-popover-form-inline-wrapper' }, hAsync("div", { class: 'searchcraft-popover-form-inline-scroll-area' }, this.showSummaryBox && (hAsync("searchcraft-results-summary", { searchcraftId: this.searchcraftId })), hAsync("searchcraft-popover-list-view", { popoverResultMappings: this.popoverResultMappings, template: this.template, searchClientResponseItems: this.searchClientResponseItems, adClientResponseItems: this.adClientResponseItems, searchResultsPage: this.searchResultsPage, searchResultsPerPage: this.searchResultsPerPage, searchcraftId: this.searchcraftId })), hAsync("searchcraft-popover-footer", { searchcraftId: this.searchcraftId, sdkVariant: this.sdkVariant, viewAllResultsHref: this.viewAllResultsHref, viewAllResultsLabel: this.resolvedViewAllResultsLabel })))));
+                'searchcraft-popover-form-active': isDropdownVisible,
+            }) }, hAsync("div", { class: 'searchcraft-popover-form-input searchcraft-popover-form-inline-input' }, hAsync("searchcraft-input-form", { onInputFocus: this.handleInputFocus.bind(this), searchcraftId: this.searchcraftId, placeholderValue: this.placeholderValue, placeholderBehavior: this.placeholderBehavior })), isDropdownVisible && (hAsync("div", { class: 'searchcraft-popover-form-inline-wrapper' }, hAsync("div", { class: 'searchcraft-popover-form-inline-scroll-area' }, isListViewVisible && this.showSummaryBox && (hAsync("searchcraft-results-summary", { searchcraftId: this.searchcraftId })), isListViewVisible ? (hAsync("searchcraft-popover-list-view", { popoverResultMappings: this.popoverResultMappings, template: this.template, searchClientResponseItems: this.searchClientResponseItems, adClientResponseItems: this.adClientResponseItems, searchResultsPage: this.searchResultsPage, searchResultsPerPage: this.searchResultsPerPage, searchcraftId: this.searchcraftId })) : (this.renderNoResults())), hAsync("searchcraft-popover-footer", { searchcraftId: this.searchcraftId, sdkVariant: this.sdkVariant, viewAllResultsHref: this.viewAllResultsHref, viewAllResultsLabel: this.resolvedViewAllResultsLabel })))));
     }
     renderModalPopover() {
         if (this.isPopoverVisibleInState) {
             return (hAsync("div", { class: classNames('searchcraft-popover-form searchcraft-popover-form-modal', {
-                    'searchcraft-popover-form-active': this.hasResultsToShow,
-                }) }, hAsync("div", { class: 'searchcraft-popover-form-modal-backdrop', onClick: this.handleModalBackdropClick }), hAsync("div", { class: 'searchcraft-popover-form-modal-wrapper' }, hAsync("div", { class: 'searchcraft-popover-form-input searchcraft-popover-form-modal-input' }, hAsync("searchcraft-input-form", { onInputFocus: this.handleInputFocus.bind(this), onInputInit: this.handleInputInit.bind(this), searchcraftId: this.searchcraftId, placeholderValue: this.placeholderValue, placeholderBehavior: this.placeholderBehavior }), hAsync("button", { type: 'button', class: 'searchcraft-popover-form-cancel-button searchcraft-popover-form-modal-cancel-button', onClick: this.handleCancelButtonClick.bind(this) }, "Cancel")), hAsync("div", { class: 'searchcraft-popover-form-modal-popover-list-view' }, this.showSummaryBox && this.hasResultsToShow && (hAsync("searchcraft-results-summary", { searchcraftId: this.searchcraftId })), this.hasResultsToShow && (hAsync("searchcraft-popover-list-view", { popoverResultMappings: this.popoverResultMappings, template: this.template, searchClientResponseItems: this.searchClientResponseItems, adClientResponseItems: this.adClientResponseItems, searchResultsPage: this.searchResultsPage, searchResultsPerPage: this.searchResultsPerPage, searchcraftId: this.searchcraftId }))), hAsync("searchcraft-popover-footer", { searchcraftId: this.searchcraftId, sdkVariant: this.sdkVariant, viewAllResultsHref: this.viewAllResultsHref, viewAllResultsLabel: this.resolvedViewAllResultsLabel }))));
+                    'searchcraft-popover-form-active': this.hasResultsToShow || this.hasNoResultsToShow,
+                }) }, hAsync("div", { class: 'searchcraft-popover-form-modal-backdrop', onClick: this.handleModalBackdropClick }), hAsync("div", { class: 'searchcraft-popover-form-modal-wrapper' }, hAsync("div", { class: 'searchcraft-popover-form-input searchcraft-popover-form-modal-input' }, hAsync("searchcraft-input-form", { onInputFocus: this.handleInputFocus.bind(this), onInputInit: this.handleInputInit.bind(this), searchcraftId: this.searchcraftId, placeholderValue: this.placeholderValue, placeholderBehavior: this.placeholderBehavior }), hAsync("button", { type: 'button', class: 'searchcraft-popover-form-cancel-button searchcraft-popover-form-modal-cancel-button', onClick: this.handleCancelButtonClick.bind(this) }, "Cancel")), hAsync("div", { class: 'searchcraft-popover-form-modal-popover-list-view' }, this.showSummaryBox && this.hasResultsToShow && (hAsync("searchcraft-results-summary", { searchcraftId: this.searchcraftId })), this.hasResultsToShow && (hAsync("searchcraft-popover-list-view", { popoverResultMappings: this.popoverResultMappings, template: this.template, searchClientResponseItems: this.searchClientResponseItems, adClientResponseItems: this.adClientResponseItems, searchResultsPage: this.searchResultsPage, searchResultsPerPage: this.searchResultsPerPage, searchcraftId: this.searchcraftId })), this.hasNoResultsToShow && this.renderNoResults()), hAsync("searchcraft-popover-footer", { searchcraftId: this.searchcraftId, sdkVariant: this.sdkVariant, viewAllResultsHref: this.viewAllResultsHref, viewAllResultsLabel: this.resolvedViewAllResultsLabel }))));
         }
     }
     renderFullscreenPopover() {
         if (this.isPopoverVisibleInState) {
             return (hAsync("div", { class: classNames('searchcraft-popover-form searchcraft-popover-form-fullscreen', {
-                    'searchcraft-popover-form-active': this.hasResultsToShow,
-                }) }, hAsync("div", { class: 'searchcraft-popover-form-input searchcraft-popover-form-fullscreen-input' }, hAsync("searchcraft-input-form", { onInputFocus: this.handleInputFocus.bind(this), onInputInit: this.handleInputInit.bind(this), searchcraftId: this.searchcraftId, placeholderValue: this.placeholderValue, placeholderBehavior: this.placeholderBehavior }), hAsync("button", { type: 'button', class: 'searchcraft-popover-form-cancel-button searchcraft-popover-form-fullscreen-cancel-button', onClick: this.handleCancelButtonClick.bind(this) }, "Cancel")), hAsync("div", { class: 'searchcraft-popover-form-fullscreen-popover-list-view' }, this.showSummaryBox && this.hasResultsToShow && (hAsync("searchcraft-results-summary", { searchcraftId: this.searchcraftId })), this.hasResultsToShow && (hAsync("searchcraft-popover-list-view", { popoverResultMappings: this.popoverResultMappings, template: this.template, searchClientResponseItems: this.searchClientResponseItems, adClientResponseItems: this.adClientResponseItems, searchResultsPage: this.searchResultsPage, searchResultsPerPage: this.searchResultsPerPage, searchcraftId: this.searchcraftId }))), hAsync("searchcraft-popover-footer", { searchcraftId: this.searchcraftId, sdkVariant: this.sdkVariant, viewAllResultsHref: this.viewAllResultsHref, viewAllResultsLabel: this.resolvedViewAllResultsLabel })));
+                    'searchcraft-popover-form-active': this.hasResultsToShow || this.hasNoResultsToShow,
+                }) }, hAsync("div", { class: 'searchcraft-popover-form-input searchcraft-popover-form-fullscreen-input' }, hAsync("searchcraft-input-form", { onInputFocus: this.handleInputFocus.bind(this), onInputInit: this.handleInputInit.bind(this), searchcraftId: this.searchcraftId, placeholderValue: this.placeholderValue, placeholderBehavior: this.placeholderBehavior }), hAsync("button", { type: 'button', class: 'searchcraft-popover-form-cancel-button searchcraft-popover-form-fullscreen-cancel-button', onClick: this.handleCancelButtonClick.bind(this) }, "Cancel")), hAsync("div", { class: 'searchcraft-popover-form-fullscreen-popover-list-view' }, this.showSummaryBox && this.hasResultsToShow && (hAsync("searchcraft-results-summary", { searchcraftId: this.searchcraftId })), this.hasResultsToShow && (hAsync("searchcraft-popover-list-view", { popoverResultMappings: this.popoverResultMappings, template: this.template, searchClientResponseItems: this.searchClientResponseItems, adClientResponseItems: this.adClientResponseItems, searchResultsPage: this.searchResultsPage, searchResultsPerPage: this.searchResultsPerPage, searchcraftId: this.searchcraftId })), this.hasNoResultsToShow && this.renderNoResults()), hAsync("searchcraft-popover-footer", { searchcraftId: this.searchcraftId, sdkVariant: this.sdkVariant, viewAllResultsHref: this.viewAllResultsHref, viewAllResultsLabel: this.resolvedViewAllResultsLabel })));
         }
     }
     render() {
@@ -6793,6 +7239,11 @@ class SearchcraftPopoverForm {
                 return this.renderFullscreenPopover();
         }
     }
+    static get watchers() { return {
+        "popoverResultMappings": ["syncModalElementResultRendering"],
+        "template": ["syncModalElementResultRendering"],
+        "noResultsTemplate": ["syncModalElementResultRendering"]
+    }; }
     static get cmpMeta() { return {
         "$flags$": 768,
         "$tagName$": "searchcraft-popover-form",
@@ -6800,6 +7251,7 @@ class SearchcraftPopoverForm {
             "type": [1],
             "popoverResultMappings": [16],
             "template": [16],
+            "noResultsTemplate": [16],
             "hotkey": [1],
             "hotkeyModifier": [1, "hotkey-modifier"],
             "searchcraftId": [1, "searchcraft-id"],
@@ -6813,6 +7265,8 @@ class SearchcraftPopoverForm {
             "searchClientResponseItems": [32],
             "adClientResponseItems": [32],
             "searchTerm": [32],
+            "isSearchInProgress": [32],
+            "completedSearchTerm": [32],
             "isFocused": [32],
             "breakpointSm": [32],
             "breakpointMd": [32],
@@ -6882,6 +7336,7 @@ class SearchcraftPopoverListItem {
             try {
                 this.templateHtml = this.template(this.item.document, this.index, {
                     html: html$1,
+                    safeUrl,
                     source_index: this.item.source_index,
                 });
             }
@@ -6929,7 +7384,7 @@ class SearchcraftPopoverListItem {
         if (this.template && typeof this.templateHtml === 'string') {
             return (hAsync("div", { class: 'searchcraft-popover-list-item searchcraft-popover-list-item-template', innerHTML: this.templateHtml, onClick: this.handleTemplateClick, onKeyDown: this.handleKeyDown }));
         }
-        return (hAsync("div", { class: 'searchcraft-popover-list-item' }, hAsync("a", { class: 'searchcraft-popover-list-item-link', href: this.href, onClick: this.handleLinkClick.bind(this) }, this.imageSource && (hAsync("div", { class: 'searchcraft-popover-list-item-image-wrapper' }, hAsync("img", { alt: this.imageAlt, src: this.imageSource, class: 'searchcraft-popover-list-item-image' }))), hAsync("div", { class: 'searchcraft-popover-list-item-content' }, this.title && (hAsync("p", { class: 'searchcraft-popover-list-item-content-title' }, this.title)), this.subtitle && (hAsync("p", { class: 'searchcraft-popover-list-item-content-subtitle' }, this.subtitle))))));
+        return (hAsync("div", { class: 'searchcraft-popover-list-item' }, hAsync("a", { class: 'searchcraft-popover-list-item-link', href: this.href ? safeUrl(this.href) : undefined, onClick: this.handleLinkClick.bind(this) }, this.imageSource && (hAsync("div", { class: 'searchcraft-popover-list-item-image-wrapper' }, hAsync("img", { alt: this.imageAlt, src: this.imageSource, class: 'searchcraft-popover-list-item-image' }))), hAsync("div", { class: 'searchcraft-popover-list-item-content' }, this.title && (hAsync("p", { class: 'searchcraft-popover-list-item-content-title' }, this.title)), this.subtitle && (hAsync("p", { class: 'searchcraft-popover-list-item-content-subtitle' }, this.subtitle))))));
     }
     static get watchers() { return {
         "item": ["updateRenderedValues"],
@@ -7117,6 +7572,7 @@ class SearchcraftPopoverListItemAd {
         if (this.core?.config?.admAdConfig?.template) {
             templateHtml = this.core?.config?.admAdConfig.template(item.admAd, {
                 html: html$1,
+                safeUrl,
             });
         }
         return (hAsync("div", { class: 'searchcraft-ad searchcraft-adm-ad', "data-searchcraft-ad-container-id": this.adContainerId, id: `searchcraft-adm-ad-${this.adContainerId}`, innerHTML: templateHtml }));
@@ -7129,7 +7585,7 @@ class SearchcraftPopoverListItemAd {
             templateHtml = templateRenderFunction({
                 searchTerm: this.searchTerm || '',
                 adContainerId: this.adContainerId,
-            }, { html: html$1 });
+            }, { html: html$1, safeUrl });
         }
         return (hAsync("div", { class: 'searchcraft-ad searchcraft-custom-ad', id: containerId, "data-searchcraft-ad-container-id": this.adContainerId, innerHTML: templateHtml }));
     }
@@ -7426,7 +7882,7 @@ class SearchcraftResultsInfo {
                 range: [Number(this.range[0]), Number(this.range[1])],
                 count: this.count,
                 responseTime: this.responseTime,
-            }, { html: html$1 })
+            }, { html: html$1, safeUrl })
             : `${formatNumberWithCommas(this.count)} results found in ${this.responseTime}ms`));
     }
     static get cmpMeta() { return {
@@ -9755,6 +10211,7 @@ class SearchcraftSearchResult {
             try {
                 this.templateHtml = this.template?.(this.item.document, this.index, {
                     html: html$1,
+                    safeUrl,
                     source_index: this.item.source_index,
                 });
             }
@@ -9831,10 +10288,7 @@ class SearchcraftSearchResult {
  * @js-example
  * ```html
  * <!-- index.html -->
- * <searchcraft-search-results
- *   ad-interval="4"
- *   place-ad-at-start="true"
- * />
+ * <searchcraft-search-results></searchcraft-search-results>
  * ```
  *
  * ```js
@@ -9849,8 +10303,6 @@ class SearchcraftSearchResult {
  * @react-example
  * ```jsx
  * <SearchcraftSearchResults
- *   adInterval={4}
- *   placeAdAtState={true}
  *   template={(item, index, { html }) => html`
  *     <h2>${item.title}</h2>
  *   `}
@@ -9860,8 +10312,6 @@ class SearchcraftSearchResult {
  * @vue-example
  * ```jsx
  * <SearchcraftSearchResults
- *   adInterval={4}
- *   placeAdAtState={true}
  *   :template={(item, index, { html }) => html`
  *     <h2>${item.title}</h2>
  *   `}
@@ -9882,6 +10332,8 @@ class SearchcraftSearchResults {
     initialQuery;
     /**
      * A callback function responsible for rendering a result. Passed to `searchcraft-search-result`.
+     * Pass URLs from the result through the `safeUrl` helper before placing them in an `href` or `src`.
+     * Never place result values in event handler attributes such as `onclick`, or in `style`.
      */
     template;
     adClientResponseItems = [];
@@ -9891,6 +10343,11 @@ class SearchcraftSearchResults {
     searchResultsPage;
     searchResultsPerPage;
     searchTerm = '';
+    /**
+     * The search term of the most recent search request, used to tell a
+     * completed search apart from a term that has not been searched yet.
+     */
+    completedSearchTerm;
     unsubscribe;
     cleanupCore;
     onCoreAvailable(core) {
@@ -9916,12 +10373,29 @@ class SearchcraftSearchResults {
         this.searchResultsPage = state.searchResultsPage;
         this.searchResultsPerPage = state.searchResultsPerPage;
         this.searchTerm = state.searchTerm;
+        const requestProperties = state.searchClientRequestProperties;
+        this.completedSearchTerm =
+            requestProperties && typeof requestProperties === 'object'
+                ? requestProperties.searchTerm
+                : undefined;
+    }
+    /**
+     * Whether the search for the current search term has completed with no
+     * results. False while the term is empty, while a search is in progress, and
+     * after the term changes until its search completes.
+     */
+    get hasNoResultsToShow() {
+        const searchTerm = this.searchTerm.trim();
+        return (!!searchTerm &&
+            !this.isSearchInProgress &&
+            (this.searchClientResponseItems || []).length === 0 &&
+            this.completedSearchTerm?.trim() === searchTerm);
     }
     renderEmptyState() {
         return (hAsync("div", { class: 'searchcraft-search-results-empty-state' }, hAsync("slot", { name: 'empty-search' })));
     }
     renderNoResultsFoundState() {
-        return (hAsync("div", { class: 'searchcraft-search-results' }, hAsync("div", { class: 'searchcraft-search-results-error-message' }, hAsync("searchcraft-error-message", null, "No search results found for \"", this.searchTerm, "\" query."))));
+        return (hAsync("div", { class: 'searchcraft-search-results-no-results' }, hAsync("p", { class: 'searchcraft-search-results-no-results-message' }, "No results found for \"", this.searchTerm.trim(), "\".")));
     }
     renderWithADMAds() {
         const items = this.searchClientResponseItems || [];
@@ -9992,13 +10466,11 @@ class SearchcraftSearchResults {
     }
     render() {
         const searchClientResponseItems = this.searchClientResponseItems || [];
+        if (this.hasNoResultsToShow) {
+            return this.renderNoResultsFoundState();
+        }
         if (searchClientResponseItems.length === 0 && !this.isSearchInProgress) {
             return this.renderEmptyState();
-        }
-        if (this.searchTerm.length > 0 &&
-            searchClientResponseItems.length === 0 &&
-            !this.isSearchInProgress) {
-            return this.renderNoResultsFoundState();
         }
         if (this.config?.customAdConfig) {
             return this.renderWithCustomAds();
@@ -10024,7 +10496,8 @@ class SearchcraftSearchResults {
             "searchClientResponseItems": [32],
             "searchResultsPage": [32],
             "searchResultsPerPage": [32],
-            "searchTerm": [32]
+            "searchTerm": [32],
+            "completedSearchTerm": [32]
         },
         "$listeners$": undefined,
         "$lazyBundleId$": "-",
@@ -10535,7 +11008,7 @@ class SearchcraftSummaryBox {
     }; }
 }
 
-var styles = `﻿[class*=searchcraft-],[class*=searchcraft-] *,[class*=searchcraft-]::before,[class*=searchcraft-]::after,[class*=searchcraft-] *,::before,[class*=searchcraft-] *,::after{box-sizing:border-box;padding:0;margin:0}:root{--sc-text-base-size: 1em;--sc-text-scale-ratio: 1.1;--sc-font-family: sans-serif;--sc-font-bold: 700;--sc-font-normal: 400;--sc-heading-1-font-size: calc( var(--sc-text-base-size) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) );--sc-heading-2-font-size: calc( var(--sc-text-base-size) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) );--sc-heading-3-font-size: calc( var(--sc-text-base-size) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) );--sc-heading-4-font-size: calc( var(--sc-text-base-size) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) );--sc-heading-5-font-size: calc( var(--sc-text-base-size) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) );--sc-heading-6-font-size: calc( var(--sc-text-base-size) / ( var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) ) );--sc-body-font-size: calc(var(--sc-text-base-size));--sc-body-small-font-size: calc( var(--sc-text-base-size) / ( var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) ) )}:root{--sc-border-radius: 8px;--sc-border-radius-sm: calc(var(--sc-border-radius) / 2);--sc-border-radius-lg: calc(var(--sc-border-radius) * 2);--sc-border-radius-xl: calc(var(--sc-border-radius) * 3);--sc-border-radius-2xl: calc(var(--sc-border-radius) * 4);--sc-border-radius-full: 9999px}:root{--sc-breakpoint-sm: 576px;--sc-breakpoint-md: 768px;--sc-breakpoint-lg: 992px}:root{--sc-surface-neutral-primary: var(--sc-color-background, #ffffff);--sc-color-background-hover-computed: hsl( from var(--sc-color-background) h s clamp(10, calc(l + 5), 95) );--sc-surface-neutral-primary-hover: var( --sc-color-background-hover, var(--sc-color-background-hover-computed, #fafafa) );--sc-color-background-active-computed: hsl( from var(--sc-color-background) h s clamp(5, calc(l - 5), 90) );--sc-surface-neutral-primary-active: var( --sc-color-background-active, var(--sc-color-background-active-computed, #f7f7f7) );--sc-surface-neutral-secondary: var( --sc-color-background-secondary, var(--sc-color-background, #f3f3f3) );--sc-color-background-secondary-hover-computed: hsl( from var(--sc-color-background-secondary) h s clamp(10, calc(l + 5), 95) );--sc-surface-neutral-secondary-hover: var( --sc-color-background-hover, var(--sc-color-background-hover-computed, #e6e6e6) );--sc-color-background-secondary-active-computed: hsl( from var(--sc-color-background-secondary) h s clamp(5, calc(l - 5), 90) );--sc-surface-neutral-secondary-active: var( --sc-color-background-secondary-active, var(--sc-color-background-active-computed, #e0e0e0) );--sc-surface-neutral-light: #ffffff;--sc-content-neutral-primary: var(--sc-color-foreground, #292929);--sc-color-foreground-secondary-computed: hsl( from var(--sc-color-foreground) h s clamp(10, calc(l + 5), 90) );--sc-content-neutral-secondary: var( --sc-color-foreground-secondary, var(--sc-color-foreground-secondary-computed, #404040) );--sc-border-neutral: var(--sc-color-border, rgba(0, 0, 0, 0.1));--sc-surface-brand-primary: var(--sc-color-brand, #000000);--sc-color-brand-hover-computed: hsl( from var(--sc-color-brand) h s clamp(20, calc(l + 5), 95) );--sc-surface-brand-primary-hover: var( --sc-color-brand-hover, var(--sc-color-brand-hover-computed, #2e2e2e) );--sc-color-brand-active-computed: hsl( from var(--sc-color-brand) h s clamp(10, calc(l - 5), 85) );--sc-surface-brand-primary-active: var( --sc-color-brand-active, var(--sc-color-brand-active-computed, #292929) );--sc-surface-brand-secondary: var( --sc-color-brand-secondary, var(--sc-color-brand, #e6e6e6) );--sc-color-brand-secondary-hover-computed: hsl( from var(--sc-color-brand-secondary) h s clamp(10, calc(l + 5), 95) );--sc-surface-brand-secondary-hover: var( --sc-color-background-hover, var(--sc-color-background-hover-computed, #ebebeb) );--sc-color-brand-secondary-active-computed: hsl( from var(--sc-color-brand-secondary) h s clamp(5, calc(l - 5), 90) );--sc-surface-brand-secondary-active: var( --sc-color-brand-secondary-active, var(--sc-color-brand-active-computed, #e0e0e0) );--sc-content-brand: var( --sc-color-brand-text, var(--sc-surface-brand-primary) );--sc-content-brand-on-primary: #ffffff;--sc-border-brand: var(--sc-surface-brand-primary);--sc-surface-success-primary: var(--sc-color-success, #008000);--sc-color-success-primary-hover-computed: hsl( from var(--sc-color-success) h s 30 );--sc-surface-success-primary-hover: var( --sc-color-success-primary-hover, var(--sc-color-success-primary-hover-computed, #009900) );--sc-color-success-primary-active-computed: hsl( from var(--sc-color-success) h s 20 );--sc-surface-success-primary-active: var( --sc-color-success-primary-active, var(--sc-color-success-primary-active-computed, #006600) );--sc-color-success-secondary-computed: hsl( from var(--sc-color-success) h s 90 );--sc-surface-success-secondary: var( --sc-color-success-secondary, var(--sc-color-success-secondary-computed, #ccffcc) );--sc-color-success-secondary-hover-computed: hsl( from var(--sc-color-success-secondary) h s 95 );--sc-surface-success-secondary-hover: var( --sc-color-success-secondary-hover, var(--sc-color-success-secondary-hover-computed, #e6ffe6) );--sc-color-success-secondary-active-computed: hsl( from var(--sc-color-success-secondary) h s 85 );--sc-surface-success-secondary-active: var( --sc-color-success-secondary-active, var(--sc-color-success-secondary-active-computed, #b2ffb2) );--sc-content-success: var( --sc-color-brand-text, hsl(from var(--sc-surface-success-primary) h s 30) );--sc-content-success-on-primary: #ffffff;--sc-border-success: var(--sc-surface-success-primary);--sc-surface-caution-primary: var(--sc-color-caution, #cc6600);--sc-color-caution-primary-hover-computed: hsl( from var(--sc-color-caution) h s 30 );--sc-surface-caution-primary-hover: var( --sc-color-caution-primary-hover, var(--sc-color-caution-primary-hover-computed, #e57300) );--sc-color-caution-primary-active-computed: hsl( from var(--sc-color-caution) h s 20 );--sc-surface-caution-primary-active: var( --sc-color-caution-primary-active, var(--sc-color-caution-primary-active-computed, #b25a00) );--sc-color-caution-secondary-computed: hsl( from var(--sc-color-caution) h s 90 );--sc-surface-caution-secondary: var( --sc-color-caution-secondary, var(--sc-color-caution-secondary-computed, #ffd9b3) );--sc-color-caution-secondary-hover-computed: hsl( from var(--sc-color-caution-secondary) h s 95 );--sc-surface-caution-secondary-hover: var( --sc-color-caution-secondary-hover, var(--sc-color-caution-secondary-hover-computed, #ffe5cc) );--sc-color-caution-secondary-active-computed: hsl( from var(--sc-color-caution-secondary) h s 85 );--sc-surface-caution-secondary-active: var( --sc-color-caution-secondary-active, var(--sc-color-caution-secondary-active-computed, #ffcc99) );--sc-content-caution: var( --sc-color-caution-text, hsl(from var(--sc-surface-caution-primary) h s 30) );--sc-content-caution-on-primary: #ffffff;--sc-border-caution: var(--sc-surface-caution-primary);--sc-surface-danger-primary: var(--sc-color-danger, #cc0000);--sc-color-danger-primary-hover-computed: hsl( from var(--sc-color-danger) h s 30 );--sc-surface-danger-primary-hover: var( --sc-color-danger-primary-hover, var(--sc-color-danger-primary-hover-computed, #e50000) );--sc-color-danger-primary-active-computed: hsl( from var(--sc-color-danger) h s 20 );--sc-surface-danger-primary-active: var( --sc-color-danger-primary-active, var(--sc-color-danger-primary-active-computed, #b30000) );--sc-color-danger-secondary-computed: hsl(from var(--sc-color-danger) h s 90);--sc-surface-danger-secondary: var( --sc-color-danger-secondary, var(--sc-color-danger-secondary-computed, #ffcccc) );--sc-color-danger-secondary-hover-computed: hsl( from var(--sc-color-danger-secondary) h s 95 );--sc-surface-danger-secondary-hover: var( --sc-color-danger-secondary-hover, var(--sc-color-danger-secondary-hover-computed, #ffe7e7) );--sc-color-danger-secondary-active-computed: hsl( from var(--sc-color-danger-secondary) h s 85 );--sc-surface-danger-secondary-active: var( --sc-color-danger-secondary-active, var(--sc-color-danger-secondary-active-computed, #ffb3b3) );--sc-content-danger: var( --sc-color-caution-text, hsl(from var(--sc-surface-danger-primary) h s 30) );--sc-content-danger-on-primary: #ffffff;--sc-border-danger: var(--sc-surface-danger-primary);--sc-color-disabled: hsl(from var(--sc-color-page-primary) h s calc(l * 0.5));--sc-surface-disabled: var(--sc-color-disabled, #d9d9d9);--sc-color-disabled-text: hsl( from var(--sc-color-text-primary) h s calc(l * 0.5) );--sc-content-disabled: var(--sc-color-disabled-text, #737373);--sc-content-disabled-on-disabled: var(--sc-color-disabled-text, #737373)}@supports(hanging-punctuation: first) and (font: -apple-system-body) and (-webkit-appearance: none){:root{--sc-color-background-hover-computed: hsl( from var(--sc-color-background) h s clamp(10%, calc(l + 5%), 95%) );--sc-color-background-active-computed: hsl( from var(--sc-color-background) h s clamp(5%, calc(l - 5%), 90%) );--sc-color-foreground-secondary-computed: hsl( from var(--sc-color-foreground) h s clamp(10%, calc(l + 5%), 90%) );--sc-color-brand-hover-computed: hsl( from var(--sc-color-brand) h s clamp(20%, calc(l + 5%), 95%) );--sc-color-brand-active-computed: hsl( from var(--sc-color-brand) h s clamp(10%, calc(l - 5%), 85%) );--sc-color-success-primary-hover-computed: hsl( from var(--sc-color-success) h s 30% );--sc-color-success-primary-active-computed: hsl( from var(--sc-color-success) h s 20% );--sc-color-success-secondary-computed: hsl( from var(--sc-color-success) h s 90% );--sc-color-success-secondary-hover-computed: hsl( from var(--sc-color-success-secondary) h s 95% );--sc-color-success-secondary-active-computed: hsl( from var(--sc-color-success-secondary) h s 85% );--sc-content-success: var( --sc-color-brand-text, hsl(from var(--sc-surface-success-primary) h s 30%) );--sc-color-caution-primary-hover-computed: hsl( from var(--sc-color-caution) h s 30% );--sc-color-caution-primary-active-computed: hsl( from var(--sc-color-caution) h s 20% );--sc-color-caution-secondary-computed: hsl( from var(--sc-color-caution) h s 90% );--sc-color-caution-secondary-hover-computed: hsl( from var(--sc-color-caution-secondary) h s 95% );--sc-color-caution-secondary-active-computed: hsl( from var(--sc-color-caution-secondary) h s 85% );--sc-content-caution: var( --sc-color-caution-text, hsl(from var(--sc-surface-caution-primary) h s 30%) );--sc-color-danger-primary-hover-computed: hsl( from var(--sc-color-danger) h s 30% );--sc-color-danger-primary-active-computed: hsl( from var(--sc-color-danger) h s 20% );--sc-color-danger-secondary-computed: hsl( from var(--sc-color-danger) h s 90% );--sc-color-danger-secondary-hover-computed: hsl( from var(--sc-color-danger-secondary) h s 95% );--sc-color-danger-secondary-active-computed: hsl( from var(--sc-color-danger-secondary) h s 85% );--sc-content-danger: var( --sc-color-caution-text, hsl(from var(--sc-surface-danger-primary) h s 30%) )}}.searchcraft-ad{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased}.searchcraft-ad-no-template{display:flex;flex-direction:column;font-size:.875rem}.searchcraft-ad-no-template>p{margin:0}.searchcraft-adm-ad{display:flex;flex-direction:column;justify-content:center;gap:16px}.searchcraft-search-result{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased}.searchcraft-search-result-no-template{display:flex;flex-direction:column;font-size:.875rem}.searchcraft-search-result-no-template>p{margin:0}.searchcraft-search-results{display:flex;flex-direction:column;justify-content:center;gap:16px}.searchcraft-search-results-empty-state{text-align:center}.searchcraft-search-results-error-message{text-align:center}.searchcraft-button{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal);background:none;border:2px solid rgba(0,0,0,0);border-radius:var(--sc-border-radius);cursor:pointer;display:flex;gap:4px;padding:12px;position:relative}.searchcraft-button.searchcraft-button-disabled{cursor:not-allowed}.searchcraft-button-primary{background-color:var(--sc-surface-brand-primary);color:var(--sc-content-brand-on-primary);font-weight:var(--sc-font-bold)}.searchcraft-button-primary:hover{background-color:var(--sc-surface-brand-primary-hover)}.searchcraft-button-primary:focus{border-color:var(--sc-border-primary)}.searchcraft-button-primary:active{background-color:var(--sc-surface-brand-primary-active)}.searchcraft-button-primary.searchcraft-button-disabled,.searchcraft-button-primary.searchcraft-button-disabled:hover,.searchcraft-button-primary.searchcraft-button-disabled:focus,.searchcraft-button-primary.searchcraft-button-disabled:active{background-color:var(--sc-surface-disabled);border-color:rgba(0,0,0,0);color:var(--sc-content-disabled)}.searchcraft-button-tertiary{background-color:var(--sc-surface-neutral-primary);color:var(--sc-content-brand);font-weight:var(--sc-font-normal)}.searchcraft-button-tertiary:hover{background-color:var(--sc-surface-brand-secondary-hover)}.searchcraft-button-tertiary:focus{background-color:var(--sc-surface-neutral-light);border-color:var(--sc-border-primary)}.searchcraft-button-tertiary:active{background-color:var(--sc-surface-brand-secondary-active)}.searchcraft-button-tertiary.searchcraft-button-disabled,.searchcraft-button-tertiary.searchcraft-button-disabled:hover,.searchcraft-button-tertiary.searchcraft-button-disabled:focus,.searchcraft-button-tertiary.searchcraft-button-disabled:active{background-color:var(--sc-surface-neutral-light);border-color:rgba(0,0,0,0);color:var(--sc-content-disabled)}.searchcraft-button-icon{fill:none}.searchcraft-error-message{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-small-font-size);font-weight:var(--sc-font-normal);color:var(--sc-content-danger);margin:0}.searchcraft-facet-list{display:flex;flex-direction:column;gap:8px;width:100%}.searchcraft-facet-list-checkbox-label{align-items:center;color:var(--sc-content-neutral-primary);display:flex;font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal);gap:8px;position:relative;-webkit-font-smoothing:antialiased}.searchcraft-facet-list-checkbox-input-wrapper{position:relative}.searchcraft-facet-list-checkbox-input{align-items:center;appearance:none;background-color:var(--sc-surface-neutral-secondary);border:1px solid var(--sc-surface-disabled);border-radius:var(--sc-border-radius);cursor:pointer;display:flex;height:24px;justify-content:center;width:24px;margin:0}.searchcraft-facet-list-checkbox-input:focus{outline:2px solid var(--sc-surface-brand-primary);outline-offset:2px}.searchcraft-facet-list-checkbox-input:checked{background-color:var(--sc-surface-brand-primary);position:relative}.searchcraft-facet-list-checkbox-input:checked+.searchcraft-facet-list-checkbox-input-check-icon{display:flex}.searchcraft-facet-list-checkbox-input:checked+.searchcraft-facet-list-checkbox-input-dash-icon{display:flex}.searchcraft-facet-child-list{display:flex;flex-direction:column;gap:6px}.searchcraft-facet-child-list-checkbox-label{margin-left:24px}.searchcraft-facet-child-list-checkbox-label:first-child{margin-top:6px}.searchcraft-facet-list-checkbox-input-check-icon{display:none;height:16px;left:50%;position:absolute;margin-top:2px;top:50%;transform:translate(-50%, -50%);width:16px}.searchcraft-facet-list-checkbox-input-dash-icon{display:none;height:3px;left:50%;position:absolute;top:50%;transform:translate(-50%, -50%);width:14px}.searchcraft-facet-list-message{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-small-font-size);font-weight:var(--sc-font-normal);color:var(--sc-content-disabled);text-align:center}.searchcraft-facet-list-wrapper{display:flex;flex-direction:column;width:100%;min-height:0}.searchcraft-facet-list-content{display:flex;flex-direction:column;gap:8px;min-height:0;flex-shrink:0}.searchcraft-facet-list-view-more{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal);background:none;border:none;color:var(--sc-content-brand);cursor:pointer;padding:8px 0;text-align:left;text-decoration:underline}.searchcraft-facet-list-view-more:hover{color:var(--sc-surface-brand-primary-hover)}.searchcraft-facet-list-view-more:focus{outline:2px solid var(--sc-surface-brand-primary);outline-offset:2px}.searchcraft-filter-panel{display:flex;flex-direction:column;gap:16px}.searchcraft-filter-panel-section{display:flex;flex-direction:column;gap:8px}.searchcraft-filter-panel-label{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-small-font-size);font-weight:var(--sc-font-normal);font-weight:var(--sc-font-bold)}[data-toggle-facet-section]{cursor:pointer;display:flex;align-items:center;justify-content:space-between;width:100%;position:relative}[data-toggle-facet-section]::after{content:"›";display:inline-block;font-size:1.5em;line-height:1;margin-left:auto;flex-shrink:0;transition:transform .2s ease;transform-origin:center}[data-toggle-facet-section][data-facet-section-collapsed]::after{transform:rotate(90deg)}[data-toggle-facet-section][data-facet-section-expanded]::after{transform:rotate(-90deg)}@media(max-width: 767px){[data-toggle-filter-panel]{cursor:pointer;display:flex !important;align-items:center;justify-content:space-between;width:100%}[data-toggle-filter-panel]::after{content:"›";display:inline-block;font-size:1.5em;line-height:1;margin-left:auto;flex-shrink:0;transition:transform .2s ease;transform-origin:center}[data-toggle-filter-panel][data-filter-panel-collapsed]::after{transform:rotate(90deg)}[data-toggle-filter-panel][data-filter-panel-expanded]::after{transform:rotate(-90deg)}}@media(min-width: 768px){[data-toggle-filter-panel]{cursor:default}[data-toggle-filter-panel]::after{display:none}}:root{--sc-input-form-border-radius: var(--sc-border-radius);--sc-input-form-search-icon-size: 20px;--sc-input-form-clear-icon-size: 20px}.searchcraft-input-form-grid{display:grid;gap:4px 8px}.searchcraft-input-form-grid-button-left{grid-template-rows:repeat(3, auto);grid-template-columns:auto 1fr}.searchcraft-input-form-grid-button-left .searchcraft-input-form-button{grid-column:1/span 1;grid-row:2/span 1}.searchcraft-input-form-grid-button-left .searchcraft-input-form-label{grid-column:2/span 1;grid-row:1/span 1}.searchcraft-input-form-grid-button-left .searchcraft-input-form-error-message{grid-column:2/span 1;grid-row:3/span 1}.searchcraft-input-form-grid-button-left .searchcraft-input-form-input-wrapper{grid-column:2/span 1;grid-row:2/span 1}.searchcraft-input-form-grid-button-right{grid-template-rows:repeat(3, auto);grid-template-columns:1fr auto}.searchcraft-input-form-grid-button-right .searchcraft-input-form-button{grid-column:2/span 1;grid-row:2/span 1}.searchcraft-input-form-grid-button-right .searchcraft-input-form-label{grid-column:1/span 1;grid-row:1/span 1}.searchcraft-input-form-grid-button-right .searchcraft-input-form-error-message{grid-column:1/span 1;grid-row:3/span 1}.searchcraft-input-form-grid-button-right .searchcraft-input-form-input-wrapper{grid-column:1/span 1;grid-row:2/span 1}.searchcraft-input-form-grid-button-none{grid-template-rows:repeat(3, auto);grid-template-columns:auto}.searchcraft-input-form-grid-button-none .searchcraft-input-form-button{display:none}.searchcraft-input-form-grid-button-none .searchcraft-input-form-label{grid-column:1/span 1;grid-row:1/span 1}.searchcraft-input-form-grid-button-none .searchcraft-input-form-error-message{grid-column:1/span 1;grid-row:3/span 1}.searchcraft-input-form-grid-button-none .searchcraft-input-form-input-wrapper{grid-column:1/span 1;grid-row:2/span 1}.searchcraft-input-form-input-wrapper{display:flex;position:relative}.searchcraft-input-form-input{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal);background-color:var(--sc-surface-neutral-secondary);border-radius:var(--sc-input-form-border-radius);border:none;color:var(--sc-content-neutral-primary);flex:1;outline:none;padding:12px 44px}.searchcraft-input-form-input::placeholder{color:var(--sc-content-disabled)}.searchcraft-input-form-input:focus{outline:var(--sc-border-brand) solid 2px;outline-offset:-1px}.searchcraft-input-form-input.searchcraft-placeholder-hide-on-focus:focus::placeholder{opacity:0}.searchcraft-input-form-error{color:var(--sc-content-danger);outline:var(--sc-border-danger) solid 2px}.searchcraft-input-form-error:focus{outline:var(--sc-border-danger) solid 2px}.searchcraft-input-form-input-icon{align-items:center;bottom:0;display:flex;justify-content:center;left:0;position:absolute;pointer-events:none;top:0;width:44px}.searchcraft-input-form-input-search-icon{color:var(--sc-content-neutral-secondary);fill:none;height:var(--sc-input-form-search-icon-size);pointer-events:none;width:var(--sc-input-form-search-icon-size)}.searchcraft-input-form-clear-button{all:unset;align-items:center;bottom:0;border:none;cursor:pointer;display:flex;justify-content:center;outline:none;position:absolute;right:0;top:0;width:44px}.searchcraft-input-form-clear-icon{color:var(--sc-content-brand);fill:none;height:var(--sc-input-form-clear-icon-size);width:var(--sc-input-form-clear-icon-size)}.searchcraft-input-label{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-small-font-size);font-weight:var(--sc-font-normal);color:var(--sc-content-neutral-primary);font-weight:var(--sc-font-bold);margin-top:4px;margin-bottom:4px}:root{--sc-popover-button-border-radius: var(--sc-border-radius)}@media(min-width: 576px){:root{--sc-popover-button-border-radius: var(--sc-border-radius-lg)}}.searchcraft-popover-button{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal);cursor:pointer}.searchcraft-popover-button-skeuomorphic{appearance:none;background:none;border:none;color:var(--sc-content-neutral-primary);display:block;width:100%}.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-wrapper{border:1px solid var(--sc-border-neutral);border-radius:var(--sc-popover-button-border-radius);box-shadow:0 1px 1px rgb(from var(--sc-content-neutral-secondary) r g b/10%) inset,0 2px 4px rgb(from var(--sc-content-neutral-secondary) r g b/5%) inset;display:flex;gap:24px;height:40px;justify-content:space-between;line-height:1;padding:4px 5px 4px 10px;background:var(--sc-surface-neutral-primary)}@media(min-width: 576px){.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-wrapper{box-shadow:0 1px 1px rgb(from var(--sc-content-neutral-secondary) r g b/10%) inset,0 2px 2px rgb(from var(--sc-content-neutral-secondary) r g b/5%) inset,0 4px 4px rgb(from var(--sc-content-neutral-secondary) r g b/5%) inset;height:63px;padding:8px 10px 8px 16px}}.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-input{align-items:center;display:flex;gap:4px}@media(min-width: 576px){.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-input{gap:8px}}.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-keycaps{color:var(--sc-content-neutral-secondary);display:flex;gap:4px;font-size:20px;font-weight:500}@media(min-width: 576px){.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-keycaps{gap:8px}}.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-keycaps-keycap{border-radius:calc(var(--sc-popover-button-border-radius) - 3px);border-radius:calc(var(var(--sc-popover-button-border-radius)) - 3px);background-color:var(--sc-surface-neutral-primary);box-shadow:0 3px hsl(from var(--sc-surface-neutral-secondary) h s calc(l - 5)),0 1px 2px rgb(from var(--sc-content-neutral-secondary) r g b/10%),0 6px 4px rgb(from var(--sc-content-neutral-secondary) r g b/5%);height:calc(100% - 2px);position:relative}@media(min-width: 576px){.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-keycaps-keycap{border-radius:calc(var(--sc-popover-button-border-radius) - 8px);border-radius:calc(var(var(--sc-popover-button-border-radius)) - 8px);box-shadow:0 4px hsl(from var(--sc-surface-neutral-secondary) h s calc(l - 5)),0 1px 2px rgb(from var(--sc-content-neutral-secondary) r g b/15%),0 6px 1px rgb(from var(--sc-content-neutral-secondary) r g b/20%),0 7px 2px rgb(from var(--sc-content-neutral-secondary) r g b/15%),0 9px 4px rgb(from var(--sc-content-neutral-secondary) r g b/10%),0 13px 8px rgb(from var(--sc-content-neutral-secondary) r g b/5%);height:calc(100% - 5px)}}.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-keycaps-keycap::before,.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-keycaps-keycap::after{content:"";display:block}.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-keycaps-keycap::before{border-radius:calc(var(--sc-popover-button-border-radius) - 4px);border-radius:calc(var(var(--sc-popover-button-border-radius)) - 4px);background:linear-gradient(340deg, rgb(from var(--sc-surface-neutral-secondary) r g b/2%) 0%, var(--sc-surface-neutral-secondary) 100%);inset:2px;position:absolute}@media(min-width: 576px){.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-keycaps-keycap::before{border-radius:calc(var(--sc-popover-button-border-radius) - 12px);border-radius:calc(var(var(--sc-popover-button-border-radius)) - 12px);inset:4px}}.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-keycaps-keycap::after{aspect-ratio:1/1;height:100%}.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-keycaps-keycap>span{display:flex;line-height:1;left:50%;margin-top:2%;position:absolute;top:50%;transform:translate(-50%, -50%)}.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-input-search-icon{height:60%;width:auto}@media(min-width: 576px){.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-input-search-icon{height:50%}}:root{--sc-popover-button-magnifying-glass-icon-size: 20px;--sc-popover-button-magnifying-glass-icon-color: var(--sc-content-neutral-secondary);--sc-popover-button-magnifying-glass-icon-color-hover: var(--sc-content-brand);--sc-popover-button-magnifying-glass-padding: 12px}@media(min-width: 576px){:root{--sc-popover-button-magnifying-glass-padding: 16px}}.searchcraft-popover-button-magnifying-glass{appearance:none;background:none;border:none;color:var(--sc-content-neutral-primary);cursor:pointer;display:flex;align-items:center;justify-content:center}.searchcraft-popover-button-magnifying-glass .searchcraft-popover-button-input{display:flex;align-items:center;justify-content:center;padding:var(--sc-popover-button-magnifying-glass-padding)}.searchcraft-popover-button-magnifying-glass .searchcraft-popover-button-input-search-icon{color:var(--sc-popover-button-magnifying-glass-icon-color);display:block;fill:none;stroke:currentcolor;stroke-width:1.5;width:var(--sc-popover-button-magnifying-glass-icon-size);height:var(--sc-popover-button-magnifying-glass-icon-size);transition:color .2s ease}.searchcraft-popover-button-magnifying-glass:hover .searchcraft-popover-button-input-search-icon{color:var(--sc-popover-button-magnifying-glass-icon-color-hover)}:root{--sc-popover-list-view-height: 600px;--sc-popover-modal-max-width: 800px}.searchcraft-popover-form{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal);display:flex;flex:1;flex-direction:column}.searchcraft-popover-form searchcraft-input-form,.searchcraft-popover-form searchcraft-popover-footer{width:100%}.searchcraft-popover-form.searchcraft-popover-form-active .searchcraft-popover-form-input{padding-bottom:1px}.searchcraft-popover-form searchcraft-popover-list-view{flex-shrink:1;height:100%;min-height:0;overflow:auto;padding:0 24px}.searchcraft-popover-form searchcraft-results-summary,.searchcraft-popover-form searchcraft-summary-box{margin-bottom:16px}.searchcraft-popover-form-input{display:flex;flex-direction:row;gap:12px}.searchcraft-popover-form-input .searchcraft-input-form-input{background-color:var(--sc-surface-neutral-primary);border:1px solid var(--sc-border-neutral);border-radius:var(--sc-border-radius-lg);width:0}.searchcraft-popover-form-cancel-button{background:none;border:none;cursor:pointer;font-size:14px}.searchcraft-popover-form-modal-input,.searchcraft-popover-form-fullscreen-input{padding:24px}.searchcraft-popover-form-modal-popover-list-view,.searchcraft-popover-form-fullscreen-popover-list-view{flex-grow:1;flex-shrink:1;min-height:0;overflow:auto;padding:0 24px}.searchcraft-popover-form-modal-popover-list-view searchcraft-results-summary,.searchcraft-popover-form-modal-popover-list-view searchcraft-summary-box,.searchcraft-popover-form-fullscreen-popover-list-view searchcraft-results-summary,.searchcraft-popover-form-fullscreen-popover-list-view searchcraft-summary-box{padding:20px 0;margin-bottom:0;border-bottom:1px solid var(--sc-border-neutral-subtle)}.searchcraft-popover-form-modal-popover-list-view searchcraft-popover-list-view,.searchcraft-popover-form-fullscreen-popover-list-view searchcraft-popover-list-view{overflow:visible;height:auto}.searchcraft-popover-form-inline{border:1px solid rgba(0,0,0,0);border-radius:var(--sc-border-radius-xl);padding:12px;position:relative}.searchcraft-popover-form-inline.searchcraft-popover-form-active{background-color:var(--sc-surface-neutral-primary);border:1px solid var(--sc-border-neutral);border-bottom:none;border-bottom-left-radius:0;border-bottom-right-radius:0;padding-bottom:1px}.searchcraft-popover-form-inline searchcraft-popover-list-view{padding:0 12px}.searchcraft-popover-form-inline .searchcraft-input-form-input,.searchcraft-popover-form-inline .searchcraft-popover-list-item-link,.searchcraft-popover-form-inline .searchcraft-adm-ad-link{border-radius:calc(--sc-border-radius-xl - 12px);border-radius:calc(var(--sc-border-radius-xl) - 12px)}.searchcraft-popover-form-inline-wrapper{background-color:var(--sc-surface-neutral-primary);border:1px solid var(--sc-border-neutral);border-top:none;border-bottom-left-radius:var(--sc-border-radius-xl);border-bottom-right-radius:var(--sc-border-radius-xl);display:flex;flex-direction:column;left:-1px;max-height:var(--sc-popover-list-view-height);overflow:hidden;position:absolute;right:-1px;top:100%}.searchcraft-popover-form-inline-wrapper searchcraft-results-summary,.searchcraft-popover-form-inline-wrapper searchcraft-summary-box{padding:16px 12px;margin-bottom:0;border-bottom:1px solid var(--sc-border-neutral-subtle)}.searchcraft-popover-form-inline-scroll-area{flex:1;min-height:0;overflow:auto;padding:0 12px}.searchcraft-popover-form-inline-scroll-area searchcraft-popover-list-view{overflow:visible;height:auto;padding:0}.searchcraft-popover-form-modal{align-items:center;display:flex;inset:0;position:fixed;z-index:1000}.searchcraft-popover-form-modal .searchcraft-input-form-input,.searchcraft-popover-form-modal .searchcraft-popover-list-item-link,.searchcraft-popover-form-modal .searchcraft-adm-ad-link{border-radius:calc(--sc-border-radius-2xl - 20px);border-radius:calc(var(--sc-border-radius-2xl) - 20px)}.searchcraft-popover-form-modal-backdrop{background-color:rgb(from var(--sc-content-neutral-primary) r g b/50%);display:none;inset:0;position:fixed}@media(min-width: 576px){.searchcraft-popover-form-modal-backdrop{display:block}}.searchcraft-popover-form-modal-wrapper{background-color:var(--sc-surface-neutral-primary);box-shadow:1px 2px rgb(from var(--sc-content-neutral-primary) r g b/7%),0 2px 4px rgb(from var(--sc-content-neutral-primary) r g b/7%),0 4px 8px rgb(from var(--sc-content-neutral-primary) r g b/7%),0 8px 16px rgb(from var(--sc-content-neutral-primary) r g b/7%),0 16px 32px rgb(from var(--sc-content-neutral-primary) r g b/7%),0 32px 64px rgb(from var(--sc-content-neutral-primary) r g b/7%);display:flex;flex-direction:column;inset:0;max-width:var(--sc-popover-modal-max-width);overflow:hidden;position:absolute;width:100%;z-index:1001}@media(min-width: 576px){.searchcraft-popover-form-modal-wrapper{border-radius:var(--sc-border-radius-2xl);inset:0;margin-top:100px;max-height:var(--sc-popover-list-view-height);max-width:var(--sc-popover-modal-max-width);position:relative}}.searchcraft-popover-form-modal-cancel-button{border-radius:calc(--sc-border-radius-2xl - 20px);border-radius:calc(var(--sc-border-radius-2xl) - 20px);padding:8px}@media(min-width: 576px){.searchcraft-popover-form-modal-cancel-button{padding:8px 12px}}.searchcraft-popover-form-fullscreen{background-color:var(--sc-surface-neutral-primary);display:flex;flex-direction:column;justify-content:space-between;inset:0;position:fixed;z-index:1000}.searchcraft-popover-form-fullscreen .searchcraft-popover-list-item-link,.searchcraft-popover-form-fullscreen .searchcraft-adm-ad-link{border-radius:var(--sc-border-radius-lg)}.searchcraft-popover-form-fullscreen-cancel-button{border-radius:var(--sc-border-radius-lg);padding:8px}@media(min-width: 576px){.searchcraft-popover-form-fullscreen-cancel-button{padding:8px 12px}}.searchcraft-popover-footer{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:1rem;align-items:center;background-color:var(--sc-surface-neutral-secondary);display:flex;gap:.5rem;justify-content:space-between;line-height:1;padding:1.25rem 1.5rem}@media(min-width: 576px){.searchcraft-popover-footer{padding:1.25rem 2rem}}.searchcraft-popover-footer-results-info{margin:0}.searchcraft-popover-footer-results-found{display:none}@media(min-width: 576px){.searchcraft-popover-footer-results-found{display:inline}}.searchcraft-popover-footer-link{align-items:center;color:var(--sc-content-neutral-primary);display:flex;font-weight:var(--sc-font-bold);text-decoration:none;white-space:nowrap}.searchcraft-popover-footer-link-prefix{display:none;font-weight:var(--sc-font-normal)}@media(min-width: 576px){.searchcraft-popover-footer-link-prefix{display:inline}}.searchcraft-popover-footer-results{align-items:center;display:flex;gap:.5rem}.searchcraft-popover-footer-view-all{align-items:center;border-radius:999px;border:.0625rem solid var(--sc-border-neutral-strong);color:var(--sc-content-neutral-primary);display:inline-flex;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-bold);gap:.375rem;line-height:1;padding:.375rem .625rem;text-decoration:none}.searchcraft-popover-footer-view-all-shortcut{display:none}@media(min-width: 576px){.searchcraft-popover-footer-view-all-shortcut{display:inline-flex;gap:.125rem}.searchcraft-popover-footer-view-all-shortcut kbd{align-items:center;border-radius:.25rem;border:1px solid var(--sc-content-neutral-primary);display:flex;font-family:Helvetica,Arial,sans-serif;font-size:.75rem;font-style:normal;font-weight:400;height:1.5rem;justify-content:center;line-height:1rem;width:1.5rem}}:root{--sc-popover-list-item-image-fit: contain}.searchcraft-popover-list-item{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;border-bottom:1px solid var(--sc-border-neutral);padding:12px 0}searchcraft-popover-list-item:last-child .searchcraft-popover-list-item{border-bottom:none}.searchcraft-popover-list-item-link{align-items:flex-start;color:var(--sc-content-neutral-primary);display:flex;gap:24px;padding:12px 0;text-decoration:none}.searchcraft-popover-list-item-link:focus,.searchcraft-popover-list-item-link:active{background-color:var(--sc-surface-neutral-primary-active)}.searchcraft-popover-list-item-link:hover{background-color:var(--sc-surface-neutral-primary-hover)}.searchcraft-popover-list-item-image-wrapper{align-items:center;aspect-ratio:16/9;display:flex;flex-shrink:0;justify-content:center;width:160px}.searchcraft-popover-list-item-image{height:100%;object-fit:var(--sc-popover-list-item-image-fit);width:100%}.searchcraft-popover-list-item-content{display:flex;flex-direction:column;flex-grow:1;gap:4px;justify-content:center}.searchcraft-popover-list-item-content-title,.searchcraft-popover-list-item-content-subtitle{display:-webkit-box;line-clamp:2;margin:0;overflow:hidden;-webkit-line-clamp:2;-webkit-box-orient:vertical}.searchcraft-popover-list-item-content-title{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-heading-5-font-size);font-weight:var(--sc-font-bold)}.searchcraft-popover-list-item-content-subtitle{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal)}.searchcraft-popover-list-view{display:flex;flex-direction:column}.searchcraft-results-info{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal);color:var(--sc-content-primary);margin:0}.searchcraft-slider{align-items:center;display:flex;flex-direction:column;gap:10px;width:100%;margin-top:4px}.searchcraft-slider-range{align-items:center;background-color:var(--sc-surface-disabled);border-radius:999px;display:flex;position:relative;height:4px;width:100%}.searchcraft-slider-range::-webkit-slider-runnable-track{pointer-events:none}.searchcraft-slider-range .searchcraft-slider-active-range{background-color:var(--sc-surface-brand-primary);border-radius:2px;height:4px;position:absolute;top:50%;transform:translateY(-50%);z-index:0}.searchcraft-slider-range .searchcraft-slider-active-range::-webkit-slider-runnable-track{pointer-events:none}.searchcraft-slider-range .searchcraft-slider-active-range::-moz-range-track{pointer-events:none}.searchcraft-slider-range .searchcraft-slider-input{appearance:none;background:rgba(0,0,0,0);border-radius:2px;height:4px;margin:0;outline:none;pointer-events:none;position:absolute;width:100%;-webkit-appearance:none}.searchcraft-slider-range .searchcraft-slider-input::-webkit-slider-thumb{background-color:var(--sc-surface-neutral-light);border-radius:50%;border:1px solid var(--sc-border-neutral);cursor:pointer;height:18px;pointer-events:all;width:18px;-webkit-appearance:none}.searchcraft-slider-range .searchcraft-slider-input::-moz-range-thumb{background-color:var(--sc-surface-neutral-light);border-radius:50%;border:1px solid var(--sc-border-neutral);cursor:pointer;height:18px;pointer-events:all;width:18px}.searchcraft-slider-range .searchcraft-slider-input:focus::-webkit-slider-thumb{outline:2px solid var(--sc-surface-brand-primary)}.searchcraft-slider-range .searchcraft-slider-input:focus::-moz-range-thumb{outline:2px solid var(--sc-surface-brand-primary)}.searchcraft-slider-label{color:var(--sc-content-primary);display:flex;font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-small-font-size);font-weight:var(--sc-font-normal);justify-content:space-between;margin-top:4px;width:100%}.searchcraft-slider-start-label,.searchcraft-slider-end-label{min-width:30px;text-align:center}.searchcraft-toggle-button{align-items:flex-start;display:flex;gap:10px;justify-content:space-between}.searchcraft-toggle-button-label{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal);color:var(--sc-content-neutral-primary);margin:0}.searchcraft-toggle-button-sub-label{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-small-font-size);font-weight:var(--sc-font-normal);color:var(--sc-content-neutral-secondary);margin:0}.searchcraft-toggle-button-background{background:var(--sc-surface-disabled);border-radius:var(--sc-border-radius-full);border:none;cursor:pointer;flex-shrink:0;height:26px;position:relative;transition:background-color .2s;width:44px}.searchcraft-toggle-button-handle{background:var(--sc-surface-neutral-light);border-radius:50%;height:18px;left:4px;position:absolute;top:calc(50% - 9px);transition:transform .3s ease;width:18px}.searchcraft-toggle-button-active .searchcraft-toggle-button-background{background:var(--sc-surface-brand-primary);box-shadow:0px 0px 0px 1px rgba(0,0,0,.05)}.searchcraft-toggle-button-active .searchcraft-toggle-button-handle{transform:translateX(16px)}.searchcraft-pagination{display:inline-grid;gap:16px;grid-template-columns:repeat(3, auto);grid-template-rows:1fr}.searchcraft-pagination-list{border:1px solid var(--sc-border-neutral);border-radius:var(--sc-border-radius);display:flex;list-style-type:none;margin:0;overflow:hidden;padding:0;width:auto}.searchcraft-pagination-list li{border-right:1px solid var(--sc-border-neutral);height:100%;min-height:44px;width:44px}.searchcraft-pagination-list li:last-child{border-right:none}.searchcraft-pagination-item{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal);align-items:center;background-color:var(--sc-surface-neutral-primary);border:none;display:flex;height:100%;justify-content:center;width:100%}.searchcraft-pagination-item-active{background-color:var(--sc-surface-brand-secondary);font-weight:var(--sc-font-bold)}.searchcraft-pagination-control{border:1px solid var(--sc-border-neutral);border-radius:var(--sc-border-radius)}.searchcraft-pagination-range{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal);align-items:center;display:flex}.searchcraft-select{display:flex;flex-direction:column;gap:4px}.searchcraft-select-label{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-small-font-size);font-weight:var(--sc-font-normal);font-weight:var(--sc-font-bold)}.searchcraft-select-input-wrapper{position:relative}.searchcraft-select-input{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal);appearance:none;background-color:var(--sc-surface-neutral-secondary);border:2px solid rgba(0,0,0,0);border-radius:var(--sc-border-radius);cursor:pointer;height:44px;padding:0 44px 0 16px;width:100%}.searchcraft-select-input:hover{background-color:var(--sc-surface-neutral-secondary-hover)}.searchcraft-select-input:active{background-color:var(--sc-surface-neutral-secondary-active)}.searchcraft-select-input:focus{border-color:var(--sc-border-brand);outline:none}.searchcraft-select-input-icon{fill:none;pointer-events:none;position:absolute;right:12px;top:50%;transform:translateY(-50%)}.searchcraft-select-caption{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-small-font-size);font-weight:var(--sc-font-normal)}.searchcraft-search-results-per-page{display:flex}.searchcraft-search-results-per-page-select{align-items:center;display:flex;gap:12px}.searchcraft-search-results-per-page-select-label{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal)}.searchcraft-search-results-per-page-select-input{min-width:120px}.searchcraft-results-summary{padding:20px;border-radius:var(--sc-border-radius);background-color:var(--sc-surface-neutral-secondary);position:relative;min-height:200px;color:var(--sc-content-neutral-primary);font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal)}.searchcraft-results-summary h1,.searchcraft-results-summary h2,.searchcraft-results-summary h3,.searchcraft-results-summary h4,.searchcraft-results-summary h5{padding-top:10px;padding-bottom:10px}.searchcraft-results-summary p{padding-bottom:10px}.searchcraft-results-summary img{max-width:200px}.searchcraft-results-summary ol,.searchcraft-results-summary ul{padding-left:1em;padding-bottom:10px}.searchcraft-results-summary a{color:var(--sc-content-brand)}.searchcraft-summary-box{padding:20px;border-radius:var(--sc-border-radius);background-color:var(--sc-surface-neutral-secondary);position:relative;min-height:200px;color:var(--sc-content-neutral-primary);font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal)}.searchcraft-summary-box h1,.searchcraft-summary-box h2,.searchcraft-summary-box h3,.searchcraft-summary-box h4,.searchcraft-summary-box h5{padding-top:10px;padding-bottom:10px}.searchcraft-summary-box p{padding-bottom:10px}.searchcraft-summary-box img{max-width:200px}.searchcraft-summary-box ol,.searchcraft-summary-box ul{padding-left:1em;padding-bottom:10px}.searchcraft-summary-box a{color:var(--sc-content-brand)}.searchcraft-loading{display:flex;flex-direction:column;align-items:center;gap:12px;position:absolute;top:50%;left:50%;transform:translateY(-50%) translateX(-50%)}.searchcraft-loading-dots{display:flex;gap:8px;align-items:center;height:40px}.searchcraft-loading-dots>div{width:10px;height:10px;border-radius:50%;background-color:var(--sc-surface-brand-primary);animation:searchcraft-jump .6s ease-in-out infinite}.searchcraft-loading-dots .searchcraft-loading-dot-2{animation-delay:.15s}.searchcraft-loading-dots .searchcraft-loading-dot-3{animation-delay:.3s}.searchcraft-loading-label{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-small-font-size);font-weight:var(--sc-font-normal);letter-spacing:2px;color:#828282;margin:0}@keyframes searchcraft-jump{0%{transform:translateY(0);animation-timing-function:cubic-bezier(0.33, 1, 0.68, 1)}50%{transform:translateY(-20px);animation-timing-function:cubic-bezier(0.32, 0, 0.67, 0)}100%{transform:translateY(0)}}/*# sourceMappingURL=hologram.css.map */
+var styles = `﻿[class*=searchcraft-],[class*=searchcraft-] *,[class*=searchcraft-]::before,[class*=searchcraft-]::after,[class*=searchcraft-] *,::before,[class*=searchcraft-] *,::after{box-sizing:border-box;padding:0;margin:0}:root{--sc-text-base-size: 1em;--sc-text-scale-ratio: 1.1;--sc-font-family: sans-serif;--sc-font-bold: 700;--sc-font-normal: 400;--sc-heading-1-font-size: calc( var(--sc-text-base-size) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) );--sc-heading-2-font-size: calc( var(--sc-text-base-size) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) );--sc-heading-3-font-size: calc( var(--sc-text-base-size) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) );--sc-heading-4-font-size: calc( var(--sc-text-base-size) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) );--sc-heading-5-font-size: calc( var(--sc-text-base-size) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) );--sc-heading-6-font-size: calc( var(--sc-text-base-size) / ( var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) ) );--sc-body-font-size: calc(var(--sc-text-base-size));--sc-body-small-font-size: calc( var(--sc-text-base-size) / ( var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) * var(--sc-text-scale-ratio) ) )}:root{--sc-border-radius: 8px;--sc-border-radius-sm: calc(var(--sc-border-radius) / 2);--sc-border-radius-lg: calc(var(--sc-border-radius) * 2);--sc-border-radius-xl: calc(var(--sc-border-radius) * 3);--sc-border-radius-2xl: calc(var(--sc-border-radius) * 4);--sc-border-radius-full: 9999px}:root{--sc-breakpoint-sm: 576px;--sc-breakpoint-md: 768px;--sc-breakpoint-lg: 992px}:root{--sc-surface-neutral-primary: var(--sc-color-background, #ffffff);--sc-color-background-hover-computed: hsl( from var(--sc-color-background) h s clamp(10, calc(l + 5), 95) );--sc-surface-neutral-primary-hover: var( --sc-color-background-hover, var(--sc-color-background-hover-computed, #fafafa) );--sc-color-background-active-computed: hsl( from var(--sc-color-background) h s clamp(5, calc(l - 5), 90) );--sc-surface-neutral-primary-active: var( --sc-color-background-active, var(--sc-color-background-active-computed, #f7f7f7) );--sc-surface-neutral-secondary: var( --sc-color-background-secondary, var(--sc-color-background, #f3f3f3) );--sc-color-background-secondary-hover-computed: hsl( from var(--sc-color-background-secondary) h s clamp(10, calc(l + 5), 95) );--sc-surface-neutral-secondary-hover: var( --sc-color-background-hover, var(--sc-color-background-hover-computed, #e6e6e6) );--sc-color-background-secondary-active-computed: hsl( from var(--sc-color-background-secondary) h s clamp(5, calc(l - 5), 90) );--sc-surface-neutral-secondary-active: var( --sc-color-background-secondary-active, var(--sc-color-background-active-computed, #e0e0e0) );--sc-surface-neutral-light: #ffffff;--sc-content-neutral-primary: var(--sc-color-foreground, #292929);--sc-color-foreground-secondary-computed: hsl( from var(--sc-color-foreground) h s clamp(10, calc(l + 5), 90) );--sc-content-neutral-secondary: var( --sc-color-foreground-secondary, var(--sc-color-foreground-secondary-computed, #404040) );--sc-border-neutral: var(--sc-color-border, rgba(0, 0, 0, 0.1));--sc-surface-brand-primary: var(--sc-color-brand, #000000);--sc-color-brand-hover-computed: hsl( from var(--sc-color-brand) h s clamp(20, calc(l + 5), 95) );--sc-surface-brand-primary-hover: var( --sc-color-brand-hover, var(--sc-color-brand-hover-computed, #2e2e2e) );--sc-color-brand-active-computed: hsl( from var(--sc-color-brand) h s clamp(10, calc(l - 5), 85) );--sc-surface-brand-primary-active: var( --sc-color-brand-active, var(--sc-color-brand-active-computed, #292929) );--sc-surface-brand-secondary: var( --sc-color-brand-secondary, var(--sc-color-brand, #e6e6e6) );--sc-color-brand-secondary-hover-computed: hsl( from var(--sc-color-brand-secondary) h s clamp(10, calc(l + 5), 95) );--sc-surface-brand-secondary-hover: var( --sc-color-background-hover, var(--sc-color-background-hover-computed, #ebebeb) );--sc-color-brand-secondary-active-computed: hsl( from var(--sc-color-brand-secondary) h s clamp(5, calc(l - 5), 90) );--sc-surface-brand-secondary-active: var( --sc-color-brand-secondary-active, var(--sc-color-brand-active-computed, #e0e0e0) );--sc-content-brand: var( --sc-color-brand-text, var(--sc-surface-brand-primary) );--sc-content-brand-on-primary: #ffffff;--sc-border-brand: var(--sc-surface-brand-primary);--sc-surface-success-primary: var(--sc-color-success, #008000);--sc-color-success-primary-hover-computed: hsl( from var(--sc-color-success) h s 30 );--sc-surface-success-primary-hover: var( --sc-color-success-primary-hover, var(--sc-color-success-primary-hover-computed, #009900) );--sc-color-success-primary-active-computed: hsl( from var(--sc-color-success) h s 20 );--sc-surface-success-primary-active: var( --sc-color-success-primary-active, var(--sc-color-success-primary-active-computed, #006600) );--sc-color-success-secondary-computed: hsl( from var(--sc-color-success) h s 90 );--sc-surface-success-secondary: var( --sc-color-success-secondary, var(--sc-color-success-secondary-computed, #ccffcc) );--sc-color-success-secondary-hover-computed: hsl( from var(--sc-color-success-secondary) h s 95 );--sc-surface-success-secondary-hover: var( --sc-color-success-secondary-hover, var(--sc-color-success-secondary-hover-computed, #e6ffe6) );--sc-color-success-secondary-active-computed: hsl( from var(--sc-color-success-secondary) h s 85 );--sc-surface-success-secondary-active: var( --sc-color-success-secondary-active, var(--sc-color-success-secondary-active-computed, #b2ffb2) );--sc-content-success: var( --sc-color-brand-text, hsl(from var(--sc-surface-success-primary) h s 30) );--sc-content-success-on-primary: #ffffff;--sc-border-success: var(--sc-surface-success-primary);--sc-surface-caution-primary: var(--sc-color-caution, #cc6600);--sc-color-caution-primary-hover-computed: hsl( from var(--sc-color-caution) h s 30 );--sc-surface-caution-primary-hover: var( --sc-color-caution-primary-hover, var(--sc-color-caution-primary-hover-computed, #e57300) );--sc-color-caution-primary-active-computed: hsl( from var(--sc-color-caution) h s 20 );--sc-surface-caution-primary-active: var( --sc-color-caution-primary-active, var(--sc-color-caution-primary-active-computed, #b25a00) );--sc-color-caution-secondary-computed: hsl( from var(--sc-color-caution) h s 90 );--sc-surface-caution-secondary: var( --sc-color-caution-secondary, var(--sc-color-caution-secondary-computed, #ffd9b3) );--sc-color-caution-secondary-hover-computed: hsl( from var(--sc-color-caution-secondary) h s 95 );--sc-surface-caution-secondary-hover: var( --sc-color-caution-secondary-hover, var(--sc-color-caution-secondary-hover-computed, #ffe5cc) );--sc-color-caution-secondary-active-computed: hsl( from var(--sc-color-caution-secondary) h s 85 );--sc-surface-caution-secondary-active: var( --sc-color-caution-secondary-active, var(--sc-color-caution-secondary-active-computed, #ffcc99) );--sc-content-caution: var( --sc-color-caution-text, hsl(from var(--sc-surface-caution-primary) h s 30) );--sc-content-caution-on-primary: #ffffff;--sc-border-caution: var(--sc-surface-caution-primary);--sc-surface-danger-primary: var(--sc-color-danger, #cc0000);--sc-color-danger-primary-hover-computed: hsl( from var(--sc-color-danger) h s 30 );--sc-surface-danger-primary-hover: var( --sc-color-danger-primary-hover, var(--sc-color-danger-primary-hover-computed, #e50000) );--sc-color-danger-primary-active-computed: hsl( from var(--sc-color-danger) h s 20 );--sc-surface-danger-primary-active: var( --sc-color-danger-primary-active, var(--sc-color-danger-primary-active-computed, #b30000) );--sc-color-danger-secondary-computed: hsl(from var(--sc-color-danger) h s 90);--sc-surface-danger-secondary: var( --sc-color-danger-secondary, var(--sc-color-danger-secondary-computed, #ffcccc) );--sc-color-danger-secondary-hover-computed: hsl( from var(--sc-color-danger-secondary) h s 95 );--sc-surface-danger-secondary-hover: var( --sc-color-danger-secondary-hover, var(--sc-color-danger-secondary-hover-computed, #ffe7e7) );--sc-color-danger-secondary-active-computed: hsl( from var(--sc-color-danger-secondary) h s 85 );--sc-surface-danger-secondary-active: var( --sc-color-danger-secondary-active, var(--sc-color-danger-secondary-active-computed, #ffb3b3) );--sc-content-danger: var( --sc-color-caution-text, hsl(from var(--sc-surface-danger-primary) h s 30) );--sc-content-danger-on-primary: #ffffff;--sc-border-danger: var(--sc-surface-danger-primary);--sc-color-disabled: hsl(from var(--sc-color-page-primary) h s calc(l * 0.5));--sc-surface-disabled: var(--sc-color-disabled, #d9d9d9);--sc-color-disabled-text: hsl( from var(--sc-color-text-primary) h s calc(l * 0.5) );--sc-content-disabled: var(--sc-color-disabled-text, #737373);--sc-content-disabled-on-disabled: var(--sc-color-disabled-text, #737373)}@supports(hanging-punctuation: first) and (font: -apple-system-body) and (-webkit-appearance: none){:root{--sc-color-background-hover-computed: hsl( from var(--sc-color-background) h s clamp(10%, calc(l + 5%), 95%) );--sc-color-background-active-computed: hsl( from var(--sc-color-background) h s clamp(5%, calc(l - 5%), 90%) );--sc-color-foreground-secondary-computed: hsl( from var(--sc-color-foreground) h s clamp(10%, calc(l + 5%), 90%) );--sc-color-brand-hover-computed: hsl( from var(--sc-color-brand) h s clamp(20%, calc(l + 5%), 95%) );--sc-color-brand-active-computed: hsl( from var(--sc-color-brand) h s clamp(10%, calc(l - 5%), 85%) );--sc-color-success-primary-hover-computed: hsl( from var(--sc-color-success) h s 30% );--sc-color-success-primary-active-computed: hsl( from var(--sc-color-success) h s 20% );--sc-color-success-secondary-computed: hsl( from var(--sc-color-success) h s 90% );--sc-color-success-secondary-hover-computed: hsl( from var(--sc-color-success-secondary) h s 95% );--sc-color-success-secondary-active-computed: hsl( from var(--sc-color-success-secondary) h s 85% );--sc-content-success: var( --sc-color-brand-text, hsl(from var(--sc-surface-success-primary) h s 30%) );--sc-color-caution-primary-hover-computed: hsl( from var(--sc-color-caution) h s 30% );--sc-color-caution-primary-active-computed: hsl( from var(--sc-color-caution) h s 20% );--sc-color-caution-secondary-computed: hsl( from var(--sc-color-caution) h s 90% );--sc-color-caution-secondary-hover-computed: hsl( from var(--sc-color-caution-secondary) h s 95% );--sc-color-caution-secondary-active-computed: hsl( from var(--sc-color-caution-secondary) h s 85% );--sc-content-caution: var( --sc-color-caution-text, hsl(from var(--sc-surface-caution-primary) h s 30%) );--sc-color-danger-primary-hover-computed: hsl( from var(--sc-color-danger) h s 30% );--sc-color-danger-primary-active-computed: hsl( from var(--sc-color-danger) h s 20% );--sc-color-danger-secondary-computed: hsl( from var(--sc-color-danger) h s 90% );--sc-color-danger-secondary-hover-computed: hsl( from var(--sc-color-danger-secondary) h s 95% );--sc-color-danger-secondary-active-computed: hsl( from var(--sc-color-danger-secondary) h s 85% );--sc-content-danger: var( --sc-color-caution-text, hsl(from var(--sc-surface-danger-primary) h s 30%) )}}.searchcraft-ad{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased}.searchcraft-ad-no-template{display:flex;flex-direction:column;font-size:.875rem}.searchcraft-ad-no-template>p{margin:0}.searchcraft-adm-ad{display:flex;flex-direction:column;justify-content:center;gap:16px}.searchcraft-search-result{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased}.searchcraft-search-result-no-template{display:flex;flex-direction:column;font-size:.875rem}.searchcraft-search-result-no-template>p{margin:0}.searchcraft-search-results{display:flex;flex-direction:column;justify-content:center;gap:16px}.searchcraft-search-results-empty-state{text-align:center}.searchcraft-search-results-no-results{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal);color:var(--sc-content-neutral-secondary);padding:24px 0;text-align:center}.searchcraft-search-results-no-results-message{margin:0}.searchcraft-button{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal);background:none;border:2px solid rgba(0,0,0,0);border-radius:var(--sc-border-radius);cursor:pointer;display:flex;gap:4px;padding:12px;position:relative}.searchcraft-button.searchcraft-button-disabled{cursor:not-allowed}.searchcraft-button-primary{background-color:var(--sc-surface-brand-primary);color:var(--sc-content-brand-on-primary);font-weight:var(--sc-font-bold)}.searchcraft-button-primary:hover{background-color:var(--sc-surface-brand-primary-hover)}.searchcraft-button-primary:focus{border-color:var(--sc-border-primary)}.searchcraft-button-primary:active{background-color:var(--sc-surface-brand-primary-active)}.searchcraft-button-primary.searchcraft-button-disabled,.searchcraft-button-primary.searchcraft-button-disabled:hover,.searchcraft-button-primary.searchcraft-button-disabled:focus,.searchcraft-button-primary.searchcraft-button-disabled:active{background-color:var(--sc-surface-disabled);border-color:rgba(0,0,0,0);color:var(--sc-content-disabled)}.searchcraft-button-tertiary{background-color:var(--sc-surface-neutral-primary);color:var(--sc-content-brand);font-weight:var(--sc-font-normal)}.searchcraft-button-tertiary:hover{background-color:var(--sc-surface-brand-secondary-hover)}.searchcraft-button-tertiary:focus{background-color:var(--sc-surface-neutral-light);border-color:var(--sc-border-primary)}.searchcraft-button-tertiary:active{background-color:var(--sc-surface-brand-secondary-active)}.searchcraft-button-tertiary.searchcraft-button-disabled,.searchcraft-button-tertiary.searchcraft-button-disabled:hover,.searchcraft-button-tertiary.searchcraft-button-disabled:focus,.searchcraft-button-tertiary.searchcraft-button-disabled:active{background-color:var(--sc-surface-neutral-light);border-color:rgba(0,0,0,0);color:var(--sc-content-disabled)}.searchcraft-button-icon{fill:none}.searchcraft-error-message{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-small-font-size);font-weight:var(--sc-font-normal);color:var(--sc-content-danger);margin:0}.searchcraft-facet-list{display:flex;flex-direction:column;gap:8px;width:100%}.searchcraft-facet-list-checkbox-label{align-items:center;color:var(--sc-content-neutral-primary);display:flex;font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal);gap:8px;position:relative;-webkit-font-smoothing:antialiased}.searchcraft-facet-list-checkbox-input-wrapper{position:relative}.searchcraft-facet-list-checkbox-input{align-items:center;appearance:none;background-color:var(--sc-surface-neutral-secondary);border:1px solid var(--sc-surface-disabled);border-radius:var(--sc-border-radius);cursor:pointer;display:flex;height:24px;justify-content:center;width:24px;margin:0}.searchcraft-facet-list-checkbox-input:focus{outline:2px solid var(--sc-surface-brand-primary);outline-offset:2px}.searchcraft-facet-list-checkbox-input:checked{background-color:var(--sc-surface-brand-primary);position:relative}.searchcraft-facet-list-checkbox-input:checked+.searchcraft-facet-list-checkbox-input-check-icon{display:flex}.searchcraft-facet-list-checkbox-input:checked+.searchcraft-facet-list-checkbox-input-dash-icon{display:flex}.searchcraft-facet-child-list{display:flex;flex-direction:column;gap:6px}.searchcraft-facet-child-list-checkbox-label{margin-left:24px}.searchcraft-facet-child-list-checkbox-label:first-child{margin-top:6px}.searchcraft-facet-list-checkbox-input-check-icon{display:none;height:16px;left:50%;position:absolute;margin-top:2px;top:50%;transform:translate(-50%, -50%);width:16px}.searchcraft-facet-list-checkbox-input-dash-icon{display:none;height:3px;left:50%;position:absolute;top:50%;transform:translate(-50%, -50%);width:14px}.searchcraft-facet-list-message{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-small-font-size);font-weight:var(--sc-font-normal);color:var(--sc-content-disabled);text-align:center}.searchcraft-facet-list-wrapper{display:flex;flex-direction:column;width:100%;min-height:0}.searchcraft-facet-list-content{display:flex;flex-direction:column;gap:8px;min-height:0;flex-shrink:0}.searchcraft-facet-list-view-more{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal);background:none;border:none;color:var(--sc-content-brand);cursor:pointer;padding:8px 0;text-align:left;text-decoration:underline}.searchcraft-facet-list-view-more:hover{color:var(--sc-surface-brand-primary-hover)}.searchcraft-facet-list-view-more:focus{outline:2px solid var(--sc-surface-brand-primary);outline-offset:2px}.searchcraft-filter-panel{display:flex;flex-direction:column;gap:16px}.searchcraft-filter-panel-section{display:flex;flex-direction:column;gap:8px}.searchcraft-filter-panel-label{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-small-font-size);font-weight:var(--sc-font-normal);font-weight:var(--sc-font-bold)}[data-toggle-facet-section]{cursor:pointer;display:flex;align-items:center;justify-content:space-between;width:100%;position:relative}[data-toggle-facet-section]::after{content:"›";display:inline-block;font-size:1.5em;line-height:1;margin-left:auto;flex-shrink:0;transition:transform .2s ease;transform-origin:center}[data-toggle-facet-section][data-facet-section-collapsed]::after{transform:rotate(90deg)}[data-toggle-facet-section][data-facet-section-expanded]::after{transform:rotate(-90deg)}@media(max-width: 767px){[data-toggle-filter-panel]{cursor:pointer;display:flex !important;align-items:center;justify-content:space-between;width:100%}[data-toggle-filter-panel]::after{content:"›";display:inline-block;font-size:1.5em;line-height:1;margin-left:auto;flex-shrink:0;transition:transform .2s ease;transform-origin:center}[data-toggle-filter-panel][data-filter-panel-collapsed]::after{transform:rotate(90deg)}[data-toggle-filter-panel][data-filter-panel-expanded]::after{transform:rotate(-90deg)}}@media(min-width: 768px){[data-toggle-filter-panel]{cursor:default}[data-toggle-filter-panel]::after{display:none}}:root{--sc-input-form-border-radius: var(--sc-border-radius);--sc-input-form-search-icon-size: 20px;--sc-input-form-clear-icon-size: 20px}.searchcraft-input-form-grid{display:grid;gap:4px 8px}.searchcraft-input-form-grid-button-left{grid-template-rows:repeat(3, auto);grid-template-columns:auto 1fr}.searchcraft-input-form-grid-button-left .searchcraft-input-form-button{grid-column:1/span 1;grid-row:2/span 1}.searchcraft-input-form-grid-button-left .searchcraft-input-form-label{grid-column:2/span 1;grid-row:1/span 1}.searchcraft-input-form-grid-button-left .searchcraft-input-form-error-message{grid-column:2/span 1;grid-row:3/span 1}.searchcraft-input-form-grid-button-left .searchcraft-input-form-input-wrapper{grid-column:2/span 1;grid-row:2/span 1}.searchcraft-input-form-grid-button-right{grid-template-rows:repeat(3, auto);grid-template-columns:1fr auto}.searchcraft-input-form-grid-button-right .searchcraft-input-form-button{grid-column:2/span 1;grid-row:2/span 1}.searchcraft-input-form-grid-button-right .searchcraft-input-form-label{grid-column:1/span 1;grid-row:1/span 1}.searchcraft-input-form-grid-button-right .searchcraft-input-form-error-message{grid-column:1/span 1;grid-row:3/span 1}.searchcraft-input-form-grid-button-right .searchcraft-input-form-input-wrapper{grid-column:1/span 1;grid-row:2/span 1}.searchcraft-input-form-grid-button-none{grid-template-rows:repeat(3, auto);grid-template-columns:auto}.searchcraft-input-form-grid-button-none .searchcraft-input-form-button{display:none}.searchcraft-input-form-grid-button-none .searchcraft-input-form-label{grid-column:1/span 1;grid-row:1/span 1}.searchcraft-input-form-grid-button-none .searchcraft-input-form-error-message{grid-column:1/span 1;grid-row:3/span 1}.searchcraft-input-form-grid-button-none .searchcraft-input-form-input-wrapper{grid-column:1/span 1;grid-row:2/span 1}.searchcraft-input-form-input-wrapper{display:flex;position:relative}.searchcraft-input-form-input{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal);background-color:var(--sc-surface-neutral-secondary);border-radius:var(--sc-input-form-border-radius);border:none;color:var(--sc-content-neutral-primary);flex:1;outline:none;padding:12px 44px}.searchcraft-input-form-input::placeholder{color:var(--sc-content-disabled)}.searchcraft-input-form-input:focus{outline:var(--sc-border-brand) solid 2px;outline-offset:-1px}.searchcraft-input-form-input.searchcraft-placeholder-hide-on-focus:focus::placeholder{opacity:0}.searchcraft-input-form-error{color:var(--sc-content-danger);outline:var(--sc-border-danger) solid 2px}.searchcraft-input-form-error:focus{outline:var(--sc-border-danger) solid 2px}.searchcraft-input-form-input-icon{align-items:center;bottom:0;display:flex;justify-content:center;left:0;position:absolute;pointer-events:none;top:0;width:44px}.searchcraft-input-form-input-search-icon{color:var(--sc-content-neutral-secondary);fill:none;height:var(--sc-input-form-search-icon-size);pointer-events:none;width:var(--sc-input-form-search-icon-size)}.searchcraft-input-form-clear-button{all:unset;align-items:center;bottom:0;border:none;cursor:pointer;display:flex;justify-content:center;outline:none;position:absolute;right:0;top:0;width:44px}.searchcraft-input-form-clear-icon{color:var(--sc-content-brand);fill:none;height:var(--sc-input-form-clear-icon-size);width:var(--sc-input-form-clear-icon-size)}.searchcraft-input-label{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-small-font-size);font-weight:var(--sc-font-normal);color:var(--sc-content-neutral-primary);font-weight:var(--sc-font-bold);margin-top:4px;margin-bottom:4px}:root{--sc-popover-button-border-radius: var(--sc-border-radius)}@media(min-width: 576px){:root{--sc-popover-button-border-radius: var(--sc-border-radius-lg)}}.searchcraft-popover-button{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal);cursor:pointer}.searchcraft-popover-button-skeuomorphic{appearance:none;background:none;border:none;color:var(--sc-content-neutral-primary);display:block;width:100%}.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-wrapper{border:1px solid var(--sc-border-neutral);border-radius:var(--sc-popover-button-border-radius);box-shadow:0 1px 1px rgb(from var(--sc-content-neutral-secondary) r g b/10%) inset,0 2px 4px rgb(from var(--sc-content-neutral-secondary) r g b/5%) inset;display:flex;gap:24px;height:40px;justify-content:space-between;line-height:1;padding:4px 5px 4px 10px;background:var(--sc-surface-neutral-primary)}@media(min-width: 576px){.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-wrapper{box-shadow:0 1px 1px rgb(from var(--sc-content-neutral-secondary) r g b/10%) inset,0 2px 2px rgb(from var(--sc-content-neutral-secondary) r g b/5%) inset,0 4px 4px rgb(from var(--sc-content-neutral-secondary) r g b/5%) inset;height:63px;padding:8px 10px 8px 16px}}.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-input{align-items:center;display:flex;gap:4px}@media(min-width: 576px){.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-input{gap:8px}}.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-keycaps{color:var(--sc-content-neutral-secondary);display:flex;gap:4px;font-size:20px;font-weight:500}@media(min-width: 576px){.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-keycaps{gap:8px}}.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-keycaps-keycap{border-radius:calc(var(--sc-popover-button-border-radius) - 3px);border-radius:calc(var(var(--sc-popover-button-border-radius)) - 3px);background-color:var(--sc-surface-neutral-primary);box-shadow:0 3px hsl(from var(--sc-surface-neutral-secondary) h s calc(l - 5)),0 1px 2px rgb(from var(--sc-content-neutral-secondary) r g b/10%),0 6px 4px rgb(from var(--sc-content-neutral-secondary) r g b/5%);height:calc(100% - 2px);position:relative}@media(min-width: 576px){.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-keycaps-keycap{border-radius:calc(var(--sc-popover-button-border-radius) - 8px);border-radius:calc(var(var(--sc-popover-button-border-radius)) - 8px);box-shadow:0 4px hsl(from var(--sc-surface-neutral-secondary) h s calc(l - 5)),0 1px 2px rgb(from var(--sc-content-neutral-secondary) r g b/15%),0 6px 1px rgb(from var(--sc-content-neutral-secondary) r g b/20%),0 7px 2px rgb(from var(--sc-content-neutral-secondary) r g b/15%),0 9px 4px rgb(from var(--sc-content-neutral-secondary) r g b/10%),0 13px 8px rgb(from var(--sc-content-neutral-secondary) r g b/5%);height:calc(100% - 5px)}}.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-keycaps-keycap::before,.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-keycaps-keycap::after{content:"";display:block}.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-keycaps-keycap::before{border-radius:calc(var(--sc-popover-button-border-radius) - 4px);border-radius:calc(var(var(--sc-popover-button-border-radius)) - 4px);background:linear-gradient(340deg, rgb(from var(--sc-surface-neutral-secondary) r g b/2%) 0%, var(--sc-surface-neutral-secondary) 100%);inset:2px;position:absolute}@media(min-width: 576px){.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-keycaps-keycap::before{border-radius:calc(var(--sc-popover-button-border-radius) - 12px);border-radius:calc(var(var(--sc-popover-button-border-radius)) - 12px);inset:4px}}.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-keycaps-keycap::after{aspect-ratio:1/1;height:100%}.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-keycaps-keycap>span{display:flex;line-height:1;left:50%;margin-top:2%;position:absolute;top:50%;transform:translate(-50%, -50%)}.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-input-search-icon{height:60%;width:auto}@media(min-width: 576px){.searchcraft-popover-button-skeuomorphic .searchcraft-popover-button-input-search-icon{height:50%}}:root{--sc-popover-button-magnifying-glass-icon-size: 20px;--sc-popover-button-magnifying-glass-icon-color: var(--sc-content-neutral-secondary);--sc-popover-button-magnifying-glass-icon-color-hover: var(--sc-content-brand);--sc-popover-button-magnifying-glass-padding: 12px}@media(min-width: 576px){:root{--sc-popover-button-magnifying-glass-padding: 16px}}.searchcraft-popover-button-magnifying-glass{appearance:none;background:none;border:none;color:var(--sc-content-neutral-primary);cursor:pointer;display:flex;align-items:center;justify-content:center}.searchcraft-popover-button-magnifying-glass .searchcraft-popover-button-input{display:flex;align-items:center;justify-content:center;padding:var(--sc-popover-button-magnifying-glass-padding)}.searchcraft-popover-button-magnifying-glass .searchcraft-popover-button-input-search-icon{color:var(--sc-popover-button-magnifying-glass-icon-color);display:block;fill:none;stroke:currentcolor;stroke-width:1.5;width:var(--sc-popover-button-magnifying-glass-icon-size);height:var(--sc-popover-button-magnifying-glass-icon-size);transition:color .2s ease}.searchcraft-popover-button-magnifying-glass:hover .searchcraft-popover-button-input-search-icon{color:var(--sc-popover-button-magnifying-glass-icon-color-hover)}:root{--sc-popover-list-view-height: 600px;--sc-popover-modal-max-width: 800px}.searchcraft-popover-form{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal);display:flex;flex:1;flex-direction:column}.searchcraft-popover-form searchcraft-input-form,.searchcraft-popover-form searchcraft-popover-footer{width:100%}.searchcraft-popover-form.searchcraft-popover-form-active .searchcraft-popover-form-input{padding-bottom:1px}.searchcraft-popover-form searchcraft-popover-list-view{flex-shrink:1;height:100%;min-height:0;overflow:auto;padding:0 24px}.searchcraft-popover-form searchcraft-results-summary,.searchcraft-popover-form searchcraft-summary-box{margin-bottom:16px}.searchcraft-popover-form-input{display:flex;flex-direction:row;gap:12px}.searchcraft-popover-form-input .searchcraft-input-form-input{background-color:var(--sc-surface-neutral-primary);border:1px solid var(--sc-border-neutral);border-radius:var(--sc-border-radius-lg);width:0}.searchcraft-popover-form-cancel-button{background:none;border:none;cursor:pointer;font-size:14px}.searchcraft-popover-form-no-results{color:var(--sc-content-neutral-secondary);padding:24px 0;text-align:center}.searchcraft-popover-form-no-results-message{margin:0}.searchcraft-popover-form-modal-input,.searchcraft-popover-form-fullscreen-input{padding:24px}.searchcraft-popover-form-modal-popover-list-view,.searchcraft-popover-form-fullscreen-popover-list-view{flex-grow:1;flex-shrink:1;min-height:0;overflow:auto;padding:0 24px}.searchcraft-popover-form-modal-popover-list-view searchcraft-results-summary,.searchcraft-popover-form-modal-popover-list-view searchcraft-summary-box,.searchcraft-popover-form-fullscreen-popover-list-view searchcraft-results-summary,.searchcraft-popover-form-fullscreen-popover-list-view searchcraft-summary-box{padding:20px 0;margin-bottom:0;border-bottom:1px solid var(--sc-border-neutral-subtle)}.searchcraft-popover-form-modal-popover-list-view searchcraft-popover-list-view,.searchcraft-popover-form-fullscreen-popover-list-view searchcraft-popover-list-view{overflow:visible;height:auto}.searchcraft-popover-form-inline{border:1px solid rgba(0,0,0,0);border-radius:var(--sc-border-radius-xl);padding:12px;position:relative}.searchcraft-popover-form-inline.searchcraft-popover-form-active{background-color:var(--sc-surface-neutral-primary);border:1px solid var(--sc-border-neutral);border-bottom:none;border-bottom-left-radius:0;border-bottom-right-radius:0;padding-bottom:1px}.searchcraft-popover-form-inline searchcraft-popover-list-view{padding:0 12px}.searchcraft-popover-form-inline .searchcraft-input-form-input,.searchcraft-popover-form-inline .searchcraft-popover-list-item-link,.searchcraft-popover-form-inline .searchcraft-adm-ad-link{border-radius:calc(--sc-border-radius-xl - 12px);border-radius:calc(var(--sc-border-radius-xl) - 12px)}.searchcraft-popover-form-inline-wrapper{background-color:var(--sc-surface-neutral-primary);border:1px solid var(--sc-border-neutral);border-top:none;border-bottom-left-radius:var(--sc-border-radius-xl);border-bottom-right-radius:var(--sc-border-radius-xl);display:flex;flex-direction:column;left:-1px;max-height:var(--sc-popover-list-view-height);overflow:hidden;position:absolute;right:-1px;top:100%}.searchcraft-popover-form-inline-wrapper searchcraft-results-summary,.searchcraft-popover-form-inline-wrapper searchcraft-summary-box{padding:16px 12px;margin-bottom:0;border-bottom:1px solid var(--sc-border-neutral-subtle)}.searchcraft-popover-form-inline-scroll-area{flex:1;min-height:0;overflow:auto;padding:0 12px}.searchcraft-popover-form-inline-scroll-area searchcraft-popover-list-view{overflow:visible;height:auto;padding:0}.searchcraft-popover-form-modal{align-items:center;display:flex;inset:0;position:fixed;z-index:1000}.searchcraft-popover-form-modal .searchcraft-input-form-input,.searchcraft-popover-form-modal .searchcraft-popover-list-item-link,.searchcraft-popover-form-modal .searchcraft-adm-ad-link{border-radius:calc(--sc-border-radius-2xl - 20px);border-radius:calc(var(--sc-border-radius-2xl) - 20px)}.searchcraft-popover-form-modal-backdrop{background-color:rgb(from var(--sc-content-neutral-primary) r g b/50%);display:none;inset:0;position:fixed}@media(min-width: 576px){.searchcraft-popover-form-modal-backdrop{display:block}}.searchcraft-popover-form-modal-wrapper{background-color:var(--sc-surface-neutral-primary);box-shadow:1px 2px rgb(from var(--sc-content-neutral-primary) r g b/7%),0 2px 4px rgb(from var(--sc-content-neutral-primary) r g b/7%),0 4px 8px rgb(from var(--sc-content-neutral-primary) r g b/7%),0 8px 16px rgb(from var(--sc-content-neutral-primary) r g b/7%),0 16px 32px rgb(from var(--sc-content-neutral-primary) r g b/7%),0 32px 64px rgb(from var(--sc-content-neutral-primary) r g b/7%);display:flex;flex-direction:column;inset:0;max-width:var(--sc-popover-modal-max-width);overflow:hidden;position:absolute;width:100%;z-index:1001}@media(min-width: 576px){.searchcraft-popover-form-modal-wrapper{border-radius:var(--sc-border-radius-2xl);inset:0;margin-top:100px;max-height:var(--sc-popover-list-view-height);max-width:var(--sc-popover-modal-max-width);position:relative}}.searchcraft-popover-form-modal-cancel-button{border-radius:calc(--sc-border-radius-2xl - 20px);border-radius:calc(var(--sc-border-radius-2xl) - 20px);padding:8px}@media(min-width: 576px){.searchcraft-popover-form-modal-cancel-button{padding:8px 12px}}.searchcraft-popover-form-fullscreen{background-color:var(--sc-surface-neutral-primary);display:flex;flex-direction:column;justify-content:space-between;inset:0;position:fixed;z-index:1000}.searchcraft-popover-form-fullscreen .searchcraft-popover-list-item-link,.searchcraft-popover-form-fullscreen .searchcraft-adm-ad-link{border-radius:var(--sc-border-radius-lg)}.searchcraft-popover-form-fullscreen-cancel-button{border-radius:var(--sc-border-radius-lg);padding:8px}@media(min-width: 576px){.searchcraft-popover-form-fullscreen-cancel-button{padding:8px 12px}}.searchcraft-popover-footer{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:1rem;align-items:center;background-color:var(--sc-surface-neutral-secondary);display:flex;gap:.5rem;justify-content:space-between;line-height:1;padding:1.25rem 1.5rem}@media(min-width: 576px){.searchcraft-popover-footer{padding:1.25rem 2rem}}.searchcraft-popover-footer-results-info{margin:0}.searchcraft-popover-footer-results-found{display:none}@media(min-width: 576px){.searchcraft-popover-footer-results-found{display:inline}}.searchcraft-popover-footer-link{align-items:center;color:var(--sc-content-neutral-primary);display:flex;font-weight:var(--sc-font-bold);text-decoration:none;white-space:nowrap}.searchcraft-popover-footer-link-prefix{display:none;font-weight:var(--sc-font-normal)}@media(min-width: 576px){.searchcraft-popover-footer-link-prefix{display:inline}}.searchcraft-popover-footer-results{align-items:center;display:flex;gap:.5rem}.searchcraft-popover-footer-view-all{align-items:center;border-radius:999px;border:.0625rem solid var(--sc-border-neutral-strong);color:var(--sc-content-neutral-primary);display:inline-flex;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-bold);gap:.375rem;line-height:1;padding:.375rem .625rem;text-decoration:none}.searchcraft-popover-footer-view-all-shortcut{display:none}@media(min-width: 576px){.searchcraft-popover-footer-view-all-shortcut{display:inline-flex;gap:.125rem}.searchcraft-popover-footer-view-all-shortcut kbd{align-items:center;border-radius:.25rem;border:1px solid var(--sc-content-neutral-primary);display:flex;font-family:Helvetica,Arial,sans-serif;font-size:.75rem;font-style:normal;font-weight:400;height:1.5rem;justify-content:center;line-height:1rem;width:1.5rem}}:root{--sc-popover-list-item-image-fit: contain}.searchcraft-popover-list-item{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;border-bottom:1px solid var(--sc-border-neutral);padding:12px 0}searchcraft-popover-list-item:last-child .searchcraft-popover-list-item{border-bottom:none}.searchcraft-popover-list-item-link{align-items:flex-start;color:var(--sc-content-neutral-primary);display:flex;gap:24px;padding:12px 0;text-decoration:none}.searchcraft-popover-list-item-link:focus,.searchcraft-popover-list-item-link:active{background-color:var(--sc-surface-neutral-primary-active)}.searchcraft-popover-list-item-link:hover{background-color:var(--sc-surface-neutral-primary-hover)}.searchcraft-popover-list-item-image-wrapper{align-items:center;aspect-ratio:16/9;display:flex;flex-shrink:0;justify-content:center;width:160px}.searchcraft-popover-list-item-image{height:100%;object-fit:var(--sc-popover-list-item-image-fit);width:100%}.searchcraft-popover-list-item-content{display:flex;flex-direction:column;flex-grow:1;gap:4px;justify-content:center}.searchcraft-popover-list-item-content-title,.searchcraft-popover-list-item-content-subtitle{display:-webkit-box;line-clamp:2;margin:0;overflow:hidden;-webkit-line-clamp:2;-webkit-box-orient:vertical}.searchcraft-popover-list-item-content-title{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-heading-5-font-size);font-weight:var(--sc-font-bold)}.searchcraft-popover-list-item-content-subtitle{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal)}.searchcraft-popover-list-view{display:flex;flex-direction:column}.searchcraft-results-info{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal);color:var(--sc-content-primary);margin:0}.searchcraft-slider{align-items:center;display:flex;flex-direction:column;gap:10px;width:100%;margin-top:4px}.searchcraft-slider-range{align-items:center;background-color:var(--sc-surface-disabled);border-radius:999px;display:flex;position:relative;height:4px;width:100%}.searchcraft-slider-range::-webkit-slider-runnable-track{pointer-events:none}.searchcraft-slider-range .searchcraft-slider-active-range{background-color:var(--sc-surface-brand-primary);border-radius:2px;height:4px;position:absolute;top:50%;transform:translateY(-50%);z-index:0}.searchcraft-slider-range .searchcraft-slider-active-range::-webkit-slider-runnable-track{pointer-events:none}.searchcraft-slider-range .searchcraft-slider-active-range::-moz-range-track{pointer-events:none}.searchcraft-slider-range .searchcraft-slider-input{appearance:none;background:rgba(0,0,0,0);border-radius:2px;height:4px;margin:0;outline:none;pointer-events:none;position:absolute;width:100%;-webkit-appearance:none}.searchcraft-slider-range .searchcraft-slider-input::-webkit-slider-thumb{background-color:var(--sc-surface-neutral-light);border-radius:50%;border:1px solid var(--sc-border-neutral);cursor:pointer;height:18px;pointer-events:all;width:18px;-webkit-appearance:none}.searchcraft-slider-range .searchcraft-slider-input::-moz-range-thumb{background-color:var(--sc-surface-neutral-light);border-radius:50%;border:1px solid var(--sc-border-neutral);cursor:pointer;height:18px;pointer-events:all;width:18px}.searchcraft-slider-range .searchcraft-slider-input:focus::-webkit-slider-thumb{outline:2px solid var(--sc-surface-brand-primary)}.searchcraft-slider-range .searchcraft-slider-input:focus::-moz-range-thumb{outline:2px solid var(--sc-surface-brand-primary)}.searchcraft-slider-label{color:var(--sc-content-primary);display:flex;font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-small-font-size);font-weight:var(--sc-font-normal);justify-content:space-between;margin-top:4px;width:100%}.searchcraft-slider-start-label,.searchcraft-slider-end-label{min-width:30px;text-align:center}.searchcraft-toggle-button{align-items:flex-start;display:flex;gap:10px;justify-content:space-between}.searchcraft-toggle-button-label{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal);color:var(--sc-content-neutral-primary);margin:0}.searchcraft-toggle-button-sub-label{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-small-font-size);font-weight:var(--sc-font-normal);color:var(--sc-content-neutral-secondary);margin:0}.searchcraft-toggle-button-background{background:var(--sc-surface-disabled);border-radius:var(--sc-border-radius-full);border:none;cursor:pointer;flex-shrink:0;height:26px;position:relative;transition:background-color .2s;width:44px}.searchcraft-toggle-button-handle{background:var(--sc-surface-neutral-light);border-radius:50%;height:18px;left:4px;position:absolute;top:calc(50% - 9px);transition:transform .3s ease;width:18px}.searchcraft-toggle-button-active .searchcraft-toggle-button-background{background:var(--sc-surface-brand-primary);box-shadow:0px 0px 0px 1px rgba(0,0,0,.05)}.searchcraft-toggle-button-active .searchcraft-toggle-button-handle{transform:translateX(16px)}.searchcraft-pagination{display:inline-grid;gap:16px;grid-template-columns:repeat(3, auto);grid-template-rows:1fr}.searchcraft-pagination-list{border:1px solid var(--sc-border-neutral);border-radius:var(--sc-border-radius);display:flex;list-style-type:none;margin:0;overflow:hidden;padding:0;width:auto}.searchcraft-pagination-list li{border-right:1px solid var(--sc-border-neutral);height:100%;min-height:44px;width:44px}.searchcraft-pagination-list li:last-child{border-right:none}.searchcraft-pagination-item{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal);align-items:center;background-color:var(--sc-surface-neutral-primary);border:none;display:flex;height:100%;justify-content:center;width:100%}.searchcraft-pagination-item-active{background-color:var(--sc-surface-brand-secondary);font-weight:var(--sc-font-bold)}.searchcraft-pagination-control{border:1px solid var(--sc-border-neutral);border-radius:var(--sc-border-radius)}.searchcraft-pagination-range{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal);align-items:center;display:flex}.searchcraft-select{display:flex;flex-direction:column;gap:4px}.searchcraft-select-label{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-small-font-size);font-weight:var(--sc-font-normal);font-weight:var(--sc-font-bold)}.searchcraft-select-input-wrapper{position:relative}.searchcraft-select-input{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal);appearance:none;background-color:var(--sc-surface-neutral-secondary);border:2px solid rgba(0,0,0,0);border-radius:var(--sc-border-radius);cursor:pointer;height:44px;padding:0 44px 0 16px;width:100%}.searchcraft-select-input:hover{background-color:var(--sc-surface-neutral-secondary-hover)}.searchcraft-select-input:active{background-color:var(--sc-surface-neutral-secondary-active)}.searchcraft-select-input:focus{border-color:var(--sc-border-brand);outline:none}.searchcraft-select-input-icon{fill:none;pointer-events:none;position:absolute;right:12px;top:50%;transform:translateY(-50%)}.searchcraft-select-caption{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-small-font-size);font-weight:var(--sc-font-normal)}.searchcraft-search-results-per-page{display:flex}.searchcraft-search-results-per-page-select{align-items:center;display:flex;gap:12px}.searchcraft-search-results-per-page-select-label{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal)}.searchcraft-search-results-per-page-select-input{min-width:120px}.searchcraft-results-summary{padding:20px;border-radius:var(--sc-border-radius);background-color:var(--sc-surface-neutral-secondary);position:relative;min-height:200px;color:var(--sc-content-neutral-primary);font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal)}.searchcraft-results-summary h1,.searchcraft-results-summary h2,.searchcraft-results-summary h3,.searchcraft-results-summary h4,.searchcraft-results-summary h5{padding-top:10px;padding-bottom:10px}.searchcraft-results-summary p{padding-bottom:10px}.searchcraft-results-summary img{max-width:200px}.searchcraft-results-summary ol,.searchcraft-results-summary ul{padding-left:1em;padding-bottom:10px}.searchcraft-results-summary a{color:var(--sc-content-brand)}.searchcraft-summary-box{padding:20px;border-radius:var(--sc-border-radius);background-color:var(--sc-surface-neutral-secondary);position:relative;min-height:200px;color:var(--sc-content-neutral-primary);font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-font-size);font-weight:var(--sc-font-normal)}.searchcraft-summary-box h1,.searchcraft-summary-box h2,.searchcraft-summary-box h3,.searchcraft-summary-box h4,.searchcraft-summary-box h5{padding-top:10px;padding-bottom:10px}.searchcraft-summary-box p{padding-bottom:10px}.searchcraft-summary-box img{max-width:200px}.searchcraft-summary-box ol,.searchcraft-summary-box ul{padding-left:1em;padding-bottom:10px}.searchcraft-summary-box a{color:var(--sc-content-brand)}.searchcraft-loading{display:flex;flex-direction:column;align-items:center;gap:12px;position:absolute;top:50%;left:50%;transform:translateY(-50%) translateX(-50%)}.searchcraft-loading-dots{display:flex;gap:8px;align-items:center;height:40px}.searchcraft-loading-dots>div{width:10px;height:10px;border-radius:50%;background-color:var(--sc-surface-brand-primary);animation:searchcraft-jump .6s ease-in-out infinite}.searchcraft-loading-dots .searchcraft-loading-dot-2{animation-delay:.15s}.searchcraft-loading-dots .searchcraft-loading-dot-3{animation-delay:.3s}.searchcraft-loading-label{font-family:var(--sc-font-family);line-height:1.25;-webkit-font-smoothing:antialiased;font-size:var(--sc-body-small-font-size);font-weight:var(--sc-font-normal);letter-spacing:2px;color:#828282;margin:0}@keyframes searchcraft-jump{0%{transform:translateY(0);animation-timing-function:cubic-bezier(0.33, 1, 0.68, 1)}50%{transform:translateY(-20px);animation-timing-function:cubic-bezier(0.32, 0, 0.67, 0)}100%{transform:translateY(0)}}/*# sourceMappingURL=hologram.css.map */
 `;
 
 /**

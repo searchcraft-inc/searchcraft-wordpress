@@ -1,8 +1,7 @@
-import { p as proxyCustomElement, H, h, t as transformTag } from './index2.js?scv=0.15.1';
-import { r as registry } from './CoreInstanceRegistry.js?scv=0.15.1';
-import { d as defineCustomElement$4 } from './searchcraft-ad2.js?scv=0.15.1';
-import { d as defineCustomElement$3 } from './searchcraft-error-message2.js?scv=0.15.1';
-import { d as defineCustomElement$2 } from './searchcraft-search-result2.js?scv=0.15.1';
+import { p as proxyCustomElement, H, h, t as transformTag } from './index2.js?scv=0.16.0';
+import { r as registry } from './CoreInstanceRegistry.js?scv=0.16.0';
+import { d as defineCustomElement$3 } from './searchcraft-ad2.js?scv=0.16.0';
+import { d as defineCustomElement$2 } from './searchcraft-search-result2.js?scv=0.16.0';
 
 const SearchcraftSearchResults$1 = /*@__PURE__*/ proxyCustomElement(class SearchcraftSearchResults extends H {
     constructor(registerHost) {
@@ -21,6 +20,8 @@ const SearchcraftSearchResults$1 = /*@__PURE__*/ proxyCustomElement(class Search
     initialQuery;
     /**
      * A callback function responsible for rendering a result. Passed to `searchcraft-search-result`.
+     * Pass URLs from the result through the `safeUrl` helper before placing them in an `href` or `src`.
+     * Never place result values in event handler attributes such as `onclick`, or in `style`.
      */
     template;
     adClientResponseItems = [];
@@ -30,6 +31,11 @@ const SearchcraftSearchResults$1 = /*@__PURE__*/ proxyCustomElement(class Search
     searchResultsPage;
     searchResultsPerPage;
     searchTerm = '';
+    /**
+     * The search term of the most recent search request, used to tell a
+     * completed search apart from a term that has not been searched yet.
+     */
+    completedSearchTerm;
     unsubscribe;
     cleanupCore;
     onCoreAvailable(core) {
@@ -55,12 +61,29 @@ const SearchcraftSearchResults$1 = /*@__PURE__*/ proxyCustomElement(class Search
         this.searchResultsPage = state.searchResultsPage;
         this.searchResultsPerPage = state.searchResultsPerPage;
         this.searchTerm = state.searchTerm;
+        const requestProperties = state.searchClientRequestProperties;
+        this.completedSearchTerm =
+            requestProperties && typeof requestProperties === 'object'
+                ? requestProperties.searchTerm
+                : undefined;
+    }
+    /**
+     * Whether the search for the current search term has completed with no
+     * results. False while the term is empty, while a search is in progress, and
+     * after the term changes until its search completes.
+     */
+    get hasNoResultsToShow() {
+        const searchTerm = this.searchTerm.trim();
+        return (!!searchTerm &&
+            !this.isSearchInProgress &&
+            (this.searchClientResponseItems || []).length === 0 &&
+            this.completedSearchTerm?.trim() === searchTerm);
     }
     renderEmptyState() {
         return (h("div", { class: 'searchcraft-search-results-empty-state' }, h("slot", { name: 'empty-search' })));
     }
     renderNoResultsFoundState() {
-        return (h("div", { class: 'searchcraft-search-results' }, h("div", { class: 'searchcraft-search-results-error-message' }, h("searchcraft-error-message", null, "No search results found for \"", this.searchTerm, "\" query."))));
+        return (h("div", { class: 'searchcraft-search-results-no-results' }, h("p", { class: 'searchcraft-search-results-no-results-message' }, "No results found for \"", this.searchTerm.trim(), "\".")));
     }
     renderWithADMAds() {
         const items = this.searchClientResponseItems || [];
@@ -131,13 +154,11 @@ const SearchcraftSearchResults$1 = /*@__PURE__*/ proxyCustomElement(class Search
     }
     render() {
         const searchClientResponseItems = this.searchClientResponseItems || [];
+        if (this.hasNoResultsToShow) {
+            return this.renderNoResultsFoundState();
+        }
         if (searchClientResponseItems.length === 0 && !this.isSearchInProgress) {
             return this.renderEmptyState();
-        }
-        if (this.searchTerm.length > 0 &&
-            searchClientResponseItems.length === 0 &&
-            !this.isSearchInProgress) {
-            return this.renderNoResultsFoundState();
         }
         if (this.config?.customAdConfig) {
             return this.renderWithCustomAds();
@@ -160,13 +181,14 @@ const SearchcraftSearchResults$1 = /*@__PURE__*/ proxyCustomElement(class Search
         "searchClientResponseItems": [32],
         "searchResultsPage": [32],
         "searchResultsPerPage": [32],
-        "searchTerm": [32]
+        "searchTerm": [32],
+        "completedSearchTerm": [32]
     }]);
 function defineCustomElement$1() {
     if (typeof customElements === "undefined") {
         return;
     }
-    const components = ["searchcraft-search-results", "searchcraft-ad", "searchcraft-error-message", "searchcraft-search-result"];
+    const components = ["searchcraft-search-results", "searchcraft-ad", "searchcraft-search-result"];
     components.forEach(tagName => { switch (tagName) {
         case "searchcraft-search-results":
             if (!customElements.get(transformTag(tagName))) {
@@ -174,11 +196,6 @@ function defineCustomElement$1() {
             }
             break;
         case "searchcraft-ad":
-            if (!customElements.get(transformTag(tagName))) {
-                defineCustomElement$4();
-            }
-            break;
-        case "searchcraft-error-message":
             if (!customElements.get(transformTag(tagName))) {
                 defineCustomElement$3();
             }

@@ -82,6 +82,7 @@ export declare class SearchcraftInputForm {
     private core?;
     private unsubscribe?;
     private cleanupCore?;
+    private inputElement?;
     init(): void;
     onCoreChange(): void;
     onValueChange(newValue: string | undefined): void;
@@ -92,6 +93,12 @@ export declare class SearchcraftInputForm {
     private performSearch;
     handleClearInput: () => void;
     handleFormSubmit: (event: Event) => Promise<void>;
+    /**
+     * Closes the on-screen keyboard after a search is submitted on touch devices,
+     * so it no longer covers the results. Devices with a mouse keep focus in the
+     * input, so the user can keep typing and use the arrow keys.
+     */
+    private dismissOnScreenKeyboard;
     render(): any;
 }
 //# sourceMappingURL=searchcraft-input-form.d.ts.map

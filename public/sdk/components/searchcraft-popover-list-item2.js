@@ -1,7 +1,7 @@
-import { p as proxyCustomElement, H, h, t as transformTag } from './index2.js?scv=0.15.1';
-import { r as registry } from './CoreInstanceRegistry.js?scv=0.15.1';
-import { g as getDocumentValueFromSearchResultMapping } from './units.js?scv=0.15.1';
-import { h as html } from './html.js?scv=0.15.1';
+import { p as proxyCustomElement, H, h, t as transformTag } from './index2.js?scv=0.16.0';
+import { r as registry } from './CoreInstanceRegistry.js?scv=0.16.0';
+import { g as getDocumentValueFromSearchResultMapping } from './units.js?scv=0.16.0';
+import { s as safeUrl, h as html } from './safeUrl.js?scv=0.16.0';
 
 const SearchcraftPopoverListItem = /*@__PURE__*/ proxyCustomElement(class SearchcraftPopoverListItem extends H {
     constructor(registerHost) {
@@ -56,6 +56,7 @@ const SearchcraftPopoverListItem = /*@__PURE__*/ proxyCustomElement(class Search
             try {
                 this.templateHtml = this.template(this.item.document, this.index, {
                     html,
+                    safeUrl,
                     source_index: this.item.source_index,
                 });
             }
@@ -103,7 +104,7 @@ const SearchcraftPopoverListItem = /*@__PURE__*/ proxyCustomElement(class Search
         if (this.template && typeof this.templateHtml === 'string') {
             return (h("div", { class: 'searchcraft-popover-list-item searchcraft-popover-list-item-template', innerHTML: this.templateHtml, onClick: this.handleTemplateClick, onKeyDown: this.handleKeyDown }));
         }
-        return (h("div", { class: 'searchcraft-popover-list-item' }, h("a", { class: 'searchcraft-popover-list-item-link', href: this.href, onClick: this.handleLinkClick.bind(this) }, this.imageSource && (h("div", { class: 'searchcraft-popover-list-item-image-wrapper' }, h("img", { alt: this.imageAlt, src: this.imageSource, class: 'searchcraft-popover-list-item-image' }))), h("div", { class: 'searchcraft-popover-list-item-content' }, this.title && (h("p", { class: 'searchcraft-popover-list-item-content-title' }, this.title)), this.subtitle && (h("p", { class: 'searchcraft-popover-list-item-content-subtitle' }, this.subtitle))))));
+        return (h("div", { class: 'searchcraft-popover-list-item' }, h("a", { class: 'searchcraft-popover-list-item-link', href: this.href ? safeUrl(this.href) : undefined, onClick: this.handleLinkClick.bind(this) }, this.imageSource && (h("div", { class: 'searchcraft-popover-list-item-image-wrapper' }, h("img", { alt: this.imageAlt, src: this.imageSource, class: 'searchcraft-popover-list-item-image' }))), h("div", { class: 'searchcraft-popover-list-item-content' }, this.title && (h("p", { class: 'searchcraft-popover-list-item-content-title' }, this.title)), this.subtitle && (h("p", { class: 'searchcraft-popover-list-item-content-subtitle' }, this.subtitle))))));
     }
     static get watchers() { return {
         "item": ["updateRenderedValues"],

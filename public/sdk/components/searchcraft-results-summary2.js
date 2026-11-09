@@ -1,8 +1,8 @@
-import { p as proxyCustomElement, H, h, t as transformTag } from './index2.js?scv=0.15.1';
-import { r as registry } from './CoreInstanceRegistry.js?scv=0.15.1';
-import { p as purify } from './purify.es.js?scv=0.15.1';
-import { m as marked } from './marked.esm.js?scv=0.15.1';
-import { d as defineCustomElement$1 } from './searchcraft-loading2.js?scv=0.15.1';
+import { p as proxyCustomElement, H, h, t as transformTag } from './index2.js?scv=0.16.0';
+import { r as registry } from './CoreInstanceRegistry.js?scv=0.16.0';
+import { p as purify } from './purify.es.js?scv=0.16.0';
+import { m as marked } from './marked.esm.js?scv=0.16.0';
+import { d as defineCustomElement$1 } from './searchcraft-loading2.js?scv=0.16.0';
 
 const SearchcraftResultsSummary = /*@__PURE__*/ proxyCustomElement(class SearchcraftResultsSummary extends H {
     constructor(registerHost) {

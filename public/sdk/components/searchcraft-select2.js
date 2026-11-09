@@ -1,4 +1,4 @@
-import { p as proxyCustomElement, H, c as createEvent, h, t as transformTag } from './index2.js?scv=0.15.1';
+import { p as proxyCustomElement, H, c as createEvent, h, t as transformTag } from './index2.js?scv=0.16.0';
 
 const SearchcraftSelect = /*@__PURE__*/ proxyCustomElement(class SearchcraftSelect extends H {
     constructor(registerHost) {
