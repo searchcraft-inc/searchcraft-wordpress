@@ -82,6 +82,7 @@ Searchcraft Cloud customers may also reach out via our Discord server for assist
 * Bugfix - Index schema updates (taxonomy, custom field and post type changes) no longer send the index's `ai_enabled` setting, which the ingest key isn't allowed to change. Searchcraft rejected these updates, so the schema changes weren't applied.
 * Improvement - The modal and inline search experiences now follow the Display Primary Category, Display Author Name, Display Post Date and Image Alignment settings, and can use their own result template callback under Advanced Customization.
 * Improvement - The Content Type filter and the per-result content type CSS classes now read the `post_type` field. The legacy `type` field is removed from the index schema. Custom result templates that read `item.type` should switch to `item.post_type`.
+* Searchcraft PHP client upgraded to 0.8.2. Error messages from Searchcraft now show the engine's own message, without the "API request failed:" prefix.
 
 = 1.5.1 =
 * Performance - Searchcraft stylesheets are now loaded as non-render-blocking resources using the browser preload API, improving page load performance.
