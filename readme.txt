@@ -83,6 +83,7 @@ Searchcraft Cloud customers may also reach out via our Discord server for assist
 * Improvement - The modal and inline search experiences now follow the Display Primary Category, Display Author Name, Display Post Date and Image Alignment settings, and can use their own result template callback under Advanced Customization.
 * Improvement - The Content Type filter and the per-result content type CSS classes now read the `post_type` field. The legacy `type` field is removed from the index schema. Custom result templates that read `item.type` should switch to `item.post_type`.
 * Searchcraft PHP client upgraded to 0.8.2. Error messages from Searchcraft now show the engine's own message, without the "API request failed:" prefix.
+* Security - Updated Guzzle to 7.16.1 and guzzlehttp/psr7 to 2.13.2, the HTTP libraries the plugin uses to talk to Searchcraft, to fix published security advisories.
 
 = 1.5.1 =
 * Performance - Searchcraft stylesheets are now loaded as non-render-blocking resources using the browser preload API, improving page load performance.
