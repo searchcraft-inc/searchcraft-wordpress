@@ -9,7 +9,7 @@
 	"require": {
 		"cjstroud/classnames-php": "^1.0",
 		"searchcraft/searchcraft-php": "^0.8.2",
-		"guzzlehttp/guzzle": "^7.10.0",
+		"guzzlehttp/guzzle": "^7.16.1",
 		"http-interop/http-factory-guzzle": "^1.0"
 	},
 	"config": {
