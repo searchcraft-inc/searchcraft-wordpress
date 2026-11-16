@@ -115,6 +115,9 @@ if ( ! is_array( $filter_panel_order ) || empty( $filter_panel_order ) ) {
 								<p class="description">
 									Choose how you want search to be presented to your users. The full experience provides deep filtering controls, while Modal and Inline offer a compact popover experience.
 								</p>
+								<p class="description">
+									To choose where search appears, add the <code>[searchcraft]</code> shortcode to a post, page or widget. On pages with the shortcode, search appears where the shortcode is, instead of its automatic location or the elements set in the container element ID settings under Advanced Customization. The full experience needs a wide area, such as the main content column. The search results page keeps its usual layout.
+								</p>
 							</td>
 						</tr>
 						<tr>
@@ -816,13 +819,38 @@ if ( ! is_array( $filter_panel_order ) || empty( $filter_panel_order ) ) {
 											id="searchcraft_result_template"
 											class="large-text code searchcraft-template-editor"
 											rows="15"
+											<?php disabled( ! current_user_can( 'unfiltered_html' ) ); ?>
 											placeholder="// Enter your custom result template callback function here&#10;(item, index, { html }) => {&#10;    const postDate = item.post_date ? new Date(item.post_date).toLocaleDateString() : '';&#10;    return html`&#10;        &lt;a class=&quot;searchcraft-result-item&quot; href=&quot;${item.permalink}&quot;&gt;&#10;            &lt;h3&gt;${item.post_title}&lt;/h3&gt;&#10;            &lt;p&gt;${item.post_excerpt}&lt;/p&gt;&#10;            ${postDate ? html`&lt;p&gt;${postDate}&lt;/p&gt;` : ''}&#10;        &lt;/a&gt;&#10;    `;&#10;}"
 										><?php echo esc_textarea( get_option( 'searchcraft_result_template', '' ) ); ?></textarea>
 										<p class="description">
-											Write a JavaScript callback function to customize how search results are displayed. The function receives <code>(item, index, { html })</code> parameters and should return a template literal using the <code>html</code> tagged template function. Available item properties include: <code>post_title</code>, <code>post_excerpt</code>, <code>permalink</code>, <code>post_date</code>, <code>featured_image_url</code>, etc.
+											Write a JavaScript callback function to customize how search results are displayed. The function receives <code>(item, index, { html })</code> parameters and should return a template literal using the <code>html</code> tagged template function. Available item properties include: <code>post_title</code>, <code>post_excerpt</code>, <code>permalink</code>, <code>post_date</code>, <code>post_type</code>, <code>featured_image_url</code>, etc.
 											<br/>
 											For more details on custom templates refer to <a href="https://docs.searchcraft.io/sdks/javascript/working-with-templates/" target="_blank">the documentation</a>.
 										</p>
+										<?php if ( ! current_user_can( 'unfiltered_html' ) ) : ?>
+											<p class="description">Only users who can post unfiltered HTML, such as administrators, can edit result template callback functions.</p>
+										<?php endif; ?>
+									</td>
+								</tr>
+								<tr class="searchcraft-popover-only">
+									<th scope="row">
+										<label for="searchcraft_popover_result_template">Modal and Inline Result Template Callback Function</label>
+									</th>
+									<td>
+										<textarea
+											name="searchcraft_popover_result_template"
+											id="searchcraft_popover_result_template"
+											class="large-text code searchcraft-template-editor"
+											rows="15"
+											<?php disabled( ! current_user_can( 'unfiltered_html' ) ); ?>
+											placeholder="// Enter your custom modal and inline result template callback function here&#10;(item, index, { html }) => {&#10;    return html`&#10;        &lt;a class=&quot;searchcraft-popover-list-item-link&quot; href=&quot;${item.permalink}&quot;&gt;&#10;            &lt;div class=&quot;searchcraft-popover-list-item-content&quot;&gt;&#10;                &lt;p class=&quot;searchcraft-popover-list-item-content-title&quot;&gt;${item.post_title}&lt;/p&gt;&#10;                &lt;p class=&quot;searchcraft-popover-list-item-content-subtitle&quot;&gt;${item.post_excerpt}&lt;/p&gt;&#10;            &lt;/div&gt;&#10;        &lt;/a&gt;&#10;    `;&#10;}"
+										><?php echo esc_textarea( get_option( 'searchcraft_popover_result_template', '' ) ); ?></textarea>
+										<p class="description">
+											Write a JavaScript callback function to customize how results are displayed in the modal and inline search experiences, separately from the result template above. It takes the same <code>(item, index, { html })</code> parameters and item properties. Use the <code>searchcraft-popover-list-item-link</code> class on the result link to keep the default popover link styling. Leave empty to use the default template, which follows the result layout options above except result orientation.
+										</p>
+										<?php if ( ! current_user_can( 'unfiltered_html' ) ) : ?>
+											<p class="description">Only users who can post unfiltered HTML, such as administrators, can edit result template callback functions.</p>
+										<?php endif; ?>
 									</td>
 								</tr>
 								<tr class="searchcraft-popover-only">
@@ -835,7 +863,7 @@ if ( ! is_array( $filter_panel_order ) || empty( $filter_panel_order ) ) {
 										?>
 										<input type="text" name="searchcraft_popover_container_id" id="searchcraft_popover_container_id" value="<?php echo esc_attr( $popover_container_id ); ?>" class="regular-text" />
 										<p class="description">
-											The identifier of the HTML element where popover trigger should reside. Can either be an <a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/id" target="_blank">ID</a> or a <a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/classList" target="_blank">class</a>. If a class is used, the first element with this class will be used. Leave empty to use the default behavior.
+											The identifier of the HTML element where popover trigger should reside. Can either be an <a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/id" target="_blank">ID</a> or a <a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/classList" target="_blank">class</a>. If a class is used, the first element with this class will be used. Leave empty to use the default behavior. Ignored on pages with the <code>[searchcraft]</code> shortcode.
 										</p>
 									</td>
 								</tr>
@@ -890,9 +918,9 @@ if ( ! is_array( $filter_panel_order ) || empty( $filter_panel_order ) ) {
 										</div>
 										<p class="description">
 											<?php if ( 'stand_alone' === $search_behavior ) : ?>
-												If specified, the search box input form will load as the first element inside of the HTML element that matches this <a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/id" target="_blank">ID</a>. <strong>Multiple IDs supported:</strong> When "Submit to Search Page" is selected, you can add multiple element IDs to display the search input in multiple locations. Leave empty to use the default auto-detection behavior.
+												If specified, the search box input form will load as the first element inside of the HTML element that matches this <a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/id" target="_blank">ID</a>. <strong>Multiple IDs supported:</strong> When "Submit to Search Page" is selected, you can add multiple element IDs to display the search input in multiple locations. Leave empty to use the default auto-detection behavior. Ignored on pages with the <code>[searchcraft]</code> shortcode.
 											<?php else : ?>
-												If specified, the search box input form will load as the first element inside of the HTML element that matches this <a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/id" target="_blank">ID</a>. Note: this element must be present on every page you want the search input to appear on. Leave empty to use the default auto-detection behavior.
+												If specified, the search box input form will load as the first element inside of the HTML element that matches this <a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/id" target="_blank">ID</a>. Note: this element must be present on every page you want the search input to appear on. Leave empty to use the default auto-detection behavior. Ignored on pages with the <code>[searchcraft]</code> shortcode.
 											<?php endif; ?>
 										</p>
 									</td>
@@ -907,7 +935,7 @@ if ( ! is_array( $filter_panel_order ) || empty( $filter_panel_order ) ) {
 										?>
 										<input type="text" name="searchcraft_results_container_id" id="searchcraft_results_container_id" value="<?php echo esc_attr( $results_container_id ); ?>" class="regular-text" placeholder="my-results-container" />
 										<p class="description">
-											If specified, the search results will load as the first element inside of the HTML element that matches this <a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/id" target="_blank">ID</a>. Leave empty to use the default behavior.
+											If specified, the search results will load as the first element inside of the HTML element that matches this <a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/id" target="_blank">ID</a>. Leave empty to use the default behavior. Ignored on pages with the <code>[searchcraft]</code> shortcode.
 										</p>
 									</td>
 								</tr>

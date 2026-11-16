@@ -206,10 +206,12 @@
 	function initCodeEditors() {
 		const cssEditor = document.getElementById('searchcraft_custom_css');
 		const templateEditor = document.getElementById('searchcraft_result_template');
+		const popoverTemplateEditor = document.getElementById('searchcraft_popover_result_template');
 
 		// Add tab support for code editors
-		[cssEditor, templateEditor].forEach(editor => {
+		[cssEditor, templateEditor, popoverTemplateEditor].forEach(editor => {
 			if (editor) {
+				const isTemplateEditor = editor === templateEditor || editor === popoverTemplateEditor;
 				editor.addEventListener('keydown', function(e) {
 					// Handle tab key for indentation
 					if (e.key === 'Tab') {
@@ -219,15 +221,15 @@
 						const value = this.value;
 
 						// Insert tab character (or spaces for JavaScript)
-						const indent = editor.id === 'searchcraft_result_template' ? '    ' : '\t';
+						const indent = isTemplateEditor ? '    ' : '\t';
 						this.value = value.substring(0, start) + indent + value.substring(end);
 
 						// Move cursor after the indent
 						this.selectionStart = this.selectionEnd = start + indent.length;
 					}
 
-					// Auto-close brackets and quotes for JavaScript template editor
-					if (editor.id === 'searchcraft_result_template') {
+					// Auto-close brackets and quotes for JavaScript template editors
+					if (isTemplateEditor) {
 						const pairs = {
 							'(': ')',
 							'[': ']',

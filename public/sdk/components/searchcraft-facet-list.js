@@ -1,4 +1,4 @@
-import { S as SearchcraftFacetList$1, d as defineCustomElement$1 } from './searchcraft-facet-list2.js?scv=0.15.1';
+import { S as SearchcraftFacetList$1, d as defineCustomElement$1 } from './searchcraft-facet-list2.js?scv=0.16.0';
 
 const SearchcraftFacetList = SearchcraftFacetList$1;
 const defineCustomElement = defineCustomElement$1;

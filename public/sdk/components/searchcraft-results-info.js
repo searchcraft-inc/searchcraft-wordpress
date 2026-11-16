@@ -1,7 +1,7 @@
-import { p as proxyCustomElement, H, h, t as transformTag } from './index2.js?scv=0.15.1';
-import { r as registry } from './CoreInstanceRegistry.js?scv=0.15.1';
-import { f as formatNumberWithCommas } from './units.js?scv=0.15.1';
-import { h as html } from './html.js?scv=0.15.1';
+import { p as proxyCustomElement, H, h, t as transformTag } from './index2.js?scv=0.16.0';
+import { r as registry } from './CoreInstanceRegistry.js?scv=0.16.0';
+import { f as formatNumberWithCommas } from './units.js?scv=0.16.0';
+import { s as safeUrl, h as html } from './safeUrl.js?scv=0.16.0';
 
 const SearchcraftResultsInfo$1 = /*@__PURE__*/ proxyCustomElement(class SearchcraftResultsInfo extends H {
     constructor(registerHost) {
@@ -73,7 +73,7 @@ const SearchcraftResultsInfo$1 = /*@__PURE__*/ proxyCustomElement(class Searchcr
                 range: [Number(this.range[0]), Number(this.range[1])],
                 count: this.count,
                 responseTime: this.responseTime,
-            }, { html })
+            }, { html, safeUrl })
             : `${formatNumberWithCommas(this.count)} results found in ${this.responseTime}ms`));
     }
 }, [768, "searchcraft-results-info", {

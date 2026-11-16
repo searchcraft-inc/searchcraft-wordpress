@@ -1,6 +1,6 @@
-import { p as proxyCustomElement, H, h, t as transformTag } from './index2.js?scv=0.15.1';
-import { r as registry } from './CoreInstanceRegistry.js?scv=0.15.1';
-import { h as html } from './html.js?scv=0.15.1';
+import { p as proxyCustomElement, H, h, t as transformTag } from './index2.js?scv=0.16.0';
+import { r as registry } from './CoreInstanceRegistry.js?scv=0.16.0';
+import { s as safeUrl, h as html } from './safeUrl.js?scv=0.16.0';
 
 const SearchcraftSearchResult = /*@__PURE__*/ proxyCustomElement(class SearchcraftSearchResult extends H {
     constructor(registerHost) {
@@ -39,6 +39,7 @@ const SearchcraftSearchResult = /*@__PURE__*/ proxyCustomElement(class Searchcra
             try {
                 this.templateHtml = this.template?.(this.item.document, this.index, {
                     html,
+                    safeUrl,
                     source_index: this.item.source_index,
                 });
             }

@@ -1,6 +1,6 @@
-import { p as proxyCustomElement, H, h, t as transformTag } from './index2.js?scv=0.15.1';
-import { r as registry } from './CoreInstanceRegistry.js?scv=0.15.1';
-import { h as html } from './html.js?scv=0.15.1';
+import { p as proxyCustomElement, H, h, t as transformTag } from './index2.js?scv=0.16.0';
+import { r as registry } from './CoreInstanceRegistry.js?scv=0.16.0';
+import { s as safeUrl, h as html } from './safeUrl.js?scv=0.16.0';
 
 const SearchcraftPopoverButton$1 = /*@__PURE__*/ proxyCustomElement(class SearchcraftPopoverButton extends H {
     constructor(registerHost) {
@@ -17,6 +17,14 @@ const SearchcraftPopoverButton$1 = /*@__PURE__*/ proxyCustomElement(class Search
      * The type of popover button to render.
      */
     type;
+    /**
+     * The placeholder text shown in the `skeuomorphic` button, and the
+     * accessible label of the `magnifying-glass` button. Set it to the same
+     * value as the `placeholderValue` of `searchcraft-popover-form` so the
+     * button matches the form it opens. When it is blank, the
+     * `magnifying-glass` button is labeled "Search".
+     */
+    placeholderValue = 'Search';
     /**
      * The id of the Searchcraft instance that this component should use.
      */
@@ -92,7 +100,7 @@ const SearchcraftPopoverButton$1 = /*@__PURE__*/ proxyCustomElement(class Search
         }
     }
     renderSkeuomorphicSlot() {
-        return (h("div", { class: 'searchcraft-popover-button-wrapper' }, h("div", { class: 'searchcraft-popover-button-input' }, h("svg", { class: 'searchcraft-popover-button-input-search-icon', viewBox: '0 0 20 20', fill: 'none', xmlns: 'http://www.w3.org/2000/svg', version: '1.1' }, h("title", null, "Search icon"), h("path", { d: 'M17.5 17.5L13.875 13.875M15.8333 9.16667C15.8333 12.8486 12.8486 15.8333 9.16667 15.8333C5.48477 15.8333 2.5 12.8486 2.5 9.16667C2.5 5.48477 5.48477 2.5 9.16667 2.5C12.8486 2.5 15.8333 5.48477 15.8333 9.16667Z', stroke: 'currentColor', "stroke-width": '1.5', "stroke-linecap": 'round', "stroke-linejoin": 'round' })), h("span", null, "Search")), h("div", { class: 'searchcraft-popover-button-keycaps' }, h("div", { class: 'searchcraft-popover-button-keycaps-keycap searchcraft-popover-button-keycaps-keycap-modifier' }, h("span", null, this.hotkeyModifierSymbol)), h("div", { class: 'searchcraft-popover-button-keycaps-keycap searchcraft-popover-button-keycaps-keycap-key' }, h("span", null, this.hotkey)))));
+        return (h("div", { class: 'searchcraft-popover-button-wrapper' }, h("div", { class: 'searchcraft-popover-button-input' }, h("svg", { class: 'searchcraft-popover-button-input-search-icon', viewBox: '0 0 20 20', fill: 'none', xmlns: 'http://www.w3.org/2000/svg', version: '1.1' }, h("title", null, "Search icon"), h("path", { d: 'M17.5 17.5L13.875 13.875M15.8333 9.16667C15.8333 12.8486 12.8486 15.8333 9.16667 15.8333C5.48477 15.8333 2.5 12.8486 2.5 9.16667C2.5 5.48477 5.48477 2.5 9.16667 2.5C12.8486 2.5 15.8333 5.48477 15.8333 9.16667Z', stroke: 'currentColor', "stroke-width": '1.5', "stroke-linecap": 'round', "stroke-linejoin": 'round' })), h("span", null, this.placeholderValue)), h("div", { class: 'searchcraft-popover-button-keycaps' }, h("div", { class: 'searchcraft-popover-button-keycaps-keycap searchcraft-popover-button-keycaps-keycap-modifier' }, h("span", null, this.hotkeyModifierSymbol)), h("div", { class: 'searchcraft-popover-button-keycaps-keycap searchcraft-popover-button-keycaps-keycap-key' }, h("span", null, this.hotkey)))));
     }
     renderSlot() {
         switch (this.type) {
@@ -105,8 +113,10 @@ const SearchcraftPopoverButton$1 = /*@__PURE__*/ proxyCustomElement(class Search
         }
     }
     render() {
-        return (h("button", { key: '760f4f8d8daddaaadc0367e21b9efe23c4ef7c7d', "aria-label": this.type === 'magnifying-glass' ? 'Search' : undefined, class: `searchcraft-popover-button ${this.type ? ` searchcraft-popover-button-${this.type}` : ''}`, innerHTML: typeof this.template !== 'undefined'
-                ? this.template({ isPopoverVisible: this.isPopoverVisible }, { html })
+        return (h("button", { key: '3ff00f71e3057f907a447f87b3a82b6ae57796e7', "aria-label": this.type === 'magnifying-glass'
+                ? this.placeholderValue?.trim() || 'Search'
+                : undefined, class: `searchcraft-popover-button ${this.type ? ` searchcraft-popover-button-${this.type}` : ''}`, innerHTML: typeof this.template !== 'undefined'
+                ? this.template({ isPopoverVisible: this.isPopoverVisible }, { html, safeUrl })
                 : undefined, onClick: this.handleOnClick.bind(this), type: 'button' }, typeof this.template !== 'undefined'
             ? undefined
             : this.type
@@ -116,6 +126,7 @@ const SearchcraftPopoverButton$1 = /*@__PURE__*/ proxyCustomElement(class Search
 }, [772, "searchcraft-popover-button", {
         "template": [16],
         "type": [1],
+        "placeholderValue": [1, "placeholder-value"],
         "searchcraftId": [1, "searchcraft-id"],
         "hotkey": [32],
         "hotkeyModifier": [32],

@@ -1,8 +1,8 @@
-import { p as proxyCustomElement, H, h, t as transformTag } from './index2.js?scv=0.15.1';
-import { r as registry } from './CoreInstanceRegistry.js?scv=0.15.1';
-import { p as purify } from './purify.es.js?scv=0.15.1';
-import { m as marked } from './marked.esm.js?scv=0.15.1';
-import { d as defineCustomElement$2 } from './searchcraft-loading2.js?scv=0.15.1';
+import { p as proxyCustomElement, H, h, t as transformTag } from './index2.js?scv=0.16.0';
+import { r as registry } from './CoreInstanceRegistry.js?scv=0.16.0';
+import { p as purify } from './purify.es.js?scv=0.16.0';
+import { m as marked } from './marked.esm.js?scv=0.16.0';
+import { d as defineCustomElement$2 } from './searchcraft-loading2.js?scv=0.16.0';
 
 const SearchcraftSummaryBox$1 = /*@__PURE__*/ proxyCustomElement(class SearchcraftSummaryBox extends H {
     constructor(registerHost) {
@@ -60,7 +60,7 @@ const SearchcraftSummaryBox$1 = /*@__PURE__*/ proxyCustomElement(class Searchcra
         return (h("div", { class: 'searchcraft-summary-box-content', innerHTML: this.summary }));
     }
     render() {
-        return h("div", { key: 'a33091962cfbbcf0399e9e15e8346590511090e1', class: 'searchcraft-summary-box' }, this.renderContent());
+        return h("div", { key: 'b9d137d3eca2e5449474227f2cf3be81eec3ad77', class: 'searchcraft-summary-box' }, this.renderContent());
     }
 }, [768, "searchcraft-summary-box", {
         "searchcraftId": [1, "searchcraft-id"],

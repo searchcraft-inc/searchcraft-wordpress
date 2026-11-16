@@ -1,4 +1,4 @@
-import { S as SearchcraftResultsSummary$1, d as defineCustomElement$1 } from './searchcraft-results-summary2.js?scv=0.15.1';
+import { S as SearchcraftResultsSummary$1, d as defineCustomElement$1 } from './searchcraft-results-summary2.js?scv=0.16.0';
 
 const SearchcraftResultsSummary = SearchcraftResultsSummary$1;
 const defineCustomElement = defineCustomElement$1;

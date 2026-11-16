@@ -68,6 +68,9 @@ class Searchcraft_Public {
 	 * @since 1.0.0
 	 */
 	private function init_hooks() {
+		// Register the shortcode even when the SDK isn't ready so the tag never shows as text.
+		add_shortcode( 'searchcraft', array( $this, 'render_shortcode' ) );
+
 		// Only initialize frontend features if SDK is ready.
 		if ( ! $this->is_sdk_ready() ) {
 			return;
@@ -238,10 +241,16 @@ class Searchcraft_Public {
 		if ( ! empty( $result_template ) ) {
 			$js_config['resultTemplateCallback'] = $result_template;
 		}
+		$popover_result_template = get_option( 'searchcraft_popover_result_template', '' );
+		if ( ! empty( $popover_result_template ) ) {
+			$js_config['popoverResultTemplateCallback'] = $popover_result_template;
+		}
 		$js_config['orientation']            = get_option( 'searchcraft_result_orientation', 'column' );
 		$js_config['displayPostDate']        = (bool) get_option( 'searchcraft_display_post_date', false );
 		$js_config['displayAuthorName']      = (bool) get_option( 'searchcraft_display_author_name', true );
 		$js_config['imageAlignment']         = get_option( 'searchcraft_image_alignment', 'left' );
+		// The modal and inline experiences don't use result orientation, so they keep the saved alignment.
+		$js_config['popoverImageAlignment'] = $js_config['imageAlignment'];
 		if ( 'grid' === $js_config['orientation'] ) {
 			$js_config['imageAlignment'] = 'left';
 		}
@@ -309,8 +318,11 @@ class Searchcraft_Public {
 		$oldest_post_year            = $admin_instance->get_oldest_post_year();
 		$js_config['oldestPostYear'] = $oldest_post_year;
 
-		$js_config['resultsPerPage']        = intval( get_option( 'searchcraft_results_per_page', 10 ) );
-		$js_config['overlayResultsPerPage'] = intval( get_option( 'searchcraft_overlay_results_per_page', 5 ) );
+		$js_config['resultsPerPage'] = intval( get_option( 'searchcraft_results_per_page', 10 ) );
+		// The overlay results count only applies to the modal and inline experiences ('popover' is the legacy value).
+		if ( in_array( get_option( 'searchcraft_search_experience', 'full' ), array( 'modal', 'inline', 'popover' ), true ) ) {
+			$js_config['overlayResultsPerPage'] = intval( get_option( 'searchcraft_overlay_results_per_page', 5 ) );
+		}
 
 		// Filter taxonomies.
 		$filter_taxonomies = get_option( 'searchcraft_filter_taxonomies', array() );
@@ -497,6 +509,31 @@ class Searchcraft_Public {
 
 		$preload = preg_replace( "/rel=(['\"])stylesheet\\1/", "rel='preload' as='style'", $tag );
 		return $preload . '<noscript>' . $tag . '</noscript>';
+	}
+
+	/**
+	 * Render the [searchcraft] shortcode.
+	 *
+	 * Outputs a container that searchcraft-sdk-settings.js fills with the configured search
+	 * experience. Pages with the shortcode place the search experience there instead of
+	 * attaching it automatically.
+	 *
+	 * @since 1.6.0
+	 * @return string The shortcode container, or an empty string if the SDK isn't ready or the
+	 *                shortcode is in a feed or post listing.
+	 */
+	public function render_shortcode() {
+		if ( ! $this->is_sdk_ready() ) {
+			return '';
+		}
+
+		// Feeds and listings that show each post's full content (blog index, archives) don't get a
+		// search box per post. Widgets and single posts and pages still render the shortcode.
+		if ( is_feed() || ( in_the_loop() && ! is_singular() ) ) {
+			return '';
+		}
+
+		return '<div class="searchcraft-shortcode-container"></div>';
 	}
 
 	/**

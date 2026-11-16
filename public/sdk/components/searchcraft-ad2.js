@@ -1,7 +1,7 @@
-import { p as proxyCustomElement, t as transformTag, H, h } from './index2.js?scv=0.15.1';
-import { c as classNames } from './index3.js?scv=0.15.1';
-import { r as registry } from './CoreInstanceRegistry.js?scv=0.15.1';
-import { h as html } from './html.js?scv=0.15.1';
+import { p as proxyCustomElement, t as transformTag, H, h } from './index2.js?scv=0.16.0';
+import { c as classNames } from './index3.js?scv=0.16.0';
+import { r as registry } from './CoreInstanceRegistry.js?scv=0.16.0';
+import { s as safeUrl, h as html } from './safeUrl.js?scv=0.16.0';
 
 const urlAlphabet =
   'useandom-26T198340PX75pxJACKVERYMINDBUSHWOLF_GQZbfghjklqvwyzrict';
@@ -146,6 +146,7 @@ const SearchcraftPopoverListItemAd = /*@__PURE__*/ proxyCustomElement(class Sear
         if (this.core?.config?.admAdConfig?.template) {
             templateHtml = this.core?.config?.admAdConfig.template(item.admAd, {
                 html,
+                safeUrl,
             });
         }
         return (h("div", { class: 'searchcraft-ad searchcraft-adm-ad', "data-searchcraft-ad-container-id": this.adContainerId, id: `searchcraft-adm-ad-${this.adContainerId}`, innerHTML: templateHtml }));
@@ -158,7 +159,7 @@ const SearchcraftPopoverListItemAd = /*@__PURE__*/ proxyCustomElement(class Sear
             templateHtml = templateRenderFunction({
                 searchTerm: this.searchTerm || '',
                 adContainerId: this.adContainerId,
-            }, { html });
+            }, { html, safeUrl });
         }
         return (h("div", { class: 'searchcraft-ad searchcraft-custom-ad', id: containerId, "data-searchcraft-ad-container-id": this.adContainerId, innerHTML: templateHtml }));
     }
