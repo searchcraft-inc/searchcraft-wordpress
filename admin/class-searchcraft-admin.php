@@ -472,6 +472,12 @@ class Searchcraft_Admin {
 					if ( strpos( $callback['function'], 'searchcraft' ) !== false ) {
 						$is_searchcraft_notice = true;
 					}
+				} elseif ( $callback['function'] instanceof \Closure ) {
+					// Check for closures defined in a Searchcraft class, such as the notices from saving settings.
+					$scope_class = ( new \ReflectionFunction( $callback['function'] ) )->getClosureScopeClass();
+					if ( $scope_class && strpos( $scope_class->getName(), 'Searchcraft' ) !== false ) {
+						$is_searchcraft_notice = true;
+					}
 				}
 
 				// Mark non-Searchcraft notices for removal.
