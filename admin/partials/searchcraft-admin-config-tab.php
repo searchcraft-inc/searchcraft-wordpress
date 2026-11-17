@@ -475,6 +475,67 @@ if ( ! is_array( $selected_builtin_post_types ) ) {
 			</table>
 		<?php endif; ?>
 
+		<?php if ( $is_configured ) : ?>
+			<?php
+			$time_decay_settings = $this->searchcraft_get_time_decay_settings();
+			$time_decay_current  = $time_decay_settings['current'];
+			$time_decay_fields   = $time_decay_settings['fields'];
+			// Keep a field set in Vektron that isn't a usable date field, so the form shows the index as it is.
+			if ( '' !== $time_decay_current && ! in_array( $time_decay_current, $time_decay_fields, true ) ) {
+				$time_decay_fields[] = $time_decay_current;
+			}
+			?>
+			<h3>Search Ranking</h3>
+			<table class="form-table">
+				<tbody>
+					<tr>
+						<th scope="row">
+							<label for="searchcraft_time_decay_enabled">Time Decay</label>
+						</th>
+						<td>
+							<?php if ( ! $time_decay_settings['loaded'] ) : ?>
+								<p class="description">
+									The time decay setting couldn't be loaded from your Searchcraft index. Check the endpoint URL, index name and ingest key above, then reload this page.
+								</p>
+							<?php elseif ( empty( $time_decay_fields ) ) : ?>
+								<p class="description">
+									Your index has no date field that time decay can use. Time decay needs a datetime field that is indexed and fast, such as the <code>post_date</code> field in the Vektron WordPress template.
+								</p>
+							<?php else : ?>
+								<input type="hidden" name="searchcraft_time_decay_original" value="<?php echo esc_attr( $time_decay_current ); ?>" />
+								<fieldset>
+									<legend class="screen-reader-text"><span>Time decay</span></legend>
+									<label for="searchcraft_time_decay_enabled">
+										<input
+											type="checkbox"
+											id="searchcraft_time_decay_enabled"
+											name="searchcraft_time_decay_enabled"
+											value="1"
+											<?php checked( '' !== $time_decay_current ); ?>
+										/>
+										Rank newer content higher
+									</label>
+									<p class="searchcraft-time-decay-field">
+										<label for="searchcraft_time_decay_field">Date field</label>
+										<select id="searchcraft_time_decay_field" name="searchcraft_time_decay_field">
+											<?php foreach ( $time_decay_fields as $time_decay_field ) : ?>
+												<option value="<?php echo esc_attr( $time_decay_field ); ?>" <?php selected( $time_decay_current, $time_decay_field ); ?>>
+													<?php echo esc_html( 'post_date' === $time_decay_field ? 'Post date (post_date)' : $time_decay_field ); ?>
+												</option>
+											<?php endforeach; ?>
+										</select>
+									</p>
+								</fieldset>
+								<p class="description">
+									With time decay on, newer content ranks above older content that matches a search equally well. Searchcraft uses the selected date field to tell how old each document is. This setting is saved to your Searchcraft index, so it stays in step with the time decay setting in Vektron.
+								</p>
+							<?php endif; ?>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		<?php endif; ?>
+
 		<!-- Hidden inputs to store selected custom fields -->
 		<div id="searchcraft-selected-fields-inputs" style="display: none;">
 			<?php foreach ( $custom_post_types as $post_type_obj ) : ?>

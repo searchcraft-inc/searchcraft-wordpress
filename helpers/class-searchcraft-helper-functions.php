@@ -78,6 +78,45 @@ class Searchcraft_Helper_Functions {
 	}
 
 	/**
+	 * List the index schema fields that time decay can use.
+	 *
+	 * Searchcraft can decay relevance by a datetime field that is both indexed
+	 * and fast. post_date is listed first, followed by the rest in name order.
+	 *
+	 * @since 1.7.0
+	 * @param array $fields The index schema fields, keyed by field name.
+	 * @return string[] The names of the fields that time decay can use.
+	 */
+	public static function searchcraft_get_time_decay_fields( $fields ) {
+		$names = array();
+
+		if ( ! is_array( $fields ) ) {
+			return $names;
+		}
+
+		foreach ( $fields as $name => $field ) {
+			if ( is_array( $field ) &&
+				isset( $field['type'] ) && 'datetime' === $field['type'] &&
+				! empty( $field['indexed'] ) &&
+				! empty( $field['fast'] ) ) {
+				$names[] = (string) $name;
+			}
+		}
+
+		usort(
+			$names,
+			function ( $a, $b ) {
+				if ( 'post_date' === $a || 'post_date' === $b ) {
+					return 'post_date' === $a ? -1 : 1;
+				}
+				return strcmp( $a, $b );
+			}
+		);
+
+		return $names;
+	}
+
+	/**
 	 * Determine if a given value is a valid date.
 	 *
 	 * Checks if a string can be interpreted as a valid date,

@@ -753,8 +753,27 @@ document.addEventListener('DOMContentLoaded', () => {
 	// Initialize custom fields modal (config tab)
 	if (document.querySelector('.searchcraft-config-section')) {
 		initCustomFieldsModal();
+		initTimeDecayToggle();
 	}
 });
+
+/**
+ * Disable the time decay date field while time decay is turned off (config tab)
+ */
+function initTimeDecayToggle() {
+	const checkbox = document.getElementById('searchcraft_time_decay_enabled');
+	const select = document.getElementById('searchcraft_time_decay_field');
+	if (!checkbox || !select) {
+		return;
+	}
+
+	const syncSelect = () => {
+		select.disabled = !checkbox.checked;
+	};
+
+	checkbox.addEventListener('change', syncSelect);
+	syncSelect();
+}
 
 /**
  * Initialize custom fields modal functionality
