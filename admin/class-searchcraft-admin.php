@@ -2267,7 +2267,7 @@ class Searchcraft_Admin {
 	 * is read from the index each time and stays in step with changes made
 	 * in Vektron.
 	 *
-	 * @since 1.7.0
+	 * @since 1.6.1
 	 * @return array Array with 'loaded' (whether the index could be read),
 	 *               'current' (the time decay field, '' when off) and
 	 *               'fields' (the date fields time decay can use) keys.
@@ -2305,7 +2305,7 @@ class Searchcraft_Admin {
 	 * Uses patchIndex(), so the schema is left alone and nothing needs to be
 	 * re-indexed.
 	 *
-	 * @since 1.7.0
+	 * @since 1.6.1
 	 * @param string $field The date field to use, or '' to turn time decay off.
 	 * @return array Result array with 'success', 'error', and 'updated' keys.
 	 */

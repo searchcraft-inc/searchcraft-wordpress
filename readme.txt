@@ -4,7 +4,7 @@ Contributors: searchcraft
 Tags:         search, fuzzy search, better search, instant search, custom search
 Requires at least: 5.3
 Tested up to: 7.1
-Stable tag:   1.6.0
+Stable tag:   1.6.1
 License:      Apache 2.0
 License URI:  LICENSE.txt
 
@@ -78,10 +78,9 @@ Searchcraft Cloud customers may also reach out via our Discord server for assist
 
 == Changelog ==
 
-= Unreleased =
+= 1.6.1 =
 * New Feature - Time decay can now be turned on from the Search Ranking section of the Configuration tab. With it on, newer content ranks above older content that matches a search equally well. The setting is saved to the Searchcraft index, so it matches the time decay setting in Vektron, and a save only changes it when it was changed on the page.
 * Bugfix - Messages from saving the Configuration tab, such as "Configuration saved successfully." and index schema errors, now appear. They were hidden along with other plugins' notices on Searchcraft pages.
-* Bugfix - Index schema updates now turn time decay off when they remove the date field it uses, such as a deselected custom field. Before, Searchcraft rejected these updates, and a rejected update could remove the index.
 
 = 1.6.0 =
 * New Feature - Added a `[searchcraft]` shortcode that places the search experience where it is used. Pages with the shortcode, other than the search results page, skip the automatic placement and the container element ID settings.

@@ -83,7 +83,7 @@ class Searchcraft_Helper_Functions {
 	 * Searchcraft can decay relevance by a datetime field that is both indexed
 	 * and fast. post_date is listed first, followed by the rest in name order.
 	 *
-	 * @since 1.7.0
+	 * @since 1.6.1
 	 * @param array $fields The index schema fields, keyed by field name.
 	 * @return string[] The names of the fields that time decay can use.
 	 */
