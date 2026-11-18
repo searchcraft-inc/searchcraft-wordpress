@@ -1,0 +1,121 @@
+name: Draft release
+
+# Runs on every push to main (a merge from development). When the version in
+# searchcraft.php doesn't have a tag yet, it creates the v<version> tag on the
+# merged commit and drafts a GitHub release whose notes are that version's
+# readme.txt changelog entry.
+#
+# Publishing the draft is the manual step that ships the release: it fires the
+# "Deploy to WordPress.org" workflow. The tag created here can't start that
+# workflow itself, because GitHub doesn't run workflows for events caused by
+# GITHUB_TOKEN.
+#
+# Pushes that don't change the version find the tag and release already in
+# place and do nothing.
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+concurrency:
+  group: draft-release
+  cancel-in-progress: false
+
+jobs:
+  draft-release:
+    runs-on: ubuntu-latest
+
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+
+    steps:
+      - name: Checkout GitHub repo
+        uses: actions/checkout@v4
+
+      - name: Get plugin version
+        id: get_version
+        run: |
+          VERSION=$(grep -i "Version:" searchcraft.php | head -n1 | awk -F: '{print $2}' | tr -d ' \r')
+          if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::Could not read a version from searchcraft.php (found '$VERSION')"
+            exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Detected plugin version: $VERSION"
+
+      - name: Check Stable tag matches version
+        env:
+          VERSION: ${{ steps.get_version.outputs.version }}
+        run: |
+          STABLE=$(grep -i "Stable tag:" readme.txt | awk -F: '{print $2}' | tr -d ' \r')
+          if [ "$STABLE" != "$VERSION" ]; then
+            echo "::error::Stable tag ($STABLE) in readme.txt does not match plugin version ($VERSION)"
+            exit 1
+          fi
+          echo "✓ Stable tag matches plugin version: $VERSION"
+
+      - name: Check for an existing tag and release
+        id: existing
+        env:
+          TAG: ${{ steps.get_version.outputs.tag }}
+        run: |
+          if git ls-remote --exit-code --tags origin "refs/tags/$TAG" > /dev/null; then
+            echo "tag=true" >> "$GITHUB_OUTPUT"
+            echo "Tag $TAG already exists"
+          else
+            echo "tag=false" >> "$GITHUB_OUTPUT"
+          fi
+
+          # Drafts are listed too, so a draft from an earlier run isn't duplicated.
+          if gh release list --limit 1000 --json tagName --jq '.[].tagName' | grep -qxF "$TAG"; then
+            echo "release=true" >> "$GITHUB_OUTPUT"
+            echo "A release for $TAG already exists"
+          else
+            echo "release=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      # Read before the tag is created, so a missing changelog entry fails the
+      # run without leaving a tag behind.
+      - name: Read release notes from readme.txt
+        if: steps.existing.outputs.release == 'false'
+        env:
+          VERSION: ${{ steps.get_version.outputs.version }}
+        run: |
+          bash .github/scripts/changelog-for-version.sh "$VERSION" readme.txt > "$RUNNER_TEMP/release-notes.md"
+          echo "Release notes:"
+          cat "$RUNNER_TEMP/release-notes.md"
+
+      - name: Create tag
+        if: steps.existing.outputs.tag == 'false'
+        env:
+          TAG: ${{ steps.get_version.outputs.tag }}
+        run: |
+          gh api "repos/$GH_REPO/git/refs" -f ref="refs/tags/$TAG" -f sha="$GITHUB_SHA" > /dev/null
+          echo "✓ Created tag $TAG on $GITHUB_SHA"
+
+      - name: Draft GitHub release
+        if: steps.existing.outputs.release == 'false'
+        env:
+          TAG: ${{ steps.get_version.outputs.tag }}
+          VERSION: ${{ steps.get_version.outputs.version }}
+        run: |
+          URL=$(gh release create "$TAG" --draft --verify-tag --title "$VERSION" --notes-file "$RUNNER_TEMP/release-notes.md")
+          echo "✓ Drafted release $VERSION: $URL"
+          {
+            echo "### Drafted release $VERSION"
+            echo
+            echo "Review the notes and publish the draft to deploy $VERSION to WordPress.org: $URL"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Nothing to do
+        if: steps.existing.outputs.tag == 'true' && steps.existing.outputs.release == 'true'
+        env:
+          TAG: ${{ steps.get_version.outputs.tag }}
+        run: |
+          echo "::notice::$TAG already has a tag and a release, so no release was drafted. Bump the version in searchcraft.php and readme.txt to draft a new one."
