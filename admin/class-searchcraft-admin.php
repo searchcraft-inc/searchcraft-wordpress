@@ -472,6 +472,12 @@ class Searchcraft_Admin {
 					if ( strpos( $callback['function'], 'searchcraft' ) !== false ) {
 						$is_searchcraft_notice = true;
 					}
+				} elseif ( $callback['function'] instanceof \Closure ) {
+					// Check for closures defined in a Searchcraft class, such as the notices from saving settings.
+					$scope_class = ( new \ReflectionFunction( $callback['function'] ) )->getClosureScopeClass();
+					if ( $scope_class && strpos( $scope_class->getName(), 'Searchcraft' ) !== false ) {
+						$is_searchcraft_notice = true;
+					}
 				}
 
 				// Mark non-Searchcraft notices for removal.
@@ -954,12 +960,12 @@ class Searchcraft_Admin {
 						$needs_index_update = true;
 					}
 
+					$all_updates_successful = true;
+					$reindex                = false;
+					$error_messages         = array();
+
 					// Update index schema if taxonomies or custom post types changed.
 					if ( $needs_index_update ) {
-						$all_updates_successful = true;
-						$reindex                = false;
-						$error_messages         = array();
-
 						if ( ! $post_type_field_result['success'] ) {
 							$all_updates_successful = false;
 							$error_messages[]       = 'Post type schema update: ' . $post_type_field_result['error'];
@@ -1010,39 +1016,58 @@ class Searchcraft_Admin {
 							$this->searchcraft_add_all_documents();
 							$reindex = true;
 						}
+					}
 
-						if ( $all_updates_successful ) {
-							$message = 'Configuration saved successfully.';
-							if ( $reindex ) {
-								$message .= ' Index schema updated and documents re-indexed.';
-							} else {
-								$message .= ' Index schema updated.';
-							}
-
-							add_action(
-								'admin_notices',
-								function () use ( $message ) {
-									echo '<div class="notice notice-success is-dismissible"><p>' . esc_html( $message ) . '</p></div>';
-								}
-							);
-						} else {
-							$error_message = implode( ' ', $error_messages );
-							add_action(
-								'admin_notices',
-								function () use ( $error_message ) {
-									echo '<div class="notice notice-error is-dismissible">';
-									echo '<p><strong>Configuration saved, but there was an issue:</strong></p>';
-									echo '<p>' . esc_html( $error_message ) . '</p>';
-									echo '<p>Please check the error logs for more details or contact support.</p>';
-									echo '</div>';
-								}
-							);
+					// Time decay is changed after the schema updates so its date field is checked against
+					// the updated schema. It is only changed when the form showed the setting and it was
+					// changed there, so saving a page loaded before a change made in Vektron keeps that change.
+					$time_decay_message = '';
+					if ( isset( $_POST['searchcraft_time_decay_original'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in searchcraft_request_handler().
+						$original_time_decay_field  = sanitize_text_field( wp_unslash( $_POST['searchcraft_time_decay_original'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in searchcraft_request_handler().
+						$time_decay_enabled         = isset( $_POST['searchcraft_time_decay_enabled'] ); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in searchcraft_request_handler().
+						$requested_time_decay_field = '';
+						if ( $time_decay_enabled && isset( $_POST['searchcraft_time_decay_field'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in searchcraft_request_handler().
+							$requested_time_decay_field = sanitize_text_field( wp_unslash( $_POST['searchcraft_time_decay_field'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in searchcraft_request_handler().
 						}
-					} else {
+
+						if ( $time_decay_enabled && '' === $requested_time_decay_field ) {
+							$all_updates_successful = false;
+							$error_messages[]       = 'Time decay: Select a date field to turn on time decay.';
+						} elseif ( $requested_time_decay_field !== $original_time_decay_field ) {
+							$time_decay_result = $this->searchcraft_update_time_decay_field( $requested_time_decay_field );
+
+							if ( ! $time_decay_result['success'] ) {
+								$all_updates_successful = false;
+								$error_messages[]       = 'Time decay: ' . $time_decay_result['error'];
+							} elseif ( $time_decay_result['updated'] ) {
+								$time_decay_message = '' === $requested_time_decay_field ? ' Time decay turned off.' : ' Time decay turned on using the ' . $requested_time_decay_field . ' field.';
+							}
+						}
+					}
+
+					if ( $all_updates_successful ) {
+						$message = 'Configuration saved successfully.';
+						if ( $needs_index_update ) {
+							$message .= $reindex ? ' Index schema updated and documents re-indexed.' : ' Index schema updated.';
+						}
+						$message .= $time_decay_message;
+
 						add_action(
 							'admin_notices',
-							function () {
-								echo '<div class="notice notice-success is-dismissible"><p>Configuration saved successfully.</p></div>';
+							function () use ( $message ) {
+								echo '<div class="notice notice-success is-dismissible"><p>' . esc_html( $message ) . '</p></div>';
+							}
+						);
+					} else {
+						$error_message = implode( ' ', $error_messages );
+						add_action(
+							'admin_notices',
+							function () use ( $error_message ) {
+								echo '<div class="notice notice-error is-dismissible">';
+								echo '<p><strong>Configuration saved, but there was an issue:</strong></p>';
+								echo '<p>' . esc_html( $error_message ) . '</p>';
+								echo '<p>Please check the error logs for more details or contact support.</p>';
+								echo '</div>';
 							}
 						);
 					}
@@ -1762,12 +1787,24 @@ class Searchcraft_Admin {
 	 * and the engine keeps its stored value. The ai config stays in: 0.11
 	 * replaces it with what is sent, and later versions keep the stored config.
 	 *
+	 * Searchcraft rejects a time_decay_field that names a field missing from
+	 * the schema, so time decay is turned off when the new fields drop the
+	 * field it uses (for example, a custom date field that was deselected).
+	 *
 	 * @since 1.6.0
 	 * @param array $current_index The index configuration returned by getIndex().
+	 * @param array $fields        The schema fields to send.
 	 * @return array The payload to send to updateIndex().
 	 */
-	private function searchcraft_index_update_payload( $current_index ) {
+	private function searchcraft_index_update_payload( $current_index, $fields ) {
 		unset( $current_index['ai_enabled'] );
+		$current_index['fields'] = $fields;
+
+		$time_decay_field = $current_index['time_decay_field'] ?? '';
+		if ( is_string( $time_decay_field ) && '' !== $time_decay_field && ! isset( $fields[ $time_decay_field ] ) ) {
+			$current_index['time_decay_field'] = '';
+		}
+
 		return $current_index;
 	}
 
@@ -1936,8 +1973,7 @@ class Searchcraft_Admin {
 
 			// Update the index with new fields, search_fields, and weight_multipliers.
 			// Start with the current index configuration and update what changed.
-			$update_payload = $this->searchcraft_index_update_payload( $current_index );
-			$update_payload['fields'] = $updated_fields;
+			$update_payload = $this->searchcraft_index_update_payload( $current_index, $updated_fields );
 			$update_payload['search_fields'] = $updated_search_fields;
 			$update_payload['weight_multipliers'] = $updated_weight_multipliers;
 
@@ -2087,8 +2123,7 @@ class Searchcraft_Admin {
 			// Start with the current index configuration and only update the fields.
 			// This preserves all other index properties (language, search_fields, weight_multipliers, etc.)
 			// without having to explicitly list them, making this future-proof.
-			$update_payload           = $this->searchcraft_index_update_payload( $current_index );
-			$update_payload['fields'] = $updated_fields;
+			$update_payload = $this->searchcraft_index_update_payload( $current_index, $updated_fields );
 
 			$ingest_client->index()->updateIndex( $index_id, $update_payload );
 
@@ -2187,8 +2222,7 @@ class Searchcraft_Admin {
 				$document_count = isset( $stats['document_count'] ) ? (int) $stats['document_count'] : 0;
 
 				// Start with the current index configuration and only update the fields.
-				$update_payload           = $this->searchcraft_index_update_payload( $current_index );
-				$update_payload['fields'] = $updated_fields;
+				$update_payload = $this->searchcraft_index_update_payload( $current_index, $updated_fields );
 
 				$ingest_client->index()->updateIndex( $index_id, $update_payload );
 				delete_transient( 'searchcraft_index' );
@@ -2221,6 +2255,103 @@ class Searchcraft_Admin {
 		} catch ( \Exception $e ) {
 			$result['error'] = $e->getMessage();
 			Searchcraft_Helper_Functions::searchcraft_error_log( 'Searchcraft: Failed to add post_type field to index schema: ' . $e->getMessage() );
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Get the index's time decay setting and the date fields it can use.
+	 *
+	 * Time decay is stored on the Searchcraft index, not in WordPress, so it
+	 * is read from the index each time and stays in step with changes made
+	 * in Vektron.
+	 *
+	 * @since 1.6.1
+	 * @return array Array with 'loaded' (whether the index could be read),
+	 *               'current' (the time decay field, '' when off) and
+	 *               'fields' (the date fields time decay can use) keys.
+	 */
+	public function searchcraft_get_time_decay_settings() {
+		$settings = array(
+			'loaded'  => false,
+			'current' => '',
+			'fields'  => array(),
+		);
+
+		$ingest_client = $this->searchcraft_get_ingest_client();
+		$index_id      = Searchcraft_Config::get_index_id();
+		if ( ! $ingest_client || empty( $index_id ) ) {
+			return $settings;
+		}
+
+		try {
+			$response = $ingest_client->index()->getIndex( $index_id );
+			$index    = $response['data'] ?? $response;
+
+			$settings['loaded']  = true;
+			$settings['current'] = isset( $index['time_decay_field'] ) && is_string( $index['time_decay_field'] ) ? $index['time_decay_field'] : '';
+			$settings['fields']  = Searchcraft_Helper_Functions::searchcraft_get_time_decay_fields( $index['fields'] ?? array() );
+		} catch ( \Exception $e ) {
+			Searchcraft_Helper_Functions::searchcraft_error_log( 'Searchcraft: Failed to load the time decay setting: ' . $e->getMessage() );
+		}
+
+		return $settings;
+	}
+
+	/**
+	 * Set the date field the index uses for time decay.
+	 *
+	 * Uses patchIndex(), so the schema is left alone and nothing needs to be
+	 * re-indexed.
+	 *
+	 * @since 1.6.1
+	 * @param string $field The date field to use, or '' to turn time decay off.
+	 * @return array Result array with 'success', 'error', and 'updated' keys.
+	 */
+	private function searchcraft_update_time_decay_field( $field ) {
+		$result = array(
+			'success' => false,
+			'error'   => '',
+			'updated' => false,
+		);
+
+		$ingest_client = $this->searchcraft_get_ingest_client();
+		if ( ! $ingest_client ) {
+			$result['error'] = 'Unable to get ingest client.';
+			return $result;
+		}
+
+		$index_id = Searchcraft_Config::get_index_id();
+		if ( empty( $index_id ) ) {
+			$result['error'] = 'Index ID is not configured.';
+			return $result;
+		}
+
+		try {
+			$response      = $ingest_client->index()->getIndex( $index_id );
+			$current_index = $response['data'] ?? $response;
+			$current_field = isset( $current_index['time_decay_field'] ) && is_string( $current_index['time_decay_field'] ) ? $current_index['time_decay_field'] : '';
+
+			if ( $current_field === $field ) {
+				$result['success'] = true;
+				return $result;
+			}
+
+			$time_decay_fields = Searchcraft_Helper_Functions::searchcraft_get_time_decay_fields( $current_index['fields'] ?? array() );
+			if ( '' !== $field && ! in_array( $field, $time_decay_fields, true ) ) {
+				$result['error'] = sprintf( 'The index has no "%s" date field that time decay can use.', $field );
+				return $result;
+			}
+
+			$ingest_client->index()->patchIndex( $index_id, array( 'time_decay_field' => $field ) );
+			delete_transient( 'searchcraft_index' );
+
+			$result['success'] = true;
+			$result['updated'] = true;
+		} catch ( \Exception $e ) {
+			$result['error'] = $e->getMessage();
+			Searchcraft_Helper_Functions::searchcraft_error_log( 'Searchcraft: Failed to update the time decay setting: ' . $e->getMessage() );
 		}
 
 		return $result;

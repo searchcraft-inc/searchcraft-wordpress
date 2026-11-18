@@ -1174,6 +1174,13 @@ table.searchcraft-synonyms-table td:nth-child(3) {
 	align-items: center;
 }
 
+.searchcraft-time-decay-field {
+	display: flex;
+	gap: 8px;
+	align-items: center;
+	margin-left: 24px;
+}
+
 .searchcraft-config-info {
 	margin-top: 30px;
 	padding: 20px;
