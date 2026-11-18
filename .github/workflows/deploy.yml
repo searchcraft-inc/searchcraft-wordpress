@@ -1,9 +1,14 @@
 name: Deploy to WordPress.org
 
+# Publishing a GitHub release deploys it. The "Draft release" workflow drafts
+# one with its tag when a new version is merged to main. A tag push no longer
+# deploys: that tag is created with GITHUB_TOKEN, which can't trigger workflows,
+# and publishing a release created in the GitHub UI would otherwise deploy
+# twice.
 on:
-  push:
-    tags:
-      - 'v*.*.*'
+  release:
+    types:
+      - published
   workflow_dispatch:
     inputs:
       dry_run:
@@ -93,6 +98,18 @@ jobs:
             exit 1
           fi
           echo "✓ Stable tag matches plugin version: $VERSION"
+
+      - name: Check release tag matches version
+        if: github.event_name == 'release'
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          VERSION: ${{ steps.get_version.outputs.version }}
+        run: |
+          if [ "$RELEASE_TAG" != "v$VERSION" ]; then
+            echo "Error: Release tag ($RELEASE_TAG) does not match plugin version (v$VERSION)"
+            exit 1
+          fi
+          echo "✓ Release tag matches plugin version: $RELEASE_TAG"
 
       - name: Check if version already exists in SVN
         run: |
